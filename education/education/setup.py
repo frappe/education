@@ -3,6 +3,7 @@
 
 
 import frappe
+from frappe import _
 
 
 def setup_education():
@@ -38,6 +39,13 @@ def create_academic_sessions():
 		{"doctype": "Academic Term", "academic_year": "2016-17", "term_name": "Semester 2"},
 		{"doctype": "Academic Term", "academic_year": "2017-18", "term_name": "Semester 1"},
 		{"doctype": "Academic Term", "academic_year": "2017-18", "term_name": "Semester 2"},
+		{
+			"doctype": "Assessment Group",
+			"assessment_group_name": _("All Assessment Groups"),
+			"is_group": 1,
+			"parent_assessment_group": "",
+		},
+		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
 	]
 	insert_record(data)
 

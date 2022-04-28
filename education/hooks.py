@@ -1,3 +1,5 @@
+from frappe import _
+
 from . import __version__ as app_version
 
 app_name = "education"
@@ -22,6 +24,35 @@ app_license = "GNU GPL V3"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "education/public/scss/website"
+
+# website
+update_website_context = [
+	"education.education.doctype.education_settings.education_settings.update_website_context",
+]
+
+website_generators = ["Student Admission"]
+
+website_route_rules = [
+	{"from_route": "/admissions", "to_route": "Student Admission"},
+]
+
+standard_portal_menu_items = [
+	{"title": _("Fees"), "route": "/fees", "reference_doctype": "Fees", "role": "Student"},
+	{
+		"title": _("Admission"),
+		"route": "/admissions",
+		"reference_doctype": "Student Admission",
+		"role": "Student",
+	},
+]
+
+default_roles = [
+	{"role": "Student", "doctype": "Student", "email_field": "student_email_id"},
+]
+
+accounting_dimension_doctypes = ["Fee Schedule", "Fee Structure", "Fees"]
+
+treeviews = ["Assessment Group"]
 
 # include js, css files in header of web form
 # webform_include_js = {"doctype": "public/js/doctype.js"}

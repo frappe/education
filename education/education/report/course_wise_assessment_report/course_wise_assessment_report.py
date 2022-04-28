@@ -5,8 +5,9 @@
 from collections import OrderedDict, defaultdict
 
 import frappe
-from erpnext.education.api import get_grade
 from frappe import _
+
+from education.education.api import get_grade
 
 
 def execute(filters=None):
