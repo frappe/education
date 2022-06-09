@@ -5,6 +5,31 @@
 import frappe
 from frappe import _
 
+# add data for doctypes
+data = {
+	'desktop_icons': [
+		'Student',
+		'Program',
+		'Course',
+		'Student Group',
+		'Instructor',
+		'Fees',
+		'Task',
+		'ToDo',
+		'Education',
+		'Student Attendance Tool',
+		'Student Applicant'
+	],
+	'default_portal_role': 'Student',
+	'restricted_roles': [
+		'Student',
+		'Instructor',
+		'Academics User',
+		'Education Manager'
+	]
+}
+
+
 
 def setup_education():
 	disable_desk_access_for_student_role()
