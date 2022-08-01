@@ -5,7 +5,7 @@
 from datetime import timedelta
 
 import frappe
-from erpnext.hr.doctype.holiday_list.holiday_list import is_holiday
+from erpnext.setup.doctype.holiday_list.holiday_list import is_holiday
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import date_diff, flt, get_link_to_form, getdate
