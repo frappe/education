@@ -139,7 +139,9 @@ frappe.ui.form.on("Fees", {
 			method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry",
 			args: {
 				"dt": frm.doc.doctype,
-				"dn": frm.doc.name
+				"dn": frm.doc.name,
+				"party_type": "Student",
+				"payment_type": "Receive",
 			},
 			callback: function(r) {
 				var doc = frappe.model.sync(r.message);
