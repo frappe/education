@@ -155,7 +155,7 @@ def get_students(
 		select pe.student, pe.student_name, pe.program, pe.student_batch_name
 		from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
 		where
-			pe.student = sgs.student and pe.academic_year = %s
+			pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
 			and sgs.parent = %s and sgs.active = 1
 			{conditions}
 		""".format(
