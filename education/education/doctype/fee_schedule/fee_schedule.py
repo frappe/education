@@ -148,7 +148,7 @@ def get_students(
 	if student_category:
 		conditions = " and pe.student_category={}".format(frappe.db.escape(student_category))
 	if academic_term:
-		conditions = " and pe.academic_term={}".format(frappe.db.escape(academic_term))
+		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
 
 	students = frappe.db.sql(
 		"""
