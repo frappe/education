@@ -18,6 +18,8 @@ After that, you can install education app on required site by running
 $ bench --site demo.com install-app education
 ```
 
+**Important:** Once that is completed, go to [Domain Settings](https://docs.erpnext.com/docs/v14/user/manual/en/setting-up/domain-settings) and enable Education.
+
 
 ### License
 
