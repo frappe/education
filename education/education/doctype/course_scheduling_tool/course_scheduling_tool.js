@@ -15,6 +15,10 @@ frappe.ui.form.on('Course Scheduling Tool', {
 		frm.page.set_primary_action(__('Schedule Course'), () => {
 			frappe.dom.freeze(__("Scheduling..."));
 			frm.call('schedule_course', { days: frm.days.get_checked_options() })
+				.fail(() => {
+					frappe.dom.unfreeze();
+					frappe.msgprint(__("Course Scheduling Failed"));
+				})
 				.then(r => {
 					frappe.dom.unfreeze();
 					if (!r.message) {
