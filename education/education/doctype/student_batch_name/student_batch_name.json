@@ -20,6 +20,7 @@
    "unique": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
@@ -27,7 +28,7 @@
   }
  ],
  "links": [],
- "modified": "2022-11-22 11:27:13.931070",
+ "modified": "2022-11-22 11:32:56.813457",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Batch Name",
