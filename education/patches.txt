@@ -1,0 +1,4 @@
+[pre_model_sync]
+education.patches.v14_0.create_student_party_type
+
+[post_model_sync]
