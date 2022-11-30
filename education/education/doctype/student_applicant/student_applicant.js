@@ -7,6 +7,14 @@ frappe.ui.form.on("Student Applicant", {
 	},
 
 	refresh: function(frm) {
+		frm.set_query('academic_term', function(doc, cdt, cdn) {
+			return{
+				filters: {
+					'academic_year': frm.doc.academic_year
+				}
+			};
+		});
+
 		if (frm.doc.application_status==="Applied" && frm.doc.docstatus===1 ) {
 			frm.add_custom_button(__("Approve"), function() {
 				frm.set_value("application_status", "Approved");

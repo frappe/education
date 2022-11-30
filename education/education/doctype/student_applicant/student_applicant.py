@@ -31,6 +31,7 @@ class StudentApplicant(Document):
 
 	def validate(self):
 		self.validate_dates()
+		self.validate_term()
 		self.title = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
 		)
@@ -41,6 +42,12 @@ class StudentApplicant(Document):
 	def validate_dates(self):
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
 			frappe.throw(_("Date of Birth cannot be greater than today."))
+
+	def validate_term(self):
+		if self.academic_year and self.academic_term:
+			actual_academic_year = frappe.db.get_value("Academic Term", self.academic_term, "academic_year")
+			if actual_academic_year != self.academic_year:
+				frappe.throw(_("Academic Term {0} does not belong to Academic Year {1}").format(self.academic_term, self.academic_year))
 
 	def on_update_after_submit(self):
 		student = frappe.get_list("Student", filters={"student_applicant": self.name})

@@ -151,9 +151,9 @@
   },
   {
    "fieldname": "gender",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Gender",
-   "options": "\nMale\nFemale"
+   "options": "Gender"
   },
   {
    "fieldname": "blood_group",
@@ -269,10 +269,11 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2021-03-01 23:00:25.119241",
+ "modified": "2022-11-30 16:05:25.870374",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -296,5 +297,6 @@
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "title"
 }
