@@ -8,5 +8,5 @@ def execute():
             "is_group": 1
         }).insert(ignore_mandatory=True)
 
-    if frappe.db.exists("Assessment Group", "All Assessment Groups 2"):
-        frappe.delete_doc("Assessment Group", "All Assessment Groups 2")
+    if frappe.db.exists("Assessment Group", "undefined"):
+        frappe.delete_doc("Assessment Group", "undefined")
