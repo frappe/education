@@ -39,11 +39,7 @@ def preview_report_card(doc):
 	values = get_formatted_result(
 		doc, get_course=True, get_all_assessment_groups=doc.include_all_assessment
 	)
-	assessment_result = values.get("assessment_result").get(doc.student)
-	courses = values.get("course_dict")
-	course_criteria = get_courses_criteria(courses)
-
-	# get the assessment group as per the user selection
+	courses = values.get("courses")
 	if doc.include_all_assessment:
 		assessment_groups = get_child_assessment_groups(doc.assessment_group)
 	else:
@@ -54,7 +50,7 @@ def preview_report_card(doc):
 		doc.students[0], doc.academic_year, doc.academic_term
 	)
 
-	template = "erpnext/education/doctype/student_report_generation_tool/student_report_generation_tool.html"
+	template = "education/education/doctype/student_report_generation_tool/student_report_generation_tool.html"
 	base_template_path = "frappe/www/printview.html"
 
 	from frappe.www.printview import get_letter_head
@@ -62,15 +58,13 @@ def preview_report_card(doc):
 	letterhead = get_letter_head(
 		frappe._dict({"letter_head": doc.letterhead}), not doc.add_letterhead
 	)
-
 	html = frappe.render_template(
 		template,
 		{
 			"doc": doc,
-			"assessment_result": assessment_result,
+			"assessment_result": values.get("assessment_result"),
 			"courses": courses,
 			"assessment_groups": assessment_groups,
-			"course_criteria": course_criteria,
 			"letterhead": letterhead and letterhead.get("content", None),
 			"add_letterhead": doc.add_letterhead if doc.add_letterhead else 0,
 		},

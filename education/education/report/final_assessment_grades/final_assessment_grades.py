@@ -20,14 +20,19 @@ def execute(filters=None):
 	assessment_group = args["assessment_group"] = filters.get("assessment_group")
 
 	student_group = filters.get("student_group")
-	args.students = frappe.db.sql_list(
-		"select student from `tabStudent Group Student` where parent=%s", (student_group)
-	)
+	args.students = frappe.get_all("Students Group Student", {
+		"parent": student_group
+	}, ["student"])
 
 	values = get_formatted_result(args, get_course=True)
-	student_details = values.get("student_details")
 	assessment_result = values.get("assessment_result")
 	course_dict = values.get("course_dict")
+
+	for result in assessment_result:
+		data.append({
+			"student": result["student"],
+			"student_name": result["student_name"]
+		})
 
 	for student in args.students:
 		if student_details.get(student):
@@ -69,14 +74,20 @@ def get_column(course_dict):
 			"label": _("Student ID"),
 			"fieldtype": "Link",
 			"options": "Student",
-			"width": 90,
+			"width": 80,
 		},
 		{
 			"fieldname": "student_name",
 			"label": _("Student Name"),
 			"fieldtype": "Data",
-			"width": 160,
+			"width": 150,
 		},
+		{
+			"fieldname": "assessment_group",
+			"label": _("Assessment Group"),
+			"fieldtype": "Link",
+			"width": 30
+		}
 	]
 	for course in course_dict:
 		columns.append(
@@ -84,7 +95,7 @@ def get_column(course_dict):
 				"fieldname": "grade_" + frappe.scrub(course),
 				"label": course,
 				"fieldtype": "Data",
-				"width": 110,
+				"width": 100,
 			}
 		)
 		columns.append(

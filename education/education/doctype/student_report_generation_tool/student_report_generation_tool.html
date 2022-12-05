@@ -238,6 +238,7 @@
 				</div>
 			</div>
 
+			{% if doc.student_batch %}
 			<div class="row data-field">
 				<div class="col-xs-5">
 					<label>{{ _("Batch: ") }}</label>
@@ -246,6 +247,7 @@
 					{{ doc.student_batch }}
 				</div>
 			</div>
+			{% endif %}
 		</div>
 
 		<div class="col-xs-6 column-break">
@@ -301,36 +303,31 @@
 						<label>{{ _("Course: ") }}</label>
 					</div>
 					<div class="col-xs-11">
-						{{ course }} ({{ frappe.db.get_value("Course", course, "course_name") }})
+						{{ frappe.db.get_value("Course", course, "course_name") }}
 					</div>
 				</div>
 			</caption>
 			<thead>
 				<tr>
-					<th style="width: {{ 650//(assessment_groups|length + 1) }}px">{{ _("Assessment Criteria") }}</th>
-					{% for assessment_group in assessment_groups %}
-					<th> {{ assessment_group }}</th>
-					{% endfor %}
+					<th> {{ _("Term") }} </th>
+					<th>{{ _("Assessment Criteria") }}</th>
+					<th> {{ _("Score") }} </th>
+					<th> {{ _("Grade") }} </th>
 				</tr>
 			</thead>
 
 			<tbody>
-				{% for criteria in course_criteria[course] %}
+				{% for result in assessment_result %}
+				{% for criteria in result.details %}
+				{% if result.course == course %}
 				<tr>
-					<td>{{ criteria }}</td>
-					{% for assessment_group in assessment_groups %}
-						{% if (assessment_result.get(course) and assessment_result.get(course).get(assessment_group) and assessment_result.get(course).get(assessment_group).get(criteria)) %}
-							<td>
-								{{ assessment_result.get(course).get(assessment_group).get(criteria).get(result_data) }}
-								{% if result_data == 'score' %}
-								({{ assessment_result.get(course).get(assessment_group).get(criteria).get('maximum_score') }})
-								{% endif %}
-							</td>
-						{% else %}
-							<td></td>
-						{% endif %}
-					{% endfor %}
+					<td> {{ result.assessment_group }} </td>
+					<td>{{ criteria.assessment_criteria }}</td>
+					<td> {{ criteria.score }} </td>
+					<td> {{ criteria.grade }} </td>
 				</tr>
+				{% endif %}
+				{% endfor %}
 				{% endfor %}
 			</tbody>
 

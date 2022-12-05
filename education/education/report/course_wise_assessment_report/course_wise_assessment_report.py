@@ -67,193 +67,56 @@ def execute(filters=None):
 	return columns, data, None, chart
 
 
-def get_formatted_result(
-	args, get_assessment_criteria=False, get_course=False, get_all_assessment_groups=False
-):
-	cond, cond1, cond2, cond3, cond4 = " ", " ", " ", " ", " "
-	args_list = [args.academic_year]
+def get_formatted_result(args, get_assessment_criteria=False, get_course=False, get_all_assessment_groups=False):
+	courses = []
+	filters = prepare_filters(args, get_all_assessment_groups)
 
-	if args.course:
-		cond = " and ar.course=%s"
-		args_list.append(args.course)
-
-	if args.academic_term:
-		cond1 = " and ar.academic_term=%s"
-		args_list.append(args.academic_term)
-
-	if args.student_group:
-		cond2 = " and ar.student_group=%s"
-		args_list.append(args.student_group)
-
-	create_total_dict = False
-
-	assessment_groups = get_child_assessment_groups(args.assessment_group)
-	cond3 = " and ar.assessment_group in (%s)" % (
-		", ".join(["%s"] * len(assessment_groups))
-	)
-	args_list += assessment_groups
-
-	if args.students:
-		cond4 = " and ar.student in (%s)" % (", ".join(["%s"] * len(args.students)))
-		args_list += args.students
-
-	assessment_result = frappe.db.sql(
-		"""
-		SELECT
-			ar.student, ar.student_name, ar.academic_year, ar.academic_term, ar.program, ar.course,
-			ar.assessment_plan, ar.grading_scale, ar.assessment_group, ar.student_group,
-			ard.assessment_criteria, ard.maximum_score, ard.grade, ard.score
-		FROM
-			`tabAssessment Result` ar, `tabAssessment Result Detail` ard
-		WHERE
-			ar.name=ard.parent and ar.docstatus=1 and ar.academic_year=%s {0} {1} {2} {3} {4}
-		ORDER BY
-			ard.assessment_criteria""".format(
-			cond, cond1, cond2, cond3, cond4
-		),
-		tuple(args_list),
-		as_dict=1,
-	)
-
-	# create the nested dictionary structure as given below:
-	# <variable_name>.<student_name>.<course>.<assessment_group>.<assessment_criteria>.<grade/score/max_score>
-	# "Final Grade" -> assessment criteria used for totaling and args.assessment_group -> for totaling all the assesments
-
-	student_details = {}
-	formatted_assessment_result = defaultdict(dict)
-	assessment_criteria_dict = OrderedDict()
-	course_dict = OrderedDict()
-	total_maximum_score = None
-	if not (len(assessment_groups) == 1 and assessment_groups[0] == args.assessment_group):
-		create_total_dict = True
-
-	# add the score for a given score and recalculate the grades
-	def add_score_and_recalculate_grade(result, assessment_group, assessment_criteria):
-		formatted_assessment_result[result.student][result.course][assessment_group][
-			assessment_criteria
-		]["maximum_score"] += result.maximum_score
-		formatted_assessment_result[result.student][result.course][assessment_group][
-			assessment_criteria
-		]["score"] += result.score
-		tmp_grade = get_grade(
-			result.grading_scale,
-			(
-				(
-					formatted_assessment_result[result.student][result.course][assessment_group][
-						assessment_criteria
-					]["score"]
-				)
-				/ (
-					formatted_assessment_result[result.student][result.course][assessment_group][
-						assessment_criteria
-					]["maximum_score"]
-				)
-			)
-			* 100,
-		)
-		formatted_assessment_result[result.student][result.course][assessment_group][
-			assessment_criteria
-		]["grade"] = tmp_grade
-
-	# create the assessment criteria "Final Grade" with the sum of all the scores of the assessment criteria in a given assessment group
-	def add_total_score(result, assessment_group):
-		if (
-			"Final Grade"
-			not in formatted_assessment_result[result.student][result.course][assessment_group]
-		):
-			formatted_assessment_result[result.student][result.course][assessment_group][
-				"Final Grade"
-			] = frappe._dict(
-				{
-					"assessment_criteria": "Final Grade",
-					"maximum_score": result.maximum_score,
-					"score": result.score,
-					"grade": result.grade,
-				}
-			)
-		else:
-			add_score_and_recalculate_grade(result, assessment_group, "Final Grade")
+	assessment_result = frappe.get_all("Assessment Result", filters,
+		["student", "student_name", "name", "course", "assessment_group"], order_by="")
 
 	for result in assessment_result:
-		if result.student not in student_details:
-			student_details[result.student] = result.student_name
-
-		assessment_criteria_details = frappe._dict(
-			{
-				"assessment_criteria": result.assessment_criteria,
-				"maximum_score": result.maximum_score,
-				"score": result.score,
-				"grade": result.grade,
-			}
-		)
-
-		if not formatted_assessment_result[result.student]:
-			formatted_assessment_result[result.student] = defaultdict(dict)
-		if not formatted_assessment_result[result.student][result.course]:
-			formatted_assessment_result[result.student][result.course] = defaultdict(dict)
-
-		if not create_total_dict:
-			formatted_assessment_result[result.student][result.course][result.assessment_group][
-				result.assessment_criteria
-			] = assessment_criteria_details
-			add_total_score(result, result.assessment_group)
-
-		# create the total of all the assessment groups criteria-wise
-		elif create_total_dict:
-			if get_all_assessment_groups:
-				formatted_assessment_result[result.student][result.course][result.assessment_group][
-					result.assessment_criteria
-				] = assessment_criteria_details
-			if not formatted_assessment_result[result.student][result.course][
-				args.assessment_group
-			]:
-				formatted_assessment_result[result.student][result.course][
-					args.assessment_group
-				] = defaultdict(dict)
-				formatted_assessment_result[result.student][result.course][args.assessment_group][
-					result.assessment_criteria
-				] = assessment_criteria_details
-			elif (
-				result.assessment_criteria
-				not in formatted_assessment_result[result.student][result.course][
-					args.assessment_group
-				]
-			):
-				formatted_assessment_result[result.student][result.course][args.assessment_group][
-					result.assessment_criteria
-				] = assessment_criteria_details
-			elif (
-				result.assessment_criteria
-				in formatted_assessment_result[result.student][result.course][args.assessment_group]
-			):
-				add_score_and_recalculate_grade(
-					result, args.assessment_group, result.assessment_criteria
-				)
-
-			add_total_score(result, args.assessment_group)
-
-		total_maximum_score = formatted_assessment_result[result.student][result.course][
-			args.assessment_group
-		]["Final Grade"]["maximum_score"]
-		if get_assessment_criteria:
-			assessment_criteria_dict[result.assessment_criteria] = formatted_assessment_result[
-				result.student
-			][result.course][args.assessment_group][result.assessment_criteria][
-				"maximum_score"
-			]
 		if get_course:
-			course_dict[result.course] = total_maximum_score
+			courses.append(result.course)
 
-	if get_assessment_criteria and total_maximum_score:
-		assessment_criteria_dict["Final Grade"] = total_maximum_score
+		if get_assessment_criteria:
+			details = frappe.get_all("Assessment Result Detail", {
+				"parent": result.name,
+			}, ["assessment_criteria", "maximum_score", "grade", "score"])
+			result.update({
+				"details": details
+			})
 
 	return {
-		"student_details": student_details,
-		"assessment_result": formatted_assessment_result,
-		"assessment_criteria": assessment_criteria_dict,
-		"course_dict": course_dict,
+		"assessment_result": assessment_result,
+		"courses": courses
 	}
 
+
+def prepare_filters(args, get_all_assessment_groups):
+	filters = {
+		"academic_year": args.academic_year,
+		"docstatus": 1
+	}
+
+	options = ["course", "academic_term", "student_group"]
+	for option in options:
+		if args.get(option):
+			filters[option] = args.get(option)
+
+	if get_all_assessment_groups:
+		assessment_groups = get_child_assessment_groups(args.assessment_group)
+	else:
+		assessment_groups = args.assessment_groups
+
+	filters.update({
+		"assessment_group": ["in", assessment_groups]
+	})
+
+	if args.students:
+		filters.update({
+			"student": ["in", args.students]
+		})
+	return filters
 
 def get_column(assessment_criteria):
 	columns = [
@@ -311,6 +174,7 @@ def get_child_assessment_groups(assessment_group):
 	group_type = frappe.get_value("Assessment Group", assessment_group, "is_group")
 	if group_type:
 		from frappe.desk.treeview import get_children
+		print(get_children("Assessment Group", assessment_group))
 
 		assessment_groups = [
 			d.get("value")
@@ -319,4 +183,5 @@ def get_child_assessment_groups(assessment_group):
 		]
 	else:
 		assessment_groups = [assessment_group]
+	print(assessment_groups)
 	return assessment_groups
