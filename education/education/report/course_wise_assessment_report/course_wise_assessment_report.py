@@ -67,24 +67,22 @@ def execute(filters=None):
 	return columns, data, None, chart
 
 
-def get_formatted_result(args, get_assessment_criteria=False, get_course=False, get_all_assessment_groups=False):
+def get_formatted_result(args, get_course=False, get_all_assessment_groups=False):
 	courses = []
 	filters = prepare_filters(args, get_all_assessment_groups)
 
 	assessment_result = frappe.get_all("Assessment Result", filters,
-		["student", "student_name", "name", "course", "assessment_group"], order_by="")
-
+		["student", "student_name", "name", "course", "assessment_group", "total_score", "grade"], order_by="")
 	for result in assessment_result:
-		if get_course:
+		if get_course and result.course not in courses:
 			courses.append(result.course)
 
-		if get_assessment_criteria:
-			details = frappe.get_all("Assessment Result Detail", {
-				"parent": result.name,
-			}, ["assessment_criteria", "maximum_score", "grade", "score"])
-			result.update({
-				"details": details
-			})
+		details = frappe.get_all("Assessment Result Detail", {
+			"parent": result.name,
+		}, ["assessment_criteria", "maximum_score", "grade", "score"])
+		result.update({
+			"details": details
+		})
 
 	return {
 		"assessment_result": assessment_result,
@@ -106,7 +104,7 @@ def prepare_filters(args, get_all_assessment_groups):
 	if get_all_assessment_groups:
 		assessment_groups = get_child_assessment_groups(args.assessment_group)
 	else:
-		assessment_groups = args.assessment_groups
+		assessment_groups = args.assessment_group
 
 	filters.update({
 		"assessment_group": ["in", assessment_groups]
@@ -174,7 +172,6 @@ def get_child_assessment_groups(assessment_group):
 	group_type = frappe.get_value("Assessment Group", assessment_group, "is_group")
 	if group_type:
 		from frappe.desk.treeview import get_children
-		print(get_children("Assessment Group", assessment_group))
 
 		assessment_groups = [
 			d.get("value")
@@ -183,5 +180,4 @@ def get_child_assessment_groups(assessment_group):
 		]
 	else:
 		assessment_groups = [assessment_group]
-	print(assessment_groups)
 	return assessment_groups
