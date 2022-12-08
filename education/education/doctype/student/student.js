@@ -17,6 +17,14 @@ frappe.ui.form.on('Student', {
 		})
 	},
 	refresh: function(frm) {
+		frm.set_query("user", function (doc) {
+			return {
+				filters: {
+					ignore_user_type: 1,
+				},
+			};
+		});
+
 		if(!frm.is_new()) {
 
 			// custom buttons

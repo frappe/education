@@ -15,7 +15,7 @@
  "prepared_report": 0,
  "query": "",
  "ref_doctype": "Assessment Result",
- "report_name": "Course wise Assessment Report",
+ "report_name": "Course Wise Assessment Report",
  "report_type": "Script Report",
  "roles": [
   {

@@ -104,18 +104,6 @@
 		page-break-after: always;
 	}
 
-	.print-heading {
-		border-bottom: 1px solid #aaa;
-		margin-bottom: 10px;
-	}
-
-	.print-heading h2 {
-		margin: 0px;
-	}
-	.print-heading h4 {
-		margin-top: 5px;
-	}
-
 	table.no-border, table.no-border td {
 		border: 0px;
 	}
@@ -188,8 +176,13 @@
 	.pbi_avoid {
 		page-break-inside: avoid !important;
 	}
+
 	.pb_before {
 		page-break-before: always !important;
+	}
+
+	.pdf-header {
+		display: inline-block;
 	}
 </style>
 
@@ -197,8 +190,7 @@
 
 <div class="page-break">
 
-	<div id="header-html" class="hidden-pdf">
-
+	<div id="header-html" class="pdf-header">
 		{% if letterhead and add_letterhead %}
 			<div class="">{{ letterhead }}</div>
 		{% endif %}
@@ -238,6 +230,7 @@
 				</div>
 			</div>
 
+			{% if doc.student_batch %}
 			<div class="row data-field">
 				<div class="col-xs-5">
 					<label>{{ _("Batch: ") }}</label>
@@ -246,6 +239,7 @@
 					{{ doc.student_batch }}
 				</div>
 			</div>
+			{% endif %}
 		</div>
 
 		<div class="col-xs-6 column-break">
@@ -281,91 +275,85 @@
 	</div>
 
 
-{% if doc.show_marks | int %}
-	{% set result_data = 'score' %}
-{% else %}
-	{% set result_data = 'grade' %}
-{% endif %}
+	{% for course in courses %}
 
+	<div class="row section-break pbi_avoid">
+		<div class="col-xs-12 column-break">
 
-{% for course in courses %}
-
-<div class="row section-break pbi_avoid">
-	<div class="col-xs-12 column-break">
-
-		<div>
-		<table class="table table-bordered table-condensed">
-			<caption>
-				<div class="row">
-					<div class="col-xs-1">
-						<label>{{ _("Course: ") }}</label>
+			<div>
+			<table class="table table-bordered table-condensed">
+				<caption>
+					<div class="row">
+						<div class="col-xs-1">
+							<label>{{ _("Course: ") }}</label>
+						</div>
+						<div class="col-xs-11">
+							{{ frappe.db.get_value("Course", course, "course_name") }}
+						</div>
 					</div>
-					<div class="col-xs-11">
-						{{ course }} ({{ frappe.db.get_value("Course", course, "course_name") }})
-					</div>
-				</div>
-			</caption>
-			<thead>
-				<tr>
-					<th style="width: {{ 650//(assessment_groups|length + 1) }}px">{{ _("Assessment Criteria") }}</th>
-					{% for assessment_group in assessment_groups %}
-					<th> {{ assessment_group }}</th>
-					{% endfor %}
-				</tr>
-			</thead>
-
-			<tbody>
-				{% for criteria in course_criteria[course] %}
-				<tr>
-					<td>{{ criteria }}</td>
-					{% for assessment_group in assessment_groups %}
-						{% if (assessment_result.get(course) and assessment_result.get(course).get(assessment_group) and assessment_result.get(course).get(assessment_group).get(criteria)) %}
-							<td>
-								{{ assessment_result.get(course).get(assessment_group).get(criteria).get(result_data) }}
-								{% if result_data == 'score' %}
-								({{ assessment_result.get(course).get(assessment_group).get(criteria).get('maximum_score') }})
-								{% endif %}
-							</td>
-						{% else %}
-							<td></td>
+				</caption>
+				<thead>
+					<tr>
+						<th> {{ _("Term") }} </th>
+						<th>{{ _("Assessment Criteria") }}</th>
+						{% if doc.show_marks %}
+						<th> {{ _("Score") }} </th>
 						{% endif %}
+						<th> {{ _("Grade") }} </th>
+					</tr>
+				</thead>
+
+				<tbody>
+					{% for result in assessment_result %}
+					{% for criteria in result.details %}
+					{% if result.course == course %}
+					<tr>
+						<td> {{ result.assessment_group }} </td>
+						<td>{{ criteria.assessment_criteria }}</td>
+						{% if doc.show_marks %}
+						<td> {{ criteria.score }} </td>
+						{% endif %}
+						<td> {{ criteria.grade }} </td>
+					</tr>
+					{% endif %}
 					{% endfor %}
-				</tr>
-				{% endfor %}
-			</tbody>
+					{% endfor %}
+				</tbody>
 
-		</table>
-		</div>
-	</div>
-</div>
-
-{% endfor %}
-
-<br>
-
-<div class="row section-break pbi_avoid">
-	<div class="col-xs-6 column-break">
-		<h4>{{ _("Student Attendance")}}</h4> <br>
-		<div>
-			Present {{ doc.attendance.get("Present") if doc.attendance.get("Present") != None else '0' }} days
-			out of {{ doc.attendance.get("Present") + doc.attendance.get("Absent") }}
+			</table>
+			</div>
 		</div>
 	</div>
 
-	<div class="col-xs-6 column-break">
-		<h4>{{ _("Parents Teacher Meeting Attendance")}}</h4> <br>
-		<div>
-			Present {{ doc.parents_attendance if doc.parents_attendance != None else '0' }}
-			out of {{ doc.parents_meeting if doc.parents_meeting != None else '0' }}
+	{% endfor %}
+
+	<br>
+
+	<div class="row section-break pbi_avoid">
+		<div class="col-xs-6 column-break">
+			<h4>{{ _("Student Attendance")}}</h4>
+			<div>
+				{{ _("Present ") }} {{ doc.attendance.present if doc.attendance.present else 0 }} {{ _(" out of ") }} {{ doc.attendance.total }}  {{ _(" days") }}
+			</div>
+		</div>
+
+		<div class="col-xs-6 column-break">
+			<h4>{{ _("Parents Teacher Meeting Attendance")}}</h4>
+			<div>
+				{{ _("Present ") }} {{ doc.parents_attendance if doc.parents_attendance != None else 0 }}
+				{{ _(" out of ") }} {{ doc.parents_meeting if doc.parents_meeting != None else 0 }} {{ _(" meetings") }}
+			</div>
 		</div>
 	</div>
-</div>
 
-{% if doc.assessment_terms %}
-<div class="row section-break pb_before">
-	<div class="col-xs-12">
-		<p> {{ doc.assessment_terms }} </p>
+	<br>
+
+	{% if doc.assessment_terms %}
+	<div class="row section-break">
+		<div class="col-xs-12">
+			<h4> {{ _("Terms") }} </h4>
+			<p> {{ doc.assessment_terms }} </p>
+		</div>
 	</div>
-</div>
-{% endif %}
+	{% endif %}
 </div>
