@@ -4,8 +4,7 @@
 
 import frappe
 from frappe import _
-from education.education.report.course_wise_assessment_report.course_wise_assessment_report import (
-    get_chart_data, get_formatted_result)
+from education.education.report.course_wise_assessment_report.course_wise_assessment_report import get_formatted_result
 
 
 def execute(filters=None):
