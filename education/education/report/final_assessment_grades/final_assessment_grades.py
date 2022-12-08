@@ -2,24 +2,20 @@
 # For license information, please see license.txt
 
 
-from collections import defaultdict
 import frappe
 from frappe import _
-
 from education.education.report.course_wise_assessment_report.course_wise_assessment_report import (
     get_chart_data, get_formatted_result)
 
 
 def execute(filters=None):
-	columns, data, scores = [], [], []
-	course_wise_analysis = defaultdict(dict)
+	columns, data = [], []
 
-	data, course_dict = get_data(data, filters)
-	columns = get_column(course_dict)
-	scores = [ d.total_score for d in data]
-	#chart = get_chart_data(scores, course_dict, course_wise_analysis)
+	data, course_list = get_data(data, filters)
+	columns = get_column(course_list)
+	chart = get_chart(data, course_list)
 
-	return columns, data, None, None
+	return columns, data, None, chart
 
 
 def get_data(data, filters):
@@ -31,9 +27,9 @@ def get_data(data, filters):
 		"parent": filters.get("student_group")
 	}, pluck="student")
 
-	values = get_formatted_result(args, get_course=True, get_all_assessment_groups=True)
+	values = get_formatted_result(args, get_course=True)
 	assessment_result = values.get("assessment_result")
-	course_dict = values.get("courses")
+	course_list = values.get("courses")
 
 	for result in assessment_result:
 		exists =  [i for i, d in enumerate(data) if d.get("student") == result.student]
@@ -51,9 +47,10 @@ def get_data(data, filters):
 			data[index]["grade_" + frappe.scrub(result.course)] = result.grade
 			data[index]["score_" + frappe.scrub(result.course)] = result.total_score
 
-	return data, course_dict
+	return data, course_list
 
-def get_column(course_dict):
+
+def get_column(course_list):
 	columns = [
 		{
 			"fieldname": "student",
@@ -76,7 +73,7 @@ def get_column(course_dict):
 			"width": 100
 		}
 	]
-	for course in course_dict:
+	for course in course_list:
 		columns.append(
 			{
 				"fieldname": "grade_" + frappe.scrub(course),
@@ -95,3 +92,32 @@ def get_column(course_dict):
 		)
 
 	return columns
+
+
+def get_chart(data, course_list):
+	dataset = []
+	students = [row.student_name for row in data]
+
+	for course in course_list:
+		dataset_row = {
+			"values": []
+		}
+		dataset_row["name"] = course
+		for row in data:
+			if "score_" + frappe.scrub(course) in row:
+				dataset_row["values"].append(row["score_" + frappe.scrub(course)])
+			else:
+				dataset_row["values"].append(0)
+
+		dataset.append(dataset_row)
+
+	charts = {
+		"data": {
+			"labels": students,
+			"datasets": dataset
+		},
+		"type": "bar",
+		"colors": ["#ff0e0e", "#ff9966", "#ffcc00", "#99cc33", "#339900"],
+	}
+
+	return charts

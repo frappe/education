@@ -23,7 +23,11 @@ frappe.ui.form.on('Student Report Generation Tool', {
 		frm.disable_save();
 		frm.page.clear_indicator();
 		frm.page.set_primary_action(__('Print Report Card'), () => {
-			let url = "/api/method/education.education.doctype.student_report_generation_tool.student_report_generation_tool.preview_report_card";
+			let doc = frm.doc;
+			if (!doc.student || !doc.assessment_group || !doc.program || !doc.academic_year) {
+				frappe.throw(__("Please fill in all the mandatory fields."))
+			}
+ 			let url = "/api/method/education.education.doctype.student_report_generation_tool.student_report_generation_tool.preview_report_card";
 			open_url_post(url, {"doc": frm.doc}, true);
 		});
 	},
@@ -44,21 +48,6 @@ frappe.ui.form.on('Student Report Generation Tool', {
 							}
 						});
 					}
-				}
-			});
-		}
-	},
-
-	terms: function(frm) {
-		if(frm.doc.terms) {
-			return frappe.call({
-				method: 'erpnext.setup.doctype.terms_and_conditions.terms_and_conditions.get_terms_and_conditions',
-				args: {
-					template_name: frm.doc.terms,
-					doc: frm.doc
-				},
-				callback: function(r) {
-					frm.set_value("assessment_terms", r.message);
 				}
 			});
 		}
