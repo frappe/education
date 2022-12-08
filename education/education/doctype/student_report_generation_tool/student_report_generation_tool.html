@@ -333,7 +333,7 @@
 		<div class="col-xs-6 column-break">
 			<h4>{{ _("Student Attendance")}}</h4>
 			<div>
-				{{ _("Present ") }} {{ doc.attendance.present }} {{ _(" out of ") }} {{ doc.attendance.total }}  {{ _(" days") }}
+				{{ _("Present ") }} {{ doc.attendance.present if doc.attendance.present else 0 }} {{ _(" out of ") }} {{ doc.attendance.total }}  {{ _(" days") }}
 			</div>
 		</div>
 
