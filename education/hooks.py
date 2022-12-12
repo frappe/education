@@ -29,9 +29,7 @@ app_include_js = "education.bundle.js"
 # website_theme_scss = "education/public/scss/website"
 
 # website
-update_website_context = [
-	"education.education.doctype.education_settings.education_settings.update_website_context",
-]
+update_website_context = []
 
 website_generators = ["Student Admission"]
 

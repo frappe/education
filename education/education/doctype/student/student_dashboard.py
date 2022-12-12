@@ -17,7 +17,6 @@ def get_data():
 				],
 			},
 			{"label": _("Assessment"), "items": ["Assessment Result"]},
-			{"label": _("Student LMS Activity"), "items": ["Course Activity", "Quiz Activity"]},
 			{
 				"label": _("Attendance"),
 				"items": ["Student Attendance", "Student Leave Application"],

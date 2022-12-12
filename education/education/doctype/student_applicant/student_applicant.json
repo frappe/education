@@ -12,7 +12,6 @@
   "last_name",
   "program",
   "student_category",
-  "lms_only",
   "paid",
   "column_break_8",
   "naming_series",
@@ -74,12 +73,6 @@
    "label": "Program",
    "options": "Program",
    "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "lms_only",
-   "fieldtype": "Check",
-   "label": "LMS Only"
   },
   {
    "default": "0",
@@ -269,7 +262,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-30 16:05:25.870374",
+ "modified": "2022-12-12 15:34:07.621051",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
