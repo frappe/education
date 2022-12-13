@@ -77,12 +77,14 @@ frappe.ui.form.on('Program Enrollment', {
 	},
 
 	get_courses: function(frm) {
+		frm.program_courses = [];
 		frm.set_value('courses',[]);
 		frappe.call({
 			method: 'get_courses',
-			doc:frm.doc,
+			doc: frm.doc,
 			callback: function(r) {
 				if (r.message) {
+					frm.program_courses = r.message
 					frm.set_value('courses', r.message);
 				}
 			}
@@ -98,7 +100,8 @@ frappe.ui.form.on('Program Enrollment Course', {
 			$.each(doc.courses, function(_idx, val) {
 				if (val.course) course_list.push(val.course);
 			});
-			return { filters: [['Course', 'name', 'not in', course_list]] };
+			return { filters: [['Course', 'name', 'not in', course_list],
+				['Course', 'name', 'in', frm.program_courses.map((e) => e.course)]] };
 		};
 	}
 });
