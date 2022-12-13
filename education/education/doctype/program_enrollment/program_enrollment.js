@@ -80,7 +80,7 @@ frappe.ui.form.on('Program Enrollment', {
 		frm.set_value('courses',[]);
 		frappe.call({
 			method: 'get_courses',
-			doc:frm.doc,
+			doc: frm.doc,
 			callback: function(r) {
 				if (r.message) {
 					frm.set_value('courses', r.message);

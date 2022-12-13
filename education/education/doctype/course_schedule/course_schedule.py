@@ -18,6 +18,7 @@ class CourseSchedule(Document):
 		self.set_title()
 		self.validate_course()
 		self.validate_date()
+		self.validate_time()
 		self.validate_overlap()
 
 	def set_title(self):
@@ -36,6 +37,15 @@ class CourseSchedule(Document):
 			self.course = course
 
 	def validate_date(self):
+		academic_year = frappe.db.get_value("Student Group", self.student_group, "academic_year")
+		start_date, end_date = frappe.db.get_value("Academic Year", academic_year, ["year_start_date", "year_end_date"])
+		self.schedule_date = frappe.utils.getdate(self.schedule_date)
+
+		if self.schedule_date < start_date or self.schedule_date > end_date:
+			frappe.throw(_("Schedule date selected does not lie within the Academic Year of the Student Group {0}.").format(self.student_group))
+
+
+	def validate_time(self):
 		"""Validates if from_time is greater than to_time"""
 		if self.from_time > self.to_time:
 			frappe.throw(_("From Time cannot be greater than To Time."))
