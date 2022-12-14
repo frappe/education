@@ -37,12 +37,20 @@ class CourseSchedule(Document):
 			self.course = course
 
 	def validate_date(self):
-		academic_year = frappe.db.get_value("Student Group", self.student_group, "academic_year")
-		start_date, end_date = frappe.db.get_value("Academic Year", academic_year, ["year_start_date", "year_end_date"])
+		academic_year, academic_term = frappe.db.get_value("Student Group", self.student_group, ["academic_year", "academic_term"])
 		self.schedule_date = frappe.utils.getdate(self.schedule_date)
 
-		if self.schedule_date < start_date or self.schedule_date > end_date:
-			frappe.throw(_("Schedule date selected does not lie within the Academic Year of the Student Group {0}.").format(self.student_group))
+		if academic_term:
+			start_date, end_date = frappe.db.get_value("Academic Term", academic_term, ["term_start_date", "term_end_date"])
+			if start_date and end_date and (self.schedule_date < start_date or self.schedule_date > end_date):
+				frappe.throw(_("Schedule date selected does not lie within the Academic Term of the Student Group {0}.").format(self.student_group))
+
+		elif academic_year:
+			start_date, end_date = frappe.db.get_value("Academic Year", academic_year, ["year_start_date", "year_end_date"])
+			if self.schedule_date < start_date or self.schedule_date > end_date:
+				frappe.throw(_("Schedule date selected does not lie within the Academic Year of the Student Group {0}.").format(self.student_group))
+
+
 
 
 	def validate_time(self):
