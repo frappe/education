@@ -51,8 +51,6 @@ class CourseSchedule(Document):
 				frappe.throw(_("Schedule date selected does not lie within the Academic Year of the Student Group {0}.").format(self.student_group))
 
 
-
-
 	def validate_time(self):
 		"""Validates if from_time is greater than to_time"""
 		if self.from_time > self.to_time:
