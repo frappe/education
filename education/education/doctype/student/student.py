@@ -52,7 +52,7 @@ class Student(Document):
 		linked_doctypes = get_linked_doctypes("Student")
 		for d in linked_doctypes:
 			meta = frappe.get_meta(d)
-			if not meta.issingle:
+			if not meta.issingle and d != self.doctype:
 				if "student_name" in [f.fieldname for f in meta.fields]:
 					frappe.db.sql(
 						"""UPDATE `tab{0}` set student_name = %s where {1} = %s""".format(
