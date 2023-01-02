@@ -23,9 +23,9 @@ class Student(Document):
 			self.check_unique()
 			self.update_applicant_status()
 
-		if frappe.get_value("Student", self.name, "title") != self.title:
+		""" if frappe.get_value("Student", self.name, "title") != self.title:
 			self.update_student_name_in_linked_doctype()
-
+ """
 	def validate_dates(self):
 		for sibling in self.siblings:
 			if sibling.date_of_birth and getdate(sibling.date_of_birth) > getdate():
