@@ -24,7 +24,7 @@ class Student(Document):
 			self.update_applicant_status()
 
 		""" if frappe.get_value("Student", self.name, "student_name") != self.student_name:
-			self.update_student_name_in_linked_doctype() """
+			self.defupdate_student_name_in_linked_doctype() """
 
 	def validate_dates(self):
 		for sibling in self.siblings:

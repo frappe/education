@@ -193,7 +193,7 @@ def fetch_students(doctype, txt, searchfield, start, page_len, filters):
 			else [""]
 		) or [""]
 		return frappe.db.sql(
-			"""select name, title from tabStudent
+			"""select name, student_name from tabStudent
 			where name in ({0}) and (`{1}` LIKE %s or title LIKE %s)
 			order by idx desc, name
 			limit %s, %s""".format(
@@ -203,7 +203,7 @@ def fetch_students(doctype, txt, searchfield, start, page_len, filters):
 		)
 	else:
 		return frappe.db.sql(
-			"""select name, title from tabStudent
+			"""select name, student_name from tabStudent
 			where `{0}` LIKE %s or title LIKE %s
 			order by idx desc, name
 			limit %s, %s""".format(

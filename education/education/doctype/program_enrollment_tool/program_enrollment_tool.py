@@ -54,7 +54,7 @@ class ProgramEnrollmentTool(Document):
 				if student_list:
 					inactive_students = frappe.db.sql(
 						"""
-						select name as student, title as student_name from `tabStudent` where name in (%s) and enabled = 0"""
+						select name as student, student_name from `tabStudent` where name in (%s) and enabled = 0"""
 						% ", ".join(["%s"] * len(student_list)),
 						tuple(student_list),
 						as_dict=1,
