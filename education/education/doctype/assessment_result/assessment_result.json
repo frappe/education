@@ -79,7 +79,7 @@
    "reqd": 1
   },
   {
-   "fetch_from": "student.title",
+   "fetch_from": "student.student_name",
    "fieldname": "student_name",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -173,7 +173,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-08-03 11:47:54.119486",
+ "modified": "2020-08-03 11:47:54.119489",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",

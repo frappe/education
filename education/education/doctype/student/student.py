@@ -14,7 +14,7 @@ from education.education.utils import (check_content_completion,
 
 class Student(Document):
 	def validate(self):
-		self.title = " ".join(
+		self.student_name = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
 		)
 		self.validate_dates()
@@ -23,8 +23,8 @@ class Student(Document):
 			self.check_unique()
 			self.update_applicant_status()
 
-		if frappe.get_value("Student", self.name, "title") != self.title:
-			self.update_student_name_in_linked_doctype()
+		""" if frappe.get_value("Student", self.name, "student_name") != self.student_name:
+			self.defupdate_student_name_in_linked_doctype() """
 
 	def validate_dates(self):
 		for sibling in self.siblings:
@@ -58,7 +58,7 @@ class Student(Document):
 						"""UPDATE `tab{0}` set student_name = %s where {1} = %s""".format(
 							d, linked_doctypes[d]["fieldname"][0]
 						),
-						(self.title, self.name),
+						(self.student_name, self.name),
 					)
 
 				if "child_doctype" in linked_doctypes[d].keys() and "student_name" in [
@@ -68,7 +68,7 @@ class Student(Document):
 						"""UPDATE `tab{0}` set student_name = %s where {1} = %s""".format(
 							linked_doctypes[d]["child_doctype"], linked_doctypes[d]["fieldname"][0]
 						),
-						(self.title, self.name),
+						(self.student_name, self.name),
 					)
 
 	def check_unique(self):

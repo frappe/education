@@ -214,7 +214,7 @@ def get_students(doctype, txt, searchfield, start, page_len, filters):
 
 	return frappe.db.sql(
 		"""select
-			name, title from tabStudent
+			name, student_name from tabStudent
 		where
 			name not in (%s)
 		and

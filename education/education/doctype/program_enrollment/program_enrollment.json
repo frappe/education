@@ -39,7 +39,7 @@
    "reqd": 1
   },
   {
-   "fetch_from": "student.title",
+   "fetch_from": "student.student_name",
    "fieldname": "student_name",
    "fieldtype": "Read Only",
    "in_global_search": 1,
@@ -176,7 +176,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-15 18:12:11.988565",
+ "modified": "2020-09-15 18:12:11.988567",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",

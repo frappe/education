@@ -45,7 +45,7 @@
   "leaving_certificate_number",
   "column_break_31",
   "reason_for_leaving",
-  "title"
+  "student_name"
  ],
  "fields": [
   {
@@ -253,18 +253,19 @@
    "label": "Reason For Leaving"
   },
   {
-   "fieldname": "title",
+   "fieldname": "student_name",
    "fieldtype": "Data",
    "hidden": 1,
-   "label": "Title"
+   "label": "Student Name"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2022-11-17 09:00:00.749682",
+ "modified": "2023-01-02 12:01:10.538542",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -305,7 +306,9 @@
  ],
  "restrict_to_domain": "Education",
  "show_name_in_global_search": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "title_field": "title"
+ "states": [],
+ "title_field": "student_name"
 }

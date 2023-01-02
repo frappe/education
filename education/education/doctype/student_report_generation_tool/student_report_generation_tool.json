@@ -32,7 +32,7 @@
    "reqd": 1
   },
   {
-   "fetch_from": "student.title",
+   "fetch_from": "student.student_name",
    "fieldname": "student_name",
    "fieldtype": "Read Only",
    "label": "Student Name"
@@ -131,7 +131,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-12-07 17:53:40.391737",
+ "modified": "2022-12-07 17:53:40.391739",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Report Generation Tool",

@@ -51,7 +51,7 @@ def enroll_student(source_name):
 	program_enrollment = frappe.new_doc("Program Enrollment")
 	program_enrollment.student = student.name
 	program_enrollment.student_category = student_applicant.student_category
-	program_enrollment.student_name = student.title
+	program_enrollment.student_name = student.student_name
 	program_enrollment.program = student_applicant.program
 	frappe.publish_realtime(
 		"enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
@@ -481,3 +481,10 @@ def get_current_enrollment(student, academic_year=None):
 		return program_enrollment_list[0]
 	else:
 		return None
+
+
+@frappe.whitelist()
+def get_instructors(student_group):
+	return frappe.get_all("Student Group Instructor", {
+		"parent": student_group
+	}, pluck="instructor")
