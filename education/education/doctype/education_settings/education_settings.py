@@ -49,7 +49,3 @@ class EducationSettings(Document):
 				"Check",
 				validate_fields_for_doctype=False,
 			)
-
-
-def update_website_context(context):
-	context["lms_enabled"] = frappe.get_cached_doc("Education Settings").enable_lms
