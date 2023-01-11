@@ -304,7 +304,7 @@
    "share": 1
   }
  ],
- "restrict_to_domain": "Education",
+ "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

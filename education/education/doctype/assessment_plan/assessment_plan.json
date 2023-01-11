@@ -220,7 +220,7 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "Education",
+ "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "title_field": "assessment_name"
