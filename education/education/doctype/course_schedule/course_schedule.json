@@ -145,7 +145,7 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "Education",
+ "restrict_to_domain": "",
  "sort_field": "schedule_date",
  "sort_order": "DESC",
  "states": [],

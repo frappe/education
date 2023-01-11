@@ -699,7 +699,7 @@
     "owner": "Administrator",
     "parent_page": "",
     "public": 1,
-    "restrict_to_domain": "Education",
+    "restrict_to_domain": "",
     "roles": [],
     "sequence_id": 9.0,
     "shortcuts": [

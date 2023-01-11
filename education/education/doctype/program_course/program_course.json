@@ -43,7 +43,7 @@
  "name": "Program Course",
  "owner": "Administrator",
  "permissions": [],
- "restrict_to_domain": "Education",
+ "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "track_changes": 1

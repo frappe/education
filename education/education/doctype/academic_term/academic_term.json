@@ -75,7 +75,7 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "Education",
+ "restrict_to_domain": "",
  "sort_field": "name",
  "sort_order": "DESC",
  "states": [],

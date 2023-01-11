@@ -91,8 +91,7 @@ def create_student_role():
 		{
 			"doctype": "Role",
 			"role_name": "Student",
-			"desk_access": 0,
-			"restrict_to_domain": "Education",
+			"desk_access": 0
 		}
 	)
 	student_role.insert()
