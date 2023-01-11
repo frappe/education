@@ -69,7 +69,7 @@ def validate_duplicate_student(students):
 		else:
 			unique_students.append(stud.student)
 
-		return None
+	return None
 
 
 # LMS Utils
@@ -87,48 +87,6 @@ def get_current_student():
 		return frappe.get_doc("Student", student_id)
 	except (IndexError, frappe.DoesNotExistError):
 		return None
-
-
-def get_portal_programs():
-	"""Returns a list of all program to be displayed on the portal
-	Programs are returned based on the following logic
-	        is_published and (student_is_enrolled or student_can_self_enroll)
-
-	Returns:
-	        list of dictionary: List of all programs and to be displayed on the portal along with access rights
-	"""
-	published_programs = frappe.get_all("Program", filters={"is_published": True})
-	if not published_programs:
-		return None
-
-	program_list = [frappe.get_doc("Program", program) for program in published_programs]
-	portal_programs = [
-		{"program": program, "has_access": allowed_program_access(program.name)}
-		for program in program_list
-		if allowed_program_access(program.name) or program.allow_self_enroll
-	]
-
-	return portal_programs
-
-
-def allowed_program_access(program, student=None):
-	"""Returns enrollment status for current student
-
-	Args:
-	        program (string): Name of the program
-	        student (object): instance of Student document
-
-	Returns:
-	        bool: Is current user enrolled or not
-	"""
-	if has_super_access():
-		return True
-	if not student:
-		student = get_current_student()
-	if student and get_enrollment("program", program, student.name):
-		return True
-	else:
-		return False
 
 
 def get_enrollment(master, document, student):

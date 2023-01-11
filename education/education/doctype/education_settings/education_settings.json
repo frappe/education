@@ -14,11 +14,7 @@
   "academic_term_reqd",
   "user_creation_skip",
   "section_break_7",
-  "instructor_created_by",
-  "web_academy_settings_section",
-  "enable_lms",
-  "portal_title",
-  "description"
+  "instructor_created_by"
  ],
  "fields": [
   {
@@ -75,29 +71,6 @@
    "options": "Full Name\nNaming Series\nEmployee Number"
   },
   {
-   "fieldname": "web_academy_settings_section",
-   "fieldtype": "Section Break",
-   "label": "Learning Management System Settings"
-  },
-  {
-   "depends_on": "eval: doc.enable_lms",
-   "fieldname": "portal_title",
-   "fieldtype": "Data",
-   "label": "Learning Management System Title"
-  },
-  {
-   "depends_on": "eval: doc.enable_lms",
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_lms",
-   "fieldtype": "Check",
-   "label": "Enable Learning Management System"
-  },
-  {
    "default": "0",
    "description": "By default, a new User is created for every new Student. If enabled, no new User will be created when a new Student is created.",
    "fieldname": "user_creation_skip",
@@ -107,7 +80,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2020-05-07 19:18:10.639356",
+ "modified": "2022-12-12 15:20:54.983137",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
@@ -145,5 +118,6 @@
  "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
