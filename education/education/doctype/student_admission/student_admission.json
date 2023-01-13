@@ -10,12 +10,12 @@
  "field_order": [
   "title",
   "route",
+  "published",
+  "enable_admission_application",
   "column_break_3",
   "academic_year",
   "admission_start_date",
   "admission_end_date",
-  "published",
-  "enable_admission_application",
   "section_break_5",
   "program_details",
   "introduction"
@@ -94,7 +94,7 @@
  "has_web_view": 1,
  "is_published_field": "published",
  "links": [],
- "modified": "2020-09-18 00:14:54.615321",
+ "modified": "2023-01-12 15:22:20.267807",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Admission",
@@ -113,10 +113,10 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "route": "admissions",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "title"
 }

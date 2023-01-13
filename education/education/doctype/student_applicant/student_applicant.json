@@ -10,17 +10,23 @@
   "first_name",
   "middle_name",
   "last_name",
-  "program",
-  "student_category",
-  "paid",
   "column_break_8",
   "naming_series",
-  "application_status",
   "application_date",
+  "application_status",
+  "program",
+  "section_break_xuzu",
+  "student_admission",
+  "student_category",
+  "image",
+  "column_break_lvby",
   "academic_year",
   "academic_term",
-  "student_admission",
-  "image",
+  "paid",
+  "section_break_23",
+  "title",
+  "amended_from",
+  "personal_details_tab",
   "section_break_4",
   "date_of_birth",
   "gender",
@@ -29,20 +35,20 @@
   "student_email_id",
   "student_mobile_number",
   "nationality",
-  "home_address",
-  "address_line_1",
-  "address_line_2",
-  "pincode",
-  "column_break_23",
-  "city",
-  "state",
+  "relations_tab",
   "section_break_20",
   "guardians",
   "section_break_21",
   "siblings",
-  "section_break_23",
-  "title",
-  "amended_from"
+  "address_tab",
+  "home_address",
+  "address_line_1",
+  "address_line_2",
+  "city",
+  "column_break_23",
+  "state",
+  "pincode",
+  "country"
  ],
  "fields": [
   {
@@ -134,8 +140,7 @@
   },
   {
    "fieldname": "section_break_4",
-   "fieldtype": "Section Break",
-   "label": "Personal Details"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "date_of_birth",
@@ -177,8 +182,7 @@
   },
   {
    "fieldname": "home_address",
-   "fieldtype": "Section Break",
-   "label": "Home Address"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "address_line_1",
@@ -210,7 +214,6 @@
    "label": "State"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_20",
    "fieldtype": "Section Break",
    "label": "Guardian Details"
@@ -222,7 +225,6 @@
    "options": "Student Guardian"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_21",
    "fieldtype": "Section Break",
    "label": "Sibling Details"
@@ -257,12 +259,41 @@
    "fieldtype": "Link",
    "label": "Student Category",
    "options": "Student Category"
+  },
+  {
+   "fieldname": "section_break_xuzu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_lvby",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "personal_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Personal Details"
+  },
+  {
+   "fieldname": "relations_tab",
+   "fieldtype": "Tab Break",
+   "label": "Relations"
+  },
+  {
+   "fieldname": "address_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
   }
  ],
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-12-12 15:34:07.621051",
+ "modified": "2023-01-13 16:56:09.057330",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
@@ -286,7 +317,6 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:program_name",
@@ -8,18 +9,12 @@
  "field_order": [
   "program_name",
   "department",
+  "hero_image",
   "column_break_3",
   "program_abbreviation",
   "section_break_courses",
   "courses",
-  "section_break_5",
-  "is_published",
-  "allow_self_enroll",
-  "is_featured",
-  "column_break_11",
-  "intro_video",
-  "hero_image",
-  "description"
+  "connections_tab"
  ],
  "fields": [
   {
@@ -49,53 +44,10 @@
    "label": "Program Abbreviation"
   },
   {
-   "fieldname": "section_break_5",
-   "fieldtype": "Section Break",
-   "label": "Portal Settings"
-  },
-  {
    "fieldname": "courses",
    "fieldtype": "Table",
    "label": "Courses",
    "options": "Program Course"
-  },
-  {
-   "depends_on": "is_published",
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "depends_on": "is_published",
-   "fieldname": "intro_video",
-   "fieldtype": "Data",
-   "label": "Intro Video"
-  },
-  {
-   "fieldname": "hero_image",
-   "fieldtype": "Attach Image",
-   "hidden": 1,
-   "label": "Hero Image"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_published",
-   "fieldtype": "Check",
-   "label": "Is Published"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval: doc.is_published == 1",
-   "fieldname": "is_featured",
-   "fieldtype": "Check",
-   "label": "Is Featured"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval: doc.is_published == 1",
-   "fieldname": "allow_self_enroll",
-   "fieldtype": "Check",
-   "label": "Allow Self Enroll"
   },
   {
    "fieldname": "section_break_courses",
@@ -103,15 +55,25 @@
    "label": "Courses"
   },
   {
-   "fieldname": "column_break_11",
-   "fieldtype": "Column Break"
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "fieldname": "hero_image",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "Image"
   }
  ],
  "image_field": "hero_image",
- "modified": "2019-06-12 12:31:14.999346",
+ "links": [],
+ "modified": "2023-01-12 18:07:52.130737",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -169,9 +131,9 @@
    "share": 1
   }
  ],
- "restrict_to_domain": "",
  "search_fields": "program_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }

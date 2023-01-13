@@ -14,20 +14,21 @@
   "first_name",
   "middle_name",
   "last_name",
-  "user",
+  "student_applicant",
   "column_break_4",
   "naming_series",
-  "student_email_id",
-  "student_mobile_number",
   "joining_date",
+  "user",
   "image",
   "section_break_7",
+  "student_email_id",
   "date_of_birth",
   "blood_group",
   "column_break_3",
+  "student_mobile_number",
   "gender",
   "nationality",
-  "student_applicant",
+  "address_tab",
   "section_break_22",
   "address_line_1",
   "address_line_2",
@@ -36,16 +37,19 @@
   "city",
   "state",
   "country",
+  "relations_tab",
   "section_break_18",
   "guardians",
   "section_break_20",
   "siblings",
+  "exit_tab",
   "exit",
   "date_of_leaving",
   "leaving_certificate_number",
   "column_break_31",
   "reason_for_leaving",
-  "student_name"
+  "student_name",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -165,8 +169,7 @@
   },
   {
    "fieldname": "section_break_22",
-   "fieldtype": "Section Break",
-   "label": "Home Address"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "address_line_1",
@@ -215,7 +218,6 @@
    "options": "Student Guardian"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_20",
    "fieldtype": "Section Break",
    "label": "Sibling Details",
@@ -228,10 +230,8 @@
    "options": "Student Sibling"
   },
   {
-   "collapsible": 1,
    "fieldname": "exit",
-   "fieldtype": "Section Break",
-   "label": "Exit"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "date_of_leaving",
@@ -257,11 +257,32 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Student Name"
+  },
+  {
+   "fieldname": "address_tab",
+   "fieldtype": "Tab Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "relations_tab",
+   "fieldtype": "Tab Break",
+   "label": "Relations"
+  },
+  {
+   "fieldname": "exit_tab",
+   "fieldtype": "Tab Break",
+   "label": "Exit"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-02 12:01:10.538542",
+ "modified": "2023-01-12 15:53:48.157450",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -304,7 +325,6 @@
    "share": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

@@ -9,25 +9,24 @@
  "field_order": [
   "student",
   "student_name",
-  "student_category",
-  "student_batch_name",
-  "school_house",
+  "enrollment_date",
   "column_break_4",
   "program",
   "academic_year",
   "academic_term",
-  "enrollment_date",
+  "image",
+  "section_break_vsaj",
+  "student_category",
+  "student_batch_name",
+  "column_break_ebuo",
   "boarding_student",
   "enrolled_courses",
   "courses",
-  "transportation",
-  "mode_of_transportation",
-  "column_break_13",
-  "vehicle_no",
+  "fees_tab",
   "section_break_7",
   "fees",
   "amended_from",
-  "image"
+  "connections_tab"
  ],
  "fields": [
   {
@@ -59,13 +58,6 @@
    "in_global_search": 1,
    "label": "Student Batch",
    "options": "Student Batch Name"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "school_house",
-   "fieldtype": "Link",
-   "label": "School House",
-   "options": "School House"
   },
   {
    "fieldname": "column_break_4",
@@ -110,30 +102,6 @@
    "label": "Boarding Student"
   },
   {
-   "collapsible": 1,
-   "collapsible_depends_on": "vehicle_no",
-   "fieldname": "transportation",
-   "fieldtype": "Section Break",
-   "label": "Transportation"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "mode_of_transportation",
-   "fieldtype": "Select",
-   "label": "Mode of Transportation",
-   "options": "\nWalking\nInstitute's Bus\nPublic Transport\nSelf-Driving Vehicle\nPick/Drop by Guardian"
-  },
-  {
-   "fieldname": "column_break_13",
-   "fieldtype": "Column Break"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "vehicle_no",
-   "fieldtype": "Data",
-   "label": "Vehicle/Bus Number"
-  },
-  {
    "fieldname": "enrolled_courses",
    "fieldtype": "Section Break",
    "label": "Enrolled courses"
@@ -146,10 +114,8 @@
    "options": "Program Enrollment Course"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_7",
-   "fieldtype": "Section Break",
-   "label": "Fees"
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "fees",
@@ -171,20 +137,37 @@
    "fieldtype": "Attach Image",
    "hidden": 1,
    "label": "Image"
+  },
+  {
+   "fieldname": "section_break_vsaj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_ebuo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fees_tab",
+   "fieldtype": "Tab Break",
+   "label": "Fees"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "image_field": "image",
- "is_submittable": 1,
  "links": [],
- "modified": "2020-09-15 18:12:11.988567",
+ "modified": "2023-01-12 18:18:42.056585",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -194,7 +177,6 @@
    "report": 1,
    "role": "Academics User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
@@ -206,13 +188,12 @@
    "report": 1,
    "role": "LMS User",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }
