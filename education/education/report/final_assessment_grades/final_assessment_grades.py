@@ -4,7 +4,9 @@
 
 import frappe
 from frappe import _
-from education.education.report.course_wise_assessment_report.course_wise_assessment_report import get_formatted_result
+
+from education.education.report.course_wise_assessment_report.course_wise_assessment_report import \
+    get_formatted_result
 
 
 def execute(filters=None):
@@ -22,16 +24,16 @@ def get_data(data, filters):
 	args["academic_year"] = filters.get("academic_year")
 	args["assessment_group"] = filters.get("assessment_group")
 
-	args.students = frappe.get_all("Student Group Student", {
-		"parent": filters.get("student_group")
-	}, pluck="student")
+	args.students = frappe.get_all(
+		"Student Group Student", {"parent": filters.get("student_group")}, pluck="student"
+	)
 
 	values = get_formatted_result(args, get_course=True)
 	assessment_result = values.get("assessment_result")
 	course_list = values.get("courses")
 
 	for result in assessment_result:
-		exists =  [i for i, d in enumerate(data) if d.get("student") == result.student]
+		exists = [i for i, d in enumerate(data) if d.get("student") == result.student]
 		if not len(exists):
 			row = frappe._dict()
 			row.student = result.student
@@ -69,8 +71,8 @@ def get_column(course_list):
 			"label": _("Assessment Group"),
 			"fieldtype": "Link",
 			"options": "Assessment Group",
-			"width": 100
-		}
+			"width": 100,
+		},
 	]
 	for course in course_list:
 		columns.append(
@@ -98,9 +100,7 @@ def get_chart(data, course_list):
 	students = [row.student_name for row in data]
 
 	for course in course_list:
-		dataset_row = {
-			"values": []
-		}
+		dataset_row = {"values": []}
 		dataset_row["name"] = course
 		for row in data:
 			if "score_" + frappe.scrub(course) in row:
@@ -111,10 +111,7 @@ def get_chart(data, course_list):
 		dataset.append(dataset_row)
 
 	charts = {
-		"data": {
-			"labels": students,
-			"datasets": dataset
-		},
+		"data": {"labels": students, "datasets": dataset},
 		"type": "bar",
 		"colors": ["#ff0e0e", "#ff9966", "#ffcc00", "#99cc33", "#339900"],
 	}

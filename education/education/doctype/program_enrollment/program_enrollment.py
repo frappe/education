@@ -21,8 +21,8 @@ class ProgramEnrollment(Document):
 		if not self.courses:
 			self.extend("courses", self.get_courses())
 
-	def on_submit(self):
-		self.update_student_joining_date()
+	def after_insert(self):
+		#self.update_student_joining_date()
 		self.make_fee_records()
 		self.create_course_enrollments()
 
@@ -131,14 +131,19 @@ class ProgramEnrollment(Document):
 		)
 
 	def create_course_enrollments(self):
-		student = frappe.get_doc("Student", self.student)
-		course_list = [course.course for course in self.courses]
-		for course_name in course_list:
-			student.enroll_in_course(
-				course_name=course_name,
-				program_enrollment=self.name,
-				enrollment_date=self.enrollment_date,
-			)
+		for course in self.courses:
+			filters = {
+				"student": self.student,
+				"course": course.course,
+				"program_enrollment": self.name
+			}
+			if not frappe.db.exists("Course Enrollment", filters):
+				filters.update({
+					"doctype": "Course Enrollment",
+					"enrollment_date": self.enrollment_date
+				})
+				frappe.get_doc(filters).save()
+
 
 	def get_all_course_enrollments(self):
 		course_enrollment_names = frappe.get_list(

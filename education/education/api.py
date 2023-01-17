@@ -485,6 +485,6 @@ def get_current_enrollment(student, academic_year=None):
 
 @frappe.whitelist()
 def get_instructors(student_group):
-	return frappe.get_all("Student Group Instructor", {
-		"parent": student_group
-	}, pluck="instructor")
+	return frappe.get_all(
+		"Student Group Instructor", {"parent": student_group}, pluck="instructor"
+	)
