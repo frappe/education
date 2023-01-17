@@ -159,8 +159,9 @@
   }
  ],
  "image_field": "image",
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-01-12 18:18:42.056585",
+ "modified": "2023-01-17 19:40:14.003538",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",

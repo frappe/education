@@ -21,8 +21,8 @@ class ProgramEnrollment(Document):
 		if not self.courses:
 			self.extend("courses", self.get_courses())
 
-	def after_insert(self):
-		#self.update_student_joining_date()
+	def on_submit(self):
+		self.update_student_joining_date()
 		self.make_fee_records()
 		self.create_course_enrollments()
 
