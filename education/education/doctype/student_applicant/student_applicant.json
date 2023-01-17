@@ -18,6 +18,7 @@
   "section_break_xuzu",
   "student_admission",
   "student_category",
+  "student_email_id",
   "image",
   "column_break_lvby",
   "academic_year",
@@ -32,7 +33,6 @@
   "gender",
   "blood_group",
   "column_break_12",
-  "student_email_id",
   "student_mobile_number",
   "nationality",
   "relations_tab",
@@ -100,13 +100,13 @@
   },
   {
    "allow_on_submit": 1,
-   "depends_on": "eval:doc.docstatus != 0",
    "fieldname": "application_status",
    "fieldtype": "Select",
    "in_filter": 1,
    "label": "Application Status",
    "no_copy": 1,
-   "options": "Applied\nApproved\nRejected\nAdmitted"
+   "options": "Applied\nApproved\nRejected\nAdmitted",
+   "read_only": 1
   },
   {
    "default": "Today",
@@ -291,9 +291,8 @@
   }
  ],
  "image_field": "image",
- "is_submittable": 1,
  "links": [],
- "modified": "2023-01-13 16:56:09.057330",
+ "modified": "2023-01-16 17:16:36.031832",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
@@ -301,8 +300,6 @@
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -313,7 +310,6 @@
    "report": 1,
    "role": "Academics User",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],

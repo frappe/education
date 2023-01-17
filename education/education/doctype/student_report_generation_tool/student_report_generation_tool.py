@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils.pdf import get_pdf
 from frappe.www.printview import get_letter_head
+
 from education.education.report.course_wise_assessment_report.course_wise_assessment_report import (
     get_child_assessment_groups, get_formatted_result)
 
@@ -44,10 +45,8 @@ def preview_report_card(doc):
 	)
 
 	final_template = frappe.render_template(
-		"frappe/www/printview.html", {
-			"body": html,
-			"title": "Report Card"
-		})
+		"frappe/www/printview.html", {"body": html, "title": "Report Card"}
+	)
 
 	frappe.response.filename = "Report Card " + doc.students[0] + ".pdf"
 	frappe.response.filecontent = get_pdf(final_template)
@@ -68,12 +67,12 @@ def get_attendance_count(student, academic_year, academic_term=None):
 		)
 
 	if from_date and to_date:
-		data = frappe.get_all("Student Attendance", {
-			"student": student,
-			"docstatus": 1,
-			"date": ["between", (from_date, to_date)]
-		}, ["status","count(student) as count"],
-		group_by="status")
+		data = frappe.get_all(
+			"Student Attendance",
+			{"student": student, "docstatus": 1, "date": ["between", (from_date, to_date)]},
+			["status", "count(student) as count"],
+			group_by="status",
+		)
 
 		for row in data:
 			if row.status == "Present":

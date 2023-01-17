@@ -18,13 +18,11 @@ class Student(Document):
 			filter(None, [self.first_name, self.middle_name, self.last_name])
 		)
 		self.validate_dates()
-
+		self.validate_user()
+		
 		if self.student_applicant:
 			self.check_unique()
 			self.update_applicant_status()
-
-		""" if frappe.get_value("Student", self.name, "student_name") != self.student_name:
-			self.defupdate_student_name_in_linked_doctype() """
 
 	def validate_dates(self):
 		for sibling in self.siblings:
@@ -47,6 +45,28 @@ class Student(Document):
 			and getdate(self.joining_date) > getdate(self.date_of_leaving)
 		):
 			frappe.throw(_("Joining Date can not be greater than Leaving Date"))
+
+	def validate_user(self):
+		"""Create a website user for student creation if not already exists"""
+		if not frappe.get_single("Education Settings").get(
+			"user_creation_skip"
+		) and not frappe.db.exists("User", self.student_email_id):
+			student_user = frappe.get_doc(
+				{
+					"doctype": "User",
+					"first_name": self.first_name,
+					"last_name": self.last_name,
+					"email": self.student_email_id,
+					"gender": self.gender,
+					"send_welcome_email": 1,
+					"user_type": "Website User",
+				}
+			)
+			student_user.flags.ignore_permissions = True
+			student_user.add_roles("Student")
+			student_user.save()
+
+			self.user = student_user.name
 
 	def update_student_name_in_linked_doctype(self):
 		linked_doctypes = get_linked_doctypes("Student")
@@ -83,28 +103,6 @@ class Student(Document):
 					student[0][0], self.student_applicant
 				)
 			)
-
-	def after_insert(self):
-		if not frappe.get_single("Education Settings").get("user_creation_skip"):
-			self.create_student_user()
-
-	def create_student_user(self):
-		"""Create a website user for student creation if not already exists"""
-		if not frappe.db.exists("User", self.student_email_id):
-			student_user = frappe.get_doc(
-				{
-					"doctype": "User",
-					"first_name": self.first_name,
-					"last_name": self.last_name,
-					"email": self.student_email_id,
-					"gender": self.gender,
-					"send_welcome_email": 1,
-					"user_type": "Website User",
-				}
-			)
-			student_user.flags.ignore_permissions = True
-			student_user.add_roles("Student")
-			student_user.save()
 
 	def update_applicant_status(self):
 		"""Updates Student Applicant status to Admitted"""
