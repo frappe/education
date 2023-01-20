@@ -1,0 +1,135 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-19 00:07:39.373491",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_1",
+  "student_name",
+  "student",
+  "psychomotor_domain_section",
+  "verbal_skills",
+  "affectative_domain_section",
+  "punctuality",
+  "mental_alertness",
+  "neatness",
+  "politeness",
+  "honesty",
+  "peers_relationship",
+  "instructor_comment_section",
+  "instructor_comment",
+  "education_manager_comment",
+  "principal_comment"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student",
+   "reqd": 1
+  },
+  {
+   "fieldname": "psychomotor_domain_section",
+   "fieldtype": "Section Break",
+   "label": "Psychomotor Domain"
+  },
+  {
+   "fieldname": "verbal_skills",
+   "fieldtype": "Rating",
+   "in_list_view": 1,
+   "label": "Verbal Skills",
+   "reqd": 1
+  },
+  {
+   "fieldname": "affectative_domain_section",
+   "fieldtype": "Section Break",
+   "label": "Affectative Domain"
+  },
+  {
+   "fieldname": "punctuality",
+   "fieldtype": "Rating",
+   "in_list_view": 1,
+   "label": "Punctuality",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mental_alertness",
+   "fieldtype": "Rating",
+   "label": "Mental Alertness",
+   "reqd": 1
+  },
+  {
+   "fieldname": "neatness",
+   "fieldtype": "Rating",
+   "label": "Neatness",
+   "reqd": 1
+  },
+  {
+   "fieldname": "politeness",
+   "fieldtype": "Rating",
+   "label": "Politeness",
+   "reqd": 1
+  },
+  {
+   "fieldname": "honesty",
+   "fieldtype": "Rating",
+   "label": "Honesty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "peers_relationship",
+   "fieldtype": "Rating",
+   "label": "Relationship With Peers",
+   "reqd": 1
+  },
+  {
+   "fieldname": "instructor_comment_section",
+   "fieldtype": "Section Break",
+   "label": "Comment"
+  },
+  {
+   "fieldname": "instructor_comment",
+   "fieldtype": "Text",
+   "label": "Instructor Comment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "education_manager_comment",
+   "fieldtype": "Text",
+   "label": "Education Manager Comment"
+  },
+  {
+   "fieldname": "principal_comment",
+   "fieldtype": "Text",
+   "label": "Principal Comment"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-01-19 00:07:39.373491",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Student Assessment Remark Information",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,615 @@
+<style>
+
+  /* custom styling */
+@media print {
+  svg[data-barcode-value] > rect {
+    fill: white !important; }
+  svg[data-barcode-value] > g {
+    fill: black !important; } }
+
+	@media screen {
+	.print-format-gutter {
+		background-color: #ddd;
+		padding: 15px 0px;
+	}
+	.print-format {
+		background-color: white;
+		box-shadow: 0px 0px 9px rgba(0,0,0,0.5);
+		max-width: 8.3in;
+		min-height: 11.69in;
+		padding: 0.75in;
+		margin: auto;
+	}
+
+	.print-format.landscape {
+		max-width: 11.69in;
+		padding: 0.2in;
+	}
+
+	.page-break {
+		padding: 30px 0px;
+		border-bottom: 1px dashed #888;
+	}
+
+	.page-break:first-child {
+		padding-top: 0px;
+	}
+
+	.page-break:last-child {
+		border-bottom: 0px;
+	}
+
+	/* mozilla hack for images in table */
+	body:last-child .print-format td img {
+		width: 100% !important;
+	}
+
+	@media(max-width: 767px) {
+		.print-format {
+			padding: 0.2in;
+		}
+	}
+}
+
+@media print {
+	.print-format p {
+		margin-left: 1px;
+		margin-right: 1px;
+	}
+}
+
+.data-field {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.data-field .value {
+	word-wrap: break-word;
+}
+
+.important .value {
+	font-size: 120%;
+	font-weight: bold;
+}
+
+.important label {
+	line-height: 1.8;
+	margin: 0px;
+}
+
+.table {
+	margin: 20px 0px;
+}
+
+.result-table,
+  .result-table td {
+    border: 1px solid #000;
+}
+
+.square-image {
+	width: 100%;
+	height: 0;
+	padding: 50% 0;
+	background-size: contain;
+	/*background-size: cover;*/
+	background-repeat: no-repeat !important;
+	background-position: center center;
+	border-radius: 4px;
+}
+
+.print-item-image {
+	object-fit: contain;
+}
+
+.pdf-variables,
+.pdf-variable,
+.visible-pdf {
+	display: none !important;
+}
+
+.print-format {
+	font-size: 9pt;
+	font-family: "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif;
+	-webkit-print-color-adjust:exact;
+}
+
+.page-break {
+	page-break-after: always;
+}
+
+.print-row {
+	border-bottom: 1px solid #aaa;
+	margin-bottom: 10px;
+}
+
+.print-heading h2 {
+	margin: 0px;
+}
+.print-heading h4 {
+	margin-top: 5px;
+}
+
+table.no-border, table.no-border td {
+	border: 0px;
+}
+
+.print-format label {
+	/* wkhtmltopdf breaks label into multiple lines when it is inline-block */
+	display: block;
+}
+
+.print-format img {
+	max-width: 100%;
+}
+
+.print-format table td > .primary:first-child {
+	font-weight: bold;
+}
+
+.print-format td, .print-format th {
+	vertical-align: top !important;
+	padding: 6px !important;
+}
+
+.print-format p {
+	margin: 3px 0px 3px;
+}
+
+table td div {
+
+	/* needed to avoid partial cutting of text between page break in wkhtmltopdf */
+	page-break-inside: avoid !important;
+
+}
+
+/* hack for webkit specific browser */
+@media (-webkit-min-device-pixel-ratio:0) {
+	thead, tfoot { display: table-row-group; }
+}
+
+[document-status] {
+	margin-bottom: 5mm;
+}
+
+.signature-img {
+	background: #fff;
+	border-radius: 3px;
+	margin-top: 5px;
+	max-height: 150px;
+}
+
+.print-heading {
+	text-align: right;
+	text-transform: uppercase;
+	color: #666;
+}
+
+.print-heading h2 {
+	font-size: 24px;
+}
+
+/* Dew - added styling */
+
+p, label, td {
+  font-size: 8px;
+}
+
+.tick {
+	font-size: 9px; 
+	color: #b10025;
+}
+
+.print-heading-container {
+	border-bottom: 1px solid #808080;
+	padding-bottom: 10px;
+}
+
+.report-container {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.table-bordered td {
+  border: 1px solid #808080 !important;
+  padding: 1px !important;
+}
+
+.student-image {
+  width: 60px;
+  height: 60px;
+}
+
+.page-break label, .table-heading-row td{
+  color: #b10025;
+  font-weight: 800;
+}
+
+.page-break {
+  font-size: 6px;
+}
+
+.print-format th {
+	background-color: #eee !important;
+	border-bottom: 0px !important;
+}
+
+.table-bordered td {
+    border: 1px solid #000;
+  }
+
+/* modern format: for-test */
+
+.pbi_avoid {
+	page-break-inside: avoid !important;
+}
+.pb_before {
+	page-break-before: always !important;
+}
+</style>
+
+
+
+<div class="page-break report-container">
+
+	<div id="header-html" class="hidden-pdf">
+		<div class="row print-heading-container">
+			<div class="col-xs-6">
+				{% if letterhead and add_letterhead %}
+				<div class="mb-2">{{ letterhead }}</div>
+				{% endif %}
+			</div>
+	
+			<div class="col-xs-6 print-heading">
+				<h2>{{ _("Student Report Card") }}<br>
+				<small>{{ doc.student_name }}</small>
+				</h2>
+			</div>
+		</div>
+	</div>
+
+	<div class="row table-bordered student-info-section">
+		<div class="col-xs-5 column-break">
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Student ID: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.students[0] }}
+					&starf;
+				</div>
+			</div>
+
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Student Name: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.student_name }}
+				</div>
+			</div>
+
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Program: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.program }}
+				</div>
+			</div>
+
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Batch: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.student_batch }}
+				</div>
+			</div>
+		</div>
+
+		<div class="col-xs-5 column-break">
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Academic Year: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.academic_year }}
+				</div>
+			</div>
+
+			{% if doc.academic_term %}
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Academic Term: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.academic_term }}
+				</div>
+			</div>
+			{% endif %}
+
+			<div class="row data-field">
+				<div class="col-xs-5">
+					<label>{{ _("Assessment Group: ") }}</label>
+				</div>
+				<div class="col-xs-7">
+					{{ doc.assessment_group }}
+				</div>
+			</div>
+		</div>
+
+		<div class="col-xs-2">
+			<img src="{{ student_image }}" alt="" class="student-image" srcset="">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-5">
+			<table class="table table-bordered table-condensed">
+			<caption>
+				<h5>1. Student Attendance</h5>
+			</caption>
+			<tr>
+				<td><label>No. of days school opened</label> </td>
+				<td>{{ doc.attendance.get("Present") + doc.attendance.get("Absent") }}</td>
+			</tr>
+			<tr>
+				<td><label>No. of days present</label></td>
+				<td>{{ doc.attendance.get("Present") if doc.attendance.get("Present") != None else '0' }}</td>
+			</tr>
+			<tr>
+				<td><label>No. of days absent</label></td>
+				<td>{{ doc.attendance.get("Absent") }}</td>
+			</tr>
+			</table>
+		</div>
+
+		<div class="col-xs-5 col-xs-offset-2">
+			<table class="table table-bordered table-condensed">
+			<caption>
+				<h5>Admission </h5>
+			</caption>
+				<tr>
+				<td><label>Admission No</label> </td>
+				<td>{{ doc.student }}</td>
+				</tr>
+				<tr>
+				<td><label>Term Ended</label></td>
+				<td>{{ settings.attendance_freeze_date }}</td>
+				</tr>
+				<tr>
+				<td><label>Next Term Begins</label></td>
+				<td>{{ settings.next_term_begins }}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+
+	{% if doc.show_marks | int %}
+		{% set result_data = 'score' %}
+	{% else %}
+		{% set result_data = 'grade' %}
+	{% endif %}
+
+
+
+	<div class="row section-break pbi_avoid">
+		<div class="col-xs-8 column-break">
+			<table class="table table-bordered table-condensed">
+				<!-- <caption>
+					<div class="row">
+						<div class="col-xs-1">
+							<label>{{ _("Course: ") }}</label>
+						</div>
+						<div class="col-xs-11">
+							{{ course }} ({{ frappe.db.get_value("Subject", course, "course_name") }})
+						</div>
+					</div>
+				</caption> -->
+				<tr class="table-heading-row">
+					<td style="width: {{ 650//(assessment_groups|length + 1) }}px">{{ _("Assessment Criteria") }}</td>
+					<td>CA 1</td>
+					<td>CA 2</td>
+					<td>Total</td>
+					<td>Grade</td>
+				</tr>
+				{% for course in courses %}
+					<tr>
+					<td>{{ course }} ({{ frappe.db.get_value("Subject", course, "course_name") }})</td>
+					{% for criteria in course_criteria[course] %}
+						{% if (assessment_result.get(course) and assessment_result.get(course).get(doc.assessment_group) and assessment_result.get(course).get(doc.assessment_group).get(criteria)) %}
+						<td>
+							{{ assessment_result.get(course).get(doc.assessment_group).get(criteria).get(result_data) }}
+						</td>
+						{% else %}
+						<td></td>
+						{% endif %}
+					{% endfor %}
+					<td>
+						{{ assessment_result.get(course).get(doc.assessment_group).get('Final Grade').get('score') }}
+					</td>
+					<td>
+						{{ assessment_result.get(course).get(doc.assessment_group).get('Final Grade').get('grade') }}
+					</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+	<div class="col-xs-4">
+			<table class="table table-bordered table-condensed">
+				<tr class="table-heading-row">
+					<td>{{ _("PSYCHOMOTOR SKILLS") }}</td>
+					<td>5</td>
+					<td>4</td>
+					<td>3</td>
+					<td>2</td>
+					<td>1</td>
+				</tr>
+				<tr>
+					<td>Verbal Skills</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.verbal_skills %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>	
+						{% endif %}
+					{% endfor %}
+				</tr>
+			</table>
+			<table class="table table-bordered table-condensed">
+				<tr>
+					<td colspan="2">SCALE :</td>
+				</tr>
+				<tr>
+					<td>1</td>
+					<td>Excellent</td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>Very Good</td>
+				</tr>
+				<tr>
+					<td>3</td>
+					<td>Good</td>
+				</tr>
+				<tr>
+					<td>4</td>
+					<td>Fair</td>
+				</tr>
+				<tr>
+					<td>5</td>
+					<td>Poor</td>
+				</tr>
+			</table>
+			<table class="table table-bordered table-condensed">
+				<tr class="table-heading-row">
+					<td>{{ _("AFFECTIVE DOMAIN") }}</td>
+					<td>5</td>
+					<td>4</td>	
+					<td>3</td>
+					<td>2</td>
+					<td>1</td>
+				</tr>
+				<tr>
+					<td>Verbal Skills</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.verbal_skills %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Punctuality</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.punctuality %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Mental Alertness</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.mental_alertness %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Neatness</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.verbal_skills %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Politeness</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.politeness %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Honesty</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.honesty %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+				<tr>
+					<td>Relationship with Peers</td>
+					{% for input in range(1, 6) %}
+						{% if input == remarks.peers_relationship %}
+							<td><p class="tick">&#x2714;</p></td>
+						{% else %}
+							<td></td>
+						{% endif %}
+					{% endfor %}
+				</tr>
+			</table>
+			<div class="row">
+				<div class="col-xs-6"><label>Overall Position: </label></div>
+				<div class="col-xs-6"><label>Class Position: </label></div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12">
+					<label>Academic Manager's Comments </label>
+					<p>
+						{{ remarks.comment }}
+					</p>
+				</div>
+				<div class="col-xs-12">
+					<label>Instructor's Comments </label>
+					<p>
+						It has survived not only five centuries, but also the leap into 
+						electronic typesetting, remaining essentially unchanged. 
+					</p>
+				</div>
+			</div>
+	</div>
+	</div>
+
+
+	<br>
+
+	<!-- <div class="row section-break pbi_avoid">
+		<div class="col-xs-6 column-break">
+			<h4>{{ _("Student Attendance")}}</h4> <br>
+			<div>
+				Present {{ doc.attendance.get("Present") if doc.attendance.get("Present") != None else '0' }} days
+				out of {{ doc.attendance.get("Present") + doc.attendance.get("Absent") }}
+			</div>
+		</div>
+
+		<div class="col-xs-6 column-break">
+			<h4>{{ _("Parents Teacher Meeting Attendance")}}</h4> <br>
+			<div>
+				Present {{ doc.parents_attendance if doc.parents_attendance != None else '0' }}
+				out of {{ doc.parents_meeting if doc.parents_meeting != None else '0' }}
+			</div>
+		</div>
+	</div> -->
+
+	{% if doc.assessment_terms %}
+	<div class="row section-break pb_before">
+		<div class="col-xs-12">
+			<p> {{ doc.assessment_terms }} </p>
+		</div>
+	</div>
+	{% endif %}
+</div>

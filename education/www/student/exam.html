@@ -1,0 +1,41 @@
+{% extends "www/student/base/base.html" %}
+{% set active_page = "exam" %}
+{% block dashboardinfo %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+	<h6 class="h4">Examination Schedule</h6>
+</div>
+
+<table class="table table-hover table-striped">
+	<thead>
+	  <tr>
+		<th scope="col">#</th>
+		<th scope="col">Subject</th>
+		<th scope="col">Examination Venue</th>
+		<th scope="col">Schedule Date</th>
+		<th scope="col">Start Time</th>
+		<th scope="col">End Time</th>
+		<th scope="col">Supervisor</th>
+		<th scope="col">CBT Link</th>
+	  </tr>
+	</thead>
+	<tbody>
+		{% for plan in assessment_plans %}
+			<tr>
+				<td>{{loop.index}}</td>
+				<td>{{plan.course}}</td>
+				<td>{{plan.room or '-'}}</td>
+				<td>{{plan.schedule_date or '-'}}</td>
+				<td>{{plan.from_time or '-'}}</td>
+				<td>{{plan.to_time or '-'}}</td>
+				<td>{{plan.supervisor or '-'}}</td>
+				{% if plan.cbt %}
+				<td><a href="/cbt/exam/?class={{plan.program}}&plan={{plan.name}}&cbt={{plan.cbt}}" class="btn btn-primary" >Start CBT</a></td>
+				{% else %}
+				<td>-</td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "templates/base.html" %}
+{% block title %}{{ content.name }}{% endblock %}
+
+{% block head_include %}
+	<style>
+		.lms-content {
+			line-height: 1.8em;
+		}
+
+		.lms-content h1 {
+			margin-top: 1em;
+		}
+
+		.lms-content h2 {
+			margin-top: 1em;
+		}
+
+		.lms-content h3 {
+			margin-top: 0.8em;
+		}
+
+		.lms-content h4 {
+			margin-top: 0.6em;
+		}
+
+		section {
+			padding: 5rem 0 5rem 0;
+		}
+		.plyr--video .plyr__control.plyr__tab-focus,
+		.plyr--video .plyr__control:hover,
+		.plyr--video .plyr__control[aria-expanded='true'] {
+			 background: #5e64ff !important;
+		}
+
+		.plyr__control--overlaid:focus,
+		.plyr__control--overlaid:hover {
+		  background: #5e64ff !important;
+		}
+
+		.plyr__menu__container .plyr__control[role=menuitemradio][aria-checked=true]::before {
+    		background: #5e64ff !important;
+		}
+
+		.plyr__menu__container
+		.plyr__control[role='menuitemradio'][aria-checked='true']::before {
+		  background: #5e64ff;
+		}
+		.plyr--full-ui input[type='range'] {
+		  color: #5e64ff !important;
+		}
+
+		.plyr__control--overlaid {
+			background: rgba(94, 100, 255, 0.8) !important;
+		}
+	</style>
+	<link rel="stylesheet" href="https://cdn.plyr.io/3.5.3/plyr.css" />
+{% endblock %}
+
+{% macro title() %}
+	<!-- <div class="mb-3">
+		<a href="/cbt/plan?class={{ program }}" class="text-muted">
+			{{_('Back to CBTs')}}
+		</a>
+	</div> -->
+	<div class="card-body lms-title row">
+		<div class="col-7">
+			<h5 class="h4">CBT Portal</h5>
+			<h6 class="h6 mt-4">{{ content.name }}</h6>
+		</div>
+
+		<div class="col-5">
+			<h6 class="lms-timer fond-weight-bold hide h6 text-danger"></h6>
+			<select id="lms-select" class="custom-select custom-select-lg">Go To</select>
+			<p>Jump To</p>
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro navigation() %}
+			<a href="/app" class='btn text-muted' style="box-shadow: none;">{{ _('Back to CBTs') }}</a>
+
+{% endmacro %}
+
+{% macro quiz() %}
+
+<div class="card mb-5">
+	{{ title() }}
+</div>
+<div class="card">
+	<div id="quiz-wrapper" class="card-body">
+	</div>
+</div>
+
+{% endmacro %}
+
+{% block content %}
+<section class="section p-2">
+	<div class="jumbotron">
+		<div class='container pb-5'>
+			{% if content.is_active %}
+					{{ quiz() }}
+				<div class="pull-right" {{ 'hidden' if content_type=='Quiz'}}>
+					{{ navigation() }}
+				</div>
+			{% else %}
+				<h4 class="h4">This CBT is not currently active. Please contact the administrator</h4>
+			{% endif %}
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block script %}
+	<script src='/assets/education/js/cbt/exam.js'></script>
+	<script>
+		{% if content.is_active %}
+			const quiz_exit_button = 'View Exams'
+			
+			frappe.ready(() => {
+					var duration = get_duration("{{content.duration}}")
+					var d = frappe.msgprint({
+						title: __('Important Notice'),
+						indicator: "red",
+						message: __(`This is a Time-Bound Examination. <br><br>
+						A timer for <b>${duration}</b> will start, once you click on <b>Proceed</b>. <br><br>
+						If you fail to submit before the time is up, the Examination will be submitted automatically.`),
+						primary_action: {
+							label: __("Proceed"),
+							action: () => {
+								create_quiz();
+								d.hide();
+        					}
+						},
+						secondary_action: {
+							action: () => {
+								d.hide();
+								window.location.href = "/cbt";
+							},
+							label: __("Go Back"),
+						}
+					});
+				{% else %}
+					create_quiz();
+				{% endif %}
+				function create_quiz() {
+					const quiz = new CBT(document.getElementById('quiz-wrapper'), {
+						name: '{{ content.name }}',
+						course: '{{ course }}',
+						program: '{{ program }}',
+						quiz_exit_button: quiz_exit_button,
+						next_url: "#"
+					})
+					window.quiz = quiz;
+				}
+				function get_duration(seconds){
+					var hours = append_zero(Math.floor(seconds / 3600));
+					var minutes = append_zero(Math.floor(seconds % 3600 / 60));
+					var seconds = append_zero(Math.floor(seconds % 3600 % 60));
+					return `${hours}:${minutes}:${seconds}`;
+				}
+				function append_zero(time) {
+					return time > 9 ? time : "0" + time;
+				}
+			})
+
+		{% if content_type != 'Quiz' %}
+
+		frappe.ready(() => {
+			next = document.getElementById('nextButton')
+			next.disabled = false;
+		})
+
+
+		function handle(url) {
+			opts = {
+				method: "education.education.utils.add_activity",
+				args: {
+					course: "{{ course }}",
+					content_type: "{{ content_type }}",
+					content: "{{ content.name }}",
+					program: "{{ program }}"
+				}
+			}
+			frappe.call(opts).then(res => {
+				window.location.href = url;
+			})
+		}
+
+		{% endif %}
+	</script>
+{% endblock %}

@@ -280,7 +280,7 @@ def get_assessment_criteria(course):
 	:param Course: Course
 	"""
 	return frappe.get_all(
-		"Course Assessment Criteria",
+		"Subject Assessment Criteria",
 		fields=["assessment_criteria", "weightage"],
 		filters={"parent": course},
 		order_by="idx",

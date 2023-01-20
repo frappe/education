@@ -1,0 +1,45 @@
+{
+ "actions": [],
+ "creation": "2023-01-19 09:03:51.986812",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "question",
+  "selected_option"
+ ],
+ "fields": [
+  {
+   "fieldname": "question",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Question",
+   "options": "Question",
+   "read_only": 1,
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "selected_option",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Selected Option",
+   "read_only": 1,
+   "set_only_once": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2023-01-19 09:03:51.986812",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "CBT Selection",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

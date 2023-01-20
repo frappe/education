@@ -5,10 +5,11 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "program",
   "student",
   "student_name",
-  "program",
-  "student_batch",
+  "include_all_assessment",
+  "include_assessment_criteria",
   "column_break_3",
   "assessment_group",
   "academic_year",
@@ -41,15 +42,9 @@
    "fieldname": "program",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Program",
-   "options": "Program",
+   "label": "Class",
+   "options": "Class",
    "reqd": 1
-  },
-  {
-   "fieldname": "student_batch",
-   "fieldtype": "Link",
-   "label": "Batch",
-   "options": "Student Batch Name"
   },
   {
    "default": "0",
@@ -126,12 +121,24 @@
   {
    "fieldname": "column_break_15",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "include_all_assessment",
+   "fieldtype": "Check",
+   "label": "Include All Assessment Group"
+  },
+  {
+   "default": "0",
+   "fieldname": "include_assessment_criteria",
+   "fieldtype": "Check",
+   "label": "Include Assessment Criteria"
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-12-07 17:53:40.391739",
+ "modified": "2023-01-18 21:52:52.766485",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Report Generation Tool",
@@ -145,7 +152,6 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

@@ -106,7 +106,7 @@
    "fieldtype": "Link",
    "label": "Course Schedule",
    "mandatory_depends_on": "eval:doc.attendance_based_on === \"Course Schedule\";",
-   "options": "Course Schedule"
+   "options": "Subject Schedule"
   },
   {
    "fieldname": "column_break_11",
@@ -121,7 +121,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-21 18:10:24.440660",
+ "modified": "2023-01-14 16:36:48.453328",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Leave Application",
@@ -157,9 +157,9 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

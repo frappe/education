@@ -46,7 +46,7 @@
    "label": "Program",
    "oldfieldname": "earning_name",
    "oldfieldtype": "Data",
-   "options": "Program",
+   "options": "Class",
    "search_index": 1
   },
   {
@@ -159,7 +159,7 @@
  "icon": "fa fa-flag",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-06-16 15:34:57.295010",
+ "modified": "2023-01-14 16:40:08.886646",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Structure",
@@ -207,9 +207,9 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "search_fields": "program, student_category, academic_year",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "program"
 }

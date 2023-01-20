@@ -43,14 +43,14 @@
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
-   "options": "Program"
+   "options": "Class"
   },
   {
    "fetch_from": "assessment_plan.course",
    "fieldname": "course",
    "fieldtype": "Link",
    "label": "Course",
-   "options": "Course"
+   "options": "Subject"
   },
   {
    "fetch_from": "assessment_plan.academic_year",
@@ -173,7 +173,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-08-03 11:47:54.119489",
+ "modified": "2023-01-14 16:39:35.252945",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",
@@ -195,9 +195,9 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

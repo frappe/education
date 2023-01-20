@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-18 21:58:57.219517",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student_group",
+  "student_name",
+  "student",
+  "attainable_marks",
+  "total_marks",
+  "student_group_position",
+  "overall_position"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student Group",
+   "options": "Student Group",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student",
+   "options": "Student",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "attainable_marks",
+   "fieldtype": "Data",
+   "label": "Marks Attainable ",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_marks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Total Marks",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_group_position",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Group Position",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "overall_position",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Overall Position",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-01-18 21:58:57.219517",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Student Assessment Report Information",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

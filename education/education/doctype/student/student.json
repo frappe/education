@@ -37,6 +37,7 @@
   "state",
   "country",
   "section_break_18",
+  "parent_marital_status",
   "guardians",
   "section_break_20",
   "siblings",
@@ -109,7 +110,7 @@
    "fieldname": "student_mobile_number",
    "fieldtype": "Data",
    "in_global_search": 1,
-   "label": "Student Mobile Number"
+   "label": "Primary Mobile Number"
   },
   {
    "default": "Today",
@@ -257,11 +258,17 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Student Name"
+  },
+  {
+   "fieldname": "parent_marital_status",
+   "fieldtype": "Select",
+   "label": "Parent Marital Status",
+   "options": "Married\nSingle\nDivorced\nWidowed"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-02 12:01:10.538542",
+ "modified": "2023-01-14 16:50:48.918691",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -304,7 +311,6 @@
    "share": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

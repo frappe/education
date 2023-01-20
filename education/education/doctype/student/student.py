@@ -98,7 +98,7 @@ class Student(Document):
 					"last_name": self.last_name,
 					"email": self.student_email_id,
 					"gender": self.gender,
-					"send_welcome_email": 1,
+					"send_welcome_email": 0,
 					"user_type": "Website User",
 				}
 			)

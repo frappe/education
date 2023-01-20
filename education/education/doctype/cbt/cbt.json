@@ -1,0 +1,182 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{title} {DD}-{MM}-{YY}",
+ "creation": "2023-01-19 09:00:43.275725",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "questions",
+  "quiz_configuration_section",
+  "passing_score",
+  "max_attempts",
+  "randomize_questions",
+  "prevent_tab_change",
+  "is_active",
+  "column_break_7",
+  "duration",
+  "grading_basis",
+  "amended_from",
+  "preview_url"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "questions",
+   "fieldtype": "Table",
+   "label": "Question",
+   "options": "CBT Question",
+   "reqd": 1
+  },
+  {
+   "fieldname": "quiz_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "CBT Configuration"
+  },
+  {
+   "default": "75",
+   "description": "Score out of 100",
+   "fieldname": "passing_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Passing Score",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "description": "Enter 0 to waive limit",
+   "fieldname": "max_attempts",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Max Attempts",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "randomize_questions",
+   "fieldtype": "Check",
+   "label": "Randomize Questions"
+  },
+  {
+   "default": "1",
+   "fieldname": "prevent_tab_change",
+   "fieldtype": "Check",
+   "label": "Prevent Tab Change"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Active",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Duration",
+   "label": "Duration",
+   "reqd": 1
+  },
+  {
+   "default": "Latest Highest Score",
+   "fieldname": "grading_basis",
+   "fieldtype": "Select",
+   "label": "Grading Basis",
+   "options": "Latest Highest Score\nLatest Attempt"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "CBT",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "preview_url",
+   "fieldtype": "Data",
+   "label": "URL ",
+   "read_only": 1,
+   "unique": 1
+  }
+ ],
+ "links": [],
+ "modified": "2023-01-19 11:23:30.880810",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "CBT",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "LMS User",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Instructor",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_views": 1
+}

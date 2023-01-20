@@ -28,7 +28,7 @@
    "fieldname": "enrollment",
    "fieldtype": "Link",
    "label": "Enrollment",
-   "options": "Course Enrollment",
+   "options": "Subject Enrollment",
    "set_only_once": 1
   },
   {
@@ -49,7 +49,7 @@
    "fieldname": "course",
    "fieldtype": "Link",
    "label": "Course",
-   "options": "Course",
+   "options": "Subject",
    "read_only": 1,
    "set_only_once": 1
   },
@@ -116,7 +116,7 @@
   }
  ],
  "links": [],
- "modified": "2020-12-24 15:41:20.085380",
+ "modified": "2023-01-14 16:35:50.325692",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Quiz Activity",
@@ -159,5 +159,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

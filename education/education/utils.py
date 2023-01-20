@@ -2,7 +2,7 @@
 
 import frappe
 from frappe import _
-
+import random
 
 class OverlapError(frappe.ValidationError):
 	pass
@@ -100,14 +100,14 @@ def get_enrollment(master, document, student):
 	Returns:
 	        string: Enrollment Name if exists else returns empty string
 	"""
-	if master == "program":
+	if master == "class":
 		enrollments = frappe.get_all(
-			"Program Enrollment",
+			"Class Enrollment",
 			filters={"student": student, "program": document, "docstatus": 1},
 		)
-	if master == "course":
+	if master == "subject":
 		enrollments = frappe.get_all(
-			"Course Enrollment", filters={"student": student, "course": document}
+			"Subject Enrollment", filters={"student": student, "course": document}
 		)
 
 	if enrollments:
@@ -177,6 +177,25 @@ def has_super_access():
 		}
 	)
 
+@frappe.whitelist()
+def is_creator_or_super_user(owner):
+	"""Check if user has a role that allows full access to LMS
+
+	Returns:
+	        bool: true if user has access to all lms content
+	"""
+	current_user = frappe.get_doc("User", frappe.session.user)
+	if current_user == owner:
+		return True
+	roles = set([role.role for role in current_user.roles])
+	return bool(
+		roles
+		& {
+			"Administrator",
+			"Education Manager",
+			"System Manager",
+		}
+	)
 
 @frappe.whitelist()
 def add_activity(course, content_type, content, program):
@@ -196,6 +215,46 @@ def add_activity(course, content_type, content, program):
 	else:
 		return enrollment.add_activity(content_type, content)
 
+
+def get_portal_programs():
+	"""Returns a list of all program to be displayed on the portal
+	Programs are returned based on the following logic
+	        is_published and (student_is_enrolled or student_can_self_enroll)
+
+	Returns:
+	        list of dictionary: List of all programs and to be displayed on the portal along with access rights
+	"""
+	published_programs = frappe.get_all("Class", filters={"is_published": True})
+	if not published_programs:
+		return None
+
+	program_list = [frappe.get_doc("Class", program) for program in published_programs]
+	portal_programs = [
+		{"program": program, "has_access": allowed_program_access(program.name)}
+		for program in program_list
+		if allowed_program_access(program.name) or program.allow_self_enroll
+	]
+	return portal_programs
+
+
+def allowed_program_access(program, student=None):
+	"""Returns enrollment status for current student
+
+	Args:
+	        program (string): Name of the program
+	        student (object): instance of Student document
+
+	Returns:
+	        bool: Is current user enrolled or not
+	"""
+	if has_super_access():
+		return True
+	if not student:
+		student = get_current_student()
+	if student and get_enrollment("class", program, student.name):
+		return True
+	else:
+		return False
 
 @frappe.whitelist()
 def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
@@ -220,6 +279,129 @@ def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
 		else:
 			return None
 
+@frappe.whitelist()
+def get_current_cbt(cbt_name, subject):
+	try:
+		cbt = frappe.get_doc("CBT", cbt_name)
+
+		if not has_super_access():
+			student = get_current_student()
+			enrollment = get_enrollment("subject", subject, student.name)
+
+			if frappe.db.count("CBT Activity", {"cbt": cbt_name, "enrollment": enrollment}) >= cbt.max_attempts:
+				frappe.throw(_("You have exceeded the allowed attempts for {0} ").format(cbt_name), frappe.LinkValidationError)
+		if frappe.db.exists({"doctype": "Current CBT", "user": frappe.session.user, "cbt": cbt_name}):
+			current_cbt_exam = frappe.get_last_doc("Current CBT", filters={"cbt": cbt_name, "user": frappe.session.user})
+		else:
+			# change order of questions if randomize questions flag = True
+			if cbt.randomize_questions:
+				random.shuffle(cbt.questions)
+			doc = frappe.get_doc({
+    				'doctype': 'Current CBT',
+    				'cbt': cbt_name,
+					'user': frappe.session.user,
+					'time_left': cbt.duration,
+					'questions': cbt.questions,
+					'current_question': 1
+				})
+			doc.insert()
+			current_cbt_exam = doc
+		question, selected_option = current_cbt_exam.get_question()
+	except Exception as e:
+		frappe.throw(_("Something went wrong CBT {0} ").format(cbt_name), frappe.DoesNotExistError)
+		return None
+
+	formatted_question = {
+			"name": question.name,
+			"question": question,
+			"type": question.question_type,
+			"options": [{"name": option.name, "option": option.option} for option in question.options],
+		}
+
+	if has_super_access():
+		return {
+			"question": formatted_question,
+			"activity": None,
+			"is_time_bound": True,
+			"prevent_tab_change": True if cbt.prevent_tab_change else False,
+			"duration":  current_cbt_exam.time_left,
+			"current_cbt": current_cbt_exam.name,
+			"total_questions": len(current_cbt_exam.questions),
+			"current_question": current_cbt_exam.current_question,
+			"selected_option": selected_option
+		}
+
+	student = get_current_student()
+	subject_enrollment = get_enrollment("subject", subject, student.name)
+	if subject_enrollment:
+		return {
+			"question": formatted_question,
+			"activity": None,
+			"is_time_bound": True,
+			"prevent_tab_change": True if cbt.prevent_tab_change else False,
+			"duration": current_cbt_exam.time_left,
+			"current_cbt": current_cbt_exam.name,
+			"total_questions": len(current_cbt_exam.questions),
+			"current_question": current_cbt_exam.current_question,
+			"selected_option": selected_option
+		}
+	else: 
+		return {"unenrolled": True}
+
+
+def get_or_create_subject_enrollment(course, program):
+	student = get_current_student()
+	course_enrollment = get_enrollment("subject", course, student.name)
+	if not course_enrollment:
+		program_enrollment = get_enrollment("class", program.name, student.name)
+		if not program_enrollment:
+			frappe.throw(_("You are not enrolled in program {0}").format(program))
+			return
+		return student.enroll_in_course(
+			course_name=course, program_enrollment=get_enrollment("class", program.name, student.name)
+		)
+	else:
+		return frappe.get_doc("Subject Enrollment", course_enrollment)
+
+@frappe.whitelist()
+def submit_question(response, question, current_cbt_name, subject, student_class, time_left, subsequent_question):
+	import json
+	cbt = frappe.get_doc("Current CBT", current_cbt_name)
+	if int(subsequent_question) == 0 or float(time_left) < 0: # zero signifies the end of the cbt exam
+		response = evaluate_exam(cbt.result, cbt.cbt, subject, student_class, time_left)
+		cbt.delete()
+		return response
+	elif response:	
+		for selection in cbt.result:
+			if question == selection.question:
+				cbt.remove(selection)
+		result = {"question": question, "selected_option": response}
+		cbt.append("result", result)
+	cbt.current_question = subsequent_question if subsequent_question else 1
+	cbt.time_left = time_left
+	cbt.save()
+	return cbt
+
+@frappe.whitelist()
+def evaluate_exam(cbt_selection, cbt_name, subject, student_class, time_left):
+	selections = {selection.question: selection.selected_option for selection in cbt_selection}
+
+	cbt = frappe.get_doc("CBT", cbt_name)
+	result, score, status = cbt.evaluate(selections)
+
+	if has_super_access():
+		return {"result": result, "score": score, "status": status}
+
+	student = get_current_student()
+
+	if student:
+		enrollment = get_or_create_subject_enrollment(subject, student_class)
+		if cbt.allowed_attempt(enrollment, cbt_name):
+			time_taken = cbt.duration - float(time_left)
+			enrollment.add_cbt_activity(cbt_name, selections, result, score, status, time_taken)
+			return {"result": result, "score": score, "status": status}
+		else:
+			return None
 
 @frappe.whitelist()
 def get_quiz(quiz_name, course):

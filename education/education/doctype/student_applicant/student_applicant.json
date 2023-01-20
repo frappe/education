@@ -71,7 +71,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Program",
-   "options": "Program",
+   "options": "Class",
    "reqd": 1
   },
   {
@@ -262,7 +262,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-12-12 15:34:07.621051",
+ "modified": "2023-01-14 16:40:17.287109",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
@@ -286,7 +286,6 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

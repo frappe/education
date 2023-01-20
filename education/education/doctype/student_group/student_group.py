@@ -150,7 +150,7 @@ def get_program_enrollment(
 		select
 			pe.student, pe.student_name
 		from
-			`tabProgram Enrollment` pe {condition2}
+			`tabClass Enrollment` pe {condition2}
 		where
 			pe.academic_year = %(academic_year)s  
 			and pe.docstatus = 1 {condition1}

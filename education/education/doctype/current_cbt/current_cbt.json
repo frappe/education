@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-19 09:04:36.703433",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "cbt",
+  "time_left",
+  "questions",
+  "current_question",
+  "result"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cbt",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Exam",
+   "options": "CBT",
+   "reqd": 1
+  },
+  {
+   "fieldname": "time_left",
+   "fieldtype": "Duration",
+   "label": "Time Left"
+  },
+  {
+   "fieldname": "questions",
+   "fieldtype": "Table",
+   "label": "Questions",
+   "options": "CBT Question"
+  },
+  {
+   "fieldname": "current_question",
+   "fieldtype": "Int",
+   "label": "Current Question"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Table",
+   "label": "Result",
+   "options": "CBT Selection"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-01-19 09:04:36.703433",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Current CBT",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

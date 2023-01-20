@@ -19,7 +19,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Program",
-   "options": "Program"
+   "options": "Class"
   },
   {
    "fieldname": "column_break_4",
@@ -59,15 +59,15 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-10-05 13:03:42.005985",
+ "modified": "2023-01-14 16:40:14.840501",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Admission Program",
  "owner": "Administrator",
  "permissions": [],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

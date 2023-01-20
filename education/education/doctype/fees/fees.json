@@ -152,7 +152,7 @@
    "fieldname": "program_enrollment",
    "fieldtype": "Link",
    "label": "Program Enrollment",
-   "options": "Program Enrollment"
+   "options": "Class Enrollment"
   },
   {
    "fieldname": "program",
@@ -160,7 +160,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Program",
-   "options": "Program",
+   "options": "Class",
    "reqd": 1
   },
   {
@@ -340,7 +340,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-08-05 14:05:47.728400",
+ "modified": "2023-01-14 16:44:08.526279",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
@@ -386,10 +386,10 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "search_fields": "student, student_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

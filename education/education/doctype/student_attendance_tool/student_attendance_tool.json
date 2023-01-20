@@ -51,7 +51,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Course Schedule",
-   "options": "Course Schedule",
+   "options": "Subject Schedule",
    "reqd": 1
   },
   {
@@ -93,7 +93,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2020-10-23 17:52:28.078971",
+ "modified": "2023-01-14 16:36:46.168296",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance Tool",
@@ -112,7 +112,7 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }

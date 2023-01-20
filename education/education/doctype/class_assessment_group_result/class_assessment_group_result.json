@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "autoname": "format:{program}_{assessment_group}_{academic_year}",
+ "creation": "2023-01-18 22:00:51.369483",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "program",
+  "assessment_group",
+  "column_break_3",
+  "academic_year",
+  "section_break_5",
+  "calculate_marks",
+  "students",
+  "subjects"
+ ],
+ "fields": [
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Class",
+   "options": "Class",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "label": "Assessment Group",
+   "options": "Assessment Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:(doc.program && doc.assessment_group && doc.academic_year);",
+   "fieldname": "calculate_marks",
+   "fieldtype": "Button",
+   "label": "Calculate Marks"
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Student Assessment Report Information",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subjects",
+   "fieldtype": "Table",
+   "label": "Subjects",
+   "options": "Subject Assessment Report Information",
+   "reqd": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "links": [],
+ "modified": "2023-01-18 22:19:57.702282",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Class Assessment Group Result",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Education Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

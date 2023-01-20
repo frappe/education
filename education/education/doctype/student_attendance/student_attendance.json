@@ -35,7 +35,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Course Schedule",
-   "options": "Course Schedule"
+   "options": "Subject Schedule"
   },
   {
    "fieldname": "date",
@@ -106,7 +106,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-03-24 00:02:11.005896",
+ "modified": "2023-01-14 16:36:43.126547",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",
@@ -127,8 +127,8 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

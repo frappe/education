@@ -1,0 +1,138 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-16 10:08:04.853939",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_1",
+  "assessment_group",
+  "student_class",
+  "subjects",
+  "column_break_5",
+  "grading_scale",
+  "student_groups",
+  "academic_year",
+  "academic_term",
+  "evaluate_section",
+  "maximum_assessment_score",
+  "assessment_criteria",
+  "section_break_13",
+  "generate_plans"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assessment Group",
+   "options": "Assessment Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_class",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Class",
+   "options": "Class",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subjects",
+   "fieldtype": "Table MultiSelect",
+   "label": "Subject",
+   "options": "Select Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "grading_scale",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Grading Scale",
+   "options": "Grading Scale",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_groups",
+   "fieldtype": "Table MultiSelect",
+   "label": "Student Group",
+   "options": "Select Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evaluate_section",
+   "fieldtype": "Section Break",
+   "label": "Evaluate"
+  },
+  {
+   "fieldname": "maximum_assessment_score",
+   "fieldtype": "Float",
+   "label": "Maximum Assessment Score",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assessment_criteria",
+   "fieldtype": "Table",
+   "label": "Assessment Criteria",
+   "options": "Assessment Plan Criteria",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "generate_plans",
+   "fieldtype": "Button",
+   "label": "Generate Plans"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-01-16 10:08:04.853939",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Assessment Plan Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

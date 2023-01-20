@@ -77,7 +77,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Program",
-   "options": "Program",
+   "options": "Class",
    "reqd": 1
   },
   {
@@ -143,7 +143,7 @@
    "fieldname": "courses",
    "fieldtype": "Table",
    "label": "Courses",
-   "options": "Program Enrollment Course"
+   "options": "Class Enrollment Subject"
   },
   {
    "collapsible": 1,
@@ -176,7 +176,7 @@
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2020-09-15 18:12:11.988567",
+ "modified": "2023-01-14 16:39:48.714783",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",
@@ -210,9 +210,9 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

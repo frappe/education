@@ -1,0 +1,35 @@
+{% extends "www/student/base/base.html" %}
+{% set active_page = "cbt_results" %}
+{% block dashboardinfo %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+	<h6 class="h4">CBT Activity</h6>
+</div>
+
+<table class="table table-hover table-striped">
+	<thead>
+	  <tr>
+		<th scope="col">#</th>
+		<th scope="col">Subject</th>
+		<th scope="col">CBT</th>
+		<th scope="col">Status</th>
+		<th scope="col">Score</th>
+		<th scope="col">Duration</th>
+		<th scope="col">Date</th>
+	  </tr>
+	</thead>
+	<tbody>
+		{% for result in results %}
+			<tr>
+				<td>{{loop.index}}</td>
+				<td>{{result.course}}</td>
+				<td>{{result.cbt or '-'}}</td>
+				<td>{{result.status or '-'}}</td>
+				<td>{{result.score or '-'}}</td>
+				<td>{{result.time_taken or '-'}}</td>
+				<td>{{result.activity_date or '-'}}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

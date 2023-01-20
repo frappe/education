@@ -1,0 +1,95 @@
+{% extends "templates/base.html" %}
+{% block title %}{{ program }} CBT{% endblock %}
+{% from "www/lms/macros/hero.html" import hero %}
+{% from "www/lms/macros/card.html" import null_card %}
+
+{% block head_include %}
+	<style>
+		div.card-hero-img {
+			height: 220px;
+			background-size: cover;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-color: rgb(250, 251, 252);
+		}
+
+		.card-image-wrapper {
+			display: flex;
+			overflow: hidden;
+			height: 220px;
+			background-color: rgb(250, 251, 252);
+			justify-content: center;
+		}
+
+		.image-body {
+			align-self: center;
+			color: #d1d8dd;
+			font-size: 24px;
+			font-weight: 600;
+			line-height: 1;
+			padding: 20px;
+		}
+		section {
+			padding: 5rem 0 5rem 0;
+		}
+	</style>
+{% endblock %}
+
+
+{% macro card(plan) %}
+<div class="col-sm-4 mb-4 text-left">
+	<div class="card h-100">
+		{% if has_access %}
+			<a href="/cbt/exam/?class={{ program }}&plan={{ plan.name }}&cbt={{plan.cbt}}" class="no-decoration no-underline">
+		{% else %}
+			<a href="/login#login">
+		{% endif %}
+			<div class="card-image-wrapper text-center">
+				<div class="image-body"><i class="fa fa-picture-o" aria-hidden="true"></i></div>
+			</div>
+			<div class='card-body'>
+				<h5 class='card-title'>{{ plan.name }}</h5>
+				<div>
+					<ol class="list-unstyled">
+						<li>
+							{% if plan.cbt %}
+								<a class="text-muted" href="/cbt/exam/?class={{ program }}&plan={{ plan.name }}&test={{plan.cbt}}">
+									{{ plan.cbt }}
+								</a>
+							{% else %}
+								<span class="text-muted">No CBT exam for this subject</span>
+							{% endif %}
+							<span class="text-muted">{{plan.schedule_date.date}} {{plan.schedule_date.time}}</span>
+							<span class="text-muted">{{plan.room}}</span>
+						</li>
+					</ol>
+				</div>
+			</div>
+		{% if has_access %}
+			<div class='card-footer'>
+					<span class="indicator blue">{{_('Start')}}</span>
+			</div>
+			</a>
+		{% else %}
+			</a>
+		{% endif %}
+	</div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<section class="section">
+	<div class='container'>
+		<div class="row mt-5">
+			{% for plan in plans %}
+				{{ card(plan) }}
+			{% endfor %}
+			{% if plans %}
+				{% for n in range( (3 - (topics|length)) %3) %}
+					{{ null_card() }}
+				{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+</section>
+{% endblock %}

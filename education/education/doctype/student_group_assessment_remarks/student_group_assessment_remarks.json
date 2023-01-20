@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "autoname": "format:{student_group}-{assessment_group}",
+ "creation": "2023-01-19 00:07:56.306443",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student_group",
+  "assessment_group",
+  "column_break_3",
+  "student_class",
+  "academic_year",
+  "section_break_5",
+  "get_students",
+  "students"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student Group",
+   "options": "Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "label": "Assessment Group",
+   "options": "Assessment Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "student_group.program",
+   "fieldname": "student_class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Class",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:(doc.student_group && doc.assessment_group && doc.academic_year);",
+   "fieldname": "get_students",
+   "fieldtype": "Button",
+   "label": "Get students"
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Student Assessment Remark Information",
+   "reqd": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "links": [],
+ "modified": "2023-01-19 00:07:56.306443",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Student Group Assessment Remarks",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Education Manager",
+   "select": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Instructor",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

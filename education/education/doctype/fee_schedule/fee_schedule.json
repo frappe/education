@@ -97,7 +97,7 @@
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
-   "options": "Program",
+   "options": "Class",
    "read_only": 1
   },
   {
@@ -273,7 +273,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-07-18 05:11:49.905457",
+ "modified": "2023-01-14 16:40:01.838362",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
@@ -321,7 +321,7 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }

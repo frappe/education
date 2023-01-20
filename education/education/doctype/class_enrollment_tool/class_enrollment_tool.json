@@ -1,0 +1,143 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "creation": "2016-06-10 03:01:05.178956",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "get_students_from",
+  "program",
+  "student_batch",
+  "column_break_3",
+  "academic_year",
+  "academic_term",
+  "section_break_5",
+  "get_students",
+  "students",
+  "section_break_7",
+  "new_class",
+  "new_student_batch",
+  "enroll_students",
+  "column_break_12",
+  "new_academic_year",
+  "new_academic_term"
+ ],
+ "fields": [
+  {
+   "fieldname": "get_students_from",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Get Students From",
+   "options": "\nStudent Applicant\nProgram Enrollment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Class",
+   "options": "Class",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "label": "Student Batch",
+   "options": "Student Batch Name"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "get_students",
+   "fieldtype": "Button",
+   "label": "Get Students"
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Class Enrollment Tool Student"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break",
+   "label": "Enrollment Details"
+  },
+  {
+   "fieldname": "new_student_batch",
+   "fieldtype": "Link",
+   "label": "New Student Batch",
+   "options": "Student Batch Name"
+  },
+  {
+   "fieldname": "enroll_students",
+   "fieldtype": "Button",
+   "label": "Enroll Students"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
+   "fieldname": "new_academic_year",
+   "fieldtype": "Link",
+   "label": "New Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
+   "fieldname": "new_academic_term",
+   "fieldtype": "Link",
+   "label": "New Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
+   "fieldname": "new_class",
+   "fieldtype": "Link",
+   "label": "New Class",
+   "options": "Class"
+  }
+ ],
+ "hide_toolbar": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-01-15 17:17:35.853334",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Class Enrollment Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Education Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
