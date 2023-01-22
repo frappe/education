@@ -9,15 +9,11 @@
  "engine": "InnoDB",
  "field_order": [
   "academic_year",
-  "group_based_on",
   "student_group_name",
-  "max_strength",
   "column_break_3",
   "academic_term",
   "program",
-  "batch",
-  "student_category",
-  "course",
+  "max_strength",
   "disabled",
   "section_break_6",
   "get_students",
@@ -29,22 +25,16 @@
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Academic Year",
    "options": "Academic Year",
    "reqd": 1
   },
   {
-   "fieldname": "group_based_on",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Group Based on",
-   "options": "\nBatch\nCourse\nActivity",
-   "reqd": 1
-  },
-  {
    "fieldname": "student_group_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Student Group Name",
    "reqd": 1,
    "unique": 1
@@ -60,35 +50,13 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "academic_term",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Academic Term",
-   "options": "Academic Term"
-  },
-  {
    "fieldname": "program",
    "fieldtype": "Link",
    "in_global_search": 1,
+   "in_list_view": 1,
    "label": "Class",
-   "options": "Class"
-  },
-  {
-   "fieldname": "batch",
-   "fieldtype": "Link",
-   "in_global_search": 1,
-   "label": "Batch",
-   "options": "Student Batch Name"
-  },
-  {
-   "depends_on": "eval:doc.group_based_on == 'Course'",
-   "fieldname": "course",
-   "fieldtype": "Link",
-   "in_global_search": 1,
-   "in_standard_filter": 1,
-   "label": "Course",
-   "options": "Subject"
+   "options": "Class",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -126,14 +94,15 @@
    "options": "Student Group Instructor"
   },
   {
-   "fieldname": "student_category",
+   "fieldname": "academic_term",
    "fieldtype": "Link",
-   "label": "Student Category",
-   "options": "Student Category"
+   "hidden": 1,
+   "label": "Academic Term",
+   "options": "Academic Term"
   }
  ],
  "links": [],
- "modified": "2023-01-16 10:43:26.620862",
+ "modified": "2023-01-21 23:10:23.875757",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Group",
@@ -157,7 +126,7 @@
    "write": 1
   }
  ],
- "search_fields": "program, batch, course",
+ "search_fields": "program",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

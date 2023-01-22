@@ -614,3 +614,7 @@ def check_quiz_completion(quiz, enrollment_name):
 		if result == "Pass":
 			status = True
 	return status, score, result, time_taken
+
+def get_user_id_from_instructor(instructor_name):
+	employee_name = frappe.db.get_value("Instructor", instructor_name, "employee")
+	return frappe.db.get_value("Employee", employee_name, "user_id")

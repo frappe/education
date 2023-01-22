@@ -39,10 +39,9 @@ class ClassEnrollmentTool(Document):
 					self.as_dict(),
 					as_dict=1,
 				)
-			elif self.get_students_from == "Class Enrollment":
-				condition2 = "and student_batch_name=%(student_batch)s" if self.student_batch else " "
+			elif self.get_students_from == "Previous Class Enrollment":
 				students = frappe.db.sql(
-					"""select student, student_name, student_batch_name, student_category from `tabClass Enrollment`
+					"""select student, student_name from `tabClass Enrollment`
 					where program=%(program)s and academic_year=%(academic_year)s {0} {1} and docstatus != 2""".format(
 						condition, condition2
 					),
@@ -70,6 +69,8 @@ class ClassEnrollmentTool(Document):
 
 	@frappe.whitelist()
 	def enroll_students(self):
+		if not self.new_academic_year:
+			frappe.throw(_("Mandatory field - Academic Year"))
 		total = len(self.students)
 		for i, stud in enumerate(self.students):
 			frappe.publish_realtime(
@@ -79,22 +80,15 @@ class ClassEnrollmentTool(Document):
 				prog_enrollment = frappe.new_doc("Class Enrollment")
 				prog_enrollment.student = stud.student
 				prog_enrollment.student_name = stud.student_name
-				prog_enrollment.student_category = stud.student_category
 				prog_enrollment.program = self.new_class
 				prog_enrollment.academic_year = self.new_academic_year
 				prog_enrollment.academic_term = self.new_academic_term
-				prog_enrollment.student_batch_name = (
-					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
-				)
 				prog_enrollment.docstatus = 1 #ToDo: remove hard coded value
 				prog_enrollment.save()
 			elif stud.student_applicant:
 				prog_enrollment = enroll_student(stud.student_applicant)
 				prog_enrollment.academic_year = self.academic_year
 				prog_enrollment.academic_term = self.academic_term
-				prog_enrollment.student_batch_name = (
-					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
-				)
 				prog_enrollment.docstatus = 1 #ToDo: remove hard coded value
 				prog_enrollment.save()
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
