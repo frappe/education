@@ -2,13 +2,13 @@ cur_frm.add_fetch('student', 'title', 'student_name');
 
 frappe.ui.form.on('Student Group', {
 	onload: function(frm) {
-		frm.set_query('academic_term', function() {
-			return {
-				filters: {
-					'academic_year': (frm.doc.academic_year)
-				}
-			};
-		});
+		// frm.set_query('academic_term', function() {
+		// 	return {
+		// 		filters: {
+		// 			'academic_year': (frm.doc.academic_year)
+		// 		}
+		// 	};
+		// });
 		if (!frm.__islocal) {
 			frm.set_query('student', 'students', function() {
 				return{
@@ -83,52 +83,48 @@ frappe.ui.form.on('Student Group', {
 	},
 
 	get_students: function(frm) {
-		if (frm.doc.group_based_on == 'Batch' || frm.doc.group_based_on == 'Course') {
-			var student_list = [];
-			var max_roll_no = 0;
-			$.each(frm.doc.students, function(_i,d) {
-				student_list.push(d.student);
-				if (d.group_roll_number>max_roll_no) {
-					max_roll_no = d.group_roll_number;
-				}
-			});
-
-			if (frm.doc.academic_year) {
-				frappe.call({
-					method: 'education.education.doctype.student_group.student_group.get_students',
-					args: {
-						'academic_year': frm.doc.academic_year,
-						'academic_term': frm.doc.academic_term,
-						'group_based_on': frm.doc.group_based_on,
-						'program': frm.doc.program,
-						'batch' : frm.doc.batch,
-						'student_category' : frm.doc.student_category,
-						'course': frm.doc.course
-					},
-					callback: function(r) {
-						if (r.message) {
-							$.each(r.message, function(i, d) {
-								if(!in_list(student_list, d.student)) {
-									var s = frm.add_child('students');
-									s.student = d.student;
-									s.student_name = d.student_name;
-									if (d.active === 0) {
-										s.active = 0;
-									}
-									s.group_roll_number = ++max_roll_no;
-								}
-							});
-							refresh_field('students');
-							frm.save();
-						} else {
-							frappe.msgprint(__('Student Group is already updated.'))
-						}
-					}
-				})
+		var student_list = [];
+		var max_roll_no = 0;
+		$.each(frm.doc.students, function(_i,d) {
+			student_list.push(d.student);
+			if (d.group_roll_number>max_roll_no) {
+				max_roll_no = d.group_roll_number;
 			}
-		} else {
-			frappe.msgprint(__('Select students manually for the Activity based Group'));
+		});
+
+		if (frm.doc.academic_year) {
+			frappe.call({
+				method: 'education.education.doctype.student_group.student_group.get_students',
+				args: {
+					'academic_year': frm.doc.academic_year,
+					'academic_term': frm.doc.academic_term,
+					'group_based_on': frm.doc.group_based_on,
+					'program': frm.doc.program,
+					'student_category' : frm.doc.student_category,
+					'course': frm.doc.course
+				},
+				callback: function(r) {
+					if (r.message) {
+						$.each(r.message, function(i, d) {
+							if(!in_list(student_list, d.student)) {
+								var s = frm.add_child('students');
+								s.student = d.student;
+								s.student_name = d.student_name;
+								if (d.active === 0) {
+									s.active = 0;
+								}
+								s.group_roll_number = ++max_roll_no;
+							}
+						});
+						refresh_field('students');
+						frm.save();
+					} else {
+						frappe.msgprint(__('Student Group is already updated.'))
+					}
+				}
+			})
 		}
+
 	}
 });
 

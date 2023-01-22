@@ -38,6 +38,8 @@ frappe.ui.form.on('Assessment Plan Tool', {
 		frm.page.set_primary_action(__('Generate Plans'), () => {
 			frm.call('generate_plans')
 				.then(r => {
+					frm.set_value("subjects", []);
+					frm.set_value("student_groups", []);
 					if (!r.message) {
 						frappe.throw(__('There were errors generating Assessment Plans'));
 					}
@@ -78,10 +80,35 @@ frappe.ui.form.on('Assessment Plan Tool', {
 			method: "generate_plans",
 			doc:frm.doc,
 			callback: function(r) {
-				if (r.message){
-
-				}
+				frm.set_value("subjects", []);
+				frm.set_value("student_groups", []);
 				frappe.hide_msgprint(true);
+				if (!r.message) {
+					frappe.throw(__('There were errors generating Assessment Plans'));
+				}
+				const [total, plan_errors] = r.message;
+				if (plan_errors) {
+					const errors_html = plan_errors.map(c => `
+						<tr>
+						<td>${c}</td>
+						<td></td>
+						</tr>
+					`).join('');
+
+					const html = `
+						<table class="table table-bordered">
+							<caption>${total} ${__('Total Plans were created')}</caption>
+							<h5>Plan Errors</h5>
+							<thead><tr><th>${__("Subject")}</th><th>${__("")}</th></tr></thead>
+							<tbody>
+								
+								${errors_html}
+							</tbody>
+						</table>
+					`;
+
+					frappe.msgprint(html);
+				}
 			}
 		});
 	}
