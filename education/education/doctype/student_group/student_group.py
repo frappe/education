@@ -7,7 +7,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint
 
-from education.education.utils import validate_duplicate_student
+from education.education.utils import validate_duplicate_student, get_user_id_from_instructor
 
 
 class StudentGroup(Document):
@@ -49,17 +49,12 @@ class StudentGroup(Document):
 					_("{0} - {1} is inactive student").format(d.group_roll_number, d.student_name)
 				)
 		
-	# def on_update(self):
-	# 	for instructor in self.instructors:
-	# 		user_id = get_user_id_from_instructor(instructor.instructor)
-	# 		roles = frappe.get_roles(user_id)
-	# 		if frappe.db.exists("User Permission", {"allow": "Student Group", "for_value": self.name, "user": user_id}):
-	# 			continue
-	# 		elif "Education Manager" in roles:
-	# 			continue	
-	# 		else:
-	# 			frappe.get_doc("User", user_id).add_roles("Class Instructor")
-	# 			add_user_permission("Student Group", self.name, user_id)
+	def on_update(self):
+		for instructor in self.instructors:
+			user_id = get_user_id_from_instructor(instructor.instructor)
+			roles = frappe.get_roles(user_id)
+			if "Class Instructor" not in roles:
+				frappe.get_doc("User", user_id).add_roles("Class Instructor")
 
 
 	def validate_and_set_child_table_fields(self):
