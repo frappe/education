@@ -17,9 +17,8 @@ def get_context(context):
 	cbts = frappe.db.get_list('CBT', filters={
 		'preview_url': preview_code
 	}, fields=['name', 'owner'],)
-	print(cbts)
 	cbt = cbts[0]
-	has_program_access = utils.is_creator_or_super_user(cbt.owner)
+	has_program_access = utils.is_creator_or_super_user(cbt["owner"])
 
 	if not has_program_access:
 		frappe.local.flags.redirect_location = "/cbt"

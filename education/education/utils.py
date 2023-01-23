@@ -185,7 +185,7 @@ def is_creator_or_super_user(owner):
 	        bool: true if user has access to all lms content
 	"""
 	current_user = frappe.get_doc("User", frappe.session.user)
-	if current_user == owner:
+	if current_user.name == owner:
 		return True
 	roles = set([role.role for role in current_user.roles])
 	return bool(
