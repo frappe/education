@@ -48,7 +48,8 @@
    "fieldname": "program_abbreviation",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Class Abbreviation"
+   "label": "Class Abbreviation",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_5",
@@ -118,7 +119,7 @@
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2023-01-14 22:31:37.875464",
+ "modified": "2023-01-30 11:09:46.834809",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Class",

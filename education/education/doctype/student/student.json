@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "naming_series:",
+ "autoname": "YYYY-{admitted_class}-#####",
  "creation": "2015-09-07 13:00:55.938280",
  "doctype": "DocType",
  "document_type": "Document",
@@ -17,6 +17,8 @@
   "user",
   "column_break_4",
   "naming_series",
+  "admitted_class",
+  "class_abbrevation",
   "student_email_id",
   "student_mobile_number",
   "joining_date",
@@ -94,6 +96,7 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Naming Series",
    "no_copy": 1,
    "options": "EDU-STU-.YYYY.-",
@@ -264,15 +267,28 @@
    "fieldtype": "Select",
    "label": "Parent Marital Status",
    "options": "Married\nSingle\nDivorced\nWidowed"
+  },
+  {
+   "fieldname": "admitted_class",
+   "fieldtype": "Link",
+   "label": "Admitted Class",
+   "options": "Class"
+  },
+  {
+   "fetch_from": "admitted_class.program_abbreviation",
+   "fieldname": "class_abbrevation",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Class Abbreviation"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-14 16:50:48.918691",
+ "modified": "2023-01-30 11:09:15.985017",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
- "naming_rule": "By \"Naming Series\" field",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

@@ -17,7 +17,7 @@
   "column_break_3",
   "education",
   "occupation",
-  "designation",
+  "employer",
   "work_address",
   "image",
   "section_break_13",
@@ -30,10 +30,11 @@
    "fieldname": "guardian_name",
    "fieldtype": "Data",
    "in_global_search": 1,
-   "label": "Guardian Name",
+   "label": "Full Name",
    "reqd": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "email_address",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -41,6 +42,7 @@
    "label": "Email Address"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "mobile_number",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -74,14 +76,10 @@
    "label": "Education"
   },
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "occupation",
    "fieldtype": "Data",
    "label": "Occupation"
-  },
-  {
-   "fieldname": "designation",
-   "fieldtype": "Data",
-   "label": "Designation"
   },
   {
    "fieldname": "work_address",
@@ -117,11 +115,16 @@
    "fieldtype": "Table",
    "label": "Interests",
    "options": "Guardian Interest"
+  },
+  {
+   "fieldname": "employer",
+   "fieldtype": "Data",
+   "label": "Employer"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-14 15:46:31.333028",
+ "modified": "2023-01-30 11:00:03.213549",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Guardian",
