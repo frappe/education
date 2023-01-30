@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "YYYY-{admitted_class}-#####",
+ "autoname": "format:{YYYY}-{class_abbreviation}-{#####}",
  "creation": "2015-09-07 13:00:55.938280",
  "doctype": "DocType",
  "document_type": "Document",
@@ -18,7 +18,7 @@
   "column_break_4",
   "naming_series",
   "admitted_class",
-  "class_abbrevation",
+  "class_abbreviation",
   "student_email_id",
   "student_mobile_number",
   "joining_date",
@@ -81,7 +81,8 @@
    "fieldname": "last_name",
    "fieldtype": "Data",
    "in_global_search": 1,
-   "label": "Last Name"
+   "label": "Last Name",
+   "reqd": 1
   },
   {
    "fieldname": "user",
@@ -272,11 +273,12 @@
    "fieldname": "admitted_class",
    "fieldtype": "Link",
    "label": "Admitted Class",
-   "options": "Class"
+   "options": "Class",
+   "reqd": 1
   },
   {
    "fetch_from": "admitted_class.program_abbreviation",
-   "fieldname": "class_abbrevation",
+   "fieldname": "class_abbreviation",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Class Abbreviation"
@@ -284,11 +286,11 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-30 11:09:15.985017",
+ "modified": "2023-01-30 12:45:11.274684",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

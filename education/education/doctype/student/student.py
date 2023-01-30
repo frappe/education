@@ -9,7 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate, today
 
 from education.education.utils import (check_content_completion,
-                                       check_quiz_completion)
+                                       check_quiz_completion, get_custom_email)
 
 
 class Student(Document):
@@ -83,6 +83,12 @@ class Student(Document):
 					student[0][0], self.student_applicant
 				)
 			)
+
+	def before_validate(self):
+		if not self.student_email_id:
+			email = get_custom_email(self.first_name, self.last_name, self.middle_name)
+			self.student_email_id = email
+		
 
 	def after_insert(self):
 		if not frappe.get_single("Education Settings").get("user_creation_skip"):

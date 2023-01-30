@@ -197,6 +197,32 @@ def is_creator_or_super_user(owner):
 		}
 	)
 
+def get_custom_email(first_name, last_name, middle_name):
+	first_option = last_name + "." + first_name[0] + "@theconcordschool.org"
+	if not frappe.db.exists("User", first_option):
+		return first_option.strip().lower()
+	second_option = first_name + "_" + last_name[0][1] + "@theconcordschool.org"
+	if not frappe.db.exists("User", second_option):
+		return second_option.strip().lower()
+	third_option = first_name + "." +last_name[0][1] + "@theconcordschool.org"
+	if not frappe.db.exists("User", third_option):
+		return third_option.strip().lower()
+	fourth_option = first_name + "." + last_name[0][1] + "@theconcordschool.org"
+	if not frappe.db.exists("User", fourth_option):
+		return fourth_option.strip().lower()
+	fifth_option = first_name + "." +last_name + "@theconcordschool.org"
+	if not frappe.db.exists("User", fifth_option):
+		return fifth_option.strip().lower()
+	sixth_option = first_name + "_" +last_name + "@theconcordschool.org"
+	if not frappe.db.exists("User", sixth_option):
+		return sixth_option.strip().lower()
+	else:
+		frappe.throw(
+			_("Could not generate the student email address"),
+			frappe.DoesNotExistError,
+		)
+
+
 @frappe.whitelist()
 def add_activity(course, content_type, content, program):
 	if has_super_access():

@@ -34,11 +34,6 @@ frappe.ui.form.on('Student', {
 			});
 		}
 
-		frappe.db.get_value('Education Settings', {name: 'Education Settings'}, 'user_creation_skip', (r) => {
-			if (cint(r.user_creation_skip) !== 1) {
-				frm.set_df_property('student_email_id', 'reqd', 1);
-			}
-		});
 	}
 });
 
