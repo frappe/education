@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:title",
@@ -35,10 +36,12 @@
    "label": "Publish Date"
   }
  ],
- "modified": "2019-06-12 12:36:58.740340",
+ "links": [],
+ "modified": "2023-02-06 12:23:28.330556",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Article",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -64,18 +67,10 @@
    "role": "Instructor",
    "share": 1,
    "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "LMS User",
-   "share": 1
   }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

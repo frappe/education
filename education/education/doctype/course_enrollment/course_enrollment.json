@@ -70,7 +70,7 @@
   }
  ],
  "links": [],
- "modified": "2023-01-16 12:09:26.485819",
+ "modified": "2023-02-06 12:24:04.816603",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -86,17 +86,6 @@
    "read": 1,
    "report": 1,
    "role": "Academics User",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "LMS User",
    "share": 1,
    "write": 1
   },

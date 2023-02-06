@@ -116,10 +116,11 @@
   }
  ],
  "links": [],
- "modified": "2020-12-24 15:41:20.085380",
+ "modified": "2023-02-06 12:25:09.357718",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Quiz Activity",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -131,18 +132,6 @@
    "read": 1,
    "report": 1,
    "role": "Academics User",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "LMS User",
    "share": 1,
    "write": 1
   },
@@ -159,5 +148,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
