@@ -1,4 +1,4 @@
-cur_frm.add_fetch('student', 'student_name', 'student_name');
+frm.add_fetch('student', 'student_name', 'student_name');
 
 frappe.ui.form.on('Student Group', {
 	onload: function(frm) {
