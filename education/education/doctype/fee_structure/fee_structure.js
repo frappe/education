@@ -4,11 +4,6 @@
 frappe.provide("erpnext.accounts.dimensions");
 
 frappe.ui.form.on('Fee Structure', {
-	setup: function(frm) {
-		frm.add_fetch('company', 'default_receivable_account', 'receivable_account');
-		frm.add_fetch('company', 'default_income_account', 'income_account');
-		frm.add_fetch('company', 'cost_center', 'cost_center');
-	},
 
 	company: function(frm) {
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);

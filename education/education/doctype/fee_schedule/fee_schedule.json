@@ -206,12 +206,14 @@
    "label": "Accounting"
   },
   {
+   "fetch_from": "fee_structure.receivable_account",
    "fieldname": "receivable_account",
    "fieldtype": "Link",
    "label": "Receivable Account",
    "options": "Account"
   },
   {
+   "fetch_from": "fee_structure.income_account",
    "fieldname": "income_account",
    "fieldtype": "Link",
    "label": "Income Account",
@@ -222,6 +224,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "fee_structure.cost_center",
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
@@ -273,10 +276,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-07-18 05:11:49.905457",
+ "modified": "2023-02-09 15:16:44.957355",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -321,7 +325,7 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }
