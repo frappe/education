@@ -19,6 +19,7 @@
   "student_category",
   "student_batch_name",
   "column_break_ebuo",
+  "school_house",
   "boarding_student",
   "enrolled_courses",
   "courses",
@@ -156,12 +157,19 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "school_house",
+   "fieldtype": "Link",
+   "label": "School House",
+   "options": "School House"
   }
  ],
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-06 12:14:58.433251",
+ "modified": "2023-02-13 12:15:17.040015",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",
