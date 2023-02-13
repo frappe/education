@@ -4,11 +4,6 @@
 frappe.provide("erpnext.accounts.dimensions");
 
 frappe.ui.form.on("Fees", {
-	setup: function(frm) {
-		frm.add_fetch("fee_structure", "receivable_account", "receivable_account");
-		frm.add_fetch("fee_structure", "income_account", "income_account");
-		frm.add_fetch("fee_structure", "cost_center", "cost_center");
-	},
 
 	company: function(frm) {
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
@@ -25,7 +20,18 @@ frappe.ui.form.on("Fees", {
 		frm.set_query("fee_structure", function() {
 			return{
 				"filters":{
-					"academic_year": (frm.doc.academic_year)
+					"academic_year": frm.doc.academic_year,
+					"program": frm.doc.program,
+					"docstatus": 1
+				}
+			};
+		});
+		frm.set_query("program_enrollment", function() {
+			return{
+				"filters":{
+					"student": frm.doc.student,
+					"academic_year": frm.doc.academic_year,
+					"docstatus": 1
 				}
 			};
 		});
@@ -94,20 +100,9 @@ frappe.ui.form.on("Fees", {
 
 	student: function(frm) {
 		if (frm.doc.student) {
-			frappe.call({
-				method:"education.education.api.get_current_enrollment",
-				args: {
-					"student": frm.doc.student,
-					"academic_year": frm.doc.academic_year
-				},
-				callback: function(r) {
-					if(r){
-						$.each(r.message, function(i, d) {
-							frm.set_value(i,d);
-						});
-					}
-				}
-			});
+			frm.set_value("program_enrollment", "");
+			frm.set_value("program", "");
+			frm.set_value("fee_structure", "");
 		}
 	},
 

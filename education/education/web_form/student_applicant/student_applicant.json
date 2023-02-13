@@ -18,7 +18,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2023-01-13 17:00:31.313874",
+ "modified": "2023-02-06 16:53:38.041435",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "student-applicant",
@@ -29,7 +29,7 @@
  "show_attachments": 0,
  "show_list": 1,
  "show_sidebar": 1,
- "success_url": "/student-applicant",
+ "success_url": "",
  "title": "Student Applicant",
  "web_form_fields": [
   {
@@ -123,7 +123,7 @@
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "",
-   "fieldtype": "Page Break",
+   "fieldtype": "Section Break",
    "hidden": 0,
    "label": "",
    "max_length": 0,
