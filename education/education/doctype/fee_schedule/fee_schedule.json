@@ -254,7 +254,7 @@
   },
   {
    "fieldname": "error_log",
-   "fieldtype": "Read Only",
+   "fieldtype": "Small Text",
    "label": "Error Log"
   },
   {
@@ -276,7 +276,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-09 15:16:44.957355",
+ "modified": "2023-02-14 10:49:39.758005",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
