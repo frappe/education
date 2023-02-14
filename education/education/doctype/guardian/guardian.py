@@ -20,7 +20,7 @@ class Guardian(Document):
 		"""Load `students` from the database"""
 		self.students = []
 		students = frappe.get_all(
-			"Student Guardian", filters={"guardian": self.name}, fields=["parent"]
+			"Student Guardian", filters={"guardian": self.name, "parenttype":"Student"}, fields=["parent"]
 		)
 		for student in students:
 			self.append(
