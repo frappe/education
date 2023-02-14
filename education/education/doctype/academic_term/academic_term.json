@@ -13,7 +13,8 @@
   "column_break_jhzu",
   "term_start_date",
   "term_end_date",
-  "title"
+  "title",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -56,10 +57,16 @@
   {
    "fieldname": "column_break_jhzu",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "links": [],
- "modified": "2023-02-13 17:46:53.063190",
+ "modified": "2023-02-14 13:13:40.419268",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Term",
