@@ -30,14 +30,17 @@ class StudentApplicant(Document):
 		set_name_by_naming_series(self)
 
 	def validate(self):
+		self.set_title()
 		self.validate_dates()
 		self.validate_term()
-		self.title = " ".join(
-			filter(None, [self.first_name, self.middle_name, self.last_name])
-		)
 
 		if self.student_admission and self.program and self.date_of_birth:
 			self.validation_from_student_admission()
+
+	def set_title(self):
+		self.title = " ".join(
+			filter(None, [self.first_name, self.middle_name, self.last_name])
+		)
 
 	def validate_dates(self):
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
@@ -54,23 +57,6 @@ class StudentApplicant(Document):
 						self.academic_term, self.academic_year
 					)
 				)
-
-	def on_update_after_submit(self):
-		student = frappe.get_list("Student", filters={"student_applicant": self.name})
-		if student:
-			frappe.throw(
-				_(
-					"Cannot change status as student {0} is linked with student application {1}"
-				).format(student[0].name, self.name)
-			)
-
-	def on_submit(self):
-		if self.paid and not self.student_admission:
-			frappe.throw(
-				_(
-					"Please select Student Admission which is mandatory for the paid student applicant"
-				)
-			)
 
 	def validation_from_student_admission(self):
 
@@ -106,16 +92,12 @@ class StudentApplicant(Document):
 
 def get_student_admission_data(student_admission, program):
 
-	student_admission = frappe.db.sql(
-		"""select sa.admission_start_date, sa.admission_end_date,
-		sap.program, sap.min_age, sap.max_age, sap.applicant_naming_series
-		from `tabStudent Admission` sa, `tabStudent Admission Program` sap
-		where sa.name = sap.parent and sa.name = %s and sap.program = %s""",
-		(student_admission, program),
-		as_dict=1,
+	admission_programs = frappe.get_all(
+		"Student Admission Program",
+		{"parenttype": "Student Admission", "parent": student_admission, "program": program},
+		["applicant_naming_series", "min_age", "max_age"],
 	)
 
-	if student_admission:
-		return student_admission[0]
-	else:
-		return None
+	if admission_programs:
+		return admission_programs[0]
+	return None

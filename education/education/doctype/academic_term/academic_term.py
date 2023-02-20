@@ -22,8 +22,8 @@ class AcademicTerm(Document):
 
 	def set_title(self):
 		self.title = (
-				self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
-			)
+			self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
+		)
 
 	def validate_duplication(self):
 		# Check if entry with same academic_year and the term_name already exists
@@ -56,7 +56,9 @@ class AcademicTerm(Document):
 		# Check that the start of the term is not before the start of the academic year
 		# and end of term is not after the end of the academic year"""
 
-		year = frappe.db.get_value("Academic Year", self.academic_year, ["year_start_date", "year_end_date"], as_dict=1)
+		year = frappe.db.get_value(
+			"Academic Year", self.academic_year, ["year_start_date", "year_end_date"], as_dict=1
+		)
 
 		if (
 			self.term_start_date
@@ -64,9 +66,9 @@ class AcademicTerm(Document):
 			and (getdate(self.term_start_date) < getdate(year.year_start_date))
 		):
 			frappe.throw(
-				_(
-					"The Term cannot start before the Academic Year {0}"
-				).format(frappe.bold(self.academic_year))
+				_("The Term cannot start before the Academic Year {0}").format(
+					frappe.bold(self.academic_year)
+				)
 			)
 
 		if (
@@ -75,7 +77,7 @@ class AcademicTerm(Document):
 			and (getdate(self.term_end_date) > getdate(year.year_end_date))
 		):
 			frappe.throw(
-				_(
-					"The Term cannot end after the Academic Year {0}"
-				).format(frappe.bold(self.academic_year))
+				_("The Term cannot end after the Academic Year {0}").format(
+					frappe.bold(self.academic_year)
+				)
 			)

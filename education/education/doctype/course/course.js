@@ -3,7 +3,7 @@ frappe.ui.form.on('Course', {
 		if (!cur_frm.doc.__islocal) {
 			frm.add_custom_button(__('Add to Programs'), function() {
 				frm.trigger('add_course_to_programs')
-			}, __('Action'));
+			});
 		}
 
 		frm.set_query('default_grading_scale', function(){

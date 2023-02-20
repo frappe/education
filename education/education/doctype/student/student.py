@@ -14,15 +14,18 @@ from education.education.utils import (check_content_completion,
 
 class Student(Document):
 	def validate(self):
-		self.student_name = " ".join(
-			filter(None, [self.first_name, self.middle_name, self.last_name])
-		)
+		self.set_title()
 		self.validate_dates()
 		self.validate_user()
-		
+
 		if self.student_applicant:
 			self.check_unique()
 			self.update_applicant_status()
+
+	def set_title(self):
+		self.student_name = " ".join(
+			filter(None, [self.first_name, self.middle_name, self.last_name])
+		)
 
 	def validate_dates(self):
 		for sibling in self.siblings:
@@ -33,7 +36,7 @@ class Student(Document):
 					)
 				)
 
-		if self.date_of_birth and getdate(self.date_of_birth) >= getdate(today()):
+		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
 			frappe.throw(_("Date of Birth cannot be greater than today."))
 
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate(self.joining_date):
@@ -48,8 +51,8 @@ class Student(Document):
 
 	def validate_user(self):
 		"""Create a website user for student creation if not already exists"""
-		if not frappe.get_single("Education Settings").get(
-			"user_creation_skip"
+		if not frappe.db.get_single_value(
+			"Education Settings", "user_creation_skip"
 		) and not frappe.db.exists("User", self.student_email_id):
 			student_user = frappe.get_doc(
 				{
@@ -62,45 +65,18 @@ class Student(Document):
 					"user_type": "Website User",
 				}
 			)
-			student_user.flags.ignore_permissions = True
 			student_user.add_roles("Student")
-			student_user.save()
+			student_user.save(ignore_permissions=True)
 
 			self.user = student_user.name
 
-	def update_student_name_in_linked_doctype(self):
-		linked_doctypes = get_linked_doctypes("Student")
-		for d in linked_doctypes:
-			meta = frappe.get_meta(d)
-			if not meta.issingle:
-				if "student_name" in [f.fieldname for f in meta.fields]:
-					frappe.db.sql(
-						"""UPDATE `tab{0}` set student_name = %s where {1} = %s""".format(
-							d, linked_doctypes[d]["fieldname"][0]
-						),
-						(self.student_name, self.name),
-					)
-
-				if "child_doctype" in linked_doctypes[d].keys() and "student_name" in [
-					f.fieldname for f in frappe.get_meta(linked_doctypes[d]["child_doctype"]).fields
-				]:
-					frappe.db.sql(
-						"""UPDATE `tab{0}` set student_name = %s where {1} = %s""".format(
-							linked_doctypes[d]["child_doctype"], linked_doctypes[d]["fieldname"][0]
-						),
-						(self.student_name, self.name),
-					)
-
 	def check_unique(self):
 		"""Validates if the Student Applicant is Unique"""
-		student = frappe.db.sql(
-			"select name from `tabStudent` where student_applicant=%s and name!=%s",
-			(self.student_applicant, self.name),
-		)
-		if student:
+		student = frappe.get_all("Student", {"student_applicant": self.student_applicant, "name": ["!=", self.name]}, pluck="name")
+		if len(student):
 			frappe.throw(
 				_("Student {0} exist against student applicant {1}").format(
-					student[0][0], self.student_applicant
+					student[0], self.student_applicant
 				)
 			)
 

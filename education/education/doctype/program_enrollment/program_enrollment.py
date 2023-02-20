@@ -135,15 +135,13 @@ class ProgramEnrollment(Document):
 			filters = {
 				"student": self.student,
 				"course": course.course,
-				"program_enrollment": self.name
+				"program_enrollment": self.name,
 			}
 			if not frappe.db.exists("Course Enrollment", filters):
-				filters.update({
-					"doctype": "Course Enrollment",
-					"enrollment_date": self.enrollment_date
-				})
+				filters.update(
+					{"doctype": "Course Enrollment", "enrollment_date": self.enrollment_date}
+				)
 				frappe.get_doc(filters).save()
-
 
 	def get_all_course_enrollments(self):
 		course_enrollment_names = frappe.get_list(
