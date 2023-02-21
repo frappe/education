@@ -12,14 +12,18 @@ from frappe.utils import comma_and, get_link_to_form, getdate
 
 class ProgramEnrollment(Document):
 	def validate(self):
+		self.set_student_name()
 		self.validate_duplication()
 		self.validate_academic_year()
 		if self.academic_term:
 			self.validate_academic_term()
-		if not self.student_name:
-			self.student_name = frappe.db.get_value("Student", self.student, "title")
+
 		if not self.courses:
 			self.extend("courses", self.get_courses())
+
+	def set_student_name(self):
+		if not self.student_name:
+			self.student_name = frappe.db.get_value("Student", self.student, "student_name")
 
 	def on_submit(self):
 		self.update_student_joining_date()
@@ -65,17 +69,15 @@ class ProgramEnrollment(Document):
 				)
 
 	def validate_duplication(self):
-		enrollment = frappe.get_all(
-			"Program Enrollment",
-			filters={
+		enrollment = frappe.db.exists(
+			"Program Enrollment", {
 				"student": self.student,
 				"program": self.program,
 				"academic_year": self.academic_year,
 				"academic_term": self.academic_term,
 				"docstatus": ("<", 2),
 				"name": ("!=", self.name),
-			},
-		)
+			})
 		if enrollment:
 			frappe.throw(_("Student is already enrolled."))
 
