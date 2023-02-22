@@ -40,7 +40,6 @@ def add_course_to_programs(course, programs, mandatory=False):
 		)
 		program.flags.ignore_mandatory = True
 		program.save()
-	frappe.db.commit()
 	frappe.msgprint(
 		_("Course {0} has been added to all the selected programs successfully.").format(
 			frappe.bold(course)

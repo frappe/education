@@ -49,9 +49,15 @@ class Fees(AccountsController):
 			self.student_email = self.get_student_emails()
 
 	def validate_enrollment(self):
-		enrollment_student = frappe.db.get_value("Program Enrollment", self.program_enrollment, "student")
+		enrollment_student = frappe.db.get_value(
+			"Program Enrollment", self.program_enrollment, "student"
+		)
 		if enrollment_student != self.student:
-			frappe.throw(_("Invalid Enrollment {0} for student {1}").format(frappe.bold(self.program_enrollment), frappe.bold(self.student)))
+			frappe.throw(
+				_("Invalid Enrollment {0} for student {1}").format(
+					frappe.bold(self.program_enrollment), frappe.bold(self.student)
+				)
+			)
 
 	def get_student_emails(self):
 		student_emails = frappe.db.sql_list(
