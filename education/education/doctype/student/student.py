@@ -51,24 +51,25 @@ class Student(Document):
 
 	def validate_user(self):
 		"""Create a website user for student creation if not already exists"""
-		if not frappe.db.get_single_value(
-			"Education Settings", "user_creation_skip"
-		) and not frappe.db.exists("User", self.student_email_id):
-			student_user = frappe.get_doc(
-				{
-					"doctype": "User",
-					"first_name": self.first_name,
-					"last_name": self.last_name,
-					"email": self.student_email_id,
-					"gender": self.gender,
-					"send_welcome_email": 1,
-					"user_type": "Website User",
-				}
-			)
-			student_user.add_roles("Student")
-			student_user.save(ignore_permissions=True)
+		if self.student_email_id and not frappe.db.exists("User", self.student_email_id):
+			if not frappe.db.get_single_value("Education Settings", "user_creation_skip"):
+				student_user = frappe.get_doc(
+					{
+						"doctype": "User",
+						"first_name": self.first_name,
+						"last_name": self.last_name,
+						"email": self.student_email_id,
+						"gender": self.gender,
+						"send_welcome_email": 1,
+						"user_type": "Website User",
+					}
+				)
+				student_user.add_roles("Student")
+				student_user.save(ignore_permissions=True)
 
-			self.user = student_user.name
+				self.user = student_user.name
+		else:
+			self.user = None
 
 	def check_unique(self):
 		"""Validates if the Student Applicant is Unique"""
