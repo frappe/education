@@ -27,7 +27,7 @@ class Guardian(Document):
 				"students",
 				{
 					"student": student.parent,
-					"student_name": frappe.db.get_value("Student", student.parent, "title"),
+					"student_name": frappe.db.get_value("Student", student.parent, "student_name"),
 				},
 			)
 
