@@ -107,6 +107,11 @@ frappe.ui.form.on('Assessment Result Tool', {
 					.each(function(el, input){
 					student_scores["comment"] = $(input).val();
 				});
+
+				// Disable the input box and result mark for the result
+				result_table.find(`input[data-student='${student}'].student-result-data`).attr('disabled', true);
+				$(link_span).css("display", "none");
+				
 				frappe.call({
 					method: "education.education.api.mark_assessment_result",
 					args: {
@@ -129,6 +134,9 @@ frappe.ui.form.on('Assessment Result Tool', {
 						let link_span = result_table.find(`span[data-student=${assessment_result.student}].total-result-link`);
 						$(link_span).css("display", "block");
 						$(link_span).find("a").attr("href", "/app/assessment-result/"+assessment_result.name);
+
+						// Enable the input box for the result
+						result_table.find(`input[data-student='${student}'].student-result-data`).attr('disabled', false);
 					}
 				});
 			}
