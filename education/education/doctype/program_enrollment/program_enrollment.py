@@ -179,6 +179,7 @@ def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
 		frappe.msgprint(_("Please select a Program first."))
 		return []
 
+	doctype = "Program Course"
 	return frappe.db.sql(
 		"""select course, course_name from `tabProgram Course`
 		where  parent = %(program)s and course like %(txt)s {match_cond}
