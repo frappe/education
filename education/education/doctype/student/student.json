@@ -107,6 +107,7 @@
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Student Email Address",
+   "reqd": 1,
    "unique": 1
   },
   {
@@ -282,7 +283,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-02-06 12:25:25.197460",
+ "modified": "2023-09-01 17:28:07.028913",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
