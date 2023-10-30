@@ -24,14 +24,16 @@
    "fieldname": "year_start_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Year Start Date"
+   "label": "Year Start Date",
+   "reqd": 1
   },
   {
    "allow_in_quick_entry": 1,
    "fieldname": "year_end_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Year End Date"
+   "label": "Year End Date",
+   "reqd": 1
   },
   {
    "fieldname": "connections_tab",
@@ -41,7 +43,7 @@
   }
  ],
  "links": [],
- "modified": "2023-02-13 17:50:21.149012",
+ "modified": "2023-10-30 16:34:17.354467",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",
