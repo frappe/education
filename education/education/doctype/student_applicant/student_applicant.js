@@ -28,7 +28,7 @@ frappe.ui.form.on("Student Applicant", {
 		if (!frm.is_new() && frm.doc.application_status === "Approved") {
 			frm.add_custom_button(__("Enroll"), function() {
 				frm.events.enroll(frm)
-			}).addClass("btn-primary");
+			});
 
 			frm.add_custom_button(__("Reject"), function() {
 				frm.set_value("application_status", "Rejected");

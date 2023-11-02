@@ -7,7 +7,7 @@ frappe.ui.form.on("Course Schedule", {
 					course_schedule: frm.doc.name
 				}
 				frappe.set_route("Form", "Student Attendance Tool");
-			}).addClass("btn-primary");
+			});
 		}
 		if (frm.doc.student_group) {
 			frm.events.get_instructors(frm);
