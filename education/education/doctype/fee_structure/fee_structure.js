@@ -44,7 +44,7 @@ frappe.ui.form.on('Fee Structure', {
 		if (frm.doc.docstatus === 1) {
 			frm.add_custom_button(__('Create Fee Schedule'), function() {
 				frm.events.make_fee_schedule(frm);
-			}).addClass('btn-primary');
+			});
 		}
 	},
 

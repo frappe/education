@@ -114,6 +114,7 @@ education.StudentsEditor = class StudentsEditor {
 
 		student_toolbar.find(".btn-mark-att")
 			.html(__('Mark Attendance'))
+			.removeClass("btn-default")
 			.on("click", function() {
 				$(me.wrapper.find(".btn-mark-att")).attr("disabled", true);
 				var studs = [];
