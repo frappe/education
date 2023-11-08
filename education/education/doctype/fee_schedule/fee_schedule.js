@@ -85,7 +85,7 @@ frappe.ui.form.on('Fee Schedule', {
 						frm.refresh();
 					}
 				});
-			}).addClass('btn-primary');;
+			});
 		}
 		if (frm.doc.fee_creation_status === 'Successful') {
 			frm.add_custom_button(__('View Fees Records'), function() {
@@ -128,7 +128,7 @@ frappe.ui.form.on('Fee Schedule Student Group', {
 					'student_category': frm.doc.student_category
 				},
 				callback: function(r) {
-					if (!r.exc) {
+					if (r.message) {
 						frappe.model.set_value(cdt, cdn, 'total_students', r.message);
 					}
 				}
