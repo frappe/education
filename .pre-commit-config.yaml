@@ -8,7 +8,7 @@ repos:
     rev: v4.0.1
     hooks:
       - id: trailing-whitespace
-        files: "frappe.*"
+        files: "education.*"
         exclude: ".*json$|.*txt$|.*csv|.*md|.*svg"
       - id: check-yaml
       - id: no-commit-to-branch
@@ -22,11 +22,12 @@ repos:
       - id: black
         additional_dependencies: ['click==8.0.4']
 
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.9.1
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
     hooks:
-      - id: isort
-        exclude: ".*setup.py$"
+      - id: flake8
+        additional_dependencies: ["flake8-bugbear"]
+        args: ["--config", ".github/helper/flake8.conf"]
 
 ci:
     autoupdate_schedule: weekly

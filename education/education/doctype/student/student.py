@@ -8,8 +8,7 @@ from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
 from frappe.utils import getdate, today
 
-from education.education.utils import (check_content_completion,
-                                       check_quiz_completion)
+from education.education.utils import check_content_completion, check_quiz_completion
 
 
 class Student(Document):
@@ -72,7 +71,11 @@ class Student(Document):
 
 	def check_unique(self):
 		"""Validates if the Student Applicant is Unique"""
-		student = frappe.get_all("Student", {"student_applicant": self.student_applicant, "name": ["!=", self.name]}, pluck="name")
+		student = frappe.get_all(
+			"Student",
+			{"student_applicant": self.student_applicant, "name": ["!=", self.name]},
+			pluck="name",
+		)
 		if len(student):
 			frappe.throw(
 				_("Student {0} exist against student applicant {1}").format(
