@@ -38,7 +38,9 @@ def enroll_student(source_name):
 		{
 			"Student Applicant": {
 				"doctype": "Student",
-				"field_map": {"name": "student_applicant"},
+				"field_map": {
+					"name": "student_applicant",
+				},
 			}
 		},
 		ignore_permissions=True,
@@ -46,13 +48,19 @@ def enroll_student(source_name):
 	student.save()
 
 	student_applicant = frappe.db.get_value(
-		"Student Applicant", source_name, ["student_category", "program"], as_dict=True
+		"Student Applicant",
+		source_name,
+		["student_category", "program", "academic_year"],
+		as_dict=True,
 	)
 	program_enrollment = frappe.new_doc("Program Enrollment")
 	program_enrollment.student = student.name
 	program_enrollment.student_category = student_applicant.student_category
 	program_enrollment.student_name = student.student_name
 	program_enrollment.program = student_applicant.program
+	program_enrollment.academic_year = student_applicant.academic_year
+	program_enrollment.save()
+
 	frappe.publish_realtime(
 		"enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
 	)
