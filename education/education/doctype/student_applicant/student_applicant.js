@@ -36,6 +36,13 @@ frappe.ui.form.on("Student Applicant", {
 			}, 'Actions');
 		}
 
+		if (!frm.is_new() && frm.doc.application_status === "Rejected") {
+			frm.add_custom_button(__("Enroll"), function() {
+				frm.set_value("application_status", "Applied");
+				frm.save_or_update();
+			}, 'Actions');
+		}
+
 		frappe.realtime.on("enroll_student_progress", function(data) {
 			if(data.progress) {
 				frappe.hide_msgprint(true);
