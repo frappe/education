@@ -5,6 +5,7 @@ frappe.ui.form.on("Program Enrollment Tool", {
 	setup: function(frm) {
 		frm.add_fetch("student", "title", "student_name");
 		frm.add_fetch("student_applicant", "title", "student_name");
+
 		if(frm.doc.__onload && frm.doc.__onload.academic_term_reqd) {
 			frm.toggle_reqd("academic_term", true);
 		}
@@ -17,6 +18,12 @@ frappe.ui.form.on("Program Enrollment Tool", {
 			frappe.hide_msgprint(true);
 			frappe.show_progress(__("Enrolling students"), data.progress[0], data.progress[1]);
 		});
+		frm.add_fetch(
+			frm.doc.academic_term ? "new_academic_term" : "new_academic_year",
+			frm.doc.academic_term ? "term_start_date" : "year_start_date",
+			"enrollment_date"
+		);
+
 	},
 
 	get_students_from: function(frm) {
@@ -47,5 +54,9 @@ frappe.ui.form.on("Program Enrollment Tool", {
 				frappe.hide_msgprint(true);
 			}
 		});
+	},
+
+	"academic_term": function(frm) {
+		frm.refresh();
 	}
 });
