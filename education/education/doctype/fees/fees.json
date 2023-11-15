@@ -31,6 +31,7 @@
   "components",
   "section_break_10",
   "amended_from",
+  "contact_email",
   "column_break_11",
   "grand_total",
   "grand_total_in_words",
@@ -173,15 +174,6 @@
    "fieldtype": "Link",
    "label": "Student Batch",
    "options": "Student Batch Name",
-   "print_hide": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "fetch_from": "student.student_email_id",
-   "fieldname": "student_email",
-   "fieldtype": "Data",
-   "label": "Student Email",
-   "options": "Email",
    "print_hide": 1
   },
   {
@@ -365,11 +357,30 @@
    "fieldname": "print_settings_tab",
    "fieldtype": "Tab Break",
    "label": "Print Settings"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "student.student_email_id",
+   "fieldname": "student_email",
+   "fieldtype": "Data",
+   "label": "Student Email",
+   "options": "Email",
+   "print_hide": 1
+  },
+  {
+   "fetch_from": "student.student_email_id",
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Contact Email",
+   "options": "Email",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-10 15:40:13.047235",
+ "modified": "2023-11-14 00:46:59.504174",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
