@@ -90,12 +90,14 @@
    "fieldname": "new_program",
    "fieldtype": "Link",
    "label": "New Program",
+   "mandatory_depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
    "options": "Program"
   },
   {
    "fieldname": "new_student_batch",
    "fieldtype": "Link",
    "label": "New Student Batch",
+   "mandatory_depends_on": "eval:doc.student_batch",
    "options": "Student Batch Name"
   },
   {
@@ -133,7 +135,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-16 01:49:23.391107",
+ "modified": "2023-11-16 14:35:38.467928",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment Tool",
