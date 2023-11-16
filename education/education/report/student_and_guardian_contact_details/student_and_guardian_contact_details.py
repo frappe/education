@@ -34,23 +34,26 @@ def execute(filters=None):
 	guardian_map = get_guardian_map(student_list)
 
 	for d in program_enrollments:
-		student_details = student_map.get(d.student)
-		row = [
-			group_roll_no_map.get(d.student),
-			d.student,
-			d.student_name,
-			student_details.get("student_mobile_number"),
-			student_details.get("student_email_id"),
-			student_details.get("address"),
-		]
+		student_details = student_map.get(d.student, {})
 
-		student_guardians = guardian_map.get(d.student)
+		row = frappe._dict(
+			{
+				"group_roll_no": group_roll_no_map.get(d.student, ""),
+				"student_id": d.student,
+				"student_name": d.student_name,
+				"student_mobile_no": student_details.get("student_mobile_number", ""),
+				"student_email_id": student_details.get("student_email_id", ""),
+				"student_address": student_details.get("address", ""),
+			}
+		)
 
-		if student_guardians:
-			for i in range(2):
-				if i < len(student_guardians):
-					g = student_guardians[i]
-					row += [g.guardian_name, g.relation, g.mobile_number, g.email_address]
+		student_guardians = guardian_map.get(d.student, [])
+		# only 2 guardians per student
+		for i, g in enumerate(student_guardians[:2]):
+			row[f"guardian{i+1}_name"] = g.guardian_name
+			row[f"relation_with_guardian{i+1}"] = g.relation
+			row[f"guardian{i+1}_mobile_no"] = g.mobile_number
+			row[f"guardian{i+1}_email_id"] = g.email_address
 
 		data.append(row)
 
@@ -59,20 +62,91 @@ def execute(filters=None):
 
 def get_columns():
 	columns = [
-		_("Group Roll No") + "::60",
-		_("Student ID") + ":Link/Student:90",
-		_("Student Name") + "::150",
-		_("Student Mobile No.") + "::110",
-		_("Student Email ID") + "::125",
-		_("Student Address") + "::175",
-		_("Guardian1 Name") + "::150",
-		_("Relation with Guardian1") + "::80",
-		_("Guardian1 Mobile No") + "::125",
-		_("Guardian1 Email ID") + "::125",
-		_("Guardian2 Name") + "::150",
-		_("Relation with Guardian2") + "::80",
-		_("Guardian2 Mobile No") + "::125",
-		_("Guardian2 Email ID") + "::125",
+		{
+			"label": _("Group Roll No"),
+			"fieldname": "group_roll_no",
+			"fieldtype": "Data",
+			"width": 60,
+		},
+		{
+			"label": _("Student ID"),
+			"fieldname": "student_id",
+			"fieldtype": "Link",
+			"options": "Student",
+			"width": 90,
+		},
+		{
+			"label": _("Student Name"),
+			"fieldname": "student_name",
+			"fieldtype": "Data",
+			"width": 150,
+		},
+		{
+			"label": _("Student Mobile No."),
+			"fieldname": "student_mobile_no",
+			"fieldtype": "Data",
+			"width": 110,
+		},
+		{
+			"label": _("Student Email ID"),
+			"fieldname": "student_email_id",
+			"fieldtype": "Data",
+			"width": 125,
+		},
+		{
+			"label": _("Student Address"),
+			"fieldname": "student_address",
+			"fieldtype": "Data",
+			"width": 175,
+		},
+		{
+			"label": _("Guardian1 Name"),
+			"fieldname": "guardian1_name",
+			"fieldtype": "Data",
+			"width": 150,
+		},
+		{
+			"label": _("Relation with Guardian1"),
+			"fieldname": "relation_with_guardian1",
+			"fieldtype": "Data",
+			"width": 80,
+		},
+		{
+			"label": _("Guardian1 Mobile No"),
+			"fieldname": "guardian1_mobile_no",
+			"fieldtype": "Data",
+			"width": 125,
+		},
+		{
+			"label": _("Guardian1 Email ID"),
+			"fieldname": "guardian1_email_id",
+			"fieldtype": "Data",
+			"width": 125,
+		},
+		{
+			"label": _("Guardian2 Name"),
+			"fieldname": "guardian2_name",
+			"fieldtype": "Data",
+			"width": 150,
+		},
+		{
+			"label": _("Relation with Guardian2"),
+			"fieldname": "relation_with_guardian2",
+			"fieldtype": "Data",
+			"width": 80,
+		},
+		{
+			"label": _("Guardian2 Mobile No"),
+			"fieldname": "guardian2_mobile_no",
+			"fieldtype": "Data",
+			"width": 125,
+		},
+		{
+			"label": _("Guardian2 Email ID"),
+			"fieldname": "guardian2_email_id",
+			"fieldtype": "Data",
+			"width": 125,
+		},
 	]
 	return columns
 
