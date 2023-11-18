@@ -7,8 +7,9 @@ from erpnext.setup.doctype.holiday_list.holiday_list import is_holiday
 from frappe import _, msgprint
 from frappe.utils import formatdate
 
-from education.education.doctype.student_attendance.student_attendance import \
-    get_holiday_list
+from education.education.doctype.student_attendance.student_attendance import (
+	get_holiday_list,
+)
 
 
 def execute(filters=None):
@@ -33,7 +34,6 @@ def execute(filters=None):
 	leave_applicants = get_leave_applications(date)
 	if absent_students:
 		student_list = [d["student"] for d in absent_students]
-		transportation_details = get_transportation_details(date, student_list)
 
 	data = []
 	for student in absent_students:
@@ -55,8 +55,6 @@ def execute(filters=None):
 				row += [stud_details.student_mobile_number]
 			else:
 				row += [""]
-			if transportation_details.get(student.student):
-				row += transportation_details.get(student.student)
 
 			data.append(row)
 
@@ -70,8 +68,6 @@ def get_columns(filters):
 		_("Student Group") + "::180",
 		_("Student Email Address") + "::180",
 		_("Student Mobile No.") + "::150",
-		_("Mode of Transportation") + "::150",
-		_("Vehicle/Bus Number") + "::150",
 	]
 	return columns
 
