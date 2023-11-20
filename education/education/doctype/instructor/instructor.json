@@ -85,15 +85,17 @@
    "fieldtype": "Link",
    "label": "Gender",
    "options": "Gender",
-   "read_only_depends_on": "employee"
+   "read_only_depends_on": "employee",
+   "unique": 1
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2020-07-23 18:33:57.904398",
+ "modified": "2023-11-17 12:55:49.891834",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Instructor",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -112,14 +114,13 @@
    "read": 1,
    "report": 1,
    "role": "Education Manager",
-   "set_user_permissions": 1,
    "share": 1,
    "write": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "instructor_name"
 }

@@ -118,7 +118,8 @@
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "reqd": 1
   },
   {
    "fieldname": "academic_term",
@@ -292,7 +293,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-01-17 10:50:53.972214",
+ "modified": "2023-11-10 10:54:53.499881",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
