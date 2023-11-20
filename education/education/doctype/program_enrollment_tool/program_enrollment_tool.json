@@ -11,6 +11,7 @@
   "column_break_3",
   "academic_year",
   "academic_term",
+  "enrollment_date",
   "section_break_5",
   "get_students",
   "students",
@@ -89,12 +90,14 @@
    "fieldname": "new_program",
    "fieldtype": "Link",
    "label": "New Program",
+   "mandatory_depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
    "options": "Program"
   },
   {
    "fieldname": "new_student_batch",
    "fieldtype": "Link",
    "label": "New Student Batch",
+   "mandatory_depends_on": "eval:doc.student_batch",
    "options": "Student Batch Name"
   },
   {
@@ -119,13 +122,20 @@
    "fieldname": "new_academic_term",
    "fieldtype": "Link",
    "label": "New Academic Term",
+   "mandatory_depends_on": "eval:doc.academic_term",
    "options": "Academic Term"
+  },
+  {
+   "depends_on": "eval:doc.get_students_from==\"Program Enrollment\"",
+   "fieldname": "enrollment_date",
+   "fieldtype": "Date",
+   "label": "Enrollment Date"
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-09 14:11:27.028036",
+ "modified": "2023-11-16 14:35:38.467928",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment Tool",
