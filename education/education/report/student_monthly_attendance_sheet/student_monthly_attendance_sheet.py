@@ -149,16 +149,6 @@ def daterange(d1, d2):
 	return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))
 
 
-@frappe.whitelist()
-def get_attendance_years():
-	year_list = frappe.db.sql_list(
-		"""select distinct YEAR(date) from `tabStudent Attendance` ORDER BY YEAR(date) DESC"""
-	)
-	if not year_list:
-		year_list = [getdate().year]
-	return "\n".join(str(year) for year in year_list)
-
-
 def mark_holidays(att_map, from_date, to_date, students_list):
 	holiday_list = get_holiday_list()
 	holidays = get_holidays(holiday_list)
