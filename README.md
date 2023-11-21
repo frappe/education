@@ -1,9 +1,9 @@
-## Frappe Education
+# Frappe Education
 
 Frappe Education is an open-source and user-friendly Education Management System designed to streamline the administrative and academic processes of educational institutions. It is a powerful module based on the ERPNext software.
 Frappe Education is dedicated to making education management more efficient and less time-consuming. The module offers a range of features that cater to the needs of educators and administrators, facilitating a more organized and effective learning environment.
 
-### Table of Contents
+## Table of Contents
 
 - [Key Features](#key-features)
 - [Installation](#installation)
@@ -12,7 +12,7 @@ Frappe Education is dedicated to making education management more efficient and 
 - [Links](#links)
 - [License](#license)
 
-### Key Features
+## Key Features
 
 Here are some of the standout features of the Frappe Education module:**Student Admission**: Streamline the admission process for new students. 🎓
 
@@ -25,7 +25,7 @@ Here are some of the standout features of the Frappe Education module:**Student 
 - **Reports**: Generate various reports including final grades, course-wise assessment, student absent report, attendance report, and fee collection. 📊
 
 
-### Installation
+## Installation
 1. [Install bench on your local machine](https://github.com/frappe/bench#installation)
 2. [Install ERPNext](https://github.com/frappe/erpnext#installation)
 3. Once ERPNext is installed, install the Education App by using:
@@ -40,7 +40,7 @@ Here are some of the standout features of the Frappe Education module:**Student 
     $ bench --site sitename install-app education
     ```
 
-### Deployment
+## Deployment
 
 Frappe LMS is an app built on top of the Frappe Framework & ERPNext. 
 
@@ -52,17 +52,17 @@ Frappe Education can be deployed in few clicks by using [Frappe Cloud](https://f
 
 You can self host the module by following Frappe Bench Installation Instructions.
 
-### Contributions & Community
+## Contributions & Community
 
 1. If u find any bugs while using the app or have a feature request for the app, you can report/add them here [Github Issues](https://github.com/frappe/education/issues). Make sure to add proper information and screenshots. 
 2. Follow the [Contribution Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines) & [Issue Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines) - [create an issue](https://github.com/frappe/education/issues/new).
 
-### Links
+## Links
 
 1. **[Telegram Group](https://t.me/+DcKb53WLxTw2OGM1)** - Join our Telegram group to connect with us where can discuss everything regarding the Education Module. Feel free to share ideas and issues you face while using the Education Module.
 2. **[Documentation](https://docs.erpnext.com/docs/v14/user/manual/en/education)** - This link will take you to our comprehensive documentation, where you can find all the information you need to understand and use the Education Module effectively. It includes all the workflows, masters and DocTypes which currently Exists
 
 
-### License
+## License
 
 GNU GPL V3. See [license.txt](https://github.com/frappe/agriculture/blob/develop/license.txt) for more information.
