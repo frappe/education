@@ -5,9 +5,9 @@ Frappe Education is dedicated to making education management more efficient and 
 
 ### Table of Contents
 
-- Key Features
+- [Key Features](#key-features)
 - [Installation](#installation)
-- Deployment
+- [Deployment](#deployment)
 - Contribution & Community
 - Links
 - License
