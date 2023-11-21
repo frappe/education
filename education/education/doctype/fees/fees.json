@@ -37,7 +37,7 @@
   "grand_total_in_words",
   "outstanding_amount",
   "student_details_tab",
-  "student_email",
+  "contact_email",
   "student_category",
   "column_break_ywbf",
   "student_batch",
@@ -361,26 +361,16 @@
   {
    "allow_on_submit": 1,
    "fetch_from": "student.student_email_id",
-   "fieldname": "student_email",
+   "fieldname": "contact_email",
    "fieldtype": "Data",
    "label": "Student Email",
    "options": "Email",
    "print_hide": 1
-  },
-  {
-   "fetch_from": "student.student_email_id",
-   "fieldname": "contact_email",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Contact Email",
-   "options": "Email",
-   "print_hide": 1,
-   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-14 00:46:59.504174",
+ "modified": "2023-11-21 15:58:13.146136",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",

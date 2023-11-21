@@ -4,8 +4,9 @@
 
 import erpnext
 import frappe
-from erpnext.accounts.doctype.payment_request.payment_request import \
-    make_payment_request
+from erpnext.accounts.doctype.payment_request.payment_request import (
+	make_payment_request,
+)
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 from frappe import _
@@ -45,8 +46,8 @@ class Fees(AccountsController):
 			self.income_account = accounts_details.default_income_account
 		if not self.cost_center:
 			self.cost_center = accounts_details.cost_center
-		if not self.student_email:
-			self.student_email = self.get_student_emails()
+		if not self.contact_email:
+			self.contact_email = self.get_student_emails()
 
 	def validate_enrollment(self):
 		enrollment_student = frappe.db.get_value(
@@ -90,13 +91,13 @@ class Fees(AccountsController):
 
 		self.make_gl_entries()
 
-		if self.send_payment_request and self.student_email:
+		if self.send_payment_request and self.contact_email:
 			pr = make_payment_request(
 				party_type="Student",
 				party=self.student,
 				dt="Fees",
 				dn=self.name,
-				recipient_id=self.student_email,
+				recipient_id=self.contact_email,
 				submit_doc=True,
 				use_dummy_message=True,
 			)
