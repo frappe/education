@@ -45,7 +45,7 @@ Here are some of the standout features of the Frappe Education module:**Student 
 
 ## Deployment
 
-Frappe LMS is an app built on top of the Frappe Framework & ERPNext. 
+Frappe Education is an app built on top of the Frappe Framework & ERPNext. 
 
 **Managed Hosting**
 
