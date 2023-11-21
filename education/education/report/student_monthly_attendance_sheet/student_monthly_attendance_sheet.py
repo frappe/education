@@ -5,20 +5,27 @@
 import frappe
 from erpnext.support.doctype.issue.issue import get_holidays
 from frappe import _
-from frappe.utils import (add_days, cstr, date_diff, get_first_day,
-                          get_last_day, getdate)
+from frappe.utils import add_days, cstr, date_diff, get_first_day, get_last_day, getdate
 
 from education.education.api import get_student_group_students
-from education.education.doctype.student_attendance.student_attendance import \
-    get_holiday_list
+from education.education.doctype.student_attendance.student_attendance import (
+	get_holiday_list,
+)
 
 
 def execute(filters=None):
 	if not filters:
 		filters = {}
 
-	from_date = get_first_day(filters["month"] + "-" + filters["year"])
-	to_date = get_last_day(filters["month"] + "-" + filters["year"])
+	filter_year = str(
+		frappe.db.get_value(
+			"Academic Year", {"name": filters["year"]}, fieldname="year_start_date"
+		).year
+	)
+
+	from_date = get_first_day(filters["month"] + "-" + filter_year)
+	to_date = get_last_day(filters["month"] + "-" + filter_year)
+
 	total_days_in_month = date_diff(to_date, from_date) + 1
 	columns = get_columns(total_days_in_month)
 	students = get_student_group_students(filters.get("student_group"), 1)
@@ -140,16 +147,6 @@ def daterange(d1, d2):
 	import datetime
 
 	return (d1 + datetime.timedelta(days=i) for i in range((d2 - d1).days + 1))
-
-
-@frappe.whitelist()
-def get_attendance_years():
-	year_list = frappe.db.sql_list(
-		"""select distinct YEAR(date) from `tabStudent Attendance` ORDER BY YEAR(date) DESC"""
-	)
-	if not year_list:
-		year_list = [getdate().year]
-	return "\n".join(str(year) for year in year_list)
 
 
 def mark_holidays(att_map, from_date, to_date, students_list):
