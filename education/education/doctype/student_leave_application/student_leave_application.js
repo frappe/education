@@ -29,9 +29,4 @@ frappe.ui.form.on('Student Leave Application', {
 		});
 
 	},
-	"attendance_based_on" : function(frm) {
-		if (frm.doc.attendance_based_on == "Course Schedule") {
-			console.log("he")
-		}
-	}
 });
