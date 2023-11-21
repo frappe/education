@@ -53,7 +53,7 @@ Frappe Education can be deployed in few clicks by using [Frappe Cloud](https://f
 
 **Self Hosting**
 
-You can self host the module by following Frappe Bench Installation Instructions.
+You can self host the module by following [Frappe Bench Installation Instructions](https://github.com/frappe/bench#installation).
 
 ## Contributions & Community
 
