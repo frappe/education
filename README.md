@@ -4,6 +4,8 @@ Frappe Education is an open-source and user-friendly Education Management System
 
 Frappe Education is dedicated to making education management more efficient and less time-consuming. The module offers a range of features that cater to the needs of educators and administrators, facilitating a more organized and effective learning environment.
 
+<img width="1224" alt="Screenshot 2023-11-21 at 7 15 10 PM" src="https://github.com/frappe/education/assets/65544983/6c6065c7-9a71-494f-ad18-9379a0d84afd">
+
 ## Table of Contents
 
 - [Key Features](#key-features)
