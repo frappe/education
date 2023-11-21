@@ -10,8 +10,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import date_diff, flt, get_link_to_form, getdate
 
-from education.education.doctype.student_attendance.student_attendance import \
-    get_holiday_list
+from education.education.doctype.student_attendance.student_attendance import (
+	get_holiday_list,
+)
 
 
 class StudentLeaveApplication(Document):
@@ -137,3 +138,14 @@ def get_number_of_leave_days(from_date, to_date, holiday_list):
 	number_of_days = flt(number_of_days) - flt(holidays)
 
 	return number_of_days
+
+
+@frappe.whitelist()
+def get_student_groups(student):
+	student_group = frappe.db.get_list(
+		"Student Group Student",
+		pluck="parent",
+		filters={"student": student},
+	)
+
+	return student_group
