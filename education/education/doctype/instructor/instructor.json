@@ -85,13 +85,12 @@
    "fieldtype": "Link",
    "label": "Gender",
    "options": "Gender",
-   "read_only_depends_on": "employee",
-   "unique": 1
+   "read_only_depends_on": "employee"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-11-17 12:55:49.891834",
+ "modified": "2023-11-21 19:11:38.243654",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Instructor",
