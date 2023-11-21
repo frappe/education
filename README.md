@@ -17,8 +17,9 @@ Frappe Education is dedicated to making education management more efficient and 
 
 ## Key Features
 
-Here are some of the standout features of the Frappe Education module:**Student Admission**: Streamline the admission process for new students. 🎓
+Here are some of the standout features of the Frappe Education module:
 
+- **Student Admission**: Streamline the admission process for new students. 🎓
 - **Program Enrollment**: Manage and keep track of student enrollments in various programs. 📋
 - **Guardian, Student & Sibling Management**: Maintain comprehensive profiles for students, guardians, and siblings. 👨‍👩‍👧‍👦
 - **Fee Structure and Scheduling**: Organize and manage the fee structure and schedule payments. 💰
