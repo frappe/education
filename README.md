@@ -58,7 +58,7 @@ You can self host the module by following [Frappe Bench Installation Instruction
 
 ## Contributions & Community
 
-1. If u find any bugs while using the app or have a feature request for the app, you can report/add them here [Github Issues](https://github.com/frappe/education/issues). Make sure to add proper information and screenshots. 
+1. If you find any bugs while using the app or have a feature request for the app, you can report/add them here [Github Issues](https://github.com/frappe/education/issues). Make sure to add proper information and screenshots. 
 2. Follow the [Contribution Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines) & [Issue Guidelines](https://github.com/frappe/erpnext/wiki/Issue-Guidelines) - [create an issue](https://github.com/frappe/education/issues/new).
 
 ## Links
