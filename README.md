@@ -4,7 +4,7 @@
 </p>
 <p align="center">
     <a href="https://docs.erpnext.com/docs/v14/user/manual/en/education">
-        Frappe Education
+        Documentation
     </a>
 </p>
 
