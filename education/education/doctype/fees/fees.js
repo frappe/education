@@ -107,7 +107,7 @@ frappe.ui.form.on("Fees", {
 	},
 
 	make_payment_request: function(frm) {
-		if (!frm.doc.student_email) {
+		if (!frm.doc.contact_email) {
 			frappe.msgprint(__("Please set the Email ID for the Student to send the Payment Request"));
 		} else {
 			frappe.call({
@@ -117,7 +117,7 @@ frappe.ui.form.on("Fees", {
 					"dn": frm.doc.name,
 					"party_type": "Student",
 					"party": frm.doc.student,
-					"recipient_id": frm.doc.student_email
+					"recipient_id": frm.doc.contact_email
 				},
 				callback: function(r) {
 					if(!r.exc){
