@@ -29,6 +29,28 @@ class ProgramEnrollment(Document):
 		self.update_student_joining_date()
 		self.make_fee_records()
 		self.create_course_enrollments()
+		self.cancel_previous_enrollments()
+
+	def cancel_previous_enrollments(self):
+		# from education setting get value of cancel_previous_enrollments
+		cancel_previous_enrollments = frappe.db.get_single_value(
+			"Education Settings", "cancel_previous_enrollments"
+		)
+		if not cancel_previous_enrollments:
+			return
+
+		existing_enrollments = frappe.db.get_list(
+			"Program Enrollment",
+			filters={
+				"student": self.student,
+				"docstatus": 1,
+				"name": ("!=", self.name),
+			},
+			fields=["name"],
+		)
+
+		for enrollment in existing_enrollments:
+			frappe.db.set_value("Program Enrollment", enrollment.name, "docstatus", 2)
 
 	def validate_academic_year(self):
 		start_date, end_date = frappe.db.get_value(
@@ -70,14 +92,16 @@ class ProgramEnrollment(Document):
 
 	def validate_duplication(self):
 		enrollment = frappe.db.exists(
-			"Program Enrollment", {
+			"Program Enrollment",
+			{
 				"student": self.student,
 				"program": self.program,
 				"academic_year": self.academic_year,
 				"academic_term": self.academic_term,
 				"docstatus": ("<", 2),
 				"name": ("!=", self.name),
-			})
+			},
+		)
 		if enrollment:
 			frappe.throw(_("Student is already enrolled."))
 

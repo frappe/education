@@ -8,6 +8,7 @@
   "current_academic_year",
   "current_academic_term",
   "attendance_freeze_date",
+  "cancel_previous_enrollments",
   "column_break_4",
   "validate_batch",
   "validate_course",
@@ -76,11 +77,18 @@
    "fieldname": "user_creation_skip",
    "fieldtype": "Check",
    "label": "Skip User creation for new Student"
+  },
+  {
+   "default": "0",
+   "description": "If checked, during the submission of a student's program enrollment, previous program enrollments for that student will be cancelled.",
+   "fieldname": "cancel_previous_enrollments",
+   "fieldtype": "Check",
+   "label": "Cancel Previous Enrollments"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2022-12-12 15:20:54.983137",
+ "modified": "2023-11-27 22:57:47.138816",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
@@ -115,7 +123,6 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
