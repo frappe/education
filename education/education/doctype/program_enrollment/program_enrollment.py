@@ -103,7 +103,12 @@ class ProgramEnrollment(Document):
 			},
 		)
 		if enrollment:
-			frappe.throw(_("Student is already enrolled."))
+			# frappe.throw(_("Student is already enrolled."))
+			frappe.throw(
+				_("Student {0} is already enrolled in {1}").format(
+					self.student, get_link_to_form("Program Enrollment", enrollment)
+				)
+			)
 
 	def update_student_joining_date(self):
 		table = frappe.qb.DocType("Program Enrollment")
