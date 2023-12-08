@@ -24,7 +24,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { session } from '../data/session'
 
 function submit(e) {

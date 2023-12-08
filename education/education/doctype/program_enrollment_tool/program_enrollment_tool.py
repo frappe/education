@@ -89,6 +89,7 @@ class ProgramEnrollmentTool(Document):
 				)
 				prog_enrollment.enrollment_date = self.enrollment_date
 				prog_enrollment.save()
+
 			elif stud.student_applicant:
 				prog_enrollment = enroll_student(stud.student_applicant)
 				prog_enrollment.academic_year = self.academic_year
@@ -97,4 +98,5 @@ class ProgramEnrollmentTool(Document):
 					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
 				)
 				prog_enrollment.save()
+
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))

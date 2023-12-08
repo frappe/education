@@ -3,6 +3,7 @@ import './index.css'
 import { createApp } from 'vue'
 import router from './router'
 import App from './App.vue'
+import { createPinia } from 'pinia'
 
 import {
   Button,
@@ -13,10 +14,14 @@ import {
   resourcesPlugin,
 } from 'frappe-ui'
 
+// create a pinia instance
+let pinia = createPinia()
+
 let app = createApp(App)
 
 setConfig('resourceFetcher', frappeRequest)
 
+app.use(pinia)
 app.use(router)
 app.use(resourcesPlugin)
 

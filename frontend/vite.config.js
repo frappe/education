@@ -19,11 +19,11 @@ export default defineConfig({
       output:{
         manualChunks: {
           'frappe-ui': ['frappe-ui'],
+        }
       }
     }
-  }
   },
   optimizeDeps: {
-    include: ['frappe-ui > feather-icons', 'showdown', 'engine.io-client'],
+    include: ['feather-icons', 'showdown', 'engine.io-client'],
   },
 })

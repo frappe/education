@@ -1,47 +1,61 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { session } from './data/session'
-import { userResource } from '@/data/user'
+import { usersStore } from '@/stores/user'
+import { sessionStore } from '@/stores/session'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: () => import('@/pages/Home.vue'),
+    props: true,
   },
   {
     name: 'Login',
-    path: '/account/login',
+    path: '/login',
     component: () => import('@/pages/Login.vue'),
+    props: true,
   },
   {
     path: '/schedule',
     name: 'Schedule',
     component: () => import('@/pages/Schedule.vue'),
+    props: true,
+
   },
   {
     path:'/grades',
     name:'Grades',
     component: () => import('@/pages/Grades.vue'),
+    props: true,
+
   },
   {
     path:"/fees",
     name:"Fees",
     component: () => import('@/pages/Fees.vue'),
+    props: true,
+
   },
   {
     path:"/attendance",
     name:"Attendance",
     component: () => import('@/pages/Attendance.vue'),
+    props: true,
+
   },
   {
     path:"/leaves",
     name:"Leaves",
     component: () => import('@/pages/Leaves.vue'),
+    props: true,
+
   },
   {
     path:"/profile",
     name:"Profile",
     component: () => import('@/pages/Profile.vue'),
+    props: true,
+
   }
 
 ]
@@ -51,20 +65,12 @@ let router = createRouter({
   routes,
 })
 
-router.beforeEach(async (to, from, next) => {
-  let isLoggedIn = session.isLoggedIn
-  try {
-    await userResource.promise
-  } catch (error) {
-    isLoggedIn = false
-  }
 
-  if (to.name === 'Login' && isLoggedIn) {
-    next({ name: 'Home' })
-  } else if (to.name !== 'Login' && !isLoggedIn) {
-    next({ name: 'Login' })
-  } else {
-    next()
+router.beforeEach(async (to, from) => {
+  const { isLoggedIn } = sessionStore()
+  if (!isLoggedIn) {
+    window.location.href = '/login'
+		return next(false)
   }
 })
 
