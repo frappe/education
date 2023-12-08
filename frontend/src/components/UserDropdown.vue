@@ -55,7 +55,7 @@ const props = defineProps({
   isCollapsed: {
     type: Boolean,
     default: false,
-},
+	},
 })
 
 const user  = computed(() => getUser() || {})

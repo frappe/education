@@ -30,7 +30,7 @@ let editEvent = (event) => {
 
 let config = {
   style: {
-    fontFamily: 'Nunito',
+    fontFamily: 'inherit',
   },
 
   dayBoundaries: {

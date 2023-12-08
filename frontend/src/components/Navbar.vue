@@ -1,7 +1,8 @@
 <template lang="">
 	<header class="flex justify-between gap-3 items-center px-5 py-2.5 h-12 border-b">
-		<h3 class="cursor-pointer
-		">{{ currentRoute }}</h3>
+		<h3 class="cursor-pointer font-medium text-gray-900 ">
+			{{ currentRoute }}
+		</h3>
 		<div class="flex flex-row gap-2">
 			<BellDot class="cursor-pointer mr-2" />
 		</div>

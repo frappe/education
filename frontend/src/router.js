@@ -41,7 +41,12 @@ const routes = [
     name:"Attendance",
     component: () => import('@/pages/Attendance.vue'),
     props: true,
-
+  },
+  {
+    path:"/attendance/:course",
+    name:"Attendance Detail",
+    component: () => import('@/pages/AttendanceDetail.vue'),
+    props: true,
   },
   {
     path:"/leaves",

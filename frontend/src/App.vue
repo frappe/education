@@ -6,7 +6,9 @@
       </div>
       <div class="flex-1 flex flex-col h-full overflow-auto">
         <Navbar />
-        <router-view  />
+        <router-view  
+          class="flex-1 overflow-auto"
+        />
       </div>
     </div>
   </div>
