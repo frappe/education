@@ -14,7 +14,6 @@
 			  :icon="link.icon"
 			  class="mx-2 my-0.5"
 			/>
-
 		</div>
 	  </div>
 	  <SidebarLink
@@ -61,27 +60,26 @@ const links = [
 		to: '/grades',
 		icon: GraduationCap,
 	},
-	{
-		label: 'Fees',
-		to: '/fees',
-		icon: Banknote,
-	},
+	// {
+	// 	label: 'Fees',
+	// 	to: '/fees',
+	// 	icon: Banknote,
+	// },
 	{
 		label: 'Attendance',
 		to: '/attendance',
 		icon: UserCheck,
 	},
-	{
-		label: 'Leave',
-		to: '/leaves',
-		icon: UserMinus,
-	},
+	// {
+	// 	label: 'Leave',
+	// 	to: '/leaves',
+	// 	icon: UserMinus,
+	// },
 	{
 		label: 'Profile',
 		to: '/profile',
 		icon: User,
 	},
-
 ]
 
 const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)

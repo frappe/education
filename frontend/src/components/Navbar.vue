@@ -4,19 +4,26 @@
 			{{ currentRoute }}
 		</h3>
 		<div class="flex flex-row gap-2">
-			<BellDot class="cursor-pointer mr-2" />
+			<Button 
+			v-if="currentRoute==='Attendance'"
+			variant="solid"  
+			label="Apply for Leave"
+			>
+				<template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+			</Button>
 		</div>
 	</header>
 </template>
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {BellDot } from 'lucide-vue-next';
+import { FeatherIcon } from 'frappe-ui';
 
 const router = useRouter();
-
+const showHeader = ref(false)
 const currentRoute = computed(() => router.currentRoute.value.name)
-
+console.log(currentRoute)
 
 </script>
 <style lang="">

@@ -1,6 +1,6 @@
 <template lang="">
 	<div class="px-5 py-4 ">
-		<h2 class=" pl-1 mb-4 font-semibold text-2xl"> {{ programName }}</h2>
+		<h2 class="mb-4 font-semibold text-2xl"> {{ programName }}</h2>
 		<ListView
 			class="h-[250px]"
 			:columns="tableData.columns"
@@ -20,7 +20,7 @@ import { sessionStore } from '@/stores/session';
 import { ListView } from 'frappe-ui';
 const { user } = sessionStore();
 
-const programName = 'B.Tech';
+const programName = 'B.Tech 5th Sem';
 
 const tableData = reactive({
 	rows:[
@@ -64,8 +64,7 @@ const tableData = reactive({
 		  label: 'Attendance %',
 		  key: 'attendance',
 		}
-	],
-	  
+	], 
 })
 
 onMounted(() => {
