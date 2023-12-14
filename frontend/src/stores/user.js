@@ -12,7 +12,7 @@ export const usersStore = defineStore('education-users', () => {
 			if (error && error.exc_type === 'AuthenticationError') {
 				router.push('/login')
 			}
-		}
+		},
 	})
 
 	return {

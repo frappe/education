@@ -24,7 +24,6 @@ setConfig('resourceFetcher', frappeRequest)
 app.use(pinia)
 app.use(router)
 app.use(resourcesPlugin)
-app.provide("$dayjs", dayjs)
 
 
 app.component('Button', Button)

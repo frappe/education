@@ -72,6 +72,11 @@ let router = createRouter({
 
 router.beforeEach(async (to, from) => {
   const { isLoggedIn } = sessionStore()
+  const { user } = usersStore()
+  if (!user.data){
+    await user.reload()
+  }
+  
   if (!isLoggedIn) {
     window.location.href = '/login'
 		return next(false)
