@@ -1,27 +1,55 @@
 <template lang="">
-	<div class="px-5 py-4 ">
-		<h2 class="mb-4 font-semibold text-2xl"> {{ programName }}</h2>
-		<ListView
-			class="h-[250px]"
-			:columns="tableData.columns"
-			:rows="tableData.rows"
+	<div>
+		<div class="px-5 py-4 ">
+			<h2 class="mb-4 font-semibold text-2xl"> {{ programName }}</h2>
+			<ListView
+				class="h-[250px]"
+				:columns="tableData.columns"
+				:rows="tableData.rows"
+				:options="{
+					getRowRoute: (row) => ({name: 'Attendance Detail',params: { course: row.course } }),
+					selectable: false,
+					showTooltip: false,
+				}"
+				row-key="id"
+			/>
+		</div>
+		<Dialog
+			v-model="isAttendancePage"
 			:options="{
-				getRowRoute: (row) => ({name: 'Attendance Detail',params: { course: row.course } }),
-				selectable: false,
-				showTooltip: false,
-			}"
-			row-key="id"
-		/>
+				size: '2xl',
+				title: 'Apply Leave',
+				actions: [{ label: 'Save', variant: 'solid' }],
+			  }"
+
+		>
+			<template #body-content>
+				<NewLeave :newLeave="newLeave" />
+			</template>
+			<template #actions="{ close }">
+				<div class="flex flex-row-reverse gap-2">
+				<Button variant="solid" label="Save" @click="createNewLeave(close)" />
+				</div>
+			</template>
+		</Dialog>
 	</div>
 </template>
 <script setup>
-import { onMounted, reactive } from 'vue';
+import { reactive,ref } from 'vue';
 import { sessionStore } from '@/stores/session';
-import { ListView } from 'frappe-ui';
+import { leaveStore } from '@/stores/leave';
+import { Dialog, ListView,ErrorMessage } from 'frappe-ui';
+import { storeToRefs } from 'pinia';
+import NewLeave from '@/components/NewLeave.vue';
+
 const { user } = sessionStore();
 
-const programName = 'B.Tech 5th Sem';
+// storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
+const { isAttendancePage } = storeToRefs(leaveStore())
+// can't get actions by using storeToRefs hence using store
+const { setIsAttendancePage } = leaveStore()
 
+const programName = 'B.Tech 5th Sem';
 const tableData = reactive({
 	rows:[
 			{
@@ -66,10 +94,29 @@ const tableData = reactive({
 		}
 	], 
 })
-
-onMounted(() => {
-	console.log(user)
+const newLeave = reactive({
+	student:user,
+	from_date: '',
+	to_date: '',
+	reason: '',
+	total_days: '',
+	student_group: '',
+	attendance_based_on: '',
+	course_schedule: '',
 })
+
+
+const createNewLeave = (close) => {
+	// validations
+	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
+		console.log("Error")
+	}
+	console.log(newLeave)
+}
+
+
+
+
 
 </script>
 <style lang="">

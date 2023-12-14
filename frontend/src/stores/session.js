@@ -5,7 +5,7 @@ import router from '@/router'
 import { ref, computed } from 'vue'
 
 export const sessionStore = defineStore('education-session', () => {
-	const { users } = usersStore()
+	const { user:currentUser } = usersStore()
 	function sessionUser() {
 		let cookies = new URLSearchParams(document.cookie.split('; ').join('&'))
 		let _sessionUser = cookies.get('user_id')
@@ -23,7 +23,7 @@ export const sessionStore = defineStore('education-session', () => {
 			throw new Error('Invalid email or password')
 		},
 		onSuccess() {
-			users.reload()
+			currentUser.reload()
 			user.value = sessionUser()
 			login.reset()
 			router.replace({ path: '/' })

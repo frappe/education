@@ -60,6 +60,7 @@ const rows = reactive([
 		unit_test1: "78%",
 		unit_test2: "82%",
 		sem_end_exam: "-",
+		total_grade: "80%"
 	},
 	{
 		id: 2,
@@ -67,6 +68,7 @@ const rows = reactive([
 		unit_test1: "78%",
 		unit_test2: "82%",
 		sem_end_exam: "80%",
+		total_grade: "80%"
 	},
 ])
 
@@ -74,7 +76,7 @@ const columns = reactive([
 	{
 	  label: 'Course',
 	  key: 'course',
-	  width: 1,
+	  width: 2,
 	},
 	{
 	  label: 'Unit Test 1',
@@ -89,6 +91,10 @@ const columns = reactive([
 	  label: 'Sem End Exam',
 	  key: 'sem_end_exam',
 	},
+	{
+		label:"Total Grade",
+		key:"total_grade",
+	}
 ])
 
 

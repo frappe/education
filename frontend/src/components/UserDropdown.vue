@@ -23,7 +23,7 @@
 			  Education
 			</div>
 			<div class="mt-1 text-sm text-gray-700 leading-none">
-			 {{ user.name }}
+			 {{ user.data.full_name }}
 			</div>
 		  </div>
 		  <div
@@ -48,7 +48,7 @@ import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/user';
 import {computed} from 'vue'
 
-const { getUser } = usersStore()
+const { user } = usersStore()
 const { logout } = sessionStore()
 
 const props = defineProps({
@@ -57,8 +57,6 @@ const props = defineProps({
     default: false,
 	},
 })
-
-const user  = computed(() => getUser() || {})
 
 const userDropdownOptions = [
 {

@@ -60,7 +60,6 @@ const routes = [
     name:"Profile",
     component: () => import('@/pages/Profile.vue'),
     props: true,
-
   }
 
 ]

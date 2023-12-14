@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { session } from '../data/session'
+import { session } from '@/stores/session'
 
 function submit(e) {
   let formData = new FormData(e.target)

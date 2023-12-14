@@ -8,6 +8,7 @@
 			v-if="currentRoute==='Attendance'"
 			variant="solid"  
 			label="Apply for Leave"
+			@click="setIsAttendancePage(true)"
 			>
 				<template #prefix><FeatherIcon name="plus" class="h-4" /></template>
 			</Button>
@@ -15,15 +16,19 @@
 	</header>
 </template>
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {BellDot } from 'lucide-vue-next';
 import { FeatherIcon } from 'frappe-ui';
-
+import { leaveStore } from '@/stores/leave';
 const router = useRouter();
-const showHeader = ref(false)
 const currentRoute = computed(() => router.currentRoute.value.name)
-console.log(currentRoute)
+
+const { setIsAttendancePage } = leaveStore()
+
+
+
+
 
 </script>
 <style lang="">

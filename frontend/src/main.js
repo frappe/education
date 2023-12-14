@@ -24,9 +24,14 @@ setConfig('resourceFetcher', frappeRequest)
 app.use(pinia)
 app.use(router)
 app.use(resourcesPlugin)
+app.provide("$dayjs", dayjs)
+
 
 app.component('Button', Button)
 app.component('Card', Card)
 app.component('Input', Input)
 
-app.mount('#app')
+router.isReady().then(() => {
+	app.mount("#app")
+})
+
