@@ -484,6 +484,7 @@ def get_current_enrollment(student, academic_year=None):
 		(student, current_academic_year),
 		as_dict=1,
 	)
+	print("program_enrollment_list", program_enrollment_list)
 
 	if program_enrollment_list:
 		return program_enrollment_list[0]
@@ -503,14 +504,82 @@ def get_user_info():
 	if frappe.session.user == "Guest":
 		frappe.throw("Authentication failed", exc=frappe.AuthenticationError)
 
-	users = frappe.qb.get_query(
+	current_user = frappe.db.get_list(
 		"User",
 		fields=["name", "email", "enabled", "user_image", "full_name", "user_type"],
-		order_by="full_name asc",
-		distinct=True,
-	).run(as_dict=1)
+		filters={"name": frappe.session.user},
+	)[0]
+	current_user["session_user"] = True
 
-	for user in users:
-		if frappe.session.user == user.name:
-			user.session_user = True
-	return users
+	return current_user
+
+
+@frappe.whitelist()
+def get_student_info():
+	email = frappe.session.user
+	student_info = frappe.db.get_list(
+		"Student",
+		fields=["*"],
+		filters={"user": email},
+	)[0]
+
+	current_program = get_current_enrollment(student_info.name)
+	student_groups = get_student_groups(student_info.name)
+	student_info["student_groups"] = student_groups
+	student_info["current_program"] = current_program
+	return student_info
+
+
+@frappe.whitelist()
+def get_student_programs(student):
+	# student = 'EDU-STU-2023-00043'
+	programs = frappe.db.get_list(
+		"Program Enrollment",
+		fields=["program", "name"],
+		filters={"docstatus": 1, "student": student},
+	)
+	return programs
+
+
+def get_student_groups(student):
+	# student = 'EDU-STU-2023-00043'
+	student_groups = frappe.db.get_all(
+		"Student Group Student", pluck="parent", filters={"student": student}
+	)
+
+	return student_groups
+
+
+@frappe.whitelist()
+def get_course_list_based_on_program(program_name):
+	program = frappe.get_doc("Program", program_name)
+
+	course_list = []
+
+	for course in program.courses:
+		course_list.append(course.course)
+	print("course_list", course_list)
+	return course_list
+
+
+@frappe.whitelist()
+def get_course_schedule_for_student(program_name):
+	print("program_name", program_name)
+	schedule = frappe.db.get_list(
+		"Course Schedule",
+		fields=[
+			"schedule_date",
+			"room",
+			"color",
+			"course",
+			"from_time",
+			"to_time",
+			"instructor",
+			"title",
+			"name",
+		],
+		filters={"program": program_name},
+		order_by="schedule_date asc",
+	)
+
+	return schedule

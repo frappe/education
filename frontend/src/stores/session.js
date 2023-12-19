@@ -28,6 +28,7 @@ export const sessionStore = defineStore('education-session', () => {
 		onSuccess() {
 			currentUser.reload()
 			sessionUser.reload()
+			student.reload()
 			user.value = sessionUser()
 			login.reset()
 			router.replace({ path: '/' })

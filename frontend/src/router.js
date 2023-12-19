@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { usersStore } from '@/stores/user'
 import { sessionStore } from '@/stores/session'
+import { studentStore } from '@/stores/student'
 
 const routes = [
   {
@@ -71,11 +72,17 @@ let router = createRouter({
 
 
 router.beforeEach(async (to, from) => {
-  const { isLoggedIn } = sessionStore()
+  const { isLoggedIn, user:sessionUser } = sessionStore()
   const { user } = usersStore()
-  if (!user.data){
-    await user.reload()
+  const { student } = studentStore()
+
+  if (user.data.length === 0) { 
+    user.reload()
   }
+  
+  // if (student.data === null) {
+  //   await student.reload()
+  // }
   
   if (!isLoggedIn) {
     window.location.href = '/login'

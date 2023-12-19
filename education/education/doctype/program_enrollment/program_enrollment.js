@@ -39,15 +39,15 @@ frappe.ui.form.on('Program Enrollment', {
 			});
 		}
 
-		frm.set_query('student', function() {
-			return{
-				query: 'education.education.doctype.program_enrollment.program_enrollment.get_students',
-				filters: {
-					'academic_year': frm.doc.academic_year,
-					'academic_term': frm.doc.academic_term
-				}
-			}
-		});
+		// frm.set_query('student', function() {
+		// 	return{
+		// 		query: 'education.education.doctype.program_enrollment.program_enrollment.get_students',
+		// 		filters: {
+		// 			'academic_year': frm.doc.academic_year,
+		// 			'academic_term': frm.doc.academic_term
+		// 		}
+		// 	}
+		// });
 	},
 
 	program: function(frm) {

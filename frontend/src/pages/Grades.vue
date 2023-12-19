@@ -28,29 +28,47 @@
 	</div>
 </template>
 <script setup>
-import { Dropdown, FeatherIcon,ListView } from 'frappe-ui';
-import { computed, reactive, ref } from 'vue';
-const courses = reactive([
-    {
-      label: 'B.Tech (CSE) 1st Sem',
+import { Dropdown, FeatherIcon,ListView, createResource } from 'frappe-ui';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { studentStore } from '@/stores/student';
+const { student } = studentStore()
+
+const studentInfo =  await student.reload()
+const student_programs = createResource({
+	url:"education.education.api.get_student_programs",
+	makeParams() {
+		return {
+			// student: studentInfo.value?.name
+			student: studentInfo.name
+		}
 	},
-    {
-      label: 'B.Tech (CSE) 2nd Sem',
+	transform: (response) => {
+		let programs = []
+		response.forEach((program) => {
+			programs.push({
+				label:program.program,
+				onClick:() => selected_program.value = program.program
+			})
+		})
+		selected_program.value = programs[programs.length - 1].label
+		courses.value = programs
 	},
-	{
-	  label: 'B.Tech (CSE) 3rd Sem',
-    },
-    {
-      label: 'B.Tech (CSE) 4th Sem',
-    },
-    {
-      label: 'B.Tech (CSE) 5th Sem',
-    },
-])
-courses.forEach((course) => {
+	auto:true
+})
+
+// const x2 = createResource({
+// 	url:"education.education.api.get_course_list_based_on_program",
+// 	params:{program_name:selected_program.value},
+// 	onSuccess:(response) => {
+// 		console.log(response)
+// 	},
+// })
+
+const courses = ref([])
+courses.value.forEach((course) => {
 	course.onClick = (event) => selected_program.value = event.target.innerText;
 })
-const selected_program = ref(courses[courses.length - 1 ].label);
+const selected_program = ref("");
 
 
 const rows = reactive([

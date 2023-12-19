@@ -1,16 +1,10 @@
 <script setup>
+import { createResource } from 'frappe-ui';
 import { Qalendar } from 'qalendar';
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
+import { studentStore } from '@/stores/student';
 
 let events= ref([
-    {
-      title: "Advanced algebra",
-      with: "Chandler Bing",
-      time:{start:"2023-12-05 16:00", end:"2023-12-05 17:00"},
-      color: "yellow",
-      id: "753944708f0f",
-      description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores assumenda corporis doloremque et expedita molestias necessitatibus quam quas temporibus veritatis. Deserunt excepturi illum nobis perferendis praesentium repudiandae saepe sapiente voluptatem!"
-    },
     {
       title: "Ralph on holiday",
       with: "Rachel Greene",
@@ -19,14 +13,10 @@ let events= ref([
         end: "2023-12-06 17:00" 
       },
       color: "blue",
-      isEditable: true,
       id: "5602b6f589fc"
     }
 ])
 
-let editEvent = (event) => {
-  console.log(event)
-}
 
 let config = {
   style: {
@@ -50,6 +40,48 @@ let get_earliest_times_from_events = (events) =>{
 }
 get_earliest_times_from_events(events.value)
 
+
+
+const { student,getStudentInfo,getCurrentProgram } = studentStore()
+
+const programName = ref('')
+
+await student.reload()
+const program = getCurrentProgram().value
+programName.value = program.program
+
+
+const studentInfo = getStudentInfo().value
+console.log(studentInfo.student_email_id)
+
+const parseTime = (date) => date.split(":").slice(0,-1).join(":")
+
+const schedule_doc = createResource({
+  url:"education.education.api.get_course_schedule_for_student",
+  params:{program_name:programName.value},
+  onSuccess:(response) => {
+    let schedule = []
+    response.forEach((classSchedule) => {
+      schedule.push({
+        title:classSchedule.title,
+        with:classSchedule.instructor,
+        color:classSchedule.color || 'blue',
+        id:classSchedule.name,
+        time :{ 
+          start: `${classSchedule.schedule_date } ${parseTime(classSchedule.from_time) }`, 
+          end: `${classSchedule.schedule_date } ${parseTime(classSchedule.to_time) }`
+        }
+      })
+    })
+    events.value = schedule
+  },
+  auto:true 
+})
+
+onMounted(() => {
+  console.log("rendered")
+})
+
 </script>
 
 <template>
@@ -58,9 +90,7 @@ get_earliest_times_from_events(events.value)
       <Qalendar 
         :events="events"
         :config="config"
-        @editEvent="editEvent"
         />
-
     </div>
 	</div>
 </template>

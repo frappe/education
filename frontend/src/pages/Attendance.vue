@@ -38,18 +38,26 @@
 import { reactive,ref } from 'vue';
 import { sessionStore } from '@/stores/session';
 import { leaveStore } from '@/stores/leave';
+import {studentStore} from '@/stores/student';	
+
 import { Dialog, ListView,ErrorMessage } from 'frappe-ui';
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
 
 const { user } = sessionStore();
+const {getCurrentProgram} = studentStore() 
+const programName = ref('')
+
+let program = getCurrentProgram().value
+programName.value = program.program
 
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
 // can't get actions by using storeToRefs hence using store
 const { setIsAttendancePage } = leaveStore()
 
-const programName = 'B.Tech 5th Sem';
+
+
 const tableData = reactive({
 	rows:[
 			{

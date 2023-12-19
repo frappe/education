@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { createResource } from 'frappe-ui'
-import { reactive } from 'vue'
+import router from "@/router"
 
 export const usersStore = defineStore('education-users', () => {
 	const user = createResource({
@@ -9,6 +9,8 @@ export const usersStore = defineStore('education-users', () => {
 		initialData: [],
 		onError(error) {
 			console.log(error)
+			console.log("aasass")
+			console.log(error.exc_type)
 			if (error && error.exc_type === 'AuthenticationError') {
 				router.push('/login')
 			}
