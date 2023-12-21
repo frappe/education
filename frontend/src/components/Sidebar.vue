@@ -39,7 +39,7 @@
 import { useRouter } from 'vue-router';
 import { useStorage } from '@vueuse/core'
 import SidebarLink from '@/components/SidebarLink.vue'
-import { LayoutDashboard,CalendarCheck,GraduationCap, Banknote, UserCheck, UserMinus, User,ArrowLeftToLine } from 'lucide-vue-next';
+import { LayoutDashboard,CalendarCheck,GraduationCap, Banknote, UserCheck, UserMinus, User,ArrowLeftToLine, BookOpen } from 'lucide-vue-next';
 
 import UserDropdown from './UserDropdown.vue';
 
@@ -70,11 +70,12 @@ const links = [
 		to: '/attendance',
 		icon: UserCheck,
 	},
-	// {
-	// 	label: 'Leave',
-	// 	to: '/leaves',
-	// 	icon: UserMinus,
-	// },
+	{
+		// TODO: create School Diary Page with card like CRM and from ListView go to Resource Document of each Card
+		label: 'School Diary',
+		to: '/diary',
+		icon: BookOpen,
+	},
 	{
 		label: 'Profile',
 		to: '/profile',

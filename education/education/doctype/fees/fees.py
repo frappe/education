@@ -87,8 +87,11 @@ class Fees(AccountsController):
 		self.outstanding_amount = self.grand_total
 		self.grand_total_in_words = money_in_words(self.grand_total)
 
-	def on_submit(self):
+	@frappe.whitelist()
+	def get_fees(student):
+		print("student", student)
 
+	def on_submit(self):
 		self.make_gl_entries()
 
 		if self.send_payment_request and self.contact_email:

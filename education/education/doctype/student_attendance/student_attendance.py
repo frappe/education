@@ -15,7 +15,7 @@ from education.education.api import get_student_group_students
 class StudentAttendance(Document):
 	def validate(self):
 		self.validate_mandatory()
-		self.validate_date()
+		# self.validate_date()
 		self.set_date()
 		self.set_student_group()
 		self.validate_student()

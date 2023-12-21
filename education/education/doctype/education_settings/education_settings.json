@@ -14,7 +14,9 @@
   "academic_term_reqd",
   "user_creation_skip",
   "section_break_7",
-  "instructor_created_by"
+  "instructor_created_by",
+  "portal_settings_tab",
+  "attendance_based_on_course_schedule"
  ],
  "fields": [
   {
@@ -76,11 +78,23 @@
    "fieldname": "user_creation_skip",
    "fieldtype": "Check",
    "label": "Skip User creation for new Student"
+  },
+  {
+   "fieldname": "portal_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Portal Settings"
+  },
+  {
+   "default": "0",
+   "description": "If enabled, the attendance will be marked on Course Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Group Basis for that particular date.",
+   "fieldname": "attendance_based_on_course_schedule",
+   "fieldtype": "Check",
+   "label": "Attendance Based on Course Schedule"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2022-12-12 15:20:54.983137",
+ "modified": "2023-12-21 10:56:39.405785",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
@@ -115,7 +129,6 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

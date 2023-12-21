@@ -40,15 +40,17 @@ import { sessionStore } from '@/stores/session';
 import { leaveStore } from '@/stores/leave';
 import {studentStore} from '@/stores/student';	
 
-import { Dialog, ListView,ErrorMessage } from 'frappe-ui';
+import { Dialog, ListView, createResource, createListResource} from 'frappe-ui';
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
 
 const { user } = sessionStore();
-const {getCurrentProgram} = studentStore() 
+const {student , getCurrentProgram, getStudentInfo } = studentStore() 
 const programName = ref('')
 
+await student.reload()
 let program = getCurrentProgram().value
+let studentInfo = getStudentInfo().value
 programName.value = program.program
 
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
@@ -102,16 +104,16 @@ const tableData = reactive({
 		}
 	], 
 })
+
 const newLeave = reactive({
-	student:user,
+	student:studentInfo.name,
+	student_name: studentInfo.student_name,
 	from_date: '',
 	to_date: '',
 	reason: '',
 	total_days: '',
-	student_group: '',
-	attendance_based_on: '',
-	course_schedule: '',
 })
+
 
 
 const createNewLeave = (close) => {
@@ -119,9 +121,38 @@ const createNewLeave = (close) => {
 	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
 		console.log("Error")
 	}
-	console.log(newLeave)
+
+	applyLeave.submit()
 }
 
+
+// const attendanceData = createListResource({
+// 	doctype: "Student Attendance",
+// 	fields:["*"],
+// 	filters: {
+// 		student: studentInfo.name ,
+// 		program: programName.value ,
+// 		date:["<" , new Date().toISOString().split("T")[0]],
+// 	},
+// 	transform: () =>{
+// 		return 
+// 	},
+// 	auto:true
+// })
+
+
+
+
+const applyLeave = createResource({
+	url:"education.education.api.apply_leave",
+	params:{
+		leave_data:newLeave,
+		program_name:programName.value,
+	},
+	onSuccess:() => {
+		isAttendancePage.value = false
+	}
+})
 
 
 

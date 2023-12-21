@@ -61,6 +61,12 @@ const routes = [
     name:"Profile",
     component: () => import('@/pages/Profile.vue'),
     props: true,
+  },
+  {
+    path:'/diary',
+    name:'SchoolDiary',
+    component: () => import('@/pages/SchoolDiary.vue'),
+    props: true,
   }
 
 ]

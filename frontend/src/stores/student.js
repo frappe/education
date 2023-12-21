@@ -16,7 +16,6 @@ export const studentStore = defineStore('education-student', () => {
 			// remove current_program from info
 			delete info.current_program
 			studentGroups.value = info.student_groups
-			console.log(info.student_groups)
 			delete info.student_groups
 			studentInfo.value = info
 		},
@@ -36,5 +35,5 @@ export const studentStore = defineStore('education-student', () => {
 		return currentProgram
 	}
 
-	return { student ,studentInfo, currentProgram , getStudentInfo, getCurrentProgram,studentGroups }
+	return { student ,studentInfo, currentProgram , getStudentInfo, getCurrentProgram, studentGroups }
 })

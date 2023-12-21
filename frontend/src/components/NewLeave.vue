@@ -93,55 +93,8 @@ const allFields = [
         type: 'data',
 		readonly: true
       },
-      {
-        label: 'Attendance Based On',
-        name: 'attendance_based_on',
-        type: 'select',
-		default: 'course_schedule',
-        options: [
-          {
-            label: 'Course Schedule',
-            value: 'course_schedule',
-          },
-          {
-            label: 'Student Group',
-            value: 'student_group',
-          }
-        ],
-		change: (value) => {
-			if (value === 'course_schedule') {
-				allFields[0].fields[3].hidden = true
-				allFields[0].fields[2].hidden = false
-			} else if(value === 'student_group') {
-				allFields[0].fields[2].hidden = true
-				allFields[0].fields[3].hidden = false
-			}
-		}
-      },
 
-      {
-		label: 'Course Schedule',
-		name: 'course_schedule',
-        type: 'link',
-		placeholder: 'Course Schedule',
-		doctype: 'Course Schedule',
-		change: (value) => {
-			console.log(value)
-		},
-		hidden: false
-      },
-      {
-		label: 'Student Group',
-        type: 'link',
-		name: 'student_group',
-		placeholder: 'Student Group',
-		doctype: 'Student Group',
-		change: (value) => {
-			console.log(value)
-		},
-		hidden: true
-      },
-    ],
+	],
   },
   {
     section: 'Date Details',
@@ -178,6 +131,7 @@ const allFields = [
     ],
   },
 ]
+
 
 
 </script>

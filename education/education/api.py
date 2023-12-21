@@ -97,7 +97,6 @@ def mark_attendance(
 	:param student_group: Student Group.
 	:param date: Date.
 	"""
-
 	if student_group:
 		academic_year = frappe.db.get_value("Student Group", student_group, "academic_year")
 		if academic_year:
@@ -484,7 +483,6 @@ def get_current_enrollment(student, academic_year=None):
 		(student, current_academic_year),
 		as_dict=1,
 	)
-	print("program_enrollment_list", program_enrollment_list)
 
 	if program_enrollment_list:
 		return program_enrollment_list[0]
@@ -524,7 +522,7 @@ def get_student_info():
 	)[0]
 
 	current_program = get_current_enrollment(student_info.name)
-	student_groups = get_student_groups(student_info.name)
+	student_groups = get_student_groups(student_info.name, current_program.program)
 	student_info["student_groups"] = student_groups
 	student_info["current_program"] = current_program
 	return student_info
@@ -541,13 +539,23 @@ def get_student_programs(student):
 	return programs
 
 
-def get_student_groups(student):
+def get_student_groups(student, program_name):
 	# student = 'EDU-STU-2023-00043'
-	student_groups = frappe.db.get_all(
-		"Student Group Student", pluck="parent", filters={"student": student}
+
+	student_group = frappe.qb.DocType("Student Group")
+	student_group_students = frappe.qb.DocType("Student Group Student")
+
+	student_group_query = (
+		frappe.qb.from_(student_group)
+		.inner_join(student_group_students)
+		.on(student_group.name == student_group_students.parent)
+		.select(student_group_students.parent)
+		.where(student_group_students.student == student)
+		.where(student_group.program == program_name)
+		.run(as_list=1)
 	)
 
-	return student_groups
+	return student_group_query
 
 
 @frappe.whitelist()
@@ -558,13 +566,11 @@ def get_course_list_based_on_program(program_name):
 
 	for course in program.courses:
 		course_list.append(course.course)
-	print("course_list", course_list)
 	return course_list
 
 
 @frappe.whitelist()
 def get_course_schedule_for_student(program_name):
-	print("program_name", program_name)
 	schedule = frappe.db.get_list(
 		"Course Schedule",
 		fields=[
@@ -581,5 +587,55 @@ def get_course_schedule_for_student(program_name):
 		filters={"program": program_name},
 		order_by="schedule_date asc",
 	)
-
 	return schedule
+
+
+@frappe.whitelist()
+def apply_leave(leave_data, program_name):
+	attendance_based_on_course_schedule = frappe.db.get_single_value(
+		"Education Settings", "attendance_based_on_course_schedule"
+	)
+	if attendance_based_on_course_schedule:
+		apply_leave_based_on_course_schedule(leave_data, program_name)
+	else:
+		apply_leave_based_on_student_group(leave_data, program_name)
+
+
+def apply_leave_based_on_course_schedule(leave_data, program_name):
+	course_schedule_in_leave_period = frappe.db.get_list(
+		"Course Schedule",
+		fields=["name", "schedule_date"],
+		filters={
+			"program": program_name,
+			"schedule_date": [
+				"between",
+				[leave_data.get("from_date"), leave_data.get("to_date")],
+			],
+		},
+		order_by="schedule_date asc",
+	)
+
+	for course_schedule in course_schedule_in_leave_period:
+		make_attendance_records(
+			leave_data.get("student"),
+			leave_data.get("student_name"),
+			"Absent",
+			course_schedule.get("name"),
+			None,
+			course_schedule.get("schedule_date"),
+		)
+
+
+def apply_leave_based_on_student_group(leave_data, program_name):
+
+	student_groups = get_student_groups(leave_data.get("student"), program_name)
+	print("student_groups", student_groups)
+	# 	for student_group in student_groups:
+	# 		make_attendance_records(
+	# 			leave_data.get("student"),
+	# 			leave_data.get("student_name"),
+	# 			"Absent",
+	# 			None,
+	# 			student_group.get("name"),
+	# 			leave_data.get("from_date")
+	# 		)
