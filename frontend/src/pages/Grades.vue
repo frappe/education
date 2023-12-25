@@ -2,9 +2,9 @@
 	<div class="px-5 py-4">
 		<Dropdown
 			class="mb-4"
-  			:options="courses">
+  			:options="allPrograms">
 			  <template #default="{ open }">
-				<Button :label="selected_program">
+				<Button :label="selectedProgram">
 					<template #suffix>
 						<FeatherIcon
 						  :name="open ? 'chevron-up' : 'chevron-down'"
@@ -42,16 +42,16 @@ const student_programs = createResource({
 			student: studentInfo.name
 		}
 	},
-	transform: (response) => {
+	onSuccess: (response) => {
 		let programs = []
 		response.forEach((program) => {
 			programs.push({
 				label:program.program,
-				onClick:() => selected_program.value = program.program
+				onClick:() => selectedProgram.value = program.program
 			})
 		})
-		selected_program.value = programs[programs.length - 1].label
-		courses.value = programs
+		selectedProgram.value = programs[programs.length - 1].label
+		allPrograms.value = programs
 	},
 	auto:true
 })
@@ -64,11 +64,8 @@ const student_programs = createResource({
 // 	},
 // })
 
-const courses = ref([])
-courses.value.forEach((course) => {
-	course.onClick = (event) => selected_program.value = event.target.innerText;
-})
-const selected_program = ref("");
+const allPrograms = ref([])
+const selectedProgram = ref("");
 
 
 const rows = reactive([

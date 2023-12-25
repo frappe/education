@@ -33,6 +33,7 @@ def execute(filters=None):
 	att_map = get_attendance_list(
 		from_date, to_date, filters.get("student_group"), students_list
 	)
+	print(att_map)
 	data = []
 
 	for stud in students:
@@ -68,6 +69,7 @@ def execute(filters=None):
 
 		row += [total_p, total_a]
 		data.append(row)
+		print(data)
 	return columns, data
 
 

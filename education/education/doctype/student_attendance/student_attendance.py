@@ -105,7 +105,6 @@ class StudentAttendance(Document):
 					"date": self.date,
 					"docstatus": ("!=", 2),
 					"name": ("!=", self.name),
-					"course_schedule": "",
 				},
 			)
 

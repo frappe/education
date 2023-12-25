@@ -1,8 +1,25 @@
 <template lang="">
-	<div>
-		<div class="px-5 py-4 ">
-			<h2 class="mb-4 font-semibold text-2xl"> {{ programName }}</h2>
-			<ListView
+	<div class="px-5 py-4 flex flex-col">
+
+		<div class="flex items-center mb-4 gap-2">
+			<h2 class=" font-semibold text-2xl"> {{ programName }}</h2>
+			<Dropdown
+				:options="allStudentGroups"
+				>
+				<template #default="{ open }">
+					<Button :label="selectedGroup">
+						<template #suffix>
+							<FeatherIcon
+							:name="open ? 'chevron-up' : 'chevron-down'"
+							class="h-4 text-gray-600"
+							/>
+						</template>
+					</Button>
+				</template>
+			</Dropdown>
+		</div>
+		<div class="flex items-center justify-center flex-col flex-1">
+			<!-- <ListView
 				class="h-[250px]"
 				:columns="tableData.columns"
 				:rows="tableData.rows"
@@ -12,6 +29,11 @@
 					showTooltip: false,
 				}"
 				row-key="id"
+			/> -->
+			<CalendarView
+				v-if="!attendanceData.loading && attendanceData.data"
+				:showMonthlyView="true"
+				:events="attendanceData.data"
 			/>
 		</div>
 		<Dialog
@@ -36,17 +58,19 @@
 </template>
 <script setup>
 import { reactive,ref } from 'vue';
-import { sessionStore } from '@/stores/session';
 import { leaveStore } from '@/stores/leave';
-import {studentStore} from '@/stores/student';	
+import { studentStore } from '@/stores/student';	
 
-import { Dialog, ListView, createResource, createListResource} from 'frappe-ui';
+import { Dialog, ListView, createResource, createListResource, Dropdown, FeatherIcon} from 'frappe-ui';
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
+import CalendarView from '@/components/CalendarView.vue';
 
-const { user } = sessionStore();
-const {student , getCurrentProgram, getStudentInfo } = studentStore() 
+const {student , getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 const programName = ref('')
+const selectedGroup = ref('Select Student Group')
+const allStudentGroups = ref()
+
 
 await student.reload()
 let program = getCurrentProgram().value
@@ -56,8 +80,6 @@ programName.value = program.program
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
 // can't get actions by using storeToRefs hence using store
-const { setIsAttendancePage } = leaveStore()
-
 
 
 const tableData = reactive({
@@ -121,25 +143,45 @@ const createNewLeave = (close) => {
 	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
 		console.log("Error")
 	}
-
 	applyLeave.submit()
 }
 
+const attendanceData = createListResource({
+	doctype:"Student Attendance",
+	fields:['date','status','name'],
+	filters: {
+		student:studentInfo.name,
+		student_group:selectedGroup,
+		docstatus:1,
+	},
+	cache:selectedGroup.value,
+	transform: (attendance) => {
+		// filter attendance to remove duplicate attendance data
+		attendance = attendance.filter((attendance, index, self) =>
+			index === self.findIndex((t) => (
+				t.date === attendance.date
+			))
+		)
 
-// const attendanceData = createListResource({
-// 	doctype: "Student Attendance",
-// 	fields:["*"],
-// 	filters: {
-// 		student: studentInfo.name ,
-// 		program: programName.value ,
-// 		date:["<" , new Date().toISOString().split("T")[0]],
-// 	},
-// 	transform: () =>{
-// 		return 
-// 	},
-// 	auto:true
-// })
+		let events = []
 
+		attendance.forEach((attendance) => {
+			events.push({
+				title:attendance.status,
+				color:attendance.status === "Absent" ? "red" : "green",
+				id:attendance.name,
+				time :{ 
+					start: `${attendance.date } 08:00`, 
+					end: `${attendance.date } 16:00`
+				}
+			})
+		})
+
+		return events
+	}
+})
+
+setStudentGroup()
 
 
 
@@ -151,8 +193,23 @@ const applyLeave = createResource({
 	},
 	onSuccess:() => {
 		isAttendancePage.value = false
-	}
+	},
+	onError:(err) => {
+		console.log("Error",err)
+	},
 })
+
+function setStudentGroup() {
+	allStudentGroups.value = getStudentGroups().value
+	allStudentGroups.value.forEach((group) => group.onClick = () => {
+		selectedGroup.value = group.label
+		attendanceData.reload()
+	} )
+	selectedGroup.value = allStudentGroups.value[0].label
+	attendanceData.reload()
+
+}
+
 
 
 

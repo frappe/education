@@ -17,7 +17,8 @@
   "date",
   "status",
   "leave_application",
-  "amended_from"
+  "amended_from",
+  "link_nvfk"
  ],
  "fields": [
   {
@@ -101,12 +102,19 @@
    "fieldtype": "Read Only",
    "label": "Student Mobile Number",
    "options": "Phone"
+  },
+  {
+   "fetch_from": "student_group.program",
+   "fieldname": "link_nvfk",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-21 11:15:55.442428",
+ "modified": "2023-12-21 19:57:03.021191",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",

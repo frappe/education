@@ -35,5 +35,9 @@ export const studentStore = defineStore('education-student', () => {
 		return currentProgram
 	}
 
-	return { student ,studentInfo, currentProgram , getStudentInfo, getCurrentProgram, studentGroups }
+	function getStudentGroups(){
+		return studentGroups
+	}
+
+	return { student ,studentInfo, currentProgram , studentGroups, getStudentInfo, getCurrentProgram, getStudentGroups }
 })

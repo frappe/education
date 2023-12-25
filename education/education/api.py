@@ -549,10 +549,10 @@ def get_student_groups(student, program_name):
 		frappe.qb.from_(student_group)
 		.inner_join(student_group_students)
 		.on(student_group.name == student_group_students.parent)
-		.select(student_group_students.parent)
+		.select((student_group_students.parent).as_("label"))
 		.where(student_group_students.student == student)
 		.where(student_group.program == program_name)
-		.run(as_list=1)
+		.run(as_dict=1)
 	)
 
 	return student_group_query
@@ -627,15 +627,13 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 
 
 def apply_leave_based_on_student_group(leave_data, program_name):
-
 	student_groups = get_student_groups(leave_data.get("student"), program_name)
-	print("student_groups", student_groups)
-	# 	for student_group in student_groups:
-	# 		make_attendance_records(
-	# 			leave_data.get("student"),
-	# 			leave_data.get("student_name"),
-	# 			"Absent",
-	# 			None,
-	# 			student_group.get("name"),
-	# 			leave_data.get("from_date")
-	# 		)
+	for student_group in student_groups:
+		make_attendance_records(
+			leave_data.get("student"),
+			leave_data.get("student_name"),
+			"Absent",
+			None,
+			student_group.get("parent"),
+			leave_data.get("from_date"),
+		)
