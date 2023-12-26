@@ -1,7 +1,7 @@
 <template lang="">
 	<div class="px-5 py-4 flex flex-col">
 
-		<div class="flex items-center mb-4 gap-2">
+		<div class="flex items-center gap-2">
 			<h2 class=" font-semibold text-2xl"> {{ programName }}</h2>
 			<Dropdown
 				:options="allStudentGroups"

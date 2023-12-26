@@ -40,7 +40,7 @@ function get_earliest_time_from_events(events) {
   });
   earliest_times.sort()
   config.dayBoundaries.start = parseInt(earliest_times[0]) - 1
-  config.dayBoundaries.end = parseInt(earliest_times[earliest_times.length - 1]) + 6
+  config.dayBoundaries.end = parseInt(earliest_times[earliest_times.length - 1]) + 7
 }
 
 const parseTime = (date) => date.split(":").slice(0,-1).join(":")

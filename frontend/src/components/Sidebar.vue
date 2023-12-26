@@ -72,8 +72,8 @@ const links = [
 	},
 	{
 		// TODO: create School Diary Page with card like CRM and from ListView go to Resource Document of each Card
-		label: 'School Diary',
-		to: '/diary',
+		label: 'Notes',
+		to: '/notes',
 		icon: BookOpen,
 	},
 	{

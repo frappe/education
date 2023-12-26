@@ -28,12 +28,33 @@
 	</div>
 </template>
 <script setup>
-import { Dropdown, FeatherIcon,ListView, createResource } from 'frappe-ui';
+import { Dropdown, FeatherIcon,ListView, createResource,createListResource } from 'frappe-ui';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { studentStore } from '@/stores/student';
-const { student } = studentStore()
+const { student , getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 
-const studentInfo =  await student.reload()
+
+await student.reload()
+let studentInfo = getStudentInfo().value
+let currentProgram = getCurrentProgram().value
+const allPrograms = ref([])
+const selectedProgram = ref("");
+
+const columns = ref([
+	{
+	  label: 'Course',
+	  key: 'course',
+	},
+	{
+		label:'Batch',
+		key:'batch',
+	}
+])
+
+const rows = ref([])
+
+
+
 const student_programs = createResource({
 	url:"education.education.api.get_student_programs",
 	makeParams() {
@@ -56,6 +77,66 @@ const student_programs = createResource({
 	auto:true
 })
 
+const grades = createListResource({
+	doctype: "Assessment Result",
+	fields:["name", "student_group", "course", "assessment_group", "total_score", "maximum_score", "grade"],
+	filters: {
+		// student:studentInfo.name,
+		// program:currentProgram.program,
+		student:"EDU-STU-2023-00005",
+		program:"Comp Science"
+	},
+	transform:() =>{},
+	
+	onSuccess:(response) => {
+		let data = Object.groupBy(response,row => row.assessment_group)
+		let exams = Object.keys(data)
+		updateColumns(exams)
+		// console.log(response)
+
+		let courses = Object.groupBy(response, row => row.course)
+		Object.keys(courses).forEach((course) => {
+			let row = {}
+			row.course = course
+			row.batch = courses[course][0].student_group
+			exams.forEach((exam) => {
+				let examData = data[exam].find(row => row.course === course)
+				row[exam] = examData ? `${examData.total_score}/${examData.maximum_score}` : "-"
+			})
+			// console.log(row)
+			rows.value.push(row)
+		})
+	},
+	auto:true
+})
+
+const updateColumns = (exams) => {
+	exams.forEach((exam) => {
+		let col = {}
+		col.label = exam
+		col.key = exam
+		columns.value.push(col)
+	})
+}
+
+const updateRows = (data) => {
+	let rows = []
+	// {
+	// id: 1,
+	// course: 'DSA',
+		// batch: "G1",
+		// test1: "A",
+		// test2: "B",
+		// test3: "C",
+	// }
+	// this is the format of the row
+
+	Object.keys(data).forEach((exam) => {
+	})
+}
+
+
+
 // const x2 = createResource({
 // 	url:"education.education.api.get_course_list_based_on_program",
 // 	params:{program_name:selected_program.value},
@@ -64,53 +145,12 @@ const student_programs = createResource({
 // 	},
 // })
 
-const allPrograms = ref([])
-const selectedProgram = ref("");
 
 
-const rows = reactive([
-	{
-		id: 1,
-		course: 'DSA',
-		unit_test1: "78%",
-		unit_test2: "82%",
-		sem_end_exam: "-",
-		total_grade: "80%"
-	},
-	{
-		id: 2,
-		course: 'JavaScript',
-		unit_test1: "78%",
-		unit_test2: "82%",
-		sem_end_exam: "80%",
-		total_grade: "80%"
-	},
-])
 
-const columns = reactive([
-	{
-	  label: 'Course',
-	  key: 'course',
-	  width: 2,
-	},
-	{
-	  label: 'Unit Test 1',
-	  key: 'unit_test1',
-	  width: '200px',
-	},
-	{
-	  label: 'Unit Test 2',
-	  key: 'unit_test2',
-	},
-	{
-	  label: 'Sem End Exam',
-	  key: 'sem_end_exam',
-	},
-	{
-		label:"Total Grade",
-		key:"total_grade",
-	}
-])
+
+
+
 
 
 </script>

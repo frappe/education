@@ -25,7 +25,7 @@ const props = defineProps({
 
 const config = {
   style: {
-    fontFamily: 'inherit',
+    fontFamily: 'inherit'
   },
   dayBoundaries: {
     start: 8,
@@ -45,7 +45,6 @@ if (props.showMonthlyView) {
   .calendar_wrapper {
     width: 100%;
     height: 100%;
-    max-width: 85%;
-    max-height: 700px;
+    padding: 20px;
   }
 </style>

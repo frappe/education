@@ -63,8 +63,8 @@ const routes = [
     props: true,
   },
   {
-    path:'/diary',
-    name:'SchoolDiary',
+    path:'/notes',
+    name:'Notes',
     component: () => import('@/pages/SchoolDiary.vue'),
     props: true,
   }
