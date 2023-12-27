@@ -83,13 +83,10 @@ router.beforeEach(async (to, from) => {
   const { student } = studentStore()
 
   if (user.data.length === 0) { 
-    user.reload()
+    await user.reload()
   }
-  
-  // if (student.data === null) {
-  //   await student.reload()
-  // }
-  
+  await student.reload()
+
   if (!isLoggedIn) {
     window.location.href = '/login'
 		return next(false)

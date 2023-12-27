@@ -43,7 +43,6 @@
 				title: 'Apply Leave',
 				actions: [{ label: 'Save', variant: 'solid' }],
 			  }"
-
 		>
 			<template #body-content>
 				<NewLeave :newLeave="newLeave" />

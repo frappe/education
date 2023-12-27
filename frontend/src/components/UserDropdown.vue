@@ -39,14 +39,17 @@
 		</button>
 	  </template>
 	</Dropdown>
+	<ProfileModal />
+
   </template>
   
 <script setup>
 
-import { Dropdown, FeatherIcon } from 'frappe-ui'
+import { Dropdown, FeatherIcon, Dialog} from 'frappe-ui'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/user';
-import {computed} from 'vue'
+import {computed, provide, ref} from 'vue'
+import ProfileModal from '@/components/ProfileModal.vue'
 
 const { user } = usersStore()
 const { logout } = sessionStore()
@@ -58,12 +61,40 @@ const props = defineProps({
 	},
 })
 
+
+
+const showProfileDialog = ref(false)
+provide('showProfileDialog', showProfileDialog)
+
+const updatedStudentProfile = ref({
+	studentID:'',
+	first_name:'',
+	last_name:'',
+	joining_date:'',
+	date_of_birth:'',
+	blood_group:'',
+	student_mobile_number:'',
+	gender:'',
+	nationality:'',
+})
+
+
 const userDropdownOptions = [
-{
-	icon: 'log-out',
-	label: 'Log out',
-	onClick: () => logout.submit(),
-},
+	{
+		icon: 'user',
+		label: 'Profile',
+		onClick: () => showProfileDialog.value = true,
+	},
+	{
+		icon: 'log-out',
+		label: 'Log out',
+		onClick: () => logout.submit(),
+	},
 ]
+
+const updateStudentProfile = (close) => {
+
+} 
+
 </script>
   
