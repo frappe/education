@@ -34,7 +34,7 @@ const props = defineProps({
 		type: Object,
 		required: true,
  	},
-	allowEdit: {
+	editMode: {
 		type: Boolean,
 	}
 })
@@ -71,19 +71,19 @@ const allFields = computed(()=> [
 				label: 'First Name',
 				name: 'first_name',
 				type: 'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 			{
 				label: 'Middle Name',
 				name: 'middle_name',
 				type: 'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 			{
 				label: 'Last Name',
 				name: 'last_name',
 				type: 'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 		]
 	},
@@ -94,19 +94,19 @@ const allFields = computed(()=> [
 				label:'Mobile Number',
 				name:'student_mobile_number',
 				type:'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 			{				
 				label:'Date Of Birth',
 				name:'date_of_birth',
 				type:'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 			{
 				label:'Gender',
 				name:'gender',
 				type:'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 		]
 	},
@@ -117,13 +117,13 @@ const allFields = computed(()=> [
 				label:'Blood Group',
 				name:'blood_group',
 				type:'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			},
 			{
 				label:'Nationality',
 				name:'nationality',
 				type:'data',
-				readonly:props.allowEdit
+				readonly:props.editMode
 			}
 		]
 	}
