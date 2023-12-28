@@ -1,92 +1,51 @@
 <template>
 	<Dialog
 		v-model="showProfileDialog"
-		:options="dialogOptions"
+		:options="{
+			title: 'Profile',
+			size: 'xl',
+		  }"
 	>
-		<template #body>
-			<div class="bg-white px-4 pb-6 pt-5 sm:px-6">
-				<div class="mb-5 flex items-center justify-between">
-					<div>
-						<h3 class="text-2xl font-semibold leading-6 text-gray-900">
-						  {{ dialogOptions.title || 'Untitled' }}
-						</h3>
+	<template #body-content>
+			<div>
+				<div class="flex flex-col gap-4">
+					<div class="flex items-center border-b border-solid border-lightGray pb-2">
+					  <Avatar
+						size="3xl"
+						class="h-12 w-12"
+						:label="studentInfo.student_name"
+						:image="null"
+					  />
+					  <div class="flex flex-col ml-2">
+						<p class="text-md font-semibold">{{ studentInfo.student_name }}</p>
+						<p class="text-gray-600">{{ studentInfo.student_email_id }}</p>
 					  </div>
-					  <div class="flex items-center gap-1">
-						<Button
-						  v-if="detailMode"
-						  variant="ghost"
-						  class="w-7"
-						  @click="detailMode = false"
-						>
-						  <FeatherIcon name="edit" class="h-4 w-4" />
-						</Button>
-						<Button variant="ghost" class="w-7" 
-							@click="closeModal"
-						>
-						  <FeatherIcon name="x" class="h-4 w-4" />
-						</Button>
+					</div>
+				  
+					<div class="flex gap-4">
+					  <div v-for="section in infoFormat" :key="section.section" class="flex-1 flex flex-col gap-2">
+						<div v-for="field in section.fields" :key="field.label" class="flex items-center">
+						  <p class="w-1/3 text-sm text-gray-600">{{ field.label }}:&nbsp;</p>
+						  <p class="w-2/3 text-gray-900">{{ field.value }}</p>
+						</div>
 					  </div>
-				</div>
-				<div>
-					<div v-if="detailMode" class="flex flex-col gap-3.5">
-						<div class="flex gap-3 items-center">
-							<Avatar
-							size="3xl"
-							class="h-12 w-12"
-							:label="updatedStudentProfile.student_name"
-							:image="null"
-						  />
-
-						  <div>
-							<p>{{updatedStudentProfile.student_name}}</p>
-							<p>{{ updatedStudentProfile.email_id }}</p>
-						  </div>
-						</div>
-						<div v-for="info in infoFormat" class="flex items-center">
-							<p class="text-sm text-gray-600">{{ info.label }}:&nbsp</p>
-							<p class=" text-gray-900">{{ info.value }}</p>
-						</div>
 					</div>
-
-					<div v-else>
-						<UpdateStudentInfo 
-							:updatedStudentProfile="updatedStudentProfile" :editMode="editMode" 
-						/>
+				  
+					<div class="flex items-center bg-gray-200 text-gray-600 text-sm p-2 rounded-md">
+					  <FeatherIcon name="info" class="h-4 mr-2" />
+					  In case of any incorrect details, please contact the school admin.
 					</div>
-				</div>
+				</div>				  
 			</div>
-
-			<div v-if="!detailMode" class="px-4 pb-7 pt-4 sm:px-6">
-				<div class="space-y-2">
-				  <Button
-					class="w-full"
-					v-for="action in dialogOptions.actions"
-					:key="action.label"
-					v-bind="action"
-				  >
-					{{ action.label }}
-				  </Button>
-				</div>
-			  </div>
 		</template>
-		<!-- <template #body-content>
-			<div v-if="detailMode">
-				<h1>Conditionally</h1>
-			</div>
-			<UpdateStudentInfo 
-				v-if="!detailMode"
-				:updatedStudentProfile="updatedStudentProfile" :editMode="editMode" 
-			/>
-		</template> -->
 
 	</Dialog>
 </template>
 
 <script setup>
 
-import { Dialog,FeatherIcon,Avatar } from 'frappe-ui'
-import { computed, inject, ref } from 'vue'
-import UpdateStudentInfo from './UpdateStudentInfo.vue';
+import { Dialog,Avatar, FeatherIcon } from 'frappe-ui'
+import { inject } from 'vue'
 import { studentStore } from '@/stores/student';	
 const { getStudentInfo } = studentStore() 
 
@@ -94,82 +53,46 @@ const showProfileDialog = inject('showProfileDialog')
 
 const studentInfo = getStudentInfo().value
 
-console.log(studentInfo)
-
-const updatedStudentProfile = ref({
-	name: studentInfo.name,
-	first_name:studentInfo.first_name,
-	middle_name:studentInfo.middle_name,
-	last_name:studentInfo.last_name,
-	joining_date:studentInfo.joining_date,
-	date_of_birth:studentInfo.date_of_birth,
-	blood_group:studentInfo.blood_group ,
-	student_mobile_number:studentInfo.student_mobile_number,
-	gender:studentInfo.gender,
-	nationality:studentInfo.nationality,
-	email_id:studentInfo.student_email_id,
-	student_name:studentInfo.student_name,
-})
-
 const infoFormat = [
 	{
-		label:'Mobile Number',
-		value: updatedStudentProfile.value.student_mobile_number,
+		section: 'section 1',
+		fields: [
+			{
+				label: 'Mobile Number',
+				value: studentInfo.student_mobile_number,
+			},
+			{
+				label: 'Joining Date',
+				value: studentInfo.joining_date,
+			},
+			{
+				label: 'Date of Birth',
+				value: studentInfo.date_of_birth,
+			},
+			{
+				label: 'Address',
+				value: [studentInfo.address_line_1, studentInfo.address_line_2, studentInfo.city, studentInfo.pincode, studentInfo.state, studentInfo.country].join(', ')
+			},
+		]
 	},
 	{
-		label: 'Joining Date',
-		value: updatedStudentProfile.value.joining_date,
+		section: 'section 2',
+		fields: [
+			{
+				label: 'Blood Group',
+				value: studentInfo.blood_group,
+			},
+			{
+				label: 'Gender',
+				value: studentInfo.gender
+			},
+			{
+				label: 'Nationality',
+				value: studentInfo.nationality
+			},
+		]
 	},
-	{
-		label: 'Date of Birth',
-		value: updatedStudentProfile.value.date_of_birth,
-	},
-	{
-		label: 'Blood Group',
-		value: updatedStudentProfile.value.blood_group,
-	},
-	{
-		label:'Gender',
-		value: updatedStudentProfile.value.gender
-	},
-	{
-		label:'Nationality',
-		value:updatedStudentProfile.value.nationality
-	}
 ]
-
-const editMode = ref(true)
-const detailMode = ref(true)
-
-
-const dialogOptions = computed(() => {
-  let title = detailMode.value
-    ? 'Profile'
-    : 'Update Profile'
-  let size = detailMode.value ? '' : 'xl'
-  let actions = detailMode.value
-    ? []
-    : [
-        {
-			label: 'Save', 
-			variant: 'solid',
-          	onClick: () => handleStudentProfileUpdate(),
-        },
-      ]
-	
-  return { title, size, actions }
-})
-
-const handleStudentProfileUpdate = () => {
-	closeModal()
-} 
-
-const closeModal = () => {
-	showProfileDialog.value = false;
-	setTimeout(() => {
-		detailMode.value = true
-	}, 300);
-}
 
 
 </script>

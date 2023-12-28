@@ -65,13 +65,12 @@ import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
 import CalendarView from '@/components/CalendarView.vue';
 
-const {student , getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
+const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 const programName = ref('')
 const selectedGroup = ref('Select Student Group')
 const allStudentGroups = ref()
 
 
-await student.reload()
 let program = getCurrentProgram().value
 let studentInfo = getStudentInfo().value
 programName.value = program.program

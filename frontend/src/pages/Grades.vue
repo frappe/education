@@ -31,10 +31,9 @@
 import { Dropdown, FeatherIcon,ListView, createResource,createListResource } from 'frappe-ui';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { studentStore } from '@/stores/student';
-const { student , getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
+const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 
 
-await student.reload()
 let studentInfo = getStudentInfo().value
 let currentProgram = getCurrentProgram().value
 const allPrograms = ref([])

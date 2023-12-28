@@ -18,8 +18,8 @@ import { studentStore } from '@/stores/student';
 const programName = ref('')
 const events= ref([])
 
-const { student, getCurrentProgram } = studentStore()
-await student.reload()
+const { getCurrentProgram } = studentStore()
+
 const program = getCurrentProgram().value
 programName.value = program.program
 
