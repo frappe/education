@@ -76,11 +76,11 @@ const links = [
 		to: '/notes',
 		icon: BookOpen,
 	},
-	{
-		label: 'Profile',
-		to: '/profile',
-		icon: User,
-	},
+	// {
+	// 	label: 'Profile',
+	// 	to: '/profile',
+	// 	icon: User,
+	// },
 ]
 
 const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)

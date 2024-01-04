@@ -31,7 +31,7 @@
 					  </div>
 					</div>
 				  
-					<div class="flex items-center bg-gray-200 text-gray-600 text-sm p-2 rounded-md">
+					<div class="flex items-center bg-gray-200 text-gray-600 text-sm p-[0.2rem] rounded-md">
 					  <FeatherIcon name="info" class="h-4 mr-2" />
 					  In case of any incorrect details, please contact the school admin.
 					</div>
