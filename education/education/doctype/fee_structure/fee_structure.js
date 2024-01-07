@@ -57,11 +57,24 @@ frappe.ui.form.on('Fee Structure', {
 });
 
 frappe.ui.form.on('Fee Component', {
-	amount: function(frm) {
-		var total_amount = 0;
-		for (var i=0;i<frm.doc.components.length;i++) {
-			total_amount += frm.doc.components[i].amount;
+	price: function(frm,cdt,cdn) {
+		let d = locals[cdt][cdn];
+		if (!d.discount) return;
+		d.amount = d.price - (d.price * d.discount / 100);
+		refresh_field('components');
+	},
+	discount: function(frm,cdt,cdn) {
+		let d = locals[cdt][cdn];
+		if (d.discount < 100) {
+			d.amount = d.price - (d.price * d.discount / 100);
 		}
-		frm.set_value('total_amount', total_amount);
-	}
+		refresh_field('components');
+	},
+	// total: function(frm,cdt,cdn) {
+	// 	let total_amount = 0;
+	// 	for (let i=0;i<frm.doc.components.length;i++) {
+	// 		total_amount += frm.doc.components[i].total;
+	// 	}
+	// 	frm.set_value('total_amount', total_amount);
+	// }
 });

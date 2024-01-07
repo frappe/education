@@ -6,25 +6,35 @@ from frappe.model.document import Document
 
 
 class FeeCategory(Document):
-	def on_update(self):
-		# update item
-		update_item(self)
-
 	def after_insert(self):
 		# create an item
-		create_item(self)
+		item_name = create_item(self)
+		self.item = item_name
+		self.save()
+
+	def on_update(self):
+		# update item
+		item_name = update_item(self)
+		self.item = item_name
+
+	def on_trash(self):
+		# delete item
+		frappe.delete_doc("Item", self.name, force=1)
 
 
 def create_item(doc):
-	item_master = frappe.new_doc("Item")
-	item_master.item_code = doc.name
-	item_master.description = doc.description
+	item = frappe.new_doc("Item")
+	item.item_code = doc.name
+	item.description = doc.description
 	# TODO: After installation create an item group called Fee Component
-	item_master.item_group = "Fee Component"
-	item_master.is_sales_item = 1
-	item_master.is_service_item = 1
+	# TODO: Migration script to create item for all existing fee categories
+	item.item_group = "Fee Component"
+	item.is_sales_item = 1
+	item.is_service_item = 1
+	item.is_stock_item = 0
 
-	item_master.insert()
+	item.insert()
+	return item.name
 
 
 def update_item(doc):
@@ -32,3 +42,4 @@ def update_item(doc):
 	item.item_name = doc.name
 	item.description = doc.description
 	item.save()
+	return item.name
