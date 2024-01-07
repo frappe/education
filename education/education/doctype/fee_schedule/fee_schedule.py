@@ -142,6 +142,7 @@ def generate_fee(fee_schedule):
 	)
 
 
+# TODO: currently it gives program name for multiple enrollments in a calendar year, maybe improve it?
 def get_students(
 	student_group, academic_year, academic_term=None, student_category=None
 ):
@@ -150,7 +151,6 @@ def get_students(
 		conditions = " and pe.student_category={}".format(frappe.db.escape(student_category))
 	if academic_term:
 		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
-
 	students = frappe.db.sql(
 		"""
 		select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
