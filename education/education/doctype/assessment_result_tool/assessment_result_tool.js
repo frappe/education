@@ -81,8 +81,8 @@ frappe.ui.form.on('Assessment Result Tool', {
 			let rowIndex = Number(e.target.parentElement.classList[1].match(/\d+/)[0]);
 			if (e.keyCode === 13 && !e.shiftKey) {
 				let nextRow = e.target.parentElement.parentElement.nextElementSibling;
-				// first 2 columns are student name and ID so add 2
 				if (nextRow) {
+					// first 2 columns are student name and ID so add 2
 					nextRow.cells[2+rowIndex].lastElementChild.focus()
 				}
 			}
