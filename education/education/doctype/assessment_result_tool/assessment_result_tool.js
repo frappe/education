@@ -75,27 +75,29 @@ frappe.ui.form.on('Assessment Result Tool', {
 		result_table.appendTo(frm.fields_dict.result_html.wrapper);
 
 		$(".assessment-criteria").on("keydown",function (e) {
-			// get row index
-			// index [1] of classList is row along with criteria's index suffix
-			// .match for number extraction
-			let rowIndex = Number(e.target.parentElement.classList[1].match(/\d+/)[0]);
+			// get data-criteria attribute
+			let criteriaIndex = cint(e.target.parentElement.getAttribute('data-criteria-index'));
+			changeFocusToNextCell(e, 2 + criteriaIndex)
+		})
+
+		$(".result-comment").on("keydown",function (e) {
+			changeFocusToNextCell(e, 5)
+		})
+
+		function changeFocusToNextCell (e,cellIndex) {
 			if (e.keyCode === 13 && !e.shiftKey) {
 				let nextRow = e.target.parentElement.parentElement.nextElementSibling;
 				if (nextRow) {
-					// first 2 columns are student name and ID so add 2
-					nextRow.cells[2+rowIndex].lastElementChild.focus()
+					nextRow.cells[cellIndex].lastElementChild.focus()
 				}
 			}
-
 			if (e.keyCode === 13 && e.shiftKey) {
 				let prevRow = e.target.parentElement.parentElement.previousElementSibling;
-				// first 2 columns are student name and ID so add 2
 				if (prevRow) {
-					prevRow.cells[2+rowIndex].lastElementChild.focus()
+					prevRow.cells[cellIndex].lastElementChild.focus()
 				}
 			}
-
-		})
+		}
 
 		result_table.on('change', 'input', function(e) {
 			let $input = $(e.target);
