@@ -75,12 +75,11 @@ frappe.ui.form.on('Assessment Result Tool', {
 		result_table.appendTo(frm.fields_dict.result_html.wrapper);
 
 		$(".assessment-criteria").on("keydown",function (e) {
-			if (e.keyCode === 13) {
-				e.preventDefault();
-				// get row index
-				// index [1] of classList is row along with criteria's index suffix
-				// .match for number extraction
-				let rowIndex = Number(e.target.parentElement.classList[1].match(/\d+/)[0]);
+			// get row index
+			// index [1] of classList is row along with criteria's index suffix
+			// .match for number extraction
+			let rowIndex = Number(e.target.parentElement.classList[1].match(/\d+/)[0]);
+			if (e.keyCode === 13 && !e.shiftKey) {
 				let nextRow = e.target.parentElement.parentElement.nextElementSibling;
 				// first 2 columns are student name and ID so add 2
 				if (nextRow) {
@@ -88,7 +87,14 @@ frappe.ui.form.on('Assessment Result Tool', {
 				}
 			}
 
-			let currentRow = e.target.parentElement;
+			if (e.keyCode === 13 && e.shiftKey) {
+				let prevRow = e.target.parentElement.parentElement.previousElementSibling;
+				// first 2 columns are student name and ID so add 2
+				if (prevRow) {
+					prevRow.cells[2+rowIndex].lastElementChild.focus()
+				}
+			}
+
 		})
 
 		result_table.on('change', 'input', function(e) {
