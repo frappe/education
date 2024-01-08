@@ -74,6 +74,23 @@ frappe.ui.form.on('Assessment Result Tool', {
 		}));
 		result_table.appendTo(frm.fields_dict.result_html.wrapper);
 
+		$(".assessment-criteria").on("keydown",function (e) {
+			if (e.keyCode === 13) {
+				e.preventDefault();
+				// get row index
+				// index [1] of classList is row along with criteria's index suffix
+				// .match for number extraction
+				let rowIndex = Number(e.target.parentElement.classList[1].match(/\d+/)[0]);
+				let nextRow = e.target.parentElement.parentElement.nextElementSibling;
+				// first 2 columns are student name and ID so add 2
+				if (nextRow) {
+					nextRow.cells[2+rowIndex].lastElementChild.focus()
+				}
+			}
+
+			let currentRow = e.target.parentElement;
+		})
+
 		result_table.on('change', 'input', function(e) {
 			let $input = $(e.target);
 			let student = $input.data().student;
