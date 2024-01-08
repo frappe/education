@@ -140,6 +140,7 @@
   {
    "fieldname": "components",
    "fieldtype": "Table",
+   "label": "Components",
    "options": "Fee Component",
    "read_only": 1
   },
@@ -276,7 +277,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-14 10:49:39.758005",
+ "modified": "2024-01-08 11:08:04.645065",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
