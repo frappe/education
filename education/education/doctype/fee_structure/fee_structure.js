@@ -43,7 +43,8 @@ frappe.ui.form.on('Fee Structure', {
 	refresh: function(frm) {
 		if (frm.doc.docstatus === 1) {
 			frm.add_custom_button(__('Create Fee Schedule'), function() {
-				frm.events.make_fee_schedule(frm);
+				frm.events.open_fee_schedule_modal(frm);
+				// frm.events.make_fee_schedule(frm);
 			});
 		}
 	},
@@ -53,6 +54,102 @@ frappe.ui.form.on('Fee Structure', {
 			method: 'education.education.doctype.fee_structure.fee_structure.make_fee_schedule',
 			frm: frm
 		});
+	},
+
+	open_fee_schedule_modal: async function(frm) {
+
+		let academic_year_start_date
+		let academic_year_end_date
+
+		let table_fields = [
+			{
+				"fieldname": "month",
+				"fieldtype": "Data",
+				"in_list_view": 1,
+				"label": "Month",
+				"read_only": 1
+			   },
+			   {
+				"fieldname": "due_date",
+				"fieldtype": "Date",
+				"in_list_view": 1,
+				"label": "Due Date"
+			   },
+			   {
+				"fieldname": "amount",
+				"fieldtype": "Float",
+				"in_list_view": 1,
+				"label": "Amount"
+			   }
+		]
+
+		await frappe.db.get_value(
+			'Academic Year',
+			frm.doc.academic_year,
+			['year_start_date','year_end_date'],
+			(r) => {
+				academic_year_start_date = r.year_start_date
+				academic_year_end_date = r.year_end_date
+			}
+		)
+
+		let dialog = new frappe.ui.Dialog({
+			title: "Create Fee Schedule",
+			fields:[
+				{
+					label:"Select Fee Plan",
+					fieldname:"fee_plan",
+					fieldtype:"Select",
+					options:["Monthly","Quarterly","Semi-Annually","Annually"],
+					change: () => {
+						dialog.fields_dict.distribution.df.data = [];
+						dialog.refresh();
+						let fee_plan = dialog.get_value('fee_plan');
+						frappe.call({
+							method: 'education.education.doctype.fee_structure.fee_structure.get_distribution_based_on_fee_plan',
+							args: {
+								"fee_plan": fee_plan,
+								"total_amount": frm.doc.total_amount,
+							},
+							callback: function(r) {
+								// remove data from table
+								if (r.message) {
+									let distributions = r.message;
+									distributions.forEach((month,idx) => {
+										console.log("here")
+										dialog.fields_dict['distribution'].grid.add_new_row();
+										dialog.get_value("distribution")[idx] = {
+											month: month.month,
+											due_date: month.due_date,
+											amount: month.amount
+										};
+									})
+									dialog.refresh()
+								}
+							}
+						});
+					}
+				},
+				{
+					fieldname: "distribution",
+					label: "Distribution",
+					fieldtype: "Table",
+					in_place_edit: false,
+					data: [],
+					cannot_add_rows: true,
+					fields: table_fields,
+					cannot_delete_rows: true,
+					// not selectable and not editable
+
+				}
+			],
+			primary_action: function() {
+				console.log("clicked")
+			},
+			primary_action_label: __("Create"),
+		})
+		console.log("here")
+		dialog.show();
 	}
 });
 
