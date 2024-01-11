@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 
+import json
 import frappe
 from frappe import _
 
@@ -13,7 +14,7 @@ from frappe.utils import flt
 class FeeStructure(Document):
 	def validate(self):
 		self.calculate_total()
-		self.validate_discount()
+		# self.validate_discount()
 
 	def calculate_total(self):
 		"""Calculates total amount."""
@@ -31,9 +32,12 @@ class FeeStructure(Document):
 
 
 @frappe.whitelist()
-def get_distribution_based_on_fee_plan(fee_plan="Monthly", total_amount=0):
+def get_amount_distribution_based_on_fee_plan(
+	components, total_amount=0, fee_plan="Monthly"
+):
 
 	total_amount = flt(total_amount)
+	components = json.loads(components)
 
 	month_list = [
 		"January",
@@ -51,40 +55,72 @@ def get_distribution_based_on_fee_plan(fee_plan="Monthly", total_amount=0):
 	]
 
 	month_dict = {
-		"Monthly": {"month_list": month_list, "amount": total_amount / 12},
+		"Monthly": {"month_list": month_list, "amount": 1 / 12},
 		"Quarterly": {
 			"month_list": ["April", "July", "October", "January"],
-			"amount": total_amount / 4,
+			"amount": 1 / 4,
 		},
-		"Semi-Annually": {"month_list": ["April", "October"], "amount": total_amount / 2},
-		"Annually": {"month_list": ["April"], "amount": total_amount},
+		"Semi-Annually": {"month_list": ["April", "October"], "amount": 1 / 2},
+		"Annually": {"month_list": ["April"], "amount": 1},
 	}
 
 	month_list_and_amount = month_dict[fee_plan]
-	final_month_list = []
 
+	per_component_amount = {}
+	for component in components:
+		per_component_amount[component.get("fees_category")] = component.get(
+			"amount"
+		) * month_list_and_amount.get("amount")
+
+	amount = sum(per_component_amount.values())
+
+	final_month_list = []
 	for month in month_list_and_amount.get("month_list"):
 		date = frappe.utils.data.get_first_day(month)
-		final_month_list.append(
-			{"month": month, "due_date": date, "amount": month_list_and_amount.get("amount")}
-		)
-
-	return final_month_list
+		final_month_list.append({"month": month, "due_date": date, "amount": amount})
+	return {"distribution": final_month_list, "per_component_amount": per_component_amount}
 
 
 @frappe.whitelist()
-def make_fee_schedule(source_name, target_doc=None):
-	return get_mapped_doc(
-		"Fee Structure",
-		source_name,
-		{
-			"Fee Structure": {
-				"doctype": "Fee Schedule",
-				"validation": {
-					"docstatus": ["=", 1],
+def make_fee_schedule(
+	source_name, dialog_values, per_component_amount, target_doc=None
+):
+
+	dialog_values = json.loads(dialog_values)
+	per_component_amount = json.loads(per_component_amount)
+
+	student_groups = dialog_values.get("student_groups")
+	monthly_distribution = [
+		month.get("due_date") for month in dialog_values.get("distribution", [])
+	]
+
+	for date in monthly_distribution:
+		doc = get_mapped_doc(
+			"Fee Structure",
+			source_name,
+			{
+				"Fee Structure": {
+					"doctype": "Fee Schedule",
 				},
+				"Fee Component": {"doctype": "Fee Component"},
 			},
-			"Fee Component": {"doctype": "Fee Component"},
-		},
-		target_doc,
-	)
+		)
+		doc.due_date = date
+		amount_per_month = 0
+
+		for component in doc.components:
+			component.amount = per_component_amount.get(component.fees_category)
+			amount_per_month += component.amount
+		# amount_per_month will be the total amount for each Fee Structure
+		doc.total_amount = amount_per_month
+
+		for group in student_groups:
+			fee_schedule_student_group = doc.append("student_groups", {})
+			fee_schedule_student_group.student_group = group.get("student_group")
+
+		doc.save()
+
+	return len(monthly_distribution)
+	# return doc
+
+	# create fee schedule for

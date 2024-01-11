@@ -44,24 +44,36 @@ frappe.ui.form.on('Fee Structure', {
 		if (frm.doc.docstatus === 1) {
 			frm.add_custom_button(__('Create Fee Schedule'), function() {
 				frm.events.open_fee_schedule_modal(frm);
-				// frm.events.make_fee_schedule(frm);
 			});
 		}
 	},
 
-	make_fee_schedule: function(frm) {
-		frappe.model.open_mapped_doc({
+	make_fee_schedule: function(frm,dialog, per_component_amount, ) {
+		frappe.call({
 			method: 'education.education.doctype.fee_structure.fee_structure.make_fee_schedule',
-			frm: frm
-		});
+			args: {
+				"source_name":frm.doc.name,
+				"dialog_values": dialog.get_values(),
+				"per_component_amount": per_component_amount
+			},
+			freeze: true,
+			callback: function(r) {
+				if (r.message) {
+					frappe.msgprint(__("{0} Fee Schedule(s) Create", [r.message]));
+					dialog.hide();
+				}
+			}
+		})
 	},
 
 	open_fee_schedule_modal: async function(frm) {
 
-		let academic_year_start_date
-		let academic_year_end_date
+		let academic_year_start_date = 0
+		let academic_year_end_date = 0
+		let per_component_amount = []
 
-		let table_fields = [
+
+		let distribution_table_fields = [
 			{
 				"fieldname": "month",
 				"fieldtype": "Data",
@@ -100,32 +112,34 @@ frappe.ui.form.on('Fee Structure', {
 					label:"Select Fee Plan",
 					fieldname:"fee_plan",
 					fieldtype:"Select",
+					reqd: 1,
 					options:["Monthly","Quarterly","Semi-Annually","Annually"],
 					change: () => {
+						// remove existing data in table when fee plan is changed
 						dialog.fields_dict.distribution.df.data = [];
 						dialog.refresh();
 						let fee_plan = dialog.get_value('fee_plan');
 						frappe.call({
-							method: 'education.education.doctype.fee_structure.fee_structure.get_distribution_based_on_fee_plan',
+							method: 'education.education.doctype.fee_structure.fee_structure.get_amount_distribution_based_on_fee_plan',
 							args: {
 								"fee_plan": fee_plan,
 								"total_amount": frm.doc.total_amount,
+								"components": frm.doc.components
 							},
 							callback: function(r) {
-								// remove data from table
-								if (r.message) {
-									let distributions = r.message;
-									distributions.forEach((month,idx) => {
-										console.log("here")
-										dialog.fields_dict['distribution'].grid.add_new_row();
-										dialog.get_value("distribution")[idx] = {
-											month: month.month,
-											due_date: month.due_date,
-											amount: month.amount
-										};
-									})
-									dialog.refresh()
-								}
+								if (!r.message) return;
+
+								let distribution = r.message.distribution;
+								per_component_amount = r.message.per_component_amount
+								distribution.forEach((month,idx) => {
+									dialog.fields_dict['distribution'].grid.add_new_row();
+									dialog.get_value("distribution")[idx] = {
+										month: month.month,
+										due_date: month.due_date,
+										amount: month.amount
+									};
+								})
+								dialog.refresh()
 							}
 						});
 					}
@@ -137,45 +151,72 @@ frappe.ui.form.on('Fee Structure', {
 					in_place_edit: false,
 					data: [],
 					cannot_add_rows: true,
-					fields: table_fields,
+					reqd: 1,
+					fields: distribution_table_fields,
 					cannot_delete_rows: true,
-					// not selectable and not editable
-
+					// not selectable and do not show edit icon
+				},
+				{
+					label:"Select Student Groups",
+					fieldname:"student_groups",
+					fieldtype:"Table",
+					in_place_edit: false,
+					reqd: 1,
+					data: [],
+					fields: [
+						{
+							"fieldname": "student_group",
+							"fieldtype": "Link",
+							"in_list_view": 1,
+							"label": "Student Group",
+							"options": "Student Group",
+							get_query: () => {
+								return {
+									filters: {
+										program: frm.doc.program,
+										academic_year: frm.doc.academic_year,
+										academic_term: frm.doc.academic_term,
+										student_category: frm.doc.student_category
+									}
+								}
+							}
+						},
+					],
 				}
 			],
+
 			primary_action: function() {
-				console.log("clicked")
+				// validate whether total amount from dialog is equal to total amount from fee structure
+				let {distribution} = dialog.get_values();
+				let total_amount_from_dialog = distribution.reduce((accumulated_value,current_value) => accumulated_value + current_value.amount,0)
+				if(!(frm.doc.total_amount === total_amount_from_dialog)) {
+					frappe.throw(__("Total amount in the table should be equal to the total amount from fee structure"))
+					return;
+				}
+				frm.events.make_fee_schedule(frm, dialog, per_component_amount );
 			},
 			primary_action_label: __("Create"),
 		})
-		console.log("here")
 		dialog.show();
 	}
 });
 
 frappe.ui.form.on('Fee Component', {
-	price: function(frm,cdt,cdn) {
+	amount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
-		if (!d.discount) return;
-		d.amount = d.price - (d.price * (d.discount / 100) );
-		refresh_field('components');
+		if (d.discount) {
+			console.log(d.discount,"haha")
+			d.total = d.amount - (d.amount * (d.discount / 100) );
+			refresh_field('components');
+		}
 	},
 	discount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
+		console.log(d.discount)
 		if (d.discount < 100) {
-			d.amount = d.price - (d.price * (d.discount / 100) );
+			d.total = d.amount - (d.amount * (d.discount / 100) );
 		}
 		refresh_field('components');
 	},
 
-
-
-
-	// total: function(frm,cdt,cdn) {
-	// 	let total_amount = 0;
-	// 	for (let i=0;i<frm.doc.components.length;i++) {
-	// 		total_amount += frm.doc.components[i].total;
-	// 	}
-	// 	frm.set_value('total_amount', total_amount);
-	// }
 });
