@@ -43,10 +43,20 @@ frappe.ui.form.on('Fee Structure', {
 	refresh: function(frm) {
 		if (frm.doc.docstatus === 1) {
 			frm.add_custom_button(__('Create Fee Schedule'), function() {
-				frm.events.open_fee_schedule_modal(frm);
+				frm.doc.academic_term
+					? frm.events.make_term_wise_fee_schedule(frm)
+					: frm.events.open_fee_schedule_modal(frm);
 			});
 		}
 	},
+
+	make_term_wise_fee_schedule: function(frm) {
+		frappe.model.open_mapped_doc({
+			method: 'education.education.doctype.fee_structure.fee_structure.make_term_wise_fee_schedule',
+			frm: frm
+		});
+	},
+
 
 	make_fee_schedule: function(frm,dialog, per_component_amount, ) {
 		frappe.call({
@@ -66,20 +76,17 @@ frappe.ui.form.on('Fee Structure', {
 		})
 	},
 
-	open_fee_schedule_modal: async function(frm) {
-
-		let academic_year_start_date = 0
-		let academic_year_end_date = 0
+	open_fee_schedule_modal: function(frm) {
 		let per_component_amount = []
 
 
 		let distribution_table_fields = [
-			{
-				"fieldname": "month",
-				"fieldtype": "Data",
+				{
+				"fieldname": "term",
+				"fieldtype": "Link",
 				"in_list_view": 1,
-				"label": "Month",
-				"read_only": 1
+				"label": "Term",
+				"read_only": 1,
 			   },
 			   {
 				"fieldname": "due_date",
@@ -95,16 +102,6 @@ frappe.ui.form.on('Fee Structure', {
 			   }
 		]
 
-		await frappe.db.get_value(
-			'Academic Year',
-			frm.doc.academic_year,
-			['year_start_date','year_end_date'],
-			(r) => {
-				academic_year_start_date = r.year_start_date
-				academic_year_end_date = r.year_end_date
-			}
-		)
-
 		let dialog = new frappe.ui.Dialog({
 			title: "Create Fee Schedule",
 			fields:[
@@ -113,18 +110,22 @@ frappe.ui.form.on('Fee Structure', {
 					fieldname:"fee_plan",
 					fieldtype:"Select",
 					reqd: 1,
-					options:["Monthly","Quarterly","Semi-Annually","Annually"],
-					change: () => {
+					options:["Monthly","Quarterly","Semi-Annually","Annually","Term-Wise"],
+					change: (e) => {
 						// remove existing data in table when fee plan is changed
+						let fee_plan = dialog.get_value('fee_plan');
+						fee_plan === "Term-Wise"
+							? dialog.fields_dict.distribution.grid.docfields[0].hidden = false
+							: dialog.fields_dict.distribution.grid.docfields[0].hidden = true;
 						dialog.fields_dict.distribution.df.data = [];
 						dialog.refresh();
-						let fee_plan = dialog.get_value('fee_plan');
 						frappe.call({
 							method: 'education.education.doctype.fee_structure.fee_structure.get_amount_distribution_based_on_fee_plan',
 							args: {
 								"fee_plan": fee_plan,
 								"total_amount": frm.doc.total_amount,
-								"components": frm.doc.components
+								"components": frm.doc.components,
+								"academic_year": frm.doc.academic_year,
 							},
 							callback: function(r) {
 								if (!r.message) return;
@@ -132,9 +133,12 @@ frappe.ui.form.on('Fee Structure', {
 								let distribution = r.message.distribution;
 								per_component_amount = r.message.per_component_amount
 								distribution.forEach((month,idx) => {
+									month.term ? dialog.fields_dict.distribution.grid.docfields[0].hidden = false : dialog.fields_dict.distribution.grid.docfields[0].hidden = true;
+									dialog.fields_dict.distribution.grid.refresh()
 									dialog.fields_dict['distribution'].grid.add_new_row();
 									dialog.get_value("distribution")[idx] = {
-										month: month.month,
+										// month: month.month,
+										term: month.term,
 										due_date: month.due_date,
 										amount: month.amount
 									};
@@ -153,7 +157,6 @@ frappe.ui.form.on('Fee Structure', {
 					cannot_add_rows: true,
 					reqd: 1,
 					fields: distribution_table_fields,
-					cannot_delete_rows: true,
 					// not selectable and do not show edit icon
 				},
 				{
@@ -204,11 +207,14 @@ frappe.ui.form.on('Fee Structure', {
 frappe.ui.form.on('Fee Component', {
 	amount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
+		d.total = d.amount;
+		refresh_field('components');
 		if (d.discount) {
 			console.log(d.discount,"haha")
 			d.total = d.amount - (d.amount * (d.discount / 100) );
 			refresh_field('components');
 		}
+
 	},
 	discount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
