@@ -79,7 +79,6 @@ frappe.ui.form.on('Fee Structure', {
 	open_fee_schedule_modal: function(frm) {
 		let per_component_amount = []
 
-
 		let distribution_table_fields = [
 				{
 				"fieldname": "term",
@@ -87,6 +86,7 @@ frappe.ui.form.on('Fee Structure', {
 				"in_list_view": 1,
 				"label": "Term",
 				"read_only": 1,
+				'hidden':1,
 			   },
 			   {
 				"fieldname": "due_date",
@@ -111,12 +111,9 @@ frappe.ui.form.on('Fee Structure', {
 					fieldtype:"Select",
 					reqd: 1,
 					options:["Monthly","Quarterly","Semi-Annually","Annually","Term-Wise"],
-					change: (e) => {
-						// remove existing data in table when fee plan is changed
+					change: () => {
 						let fee_plan = dialog.get_value('fee_plan');
-						fee_plan === "Term-Wise"
-							? dialog.fields_dict.distribution.grid.docfields[0].hidden = false
-							: dialog.fields_dict.distribution.grid.docfields[0].hidden = true;
+						// remove existing data in table when fee plan is changed
 						dialog.fields_dict.distribution.df.data = [];
 						dialog.refresh();
 						frappe.call({
@@ -130,14 +127,18 @@ frappe.ui.form.on('Fee Structure', {
 							callback: function(r) {
 								if (!r.message) return;
 
+								let dialog_grid = dialog.fields_dict.distribution.grid;
 								let distribution = r.message.distribution;
 								per_component_amount = r.message.per_component_amount
+
+								fee_plan === "Term-Wise"
+									? dialog_grid.docfields[0].hidden = false
+									: dialog_grid.docfields[0].hidden = true;
+
 								distribution.forEach((month,idx) => {
-									month.term ? dialog.fields_dict.distribution.grid.docfields[0].hidden = false : dialog.fields_dict.distribution.grid.docfields[0].hidden = true;
-									dialog.fields_dict.distribution.grid.refresh()
+									dialog_grid.reset_grid();
 									dialog.fields_dict['distribution'].grid.add_new_row();
 									dialog.get_value("distribution")[idx] = {
-										// month: month.month,
 										term: month.term,
 										due_date: month.due_date,
 										amount: month.amount
