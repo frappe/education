@@ -42,6 +42,15 @@
   "guardians",
   "section_break_20",
   "siblings",
+  "customer_details_tab",
+  "customer_details_section",
+  "customer",
+  "customer_group",
+  "territory",
+  "column_break_rgpi",
+  "default_currency",
+  "default_price_list",
+  "language",
   "exit_tab",
   "exit",
   "date_of_leaving",
@@ -278,11 +287,62 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "customer_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "label": "Customer Group",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "label": "Territory",
+   "options": "Territory"
+  },
+  {
+   "fieldname": "column_break_rgpi",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_currency",
+   "fieldtype": "Link",
+   "label": "Billing Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "default_price_list",
+   "fieldtype": "Link",
+   "label": "Default Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Link",
+   "label": "Print Language",
+   "options": "Language"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-02-06 12:25:25.197460",
+ "modified": "2024-01-17 16:17:39.509801",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

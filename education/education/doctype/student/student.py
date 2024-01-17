@@ -7,11 +7,16 @@ from frappe import _
 from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
 from frappe.utils import getdate, today
+from erpnext import get_default_currency
+from frappe.utils.nestedset import get_root_of
 
 from education.education.utils import check_content_completion, check_quiz_completion
 
 
 class Student(Document):
+	def before_insert(self):
+		self.set_missing_customer_details()
+
 	def validate(self):
 		self.set_title()
 		self.validate_dates()
@@ -21,6 +26,40 @@ class Student(Document):
 			self.check_unique()
 			self.update_applicant_status()
 
+	def on_update(self):
+		breakpoint()
+		if self.customer:
+			self.update_linked_customer()
+		else:
+			self.create_customer()
+
+	# TODO: migration script to create customer for all existing students
+	def set_missing_customer_details(self):
+		if not self.customer_group:
+			self.customer_group = "Student"
+		if not self.territory:
+			self.territory = frappe.db.get_single_value(
+				"Selling Settings", "territory"
+			) or get_root_of("Territory")
+		if not self.default_price_list:
+			self.default_price_list = frappe.db.get_single_value(
+				"Selling Settings", "selling_price_list"
+			)
+
+		if not self.customer_group or not self.territory or not self.default_price_list:
+			frappe.msgprint(
+				_(
+					"Please set defaults for Customer Group, Territory and Selling Price List in Selling Settings"
+				),
+				alert=True,
+			)
+
+		if not self.default_currency:
+			self.default_currency = get_default_currency()
+		if not self.language:
+			self.language = frappe.db.get_single_value("System Settings", "language")
+
+	# Validate Functions
 	def set_title(self):
 		self.student_name = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
@@ -89,6 +128,50 @@ class Student(Document):
 			frappe.db.set_value(
 				"Student Applicant", self.student_applicant, "application_status", "Admitted"
 			)
+
+	# End of Validate Functions
+
+	# On Update Functions
+	def update_linked_customer(self):
+		breakpoint()
+		customer = frappe.get_doc("Customer", self.customer)
+		if self.customer_group:
+			customer.customer_group = self.customer_group
+		if self.territory:
+			customer.territory = self.territory
+		customer.customer_name = self.student_name
+		customer.default_price_list = self.default_price_list
+		customer.default_currency = self.default_currency
+		customer.language = self.language
+		customer.image = self.image
+		customer.ignore_mandatory = True
+		customer.save(ignore_permissions=True)
+
+		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
+
+	def create_customer(self):
+		breakpoint()
+		print("create_customer")
+		customer = frappe.get_doc(
+			{
+				"doctype": "Customer",
+				"customer_name": self.student_name,
+				"customer_group": self.customer_group
+				or frappe.db.get_single_value("Selling Settings", "customer_group"),
+				"territory": self.territory
+				or frappe.db.get_single_value("Selling Settings", "territory"),
+				"customer_type": "Individual",
+				"default_currency": self.default_currency,
+				"default_price_list": self.default_price_list,
+				"language": self.language,
+				"image": self.image,
+			}
+		).insert(ignore_permissions=True, ignore_mandatory=True)
+
+		frappe.db.set_value("Student", self.name, "customer", customer.name)
+		frappe.msgprint(
+			_("Customer {0} created and linked to Patient").format(customer.name), alert=True
+		)
 
 	def get_all_course_enrollments(self):
 		"""Returns a list of course enrollments linked with the current student"""

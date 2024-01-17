@@ -26,7 +26,7 @@ def create_item(doc):
 	item = frappe.new_doc("Item")
 	item.item_code = doc.name
 	item.description = doc.description
-	# TODO: After installation create an item group called Fee Component
+	# TODO: After installation create an item group called Fee Component (edit: done)
 	# TODO: Migration script to create item for all existing fee categories
 	item.item_group = "Fee Component"
 	item.is_sales_item = 1
