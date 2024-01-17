@@ -1,23 +1,25 @@
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+from frappe.desk.page.setup_wizard.setup_wizard import make_records
 
 
 def after_install():
 	setup_fixtures()
 	create_student_role()
 	create_parent_assessment_group()
-	create_custom_fields(get_custom_fields())
+	# create_custom_fields(get_custom_fields())
 
 
 def setup_fixtures():
 	records = [
-		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"}
+		# Party Type Records
+		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
+		# Item Group Records
+		{"doctype": "Item Group", "item_group_name": "Fee Component"},
+		# Customer Group Records
+		{"doctype": "Customer Group", "customer_group_name": "Student"},
 	]
-
-	for record in records:
-		if not frappe.db.exists("Party Type", record.get("party_type")):
-			doc = frappe.get_doc(record)
-			doc.insert()
+	make_records(records)
 
 
 def create_parent_assessment_group():
@@ -56,48 +58,13 @@ def get_custom_fields():
 				"read_only": True,
 			},
 			{
-				"fieldname": "program_enrollment",
+				"fieldname": "fee_schedule",
 				"fieldtype": "Link",
-				"label": "Program Enrollment",
-				"options": "Program Enrollment",
+				"label": "Fee Schedule",
+				"options": "Fee Schedule",
+				"print_hide": 1,
 				"reqd": 1,
 				"insert_after": "student_name",
 			},
-			{
-				"fetch_from": "program_enrollment.program",
-				"fieldname": "program",
-				"fieldtype": "Link",
-				"in_list_view": 1,
-				"in_standard_filter": 1,
-				"label": "Program",
-				"options": "Program",
-				"read_only": 1,
-				"insert_after": "program_enrollment",
-			},
-			{
-				"fieldname": "academic_year",
-				"fieldtype": "Link",
-				"label": "Academic Year",
-				"options": "Academic Year",
-				"insert_after": "program",
-			},
-			{
-				"fieldname": "academic_term",
-				"fieldtype": "Link",
-				"label": "Academic Term",
-				"options": "Academic Term",
-				"insert_after": "academic_year",
-			},
-			{
-				"fieldname": "fee_structure",
-				"fieldtype": "Link",
-				"label": "Fee Structure",
-				"options": "Fee Structure",
-				"print_hide": 1,
-				"reqd": 1,
-				"insert_after": "term",
-			},
 		],
-		# "Sales Invoice Item":[
-		# ]
 	}
