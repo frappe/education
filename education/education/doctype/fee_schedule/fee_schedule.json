@@ -276,8 +276,13 @@
   }
  ],
  "is_submittable": 1,
- "links": [],
- "modified": "2024-01-08 11:08:04.645065",
+ "links": [
+  {
+   "link_doctype": "Sales Invoice",
+   "link_fieldname": "fee_schedule"
+  }
+ ],
+ "modified": "2024-01-23 12:18:14.075608",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
