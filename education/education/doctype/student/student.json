@@ -341,8 +341,44 @@
   }
  ],
  "image_field": "image",
- "links": [],
- "modified": "2024-01-17 16:17:39.509801",
+ "links": [
+  {
+   "group": "Admission",
+   "link_doctype": "Program Enrollment",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Admission",
+   "link_doctype": "Course Enrollment",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Log",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Group",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Attendance",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Leave Application",
+   "link_fieldname": "student"
+  }
+ ],
+ "modified": "2024-01-23 14:52:00.283061",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

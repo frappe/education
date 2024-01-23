@@ -163,8 +163,13 @@
  ],
  "icon": "fa fa-flag",
  "is_submittable": 1,
- "links": [],
- "modified": "2023-02-09 16:09:50.125383",
+ "links": [
+  {
+   "link_doctype": "Fee Schedule",
+   "link_fieldname": "fee_structure"
+  }
+ ],
+ "modified": "2024-01-23 15:05:32.737437",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Structure",
