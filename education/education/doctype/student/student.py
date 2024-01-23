@@ -14,9 +14,6 @@ from education.education.utils import check_content_completion, check_quiz_compl
 
 
 class Student(Document):
-	def before_insert(self):
-		self.set_missing_customer_details()
-
 	def validate(self):
 		self.set_title()
 		self.validate_dates()
@@ -27,24 +24,31 @@ class Student(Document):
 			self.update_applicant_status()
 
 	def on_update(self):
-		breakpoint()
+		self.set_missing_customer_details()
 		if self.customer:
 			self.update_linked_customer()
 		else:
 			self.create_customer()
 
-	# TODO: migration script to create customer for all existing students
+		# get fee components from fee schedule and for each check whether item is created or not if not then create item with Item Group Fee Component
+		# TODO: do the same thing for student as customer also / instead of writing a migration script of converting student to customer,
+		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student
+		# This prevents from polluting users data
+
 	def set_missing_customer_details(self):
 		if not self.customer_group:
 			self.customer_group = "Student"
+			frappe.db.set_value("Student", self.name, "customer_group", "Student")
 		if not self.territory:
-			self.territory = frappe.db.get_single_value(
+			territory = frappe.db.get_single_value(
 				"Selling Settings", "territory"
 			) or get_root_of("Territory")
+			frappe.db.set_value("Student", self.name, "territory", territory)
 		if not self.default_price_list:
-			self.default_price_list = frappe.db.get_single_value(
+			default_price_list = frappe.db.get_single_value(
 				"Selling Settings", "selling_price_list"
 			)
+			frappe.db.set_value("Student", self.name, "default_price_list", default_price_list)
 
 		if not self.customer_group or not self.territory or not self.default_price_list:
 			frappe.msgprint(
@@ -133,7 +137,6 @@ class Student(Document):
 
 	# On Update Functions
 	def update_linked_customer(self):
-		breakpoint()
 		customer = frappe.get_doc("Customer", self.customer)
 		if self.customer_group:
 			customer.customer_group = self.customer_group
@@ -150,7 +153,6 @@ class Student(Document):
 		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
 
 	def create_customer(self):
-		breakpoint()
 		print("create_customer")
 		customer = frappe.get_doc(
 			{
