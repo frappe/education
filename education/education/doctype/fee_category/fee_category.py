@@ -22,12 +22,14 @@ class FeeCategory(Document):
 		frappe.delete_doc("Item", self.name, force=1)
 
 
-def create_item(doc):
+def create_item(doc, use_name_field=True):
+	name_field = doc.name if use_name_field else doc.fees_category
+	if frappe.db.exists("Item", name_field):
+		return frappe.db.get_value("Item", name_field, "name")
+
 	item = frappe.new_doc("Item")
-	item.item_code = doc.name
+	item.item_code = name_field
 	item.description = doc.description
-	# TODO: After installation create an item group called Fee Component (edit: done)
-	# TODO: Migration script to create item for all existing fee categories
 	item.item_group = "Fee Component"
 	item.is_sales_item = 1
 	item.is_service_item = 1
