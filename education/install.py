@@ -2,12 +2,16 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.desk.page.setup_wizard.setup_wizard import make_records
 
+# TODO: create uninstall file and remove all the custom fields, roles, assessment groups, fixtures, etc
+# TODO: Remove all Items created when Fee Category is created
+# TODO: Remove all Customers (with group = Student) & Users created (with role = Student) when Student is created.
+
 
 def after_install():
 	setup_fixtures()
 	create_student_role()
 	create_parent_assessment_group()
-	# create_custom_fields(get_custom_fields())
+	create_custom_fields(get_custom_fields())
 
 
 def setup_fixtures():
@@ -43,28 +47,30 @@ def get_custom_fields():
 	return {
 		"Sales Invoice": [
 			{
-				"fieldname": "student",
-				"label": "Student",
-				"fieldtype": "Link",
-				"options": "Student",
-				"insert_after": "naming_series",
+				"fieldname": "student_info_section",
+				"fieldtype": "Section Break",
+				"label": "Student Info",
+				"collapsible": 1,
+				"insert_after": "ignore_pricing_rule",
 			},
 			{
-				"fieldname": "student_name",
-				"label": "Student Name",
-				"fieldtype": "Data",
-				"fetch_from": "student.student_name",
+				"fieldname": "student",
+				"fieldtype": "Link",
+				"label": "Student",
+				"options": "Student",
+				"insert_after": "student_info_section",
+			},
+			{
+				"fieldname": "column_break_ejcc",
+				"fieldtype": "Column Break",
 				"insert_after": "student",
-				"read_only": True,
 			},
 			{
 				"fieldname": "fee_schedule",
 				"fieldtype": "Link",
 				"label": "Fee Schedule",
 				"options": "Fee Schedule",
-				"print_hide": 1,
-				"reqd": 1,
-				"insert_after": "student_name",
+				"insert_after": "column_break_ejcc",
 			},
 		],
 	}
