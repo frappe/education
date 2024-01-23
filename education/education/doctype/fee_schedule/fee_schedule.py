@@ -11,6 +11,9 @@ from frappe.utils import cint, cstr, flt, money_in_words
 from frappe.utils.background_jobs import enqueue
 
 
+# TODO: on cancel delete all the fees / Sales Invoice created from this fee schedule
+
+
 class FeeSchedule(Document):
 	def onload(self):
 		info = self.get_dashboard_info()
@@ -23,9 +26,10 @@ class FeeSchedule(Document):
 			"currency": erpnext.get_company_currency(self.company),
 		}
 
+		# TODO: provides wrong data when we create a return against a sales invoice
 		fees_amount = frappe.db.sql(
-			"""select sum(grand_total), sum(outstanding_amount) from tabFees
-			where fee_schedule=%s and docstatus=1""",
+			"""select sum(grand_total), sum(outstanding_amount) from `tabSales Invoice`
+			where fee_schedule=%s and docstatus=1 and student is not null""",
 			(self.name),
 		)
 
@@ -76,17 +80,17 @@ class FeeSchedule(Document):
 				)
 			)
 			enqueue(
-				generate_fee,
+				generate_sales_invoice,
 				queue="default",
 				timeout=6000,
-				event="generate_fee",
+				event="generate_sales_invoice",
 				fee_schedule=self.name,
 			)
 		else:
-			generate_fee(self.name)
+			generate_sales_invoice(self.name)
 
 
-def generate_fee(fee_schedule):
+def generate_sales_invoice(fee_schedule):
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	total_records = sum([int(d.total_students) for d in doc.student_groups])
@@ -101,20 +105,8 @@ def generate_fee(fee_schedule):
 		)
 		for student in students:
 			try:
-				fees_doc = get_mapped_doc(
-					"Fee Schedule",
-					fee_schedule,
-					{"Fee Schedule": {"doctype": "Fees", "field_map": {"name": "Fee Schedule"}}},
-				)
-				fees_doc.posting_date = doc.posting_date
-				fees_doc.student = student.student
-				fees_doc.student_name = student.student_name
-				fees_doc.program = student.program
-				fees_doc.program_enrollment = student.enrollment
-				fees_doc.student_batch = student.student_batch_name
-				fees_doc.send_payment_request = doc.send_email
-				fees_doc.save()
-				fees_doc.submit()
+				student_id = student.student
+				create_sales_invoice(fee_schedule, student_id)
 				created_records += 1
 				frappe.publish_realtime(
 					"fee_schedule_progress",
@@ -140,6 +132,47 @@ def generate_fee(fee_schedule):
 	frappe.publish_realtime(
 		"fee_schedule_progress", {"progress": "100", "reload": 1}, user=frappe.session.user
 	)
+
+
+def create_sales_invoice(fee_schedule, student_id):
+	student = frappe.get_doc("Student", student_id)
+	if not student.customer:
+		student.set_missing_customer_details()
+		student.create_customer()
+	customer = frappe.db.get_value("Student", student.name, "customer")
+
+	sales_invoice_doc = get_mapped_doc(
+		"Fee Schedule",
+		fee_schedule,
+		{
+			"Fee Schedule": {
+				"doctype": "Sales Invoice",
+				"field_map": {
+					# change custom_fee_schedule to fee_schedule
+					"name": "fee_schedule",
+					"due_date": "due_date",
+					"posting_date": "posting_date",
+				},
+			},
+			"Fee Component": {
+				"doctype": "Sales Invoice Item",
+				"field_map": {
+					# Fee Component Field : Sales Invoice Item Field
+					"item": "item_code",
+					"amount": "price_list_rate",
+					"discount": "discount_percentage",
+				},
+			},
+		},
+		ignore_permissions=True,
+	)
+	sales_invoice_doc.student = student.name
+	sales_invoice_doc.customer = customer
+
+	for item in sales_invoice_doc.items:
+		item.qty = 1
+
+	sales_invoice_doc.save()
 
 
 # TODO: currently it gives program name for multiple enrollments in a calendar year, maybe improve it?
