@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
+from education.education.doctype.fee_category.fee_category import create_item
 
 
 class FeeStructure(Document):
@@ -20,7 +21,7 @@ class FeeStructure(Document):
 		"""Calculates total amount."""
 		self.total_amount = 0
 		for d in self.components:
-			self.total_amount += d.amount
+			self.total_amount += d.total
 
 	def validate_discount(self):
 		for component in self.components:
@@ -29,6 +30,21 @@ class FeeStructure(Document):
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
 				)
+
+	def before_submit(self):
+		for component in self.components:
+			# create item for each component if it doesn't exist
+			if not component.get("item"):
+				self.create_item_master_and_save_item_in_fee_component(component)
+
+	def create_item_master_and_save_item_in_fee_component(self, component):
+		# create item master from fee category
+		item = create_item(component, use_name_field=False)
+		component.item = item
+		# store the item in the component doc
+		component_doc = frappe.get_doc("Fee Category", component.fees_category)
+		component_doc.item = item
+		component_doc.save()
 
 
 @frappe.whitelist()
@@ -88,7 +104,7 @@ def get_amount_distribution_based_on_fee_plan(
 	per_component_amount = {}
 	for component in components:
 		per_component_amount[component.get("fees_category")] = component.get(
-			"amount"
+			"total"
 		) * month_list_and_amount.get("amount")
 
 	amount = sum(per_component_amount.values())
@@ -118,8 +134,6 @@ def make_fee_schedule(
 	per_component_amount = json.loads(per_component_amount)
 
 	student_groups = dialog_values.get("student_groups")
-	print(dialog_values.get("distribution"))
-	breakpoint()
 	monthly_distribution = [
 		month.get("due_date") for month in dialog_values.get("distribution", [])
 	]
@@ -141,11 +155,12 @@ def make_fee_schedule(
 		amount_per_month = 0
 
 		for component in doc.components:
-			component.amount = per_component_amount.get(component.fees_category)
-			amount_per_month += component.amount
+			component.total = per_component_amount.get(component.fees_category)
+			discount = flt(component.discount) / 100
+			component.amount = (component.total) / (1 - discount)
+			amount_per_month += component.total
 		# amount_per_month will be the total amount for each Fee Structure
 		doc.total_amount = amount_per_month
-
 		for group in student_groups:
 			fee_schedule_student_group = doc.append("student_groups", {})
 			fee_schedule_student_group.student_group = group.get("student_group")
