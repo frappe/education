@@ -173,6 +173,8 @@ def create_sales_invoice(fee_schedule, student_id):
 		item.qty = 1
 
 	sales_invoice_doc.save()
+	sales_invoice_doc.submit()
+	return sales_invoice_doc.name
 
 
 # TODO: currently it gives program name for multiple enrollments in a calendar year, maybe improve it?
