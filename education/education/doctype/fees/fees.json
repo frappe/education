@@ -367,9 +367,10 @@
    "print_hide": 1
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-23 16:08:04.675422",
+ "modified": "2024-01-24 13:09:22.125166",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
