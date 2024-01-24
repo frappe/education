@@ -153,7 +153,6 @@ class Student(Document):
 		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
 
 	def create_customer(self):
-		print("create_customer")
 		customer = frappe.get_doc(
 			{
 				"doctype": "Customer",

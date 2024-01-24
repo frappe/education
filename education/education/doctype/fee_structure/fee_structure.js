@@ -211,7 +211,6 @@ frappe.ui.form.on('Fee Component', {
 		d.total = d.amount;
 		refresh_field('components');
 		if (d.discount) {
-			console.log(d.discount,"haha")
 			d.total = d.amount - (d.amount * (d.discount / 100) );
 			refresh_field('components');
 		}
@@ -219,7 +218,6 @@ frappe.ui.form.on('Fee Component', {
 	},
 	discount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
-		console.log(d.discount)
 		if (d.discount < 100) {
 			d.total = d.amount - (d.amount * (d.discount / 100) );
 		}
