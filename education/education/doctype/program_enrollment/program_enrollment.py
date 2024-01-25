@@ -8,6 +8,7 @@ from frappe.desk.reportview import get_match_cond
 from frappe.model.document import Document
 from frappe.query_builder.functions import Min
 from frappe.utils import comma_and, get_link_to_form, getdate
+from education.education.doctype.fee_schedule.fee_schedule import create_sales_invoice
 
 
 class ProgramEnrollment(Document):
@@ -70,14 +71,16 @@ class ProgramEnrollment(Document):
 
 	def validate_duplication(self):
 		enrollment = frappe.db.exists(
-			"Program Enrollment", {
+			"Program Enrollment",
+			{
 				"student": self.student,
 				"program": self.program,
 				"academic_year": self.academic_year,
 				"academic_term": self.academic_term,
 				"docstatus": ("<", 2),
 				"name": ("!=", self.name),
-			})
+			},
+		)
 		if enrollment:
 			frappe.throw(_("Student is already enrolled."))
 
@@ -95,34 +98,16 @@ class ProgramEnrollment(Document):
 	def make_fee_records(self):
 		from education.education.api import get_fee_components
 
-		fee_list = []
+		sales_invoice_list = []
 		for d in self.fees:
-			fee_components = get_fee_components(d.fee_structure)
-			if fee_components:
-				fees = frappe.new_doc("Fees")
-				fees.update(
-					{
-						"student": self.student,
-						"academic_year": self.academic_year,
-						"academic_term": d.academic_term,
-						"fee_structure": d.fee_structure,
-						"program": self.program,
-						"due_date": d.due_date,
-						"student_name": self.student_name,
-						"program_enrollment": self.name,
-						"components": fee_components,
-					}
-				)
-
-				fees.save()
-				fees.submit()
-				fee_list.append(fees.name)
-		if fee_list:
-			fee_list = [
-				"""<a href="/app/Form/Fees/%s" target="_blank">%s</a>""" % (fee, fee)
-				for fee in fee_list
+			sales_invoice = create_sales_invoice(d.fee_schedule, self.student)
+			sales_invoice_list.append(sales_invoice)
+		if sales_invoice_list:
+			sales_invoice_list = [
+				"""<a href="/app/Form/Sales Invoice/%s" target="_blank">%s</a>""" % (fee, fee)
+				for fee in sales_invoice_list
 			]
-			msgprint(_("Fee Records Created - {0}").format(comma_and(fee_list)))
+			msgprint(_("Fee Records Created - {0}").format(comma_and(sales_invoice_list)))
 
 	@frappe.whitelist()
 	def get_courses(self):

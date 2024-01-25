@@ -7,6 +7,8 @@ from frappe import _
 from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
 from frappe.utils import getdate, today
+from erpnext import get_default_currency
+from frappe.utils.nestedset import get_root_of
 
 from education.education.utils import check_content_completion, check_quiz_completion
 
@@ -21,6 +23,21 @@ class Student(Document):
 			self.check_unique()
 			self.update_applicant_status()
 
+	def on_update(self):
+		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student
+		# This prevents from polluting users data
+		self.set_customer_group()
+		if self.customer:
+			self.update_linked_customer()
+		else:
+			self.create_customer()
+
+	def set_customer_group(self):
+		if not self.customer_group:
+			self.customer_group = "Student"
+			frappe.db.set_value("Student", self.name, "customer_group", "Student")
+
+	# Validate Functions
 	def set_title(self):
 		self.student_name = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
@@ -89,6 +106,36 @@ class Student(Document):
 			frappe.db.set_value(
 				"Student Applicant", self.student_applicant, "application_status", "Admitted"
 			)
+
+	# End of Validate Functions
+
+	# On Update Functions
+	def update_linked_customer(self):
+		customer = frappe.get_doc("Customer", self.customer)
+		if self.customer_group:
+			customer.customer_group = self.customer_group
+		customer.customer_name = self.student_name
+		customer.image = self.image
+		customer.save()
+
+		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
+
+	def create_customer(self):
+		customer = frappe.get_doc(
+			{
+				"doctype": "Customer",
+				"customer_name": self.student_name,
+				"customer_group": self.customer_group
+				or frappe.db.get_single_value("Selling Settings", "customer_group"),
+				"customer_type": "Individual",
+				"image": self.image,
+			}
+		).insert()
+
+		frappe.db.set_value("Student", self.name, "customer", customer.name)
+		frappe.msgprint(
+			_("Customer {0} created and linked to Student").format(customer.name), alert=True
+		)
 
 	def get_all_course_enrollments(self):
 		"""Returns a list of course enrollments linked with the current student"""

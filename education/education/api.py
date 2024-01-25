@@ -637,3 +637,57 @@ def apply_leave_based_on_student_group(leave_data, program_name):
 			student_group.get("parent"),
 			leave_data.get("from_date"),
 		)
+
+
+@frappe.whitelist()
+def get_student_invoices(student):
+	student_sales_invoices = []
+
+	sales_invoice_list = frappe.db.get_list(
+		"Sales Invoice",
+		filters={"student": student, "status": ["in", ["Paid", "Unpaid"]]},
+		fields=["name", "status", "student", "due_date", "fee_schedule", "grand_total"],
+	)
+
+	for si in sales_invoice_list:
+		student_program_invoice_status = {}
+		student_program_invoice_status["status"] = si.status
+		student_program_invoice_status["program"] = get_program_from_fee_schedule(
+			si.fee_schedule
+		)
+		student_program_invoice_status["amount"] = si.grand_total
+
+		if si.status == "Paid":
+			student_program_invoice_status[
+				"payment_date"
+			] = get_posting_date_from_payment_entry_against_sales_invoice(si.name)
+			student_program_invoice_status["due_date"] = ""
+		else:
+			student_program_invoice_status["due_date"] = si.due_date
+			student_program_invoice_status["payment_date"] = ""
+
+		student_sales_invoices.append(student_program_invoice_status)
+
+	return student_sales_invoices
+
+
+def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
+	payment_entry = frappe.qb.DocType("Payment Entry")
+	payment_entry_reference = frappe.qb.DocType("Payment Entry Reference")
+	q = (
+		frappe.qb.from_(payment_entry)
+		.inner_join(payment_entry_reference)
+		.on(payment_entry.name == payment_entry_reference.parent)
+		.select(payment_entry.posting_date)
+		.where(payment_entry_reference.reference_name == sales_invoice)
+	).run(as_dict=1)
+	payment_date = q[0].get("posting_date")
+	return payment_date
+
+
+def get_program_from_fee_schedule(fee_schedule):
+	# fee_schedule = "EDU-FSH-2024-00023"
+	program = frappe.db.get_value(
+		"Fee Schedule", filters={"name": fee_schedule}, fieldname=["program"]
+	)
+	return program

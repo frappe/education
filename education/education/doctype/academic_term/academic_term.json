@@ -65,8 +65,49 @@
    "show_dashboard": 1
   }
  ],
- "links": [],
- "modified": "2023-02-14 13:13:40.419268",
+ "links": [
+  {
+   "group": "Student",
+   "link_doctype": "Student Applicant",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Student",
+   "link_doctype": "Student Group",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Student",
+   "link_doctype": "Student Log",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Structure",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Schedule",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Program",
+   "link_doctype": "Program Enrollment",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "academic_term"
+  }
+ ],
+ "modified": "2024-01-25 11:11:16.432849",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Term",

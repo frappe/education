@@ -42,6 +42,11 @@
   "guardians",
   "section_break_20",
   "siblings",
+  "customer_details_tab",
+  "customer_details_section",
+  "customer",
+  "column_break_rgpi",
+  "customer_group",
   "exit_tab",
   "exit",
   "date_of_leaving",
@@ -278,11 +283,74 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "customer_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "label": "Customer Group",
+   "options": "Customer Group"
+  },
+  {
+   "fieldname": "column_break_rgpi",
+   "fieldtype": "Column Break"
   }
  ],
  "image_field": "image",
- "links": [],
- "modified": "2023-02-06 12:25:25.197460",
+ "links": [
+  {
+   "group": "Admission",
+   "link_doctype": "Program Enrollment",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Admission",
+   "link_doctype": "Course Enrollment",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Log",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Group",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Attendance",
+   "link_fieldname": "student"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Leave Application",
+   "link_fieldname": "student"
+  }
+ ],
+ "modified": "2024-01-25 14:31:30.675199",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

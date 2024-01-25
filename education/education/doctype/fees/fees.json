@@ -367,9 +367,10 @@
    "print_hide": 1
   }
  ],
+ "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-21 15:58:13.146136",
+ "modified": "2024-01-24 13:09:22.125166",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
@@ -416,6 +417,7 @@
    "write": 1
   }
  ],
+ "read_only": 1,
  "search_fields": "student, student_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

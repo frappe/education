@@ -13,6 +13,7 @@
   "validate_course",
   "academic_term_reqd",
   "user_creation_skip",
+  "auto_submit_sales_invoice",
   "section_break_7",
   "instructor_created_by",
   "portal_settings_tab",
@@ -80,6 +81,13 @@
    "label": "Skip User creation for new Student"
   },
   {
+   "default": "0",
+   "description": "By default, the Sales Invoice Created will be in Draft Mode. If enabled, the Sales Invoice will be submitted once created.",
+   "fieldname": "auto_submit_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Submit Sales Invoice from Program Enrollment / Fee Schedule"
+  },
+  {
    "fieldname": "portal_settings_tab",
    "fieldtype": "Tab Break",
    "label": "Portal Settings"
@@ -94,7 +102,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2023-12-21 10:56:39.405785",
+ "modified": "2024-01-24 14:43:09.520597",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
