@@ -4,6 +4,7 @@
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Sum
 
 
 def execute(filters=None):
@@ -50,32 +51,30 @@ def get_columns(filters=None):
 def get_data(filters=None):
 	data = []
 
-	conditions = get_filter_conditions(filters)
+	sales_invoice = frappe.qb.DocType("Sales Invoice")
+	fee_schedule = frappe.qb.DocType("Fee Schedule")
 
-	fee_details = frappe.db.sql(
-		"""
-			SELECT
-				FeesCollected.program,
-				FeesCollected.paid_amount,
-				FeesCollected.outstanding_amount,
-				FeesCollected.grand_total
-			FROM (
-				SELECT
-					sum(grand_total) - sum(outstanding_amount) AS paid_amount, program,
-					sum(outstanding_amount) AS outstanding_amount,
-					sum(grand_total) AS grand_total
-				FROM `tabFees`
-				WHERE
-					docstatus = 1 and
-					program IS NOT NULL
-					%s
-				GROUP BY program
-			) AS FeesCollected
-			ORDER BY FeesCollected.paid_amount DESC
-		"""
-		% (conditions),
-		as_dict=1,
-	)
+	fee_details = (
+		frappe.qb.from_(sales_invoice)
+		.inner_join(fee_schedule)
+		.on(sales_invoice.fee_schedule == fee_schedule.name)
+		.select(
+			fee_schedule.program,
+			(Sum(sales_invoice.grand_total) - Sum(sales_invoice.outstanding_amount)).as_(
+				"paid_amount"
+			),
+			Sum(sales_invoice.outstanding_amount).as_("outstanding_amount"),
+			Sum(sales_invoice.grand_total).as_("grand_total"),
+		)
+		.where(
+			(sales_invoice.docstatus == 1)
+			& (sales_invoice.student.isnotnull())
+			& (sales_invoice.posting_date >= filters.get("from_date"))
+			& (sales_invoice.posting_date < filters.get("to_date"))
+		)
+		.groupby(fee_schedule.program)
+		.orderby("paid_amount", order=frappe.qb.desc)
+	).run(as_dict=1)
 
 	for entry in fee_details:
 		data.append(
