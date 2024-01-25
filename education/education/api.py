@@ -518,10 +518,12 @@ def get_student_invoices(student):
 
 		if si.status == "Paid":
 			student_program_invoice_status[
-				"posting_date"
+				"payment_date"
 			] = get_posting_date_from_payment_entry_against_sales_invoice(si.name)
+			student_program_invoice_status["due_date"] = ""
 		else:
 			student_program_invoice_status["due_date"] = si.due_date
+			student_program_invoice_status["payment_date"] = ""
 
 		student_sales_invoices.append(student_program_invoice_status)
 
@@ -538,8 +540,8 @@ def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 		.select(payment_entry.posting_date)
 		.where(payment_entry_reference.reference_name == sales_invoice)
 	).run(as_dict=1)
-	posting_date = q[0].get("posting_date")
-	return posting_date
+	payment_date = q[0].get("posting_date")
+	return payment_date
 
 
 def get_program_from_fee_schedule(fee_schedule):

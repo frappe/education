@@ -114,15 +114,9 @@ class Student(Document):
 		customer = frappe.get_doc("Customer", self.customer)
 		if self.customer_group:
 			customer.customer_group = self.customer_group
-		if self.territory:
-			customer.territory = self.territory
 		customer.customer_name = self.student_name
-		customer.default_price_list = self.default_price_list
-		customer.default_currency = self.default_currency
-		customer.language = self.language
 		customer.image = self.image
-		customer.ignore_mandatory = True
-		customer.save(ignore_permissions=True)
+		customer.save()
 
 		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
 
