@@ -26,7 +26,6 @@ class FeeSchedule(Document):
 			"currency": erpnext.get_company_currency(self.company),
 		}
 
-		# TODO: provides wrong data when we create a return against a sales invoice
 		fees_amount = frappe.db.sql(
 			"""select sum(grand_total), sum(outstanding_amount) from `tabSales Invoice`
 			where fee_schedule=%s and docstatus=1 and student is not null""",
@@ -179,7 +178,7 @@ def create_sales_invoice(fee_schedule, student_id):
 	return sales_invoice_doc.name
 
 
-# TODO: currently it gives program name for multiple enrollments in a calendar year, maybe improve it?
+#  gives program name for multiple enrollments in a calendar year
 def get_students(
 	student_group, academic_year, academic_term=None, student_category=None
 ):
