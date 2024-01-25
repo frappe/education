@@ -26,42 +26,16 @@ class Student(Document):
 	def on_update(self):
 		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student
 		# This prevents from polluting users data
-		self.set_missing_customer_details()
+		self.set_customer_group()
 		if self.customer:
 			self.update_linked_customer()
 		else:
 			self.create_customer()
 
-	def set_missing_customer_details(self):
+	def set_customer_group(self):
 		if not self.customer_group:
 			self.customer_group = "Student"
 			frappe.db.set_value("Student", self.name, "customer_group", "Student")
-
-		if not self.territory:
-			territory = frappe.db.get_single_value(
-				"Selling Settings", "territory"
-			) or get_root_of("Territory")
-			frappe.db.set_value("Student", self.name, "territory", territory)
-
-		if not self.default_price_list:
-			default_price_list = frappe.db.get_single_value(
-				"Selling Settings", "selling_price_list"
-			)
-			frappe.db.set_value("Student", self.name, "default_price_list", default_price_list)
-
-		if not self.customer_group or not self.territory or not self.default_price_list:
-			frappe.msgprint(
-				_(
-					"Please set defaults for Customer Group, Territory and Selling Price List in Selling Settings"
-				),
-				alert=True,
-			)
-
-		if not self.default_currency:
-			self.default_currency = get_default_currency()
-
-		if not self.language:
-			self.language = frappe.db.get_single_value("System Settings", "language")
 
 	# Validate Functions
 	def set_title(self):
@@ -159,19 +133,14 @@ class Student(Document):
 				"customer_name": self.student_name,
 				"customer_group": self.customer_group
 				or frappe.db.get_single_value("Selling Settings", "customer_group"),
-				"territory": self.territory
-				or frappe.db.get_single_value("Selling Settings", "territory"),
 				"customer_type": "Individual",
-				"default_currency": self.default_currency,
-				"default_price_list": self.default_price_list,
-				"language": self.language,
 				"image": self.image,
 			}
-		).insert(ignore_permissions=True, ignore_mandatory=True)
+		).insert()
 
 		frappe.db.set_value("Student", self.name, "customer", customer.name)
 		frappe.msgprint(
-			_("Customer {0} created and linked to Patient").format(customer.name), alert=True
+			_("Customer {0} created and linked to Student").format(customer.name), alert=True
 		)
 
 	def get_all_course_enrollments(self):

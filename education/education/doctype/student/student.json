@@ -45,12 +45,8 @@
   "customer_details_tab",
   "customer_details_section",
   "customer",
-  "customer_group",
-  "territory",
   "column_break_rgpi",
-  "default_currency",
-  "default_price_list",
-  "language",
+  "customer_group",
   "exit_tab",
   "exit",
   "date_of_leaving",
@@ -312,32 +308,8 @@
    "options": "Customer Group"
   },
   {
-   "fieldname": "territory",
-   "fieldtype": "Link",
-   "label": "Territory",
-   "options": "Territory"
-  },
-  {
    "fieldname": "column_break_rgpi",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_currency",
-   "fieldtype": "Link",
-   "label": "Billing Currency",
-   "options": "Currency"
-  },
-  {
-   "fieldname": "default_price_list",
-   "fieldtype": "Link",
-   "label": "Default Price List",
-   "options": "Price List"
-  },
-  {
-   "fieldname": "language",
-   "fieldtype": "Link",
-   "label": "Print Language",
-   "options": "Language"
   }
  ],
  "image_field": "image",
@@ -378,7 +350,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2024-01-23 14:52:00.283061",
+ "modified": "2024-01-25 14:31:30.675199",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
