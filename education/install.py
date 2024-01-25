@@ -1,21 +1,29 @@
 import frappe
+from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+from frappe.desk.page.setup_wizard.setup_wizard import make_records
+
+# TODO: create uninstall file and remove all the custom fields, roles, assessment groups, fixtures, etc
+# TODO: Remove all Items created when Fee Category is created
+# TODO: Remove all Customers (with group = Student) & Users created (with role = Student) when Student is created.
 
 
 def after_install():
 	setup_fixtures()
 	create_student_role()
 	create_parent_assessment_group()
+	create_custom_fields(get_custom_fields())
 
 
 def setup_fixtures():
 	records = [
-		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"}
+		# Party Type Records
+		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
+		# Item Group Records
+		{"doctype": "Item Group", "item_group_name": "Fee Component"},
+		# Customer Group Records
+		{"doctype": "Customer Group", "customer_group_name": "Student"},
 	]
-
-	for record in records:
-		if not frappe.db.exists("Party Type", record.get("party_type")):
-			doc = frappe.get_doc(record)
-			doc.insert()
+	make_records(records)
 
 
 def create_parent_assessment_group():
@@ -32,3 +40,37 @@ def create_parent_assessment_group():
 def create_student_role():
 	if not frappe.db.exists("Role", "Student"):
 		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 0}).save()
+
+
+def get_custom_fields():
+	"""Education specific custom fields that needs to be added to the Sales Invoice DocType."""
+	return {
+		"Sales Invoice": [
+			{
+				"fieldname": "student_info_section",
+				"fieldtype": "Section Break",
+				"label": "Student Info",
+				"collapsible": 1,
+				"insert_after": "ignore_pricing_rule",
+			},
+			{
+				"fieldname": "student",
+				"fieldtype": "Link",
+				"label": "Student",
+				"options": "Student",
+				"insert_after": "student_info_section",
+			},
+			{
+				"fieldname": "column_break_ejcc",
+				"fieldtype": "Column Break",
+				"insert_after": "student",
+			},
+			{
+				"fieldname": "fee_schedule",
+				"fieldtype": "Link",
+				"label": "Fee Schedule",
+				"options": "Fee Schedule",
+				"insert_after": "column_break_ejcc",
+			},
+		],
+	}

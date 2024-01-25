@@ -4,6 +4,8 @@
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import Sum
+from frappe.query_builder import Order
 
 
 def execute(filters=None):
@@ -28,7 +30,7 @@ def get_columns(filters=None):
 		},
 		{
 			"label": _("Fees Collected"),
-			"fieldname": "fees_collected",
+			"fieldname": "paid_amount",
 			"fieldtype": "Currency",
 			"width": 200,
 		},
@@ -50,56 +52,68 @@ def get_columns(filters=None):
 def get_data(filters=None):
 	data = []
 
-	conditions = get_filter_conditions(filters)
+	sales_invoice = frappe.qb.DocType("Sales Invoice")
+	fee_schedule = frappe.qb.DocType("Fee Schedule")
 
-	fee_details = frappe.db.sql(
-		"""
-			SELECT
-				FeesCollected.program,
-				FeesCollected.paid_amount,
-				FeesCollected.outstanding_amount,
-				FeesCollected.grand_total
-			FROM (
-				SELECT
-					sum(grand_total) - sum(outstanding_amount) AS paid_amount, program,
-					sum(outstanding_amount) AS outstanding_amount,
-					sum(grand_total) AS grand_total
-				FROM `tabFees`
-				WHERE
-					docstatus = 1 and
-					program IS NOT NULL
-					%s
-				GROUP BY program
-			) AS FeesCollected
-			ORDER BY FeesCollected.paid_amount DESC
-		"""
-		% (conditions),
-		as_dict=1,
-	)
-
-	for entry in fee_details:
-		data.append(
-			{
-				"program": entry.program,
-				"fees_collected": entry.paid_amount,
-				"outstanding_amount": entry.outstanding_amount,
-				"grand_total": entry.grand_total,
-			}
+	sales_invoice_details = (
+		frappe.qb.from_(sales_invoice)
+		.inner_join(fee_schedule)
+		.on(sales_invoice.fee_schedule == fee_schedule.name)
+		.select(
+			fee_schedule.program,
+			(Sum(sales_invoice.grand_total) - Sum(sales_invoice.outstanding_amount)).as_(
+				"paid_amount"
+			),
+			Sum(sales_invoice.outstanding_amount).as_("outstanding_amount"),
+			Sum(sales_invoice.grand_total).as_("grand_total"),
 		)
+		.where(
+			(sales_invoice.docstatus == 1)
+			& (sales_invoice.student.isnotnull())
+			& (sales_invoice.posting_date >= filters.get("from_date"))
+			& (sales_invoice.posting_date < filters.get("to_date"))
+		)
+		.groupby(fee_schedule.program)
+		.orderby("paid_amount", order=Order.desc)
+	).run(as_dict=1)
+	fee = frappe.qb.DocType("Fees")
+	fee_details = (
+		frappe.qb.from_(fee)
+		.select(
+			fee.program,
+			(Sum(fee.grand_total) - Sum(fee.outstanding_amount)).as_("paid_amount"),
+			Sum(fee.outstanding_amount).as_("outstanding_amount"),
+			Sum(fee.grand_total).as_("grand_total"),
+		)
+		.where(
+			(fee.docstatus == 1)
+			& (fee.program.isnotnull())
+			& (fee.posting_date.between(filters.get("from_date"), filters.get("to_date")))
+		)
+		.groupby(fee.program)
+		.orderby("paid_amount", order=Order.desc)
+	).run(as_dict=1)
+
+	if not fee_details:
+		return sales_invoice_details
+	if not sales_invoice_details:
+		return fee_details
+
+	data = [*fee_details]
+
+	fee_details_dict = {item["program"]: item for item in data}
+	program_in_fees = list(fee_details_dict.keys())
+
+	for detail in sales_invoice_details:
+		if detail.get("program") in program_in_fees:
+			existing_program = fee_details_dict[detail.get("program")]
+			existing_program["paid_amount"] += detail.get("paid_amount")
+			existing_program["outstanding_amount"] += detail.get("outstanding_amount")
+			existing_program["grand_total"] += detail.get("grand_total")
+		else:
+			data.append(detail)
 
 	return data
-
-
-def get_filter_conditions(filters):
-	conditions = ""
-
-	if filters.get("from_date") and filters.get("to_date"):
-		conditions += " and posting_date BETWEEN '%s' and '%s'" % (
-			filters.get("from_date"),
-			filters.get("to_date"),
-		)
-
-	return conditions
 
 
 def get_chart_data(data):
@@ -107,19 +121,19 @@ def get_chart_data(data):
 		return
 
 	labels = []
-	fees_collected = []
+	paid_amount = []
 	outstanding_amount = []
 
 	for entry in data:
 		labels.append(entry.get("program"))
-		fees_collected.append(entry.get("fees_collected"))
+		paid_amount.append(entry.get("paid_amount"))
 		outstanding_amount.append(entry.get("outstanding_amount"))
 
 	return {
 		"data": {
 			"labels": labels,
 			"datasets": [
-				{"name": _("Fees Collected"), "values": fees_collected},
+				{"name": _("Fees Collected"), "values": paid_amount},
 				{"name": _("Outstanding Amt"), "values": outstanding_amount},
 			],
 		},

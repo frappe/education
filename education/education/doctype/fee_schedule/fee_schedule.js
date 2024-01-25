@@ -77,7 +77,7 @@ frappe.ui.form.on('Fee Schedule', {
 			frm.dashboard.add_progress('Fee Creation Status', '0');
 		}
 		if (frm.doc.docstatus === 1 && !frm.doc.fee_creation_status || frm.doc.fee_creation_status === 'Failed') {
-			frm.add_custom_button(__('Create Fees'), function() {
+			frm.add_custom_button(__('Create Sales Invoice'), function() {
 				frappe.call({
 					method: 'create_fees',
 					doc: frm.doc,
@@ -88,11 +88,11 @@ frappe.ui.form.on('Fee Schedule', {
 			});
 		}
 		if (frm.doc.fee_creation_status === 'Successful') {
-			frm.add_custom_button(__('View Fees Records'), function() {
+			frm.add_custom_button(__('View Sales Invoice Records'), function() {
 				frappe.route_options = {
 					fee_schedule: frm.doc.name
 				};
-				frappe.set_route('List', 'Fees');
+				frappe.set_route('List', 'Sales Invoice');
 			});
 		}
 
