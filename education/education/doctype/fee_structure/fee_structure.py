@@ -15,7 +15,7 @@ from education.education.doctype.fee_category.fee_category import create_item
 class FeeStructure(Document):
 	def validate(self):
 		self.calculate_total()
-		# self.validate_discount()
+		self.validate_discount()
 
 	def calculate_total(self):
 		"""Calculates total amount."""
@@ -25,7 +25,6 @@ class FeeStructure(Document):
 
 	def validate_discount(self):
 		for component in self.components:
-
 			if component.discount > 100:
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
@@ -90,6 +89,7 @@ def get_amount_distribution_based_on_fee_plan(
 			"Academic Term",
 			filters={"academic_year": academic_year},
 			fields=["name", "term_start_date"],
+			order_by="term_start_date asc",
 		)
 		month_dict.get(fee_plan)["amount"] = 1 / len(academic_terms)
 
