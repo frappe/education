@@ -104,7 +104,7 @@ class ProgramEnrollment(Document):
 			sales_invoice_list.append(sales_invoice)
 		if sales_invoice_list:
 			sales_invoice_list = [
-				"""<a href="/app/Form/Fees/%s" target="_blank">%s</a>""" % (fee, fee)
+				"""<a href="/app/Form/Sales Invoice/%s" target="_blank">%s</a>""" % (fee, fee)
 				for fee in sales_invoice_list
 			]
 			msgprint(_("Fee Records Created - {0}").format(comma_and(sales_invoice_list)))

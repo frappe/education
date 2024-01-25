@@ -170,11 +170,12 @@
  "is_submittable": 1,
  "links": [
   {
+   "group": "Enrollment",
    "link_doctype": "Course Enrollment",
    "link_fieldname": "program_enrollment"
   }
  ],
- "modified": "2024-01-23 14:19:36.595568",
+ "modified": "2024-01-25 11:17:11.685644",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",

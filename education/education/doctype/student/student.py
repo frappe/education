@@ -24,26 +24,25 @@ class Student(Document):
 			self.update_applicant_status()
 
 	def on_update(self):
+		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student
+		# This prevents from polluting users data
 		self.set_missing_customer_details()
 		if self.customer:
 			self.update_linked_customer()
 		else:
 			self.create_customer()
 
-		# get fee components from fee schedule and for each check whether item is created or not if not then create item with Item Group Fee Component
-		# TODO: do the same thing for student as customer also / instead of writing a migration script of converting student to customer,
-		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student
-		# This prevents from polluting users data
-
 	def set_missing_customer_details(self):
 		if not self.customer_group:
 			self.customer_group = "Student"
 			frappe.db.set_value("Student", self.name, "customer_group", "Student")
+
 		if not self.territory:
 			territory = frappe.db.get_single_value(
 				"Selling Settings", "territory"
 			) or get_root_of("Territory")
 			frappe.db.set_value("Student", self.name, "territory", territory)
+
 		if not self.default_price_list:
 			default_price_list = frappe.db.get_single_value(
 				"Selling Settings", "selling_price_list"
@@ -60,6 +59,7 @@ class Student(Document):
 
 		if not self.default_currency:
 			self.default_currency = get_default_currency()
+
 		if not self.language:
 			self.language = frappe.db.get_single_value("System Settings", "language")
 
