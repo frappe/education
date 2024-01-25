@@ -44,8 +44,6 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Program",
-   "oldfieldname": "earning_name",
-   "oldfieldtype": "Data",
    "options": "Program",
    "reqd": 1,
    "search_index": 1
@@ -66,8 +64,6 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Academic Term",
-   "oldfieldname": "description",
-   "oldfieldtype": "Small Text",
    "options": "Academic Term",
    "search_index": 1,
    "width": "300px"

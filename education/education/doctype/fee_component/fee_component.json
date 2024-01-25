@@ -21,8 +21,6 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Fees Category",
-   "oldfieldname": "earning_name",
-   "oldfieldtype": "Data",
    "options": "Fee Category",
    "reqd": 1
   },
@@ -42,8 +40,6 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
-   "oldfieldname": "description",
-   "oldfieldtype": "Small Text",
    "reqd": 1,
    "width": "300px"
   },
@@ -58,7 +54,7 @@
   {
    "default": "0",
    "fieldname": "discount",
-   "fieldtype": "Percent",
+   "fieldtype": "FLoat",
    "in_list_view": 1,
    "label": "Discount(%)"
   },
