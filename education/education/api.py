@@ -235,7 +235,7 @@ def get_fee_schedule(program, student_category=None):
 	"""
 	fs = frappe.get_all(
 		"Program Fee",
-		fields=["academic_term", "fee_structure", "due_date", "amount"],
+		fields=["academic_term", "fee_schedule", "due_date", "amount"],
 		filters={"parent": program, "student_category": student_category},
 		order_by="idx",
 	)
