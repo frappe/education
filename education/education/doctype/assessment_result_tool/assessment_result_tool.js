@@ -74,6 +74,31 @@ frappe.ui.form.on('Assessment Result Tool', {
 		}));
 		result_table.appendTo(frm.fields_dict.result_html.wrapper);
 
+		$(".assessment-criteria").on("keydown",function (e) {
+			// get data-criteria attribute
+			let criteriaIndex = cint(e.target.parentElement.getAttribute('data-criteria-index'));
+			changeFocusToNextCell(e, 2 + criteriaIndex)
+		})
+
+		$(".result-comment").on("keydown",function (e) {
+			changeFocusToNextCell(e, 5)
+		})
+
+		function changeFocusToNextCell (e,cellIndex) {
+			if (e.keyCode === 13 && !e.shiftKey) {
+				let nextRow = e.target.parentElement.parentElement.nextElementSibling;
+				if (nextRow) {
+					nextRow.cells[cellIndex].lastElementChild.focus()
+				}
+			}
+			if (e.keyCode === 13 && e.shiftKey) {
+				let prevRow = e.target.parentElement.parentElement.previousElementSibling;
+				if (prevRow) {
+					prevRow.cells[cellIndex].lastElementChild.focus()
+				}
+			}
+		}
+
 		result_table.on('change', 'input', function(e) {
 			let $input = $(e.target);
 			let student = $input.data().student;
