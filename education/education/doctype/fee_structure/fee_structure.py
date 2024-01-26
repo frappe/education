@@ -25,7 +25,7 @@ class FeeStructure(Document):
 
 	def validate_discount(self):
 		for component in self.components:
-			if component.discount > 100:
+			if flt(component.discount) > 100:
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
 				)
