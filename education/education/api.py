@@ -645,7 +645,7 @@ def get_student_invoices(student):
 
 	sales_invoice_list = frappe.db.get_list(
 		"Sales Invoice",
-		filters={"student": student, "status": ["in", ["Paid", "Unpaid"]]},
+		filters={"student": student, "status": ["in", ["Paid", "Unpaid", "Overdue"]]},
 		fields=["name", "status", "student", "due_date", "fee_schedule", "grand_total"],
 	)
 
@@ -656,7 +656,8 @@ def get_student_invoices(student):
 			si.fee_schedule
 		)
 		student_program_invoice_status["amount"] = si.grand_total
-
+		# get currency
+		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
 			student_program_invoice_status[
 				"payment_date"

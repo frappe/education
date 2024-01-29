@@ -60,11 +60,11 @@ const links = [
 		to: '/grades',
 		icon: GraduationCap,
 	},
-	// {
-	// 	label: 'Fees',
-	// 	to: '/fees',
-	// 	icon: Banknote,
-	// },
+	{
+		label: 'Fees',
+		to: '/fees',
+		icon: Banknote,
+	},
 	{
 		label: 'Attendance',
 		to: '/attendance',

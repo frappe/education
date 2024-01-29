@@ -66,15 +66,12 @@ import NewLeave from '@/components/NewLeave.vue';
 import CalendarView from '@/components/CalendarView.vue';
 
 const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
-const programName = ref('')
+const programName = ref(getCurrentProgram().value?.program)
 const selectedGroup = ref('Select Student Group')
 const allStudentGroups = ref()
 
 
-let program = getCurrentProgram().value
 let studentInfo = getStudentInfo().value
-programName.value = program.program
-
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
 // can't get actions by using storeToRefs hence using store
@@ -134,16 +131,6 @@ const newLeave = reactive({
 	total_days: '',
 })
 
-
-
-const createNewLeave = (close) => {
-	// validations
-	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
-		console.log("Error")
-	}
-	applyLeave.submit()
-}
-
 const attendanceData = createListResource({
 	doctype:"Student Attendance",
 	fields:['date','status','name'],
@@ -152,7 +139,7 @@ const attendanceData = createListResource({
 		student_group:selectedGroup,
 		docstatus:1,
 	},
-	cache:selectedGroup.value,
+	// cache:selectedGroup.value, STRONG CACHE
 	transform: (attendance) => {
 		// filter attendance to remove duplicate attendance data
 		attendance = attendance.filter((attendance, index, self) =>
@@ -174,13 +161,9 @@ const attendanceData = createListResource({
 				}
 			})
 		})
-
 		return events
 	}
 })
-
-setStudentGroup()
-
 
 
 const applyLeave = createResource({
@@ -202,17 +185,19 @@ function setStudentGroup() {
 	allStudentGroups.value.forEach((group) => group.onClick = () => {
 		selectedGroup.value = group.label
 		attendanceData.reload()
-	} )
-	selectedGroup.value = allStudentGroups.value[0].label
+	})
+	selectedGroup.value = allStudentGroups.value[0].label || 'Select Student Group'
 	attendanceData.reload()
+}
+setStudentGroup()
 
+function createNewLeave (close) {
+	// validations
+	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
+		console.log("Error")
+	}
+	applyLeave.submit()
 }
 
 
-
-
-
 </script>
-<style lang="">
-	
-</style>

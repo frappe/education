@@ -24,7 +24,7 @@
 						size="md"
 						:label="item.label"
 
-					/>				
+					/>
 				</ListRowItem>
 			</ListRow>
 			
