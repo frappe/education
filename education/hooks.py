@@ -44,7 +44,7 @@ calendars = [
 standard_portal_menu_items = [
 	{"title": "Fees", "route": "/fees", "reference_doctype": "Fees", "role": "Student"},
 	{
-		"title": _("Admission"),
+		"title": "Admission",
 		"route": "/admissions",
 		"reference_doctype": "Student Admission",
 		"role": "Student",
