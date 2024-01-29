@@ -1,5 +1,3 @@
-from frappe import _
-
 from . import __version__ as app_version
 
 app_name = "education"
@@ -44,7 +42,7 @@ calendars = [
 ]
 
 standard_portal_menu_items = [
-	{"title": _("Fees"), "route": "/fees", "reference_doctype": "Fees", "role": "Student"},
+	{"title": "Fees", "route": "/fees", "reference_doctype": "Fees", "role": "Student"},
 	{
 		"title": _("Admission"),
 		"route": "/admissions",
