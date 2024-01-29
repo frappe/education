@@ -25,7 +25,7 @@ class FeeStructure(Document):
 
 	def validate_discount(self):
 		for component in self.components:
-			if component.discount > 100:
+			if flt(component.discount) > 100:
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
 				)
@@ -91,6 +91,10 @@ def get_amount_distribution_based_on_fee_plan(
 			fields=["name", "term_start_date"],
 			order_by="term_start_date asc",
 		)
+		if not academic_terms:
+			frappe.throw(
+				_("No Academic Terms found for Academic Year {0}").format(academic_year)
+			)
 		month_dict.get(fee_plan)["amount"] = 1 / len(academic_terms)
 
 		for term in academic_terms:
