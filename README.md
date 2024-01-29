@@ -1,6 +1,6 @@
 <p align="center">
     <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/65544983/284810651-4625cf57-077d-4a79-b47f-9b989e27e41b.png" alt="Frappe Education Logo" width="220px" height="30px">
-    <p align="center">Open Source, Easy to Use, Education management system.</p>
+    <p align="center">Open Source, Easy to Use, Education Management System.</p>
 </p>
 <p align="center">
     <a href="https://docs.erpnext.com/docs/v14/user/manual/en/education">

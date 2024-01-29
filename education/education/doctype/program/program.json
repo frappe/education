@@ -68,8 +68,49 @@
   }
  ],
  "image_field": "hero_image",
- "links": [],
- "modified": "2023-01-12 18:07:52.130737",
+ "links": [
+  {
+   "group": "Admission and Enrollments",
+   "link_doctype": "Student Applicant",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Admission and Enrollments",
+   "link_doctype": "Program Enrollment",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Group",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Log",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Structure",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Schedule",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "program"
+  }
+ ],
+ "modified": "2024-01-25 11:16:12.200449",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",

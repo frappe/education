@@ -21,7 +21,7 @@ frappe.ui.form.on('Program Enrollment', {
 			};
 		});
 
-		frm.fields_dict['fees'].grid.get_field('fee_structure').get_query = function(doc, cdt, cdn) {
+		frm.fields_dict['fees'].grid.get_field('fee_schedule').get_query = function(doc, cdt, cdn) {
 			var d = locals[cdt][cdn];
 			return {
 				filters: {'academic_term': d.academic_term}

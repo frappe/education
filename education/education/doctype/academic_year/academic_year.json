@@ -42,8 +42,59 @@
    "show_dashboard": 1
   }
  ],
- "links": [],
- "modified": "2023-10-30 16:34:17.354467",
+ "links": [
+  {
+   "group": "Student",
+   "link_doctype": "Student Admission",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Student",
+   "link_doctype": "Student Applicant",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Student",
+   "link_doctype": "Student Group",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Student",
+   "link_doctype": "Student Log",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Academic Term and Program",
+   "link_doctype": "Academic Term",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Academic Term and Program",
+   "link_doctype": "Program Enrollment",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Schedule",
+   "link_fieldname": "academic_year"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Structure",
+   "link_fieldname": "academic_year"
+  }
+ ],
+ "modified": "2024-01-25 11:14:11.648233",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",
