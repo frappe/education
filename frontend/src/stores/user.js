@@ -5,7 +5,7 @@ import router from "@/router"
 export const usersStore = defineStore('education-users', () => {
 	const user = createResource({
 		url: 'education.education.api.get_user_info',
-		cache: "Users",
+		cache: "User",
 		initialData: [],
 		onError(error) {
 			console.log(error)

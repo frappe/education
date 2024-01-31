@@ -16,9 +16,8 @@
 	</header>
 </template>
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import {BellDot } from 'lucide-vue-next';
 import { FeatherIcon } from 'frappe-ui';
 import { leaveStore } from '@/stores/leave';
 const router = useRouter();
@@ -26,11 +25,4 @@ const currentRoute = computed(() => router.currentRoute.value.name)
 
 const { setIsAttendancePage } = leaveStore()
 
-
-
-
-
 </script>
-<style lang="">
-	
-</style>

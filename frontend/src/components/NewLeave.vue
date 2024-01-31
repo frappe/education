@@ -50,19 +50,20 @@ const props = defineProps({
     required: true,
   },
 })
+const { newLeave } = props
+
 const isAfterError = ref(false)
 const isBeforeError = ref(false)
 const errorMessage = ref('')
 
-const { newLeave } = props
 
-const getDateDiff = (from_date,to_date) => {
+function getDateDiff (from_date,to_date) {
 	to_date = dayjs(newLeave.to_date)
 	from_date = dayjs(newLeave.from_date)
 	return to_date.diff(from_date,'d') || 0
 }
 
-const setErrorMessage = (diff=0,dateType) => {
+function setErrorMessage (diff=0,dateType) {
 	if (diff < 0) {
 		if (dateType === 'from_date') {
 			isBeforeError.value = true
@@ -132,9 +133,4 @@ const allFields = [
   },
 ]
 
-
-
 </script>
-<style lang="">
-	
-</style>

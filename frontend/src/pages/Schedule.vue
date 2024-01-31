@@ -14,14 +14,11 @@ import CalendarView from '@/components/CalendarView.vue'
 import { createResource } from 'frappe-ui';
 import {ref} from 'vue'
 import { studentStore } from '@/stores/student';
-
-const programName = ref('')
-const events= ref([])
-
 const { getCurrentProgram } = studentStore()
 
-const program = getCurrentProgram().value
-programName.value = program.program
+
+const programName = ref(getCurrentProgram()?.value?.program)
+const events= ref([])
 
 const config = {
   style: {
@@ -43,7 +40,10 @@ function get_earliest_time_from_events(events) {
   config.dayBoundaries.end = parseInt(earliest_times[earliest_times.length - 1]) + 7
 }
 
-const parseTime = (date) => date.split(":").slice(0,-1).join(":")
+function parseTime (date) {
+  return date.split(":").slice(0,-1).join(":")
+} 
+  
 
 const scheduleResource = createResource({
   url:"education.education.api.get_course_schedule_for_student",

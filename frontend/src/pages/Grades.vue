@@ -16,12 +16,12 @@
 		</Dropdown>
 		<ListView
 			class="h-[250px]"
-			:columns="columns"
-			:rows="rows"
+			:columns="tableData.columns"
+			:rows="tableData.rows"
 			:options="{
 				selectable: false,
 				showTooltip: false,
-				onRowClick: row => console.log(row)
+				onRowClick: () => {}
 			}"
 			row-key="id"
 		/>
@@ -29,30 +29,31 @@
 </template>
 <script setup>
 import { Dropdown, FeatherIcon,ListView, createResource,createListResource } from 'frappe-ui';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { ref } from 'vue';
 import { studentStore } from '@/stores/student';
-const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 
+const { getCurrentProgram, getStudentInfo} = studentStore() 
 
 let studentInfo = getStudentInfo().value
 let currentProgram = getCurrentProgram().value
+// console.log(studentInfo.name, currentProgram.program)
+
 const allPrograms = ref([])
 const selectedProgram = ref("");
 
-const columns = ref([
-	{
-	  label: 'Course',
-	  key: 'course',
-	},
-	{
-		label:'Batch',
-		key:'batch',
-	}
-])
-
-const rows = ref([])
-
-
+const tableData = ref({
+	columns: [
+		{
+		label: 'Course',
+		key: 'course',
+		},
+		{
+			label:'Batch',
+			key:'batch',
+		}
+	],
+	rows: [],
+})
 
 const student_programs = createResource({
 	url:"education.education.api.get_student_programs",
@@ -91,7 +92,6 @@ const grades = createListResource({
 		let data = Object.groupBy(response,row => row.assessment_group)
 		let exams = Object.keys(data)
 		updateColumns(exams)
-		// console.log(response)
 
 		let courses = Object.groupBy(response, row => row.course)
 		Object.keys(courses).forEach((course) => {
@@ -103,7 +103,7 @@ const grades = createListResource({
 				row[exam] = examData ? `${examData.total_score}/${examData.maximum_score}` : "-"
 			})
 			// console.log(row)
-			rows.value.push(row)
+			tableData.value.rows.push(row)
 		})
 	},
 	auto:true
@@ -114,45 +114,8 @@ const updateColumns = (exams) => {
 		let col = {}
 		col.label = exam
 		col.key = exam
-		columns.value.push(col)
+		tableData.value.columns.push(col)
 	})
 }
-
-const updateRows = (data) => {
-	let rows = []
-	// {
-	// id: 1,
-	// course: 'DSA',
-		// batch: "G1",
-		// test1: "A",
-		// test2: "B",
-		// test3: "C",
-	// }
-	// this is the format of the row
-
-	Object.keys(data).forEach((exam) => {
-	})
-}
-
-
-
-// const x2 = createResource({
-// 	url:"education.education.api.get_course_list_based_on_program",
-// 	params:{program_name:selected_program.value},
-// 	onSuccess:(response) => {
-// 		console.log(response)
-// 	},
-// })
-
-
-
-
-
-
-
-
 
 </script>
-<style lang="">
-	
-</style>

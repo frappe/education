@@ -88,7 +88,3 @@ const tableData = reactive({
 	const route = useRoute();
 	const courseId = route.params.course;
 </script>
-
-<style>
-	
-</style>

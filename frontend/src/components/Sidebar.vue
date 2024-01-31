@@ -36,14 +36,12 @@
   
 
 <script setup>
-import { useRouter } from 'vue-router';
 import { useStorage } from '@vueuse/core'
 import SidebarLink from '@/components/SidebarLink.vue'
-import { LayoutDashboard,CalendarCheck,GraduationCap, Banknote, UserCheck, UserMinus, User,ArrowLeftToLine, BookOpen } from 'lucide-vue-next';
+import { LayoutDashboard,CalendarCheck,GraduationCap, Banknote, UserCheck, ArrowLeftToLine, BookOpen } from 'lucide-vue-next';
 
 import UserDropdown from './UserDropdown.vue';
 
-const router = useRouter()
 const links = [
 	{
 		label: 'Dashboard',
@@ -86,6 +84,3 @@ const links = [
 const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)
 
 </script>
-<style>
-	
-</style>

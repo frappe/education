@@ -1,5 +1,5 @@
 <template>
-	<Dropdown :options="userDropdownOptions">
+	<Dropdown :options="userDropdownOptions" class="p-2">
 	  <template v-slot="{ open }">
 		<button
         class="flex h-12 py-2 items-center rounded-md duration-300 ease-in-out"
@@ -48,7 +48,7 @@
 import { Dropdown, FeatherIcon } from 'frappe-ui'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/user';
-import {computed, provide, ref} from 'vue'
+import { provide, ref} from 'vue'
 import ProfileModal from '@/components/ProfileModal.vue'
 
 const { user } = usersStore()

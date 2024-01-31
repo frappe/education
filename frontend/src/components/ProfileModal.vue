@@ -71,7 +71,7 @@ const infoFormat = [
 			},
 			{
 				label: 'Address',
-				value: [studentInfo.address_line_1, studentInfo.address_line_2, studentInfo.city, studentInfo.pincode, studentInfo.state, studentInfo.country].join(', ')
+				value: [studentInfo?.address_line_1, studentInfo?.address_line_2, studentInfo?.city, studentInfo?.pincode, studentInfo?.state, studentInfo?.country].join(', ')
 			},
 		]
 	},
@@ -93,10 +93,4 @@ const infoFormat = [
 		]
 	},
 ]
-
-
 </script>
-
-<style>
-	
-</style>

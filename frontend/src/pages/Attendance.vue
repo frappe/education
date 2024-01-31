@@ -1,4 +1,4 @@
-<template lang="">
+<template>
 	<div class="px-5 py-4 flex flex-col">
 
 		<div class="flex items-center gap-2">

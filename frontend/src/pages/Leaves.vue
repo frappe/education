@@ -1,4 +1,4 @@
-<template lang="">
+<template>
 	<div>
 		Leaves
 	</div>
@@ -9,6 +9,3 @@ import { onMounted } from 'vue';
 
 </script>
 
-<style lang="">
-	
-</style>

@@ -174,5 +174,3 @@ const success = () => {
 }
 
 </script>
-
-<style></style>
