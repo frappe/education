@@ -72,7 +72,6 @@ const feesResource = createResource({
 		student: studentInfo.name,
 	},
 	onSuccess: (response) => {
-		console.log(response)
 		tableData.rows = response
 	},
 	auto: true,

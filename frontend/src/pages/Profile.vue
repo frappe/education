@@ -59,8 +59,6 @@ const isEditEnabled = ref(false)
 
 
 function saveDetails() {
-	console.log(isEditEnabled)
-	console.log(studentInfo)
 	isEditEnabled.value = false
 }
 </script>

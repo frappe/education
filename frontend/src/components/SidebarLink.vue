@@ -62,9 +62,3 @@ let isActive = computed(() => {
 })
 
 </script>
-
-<style>
-
-
-	
-</style>

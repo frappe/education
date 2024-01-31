@@ -102,7 +102,6 @@ const grades = createListResource({
 				let examData = data[exam].find(row => row.course === course)
 				row[exam] = examData ? `${examData.total_score}/${examData.maximum_score}` : "-"
 			})
-			// console.log(row)
 			tableData.value.rows.push(row)
 		})
 	},
