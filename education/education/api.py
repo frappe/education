@@ -647,6 +647,7 @@ def get_student_invoices(student):
 		"Sales Invoice",
 		filters={"student": student, "status": ["in", ["Paid", "Unpaid", "Overdue"]]},
 		fields=["name", "status", "student", "due_date", "fee_schedule", "grand_total"],
+		order_by="status desc",
 	)
 
 	for si in sales_invoice_list:
@@ -656,16 +657,16 @@ def get_student_invoices(student):
 			si.fee_schedule
 		)
 		student_program_invoice_status["amount"] = si.grand_total
-		# get currency
+		# TODO: get currency
 		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
 			student_program_invoice_status[
 				"payment_date"
 			] = get_posting_date_from_payment_entry_against_sales_invoice(si.name)
-			student_program_invoice_status["due_date"] = ""
+			student_program_invoice_status["due_date"] = "-"
 		else:
 			student_program_invoice_status["due_date"] = si.due_date
-			student_program_invoice_status["payment_date"] = ""
+			student_program_invoice_status["payment_date"] = "-"
 
 		student_sales_invoices.append(student_program_invoice_status)
 
@@ -675,6 +676,7 @@ def get_student_invoices(student):
 def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 	payment_entry = frappe.qb.DocType("Payment Entry")
 	payment_entry_reference = frappe.qb.DocType("Payment Entry Reference")
+
 	q = (
 		frappe.qb.from_(payment_entry)
 		.inner_join(payment_entry_reference)
@@ -682,12 +684,14 @@ def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 		.select(payment_entry.posting_date)
 		.where(payment_entry_reference.reference_name == sales_invoice)
 	).run(as_dict=1)
-	payment_date = q[0].get("posting_date")
-	return payment_date
+
+	if len(q) > 0:
+		payment_date = q[0].get("posting_date")
+		return payment_date
 
 
 def get_program_from_fee_schedule(fee_schedule):
-	# fee_schedule = "EDU-FSH-2024-00023"
+
 	program = frappe.db.get_value(
 		"Fee Schedule", filters={"name": fee_schedule}, fieldname=["program"]
 	)

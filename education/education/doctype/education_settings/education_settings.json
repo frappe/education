@@ -17,7 +17,9 @@
   "section_break_7",
   "instructor_created_by",
   "portal_settings_tab",
-  "attendance_based_on_course_schedule"
+  "attendance_based_on_course_schedule",
+  "razorpay_key",
+  "razorpay_secret"
  ],
  "fields": [
   {
@@ -98,11 +100,21 @@
    "fieldname": "attendance_based_on_course_schedule",
    "fieldtype": "Check",
    "label": "Attendance Based on Course Schedule"
+  },
+  {
+   "fieldname": "razorpay_key",
+   "fieldtype": "Data",
+   "label": "Razorpay Key"
+  },
+  {
+   "fieldname": "razorpay_secret",
+   "fieldtype": "Password",
+   "label": "Razorpay Secret"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2024-01-24 14:43:09.520597",
+ "modified": "2024-01-29 16:54:20.167243",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",

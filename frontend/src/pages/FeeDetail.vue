@@ -1,35 +1,84 @@
 <template>
 	<div class="px-5 py-4">
-		<ListView class="h-[250px]" :columns="tableData.columns" :rows="tableData.rows" :options="{
-			selectable: false,
-			showTooltip: false,
-			onRowClick: () =>{}
-		}" row-key="id">
+		<ListView 
+			:columns="tableData.columns" 
+			:rows="tableData.rows" 
+			:options="{
+				selectable: false,
+				showTooltip: false,
+				onRowClick: () =>{}
+			}" 
+			row-key="id"
+			v-if="tableData.rows.length > 0"
+		>
 			<ListHeader>
 				<ListHeaderItem v-for="column in tableData.columns" :key="column.key" :item="column" />
 			</ListHeader>
 			<ListRow v-for="row in tableData.rows" :key="row.id" :row="row" v-slot="{ column, item }">
 				<ListRowItem :item="item" :align="column.align">
-					<Badge v-if="column.key === 'status' " variant="subtle" :theme="row.status === 'Paid' ? bg_color='green' : bg_color='red' " size="md"
+					<Badge 
+						v-if="column.key === 'status' " 
+						variant="subtle" 
+						:theme="row.status === 'Paid' ? bg_color='green' : bg_color='red' " size="md"
 						:label="item"
 					/>
 					<Button v-if="column.key === 'cta' && row.status === 'Paid' " variant="subtle" theme="gray" @click='openInvoicePDF(row)'>
 						Download Invoice
 					</Button>
-					<Button v-if="column.key === 'cta' && (row.status === 'Unpaid' || row.status === 'Overdue' ) " variant="solid" theme="gray" @click='openPaymentGateway(row)'>
+					<Button v-if="column.key === 'cta' && (row.status === 'Unpaid' || row.status === 'Overdue' ) " variant="solid" theme="gray" @click='openModal(row)'>
 						Pay Now
 					</Button>
 				</ListRowItem>
 			</ListRow>
-
 		</ListView>
+		<FeesPaymentDialog
+			v-if="currentRow"
+			:row="currentRow"
+			:student="studentInfo"
+			v-model="showPaymentDialog"
+			@success="success()"
+		/>
+		<Toast
+			v-if="showToast"
+			title="Payment Successful"
+			text="Your payment has been successfully processed"
+			:position='top-left'
+			:timeout="5"
+			@close="showToast = false"
+		/>
+		<!-- <FeesPaymentDialog
+			v-if="currentRow"
+			:row="currentRow"
+			:modelValue="showPaymentDialog"
+			@update:modelValue="showPaymentDialog = $event"
+		/> -->
 	</div>
 </template>
 
 <script setup>
 import { useRoute } from 'vue-router';
-import { ListView, ListHeader, ListHeaderItem, ListRow, ListRowItem, Badge } from 'frappe-ui';
-import { reactive } from 'vue';
+import { ListView, ListHeader, ListHeaderItem, ListRow, ListRowItem, Badge, createResource, Toast } from 'frappe-ui';
+import { reactive, ref } from 'vue';
+import FeesPaymentDialog from '../components/FeesPaymentDialog.vue';
+import { studentStore } from '@/stores/student';	
+
+const { getStudentInfo  } = studentStore() 
+let studentInfo = getStudentInfo().value
+
+
+const feesResource = createResource({
+	url: 'education.education.api.get_student_invoices',
+	params: {
+		student: studentInfo.name,
+	},
+	onSuccess: (response) => {
+		console.log(response)
+		tableData.rows = response
+	},
+	auto: true,
+})
+
+
 const tableData = reactive({
 	rows: [
 		{
@@ -100,7 +149,9 @@ const tableData = reactive({
 	],
 })
 
-// const data = 
+const currentRow = ref(null)
+const showPaymentDialog = ref(false)
+const showToast = ref(false)
 
 const openInvoicePDF = (row) => {
 	let url = `/api/method/frappe.utils.print_format.download_pdf?
@@ -111,8 +162,15 @@ const openInvoicePDF = (row) => {
 	window.open(url, '_blank')
 }
 
-const openPaymentGateway = (row) => {
-	console.log(row)
+const openModal = (row) => {
+	currentRow.value = row
+	showPaymentDialog.value = true
+}
+
+const success = () => {
+	feesResource.reload()
+	// show a toast
+	showToast.value = true
 }
 
 </script>
