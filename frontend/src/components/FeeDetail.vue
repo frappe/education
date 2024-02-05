@@ -22,12 +22,21 @@
 						:theme="row.status === 'Paid' ? bg_color='green' : bg_color='red' " size="md"
 						:label="item"
 					/>
-					<Button v-if="column.key === 'cta' && row.status === 'Paid' " variant="subtle" theme="gray" @click='openInvoicePDF(row)'>
-						Download Invoice
-					</Button>
-					<Button v-if="column.key === 'cta' && (row.status === 'Unpaid' || row.status === 'Overdue' ) " variant="solid" theme="gray" @click='openModal(row)'>
-						Pay Now
-					</Button>
+					<Button 
+						v-if="column.key === 'cta' && row.status === 'Paid' " 
+						@click='openInvoicePDF(row)'
+						class="hover:bg-gray-900 hover:text-white"
+						icon-left="download"
+						label="Download Invoice"
+					/>
+
+					<Button 
+						v-if="column.key === 'cta' && (row.status === 'Unpaid' || row.status === 'Overdue' ) " 
+						@click='openModal(row)'
+						class="hover:bg-gray-900 hover:text-white flex flex-column items-center justify-center"
+						icon-left="credit-card"
+						label="Pay Now"
+					/>
 				</ListRowItem>
 			</ListRow>
 		</ListView>
@@ -57,7 +66,7 @@
 
 <script setup>
 import { useRoute } from 'vue-router';
-import { ListView, ListHeader, ListHeaderItem, ListRow, ListRowItem, Badge, createResource, Toast } from 'frappe-ui';
+import { ListView, ListHeader, ListHeaderItem, ListRow, ListRowItem, Badge, createResource, Toast, FeatherIcon } from 'frappe-ui';
 import { reactive, ref } from 'vue';
 import FeesPaymentDialog from '../components/FeesPaymentDialog.vue';
 import { studentStore } from '@/stores/student';	

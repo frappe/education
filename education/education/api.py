@@ -646,7 +646,15 @@ def get_student_invoices(student):
 	sales_invoice_list = frappe.db.get_list(
 		"Sales Invoice",
 		filters={"student": student, "status": ["in", ["Paid", "Unpaid", "Overdue"]]},
-		fields=["name", "status", "student", "due_date", "fee_schedule", "grand_total"],
+		fields=[
+			"name",
+			"status",
+			"student",
+			"due_date",
+			"fee_schedule",
+			"grand_total",
+			"currency",
+		],
 		order_by="status desc",
 	)
 
@@ -656,7 +664,8 @@ def get_student_invoices(student):
 		student_program_invoice_status["program"] = get_program_from_fee_schedule(
 			si.fee_schedule
 		)
-		student_program_invoice_status["amount"] = si.grand_total
+		symbol = get_currency_symbol(si.get("currency", "INR"))
+		student_program_invoice_status["amount"] = symbol + " " + str(si.grand_total)
 		# TODO: get currency
 		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
@@ -671,6 +680,10 @@ def get_student_invoices(student):
 		student_sales_invoices.append(student_program_invoice_status)
 
 	return student_sales_invoices
+
+
+def get_currency_symbol(currency):
+	return frappe.db.get_value("Currency", currency, "symbol")
 
 
 def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
