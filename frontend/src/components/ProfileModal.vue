@@ -7,31 +7,31 @@
 		  }"
 	>
 	<template #body-content>
-			<div>
+			<div class="text-base">
 				<div class="flex flex-col gap-4">
-					<div class="flex items-center border-b border-solid border-lightGray pb-2">
+					<div class="flex items-center border-b border-solid border-lightGray pb-4 gap-2">
 					  <Avatar
 						size="3xl"
 						class="h-12 w-12"
 						:label="studentInfo.student_name"
 						:image="null"
 					  />
-					  <div class="flex flex-col ml-2">
-						<p class="text-md font-semibold">{{ studentInfo.student_name }}</p>
+					  <div class="flex flex-col ml-2 gap-1">
+						<p class="text-lg font-semibold">{{ studentInfo.student_name }}</p>
 						<p class="text-gray-600">{{ studentInfo.student_email_id }}</p>
 					  </div>
 					</div>
 				  
 					<div class="flex gap-4">
-					  <div v-for="section in infoFormat" :key="section.section" class="flex-1 flex flex-col gap-2">
+					  <div v-for="section in infoFormat" :key="section.section" class="flex-1 flex flex-col gap-3">
 						<div v-for="field in section.fields" :key="field.label" class="flex items-center">
-						  <p class="w-1/3 text-sm text-gray-600">{{ field.label }}:&nbsp;</p>
-						  <p class="w-2/3 text-gray-900">{{ field.value }}</p>
+						  <p class="w-1/2 text-sm text-gray-600">{{ field.label }}:&nbsp;</p>
+						  <p class="w-1/2 text-gray-900">{{ field.value }}</p>
 						</div>
 					  </div>
 					</div>
 				  
-					<div class="flex items-center bg-gray-200 text-gray-600 text-sm p-[0.2rem] rounded-md">
+					<div class="flex items-center bg-gray-50 p-2 text-gray-600 text-sm rounded-md">
 					  <FeatherIcon name="info" class="h-4 mr-2" />
 					  In case of any incorrect details, please contact the school admin.
 					</div>
@@ -71,7 +71,14 @@ const infoFormat = [
 			},
 			{
 				label: 'Address',
-				value: [studentInfo?.address_line_1, studentInfo?.address_line_2, studentInfo?.city, studentInfo?.pincode, studentInfo?.state, studentInfo?.country].join(', ')
+				value: [
+					studentInfo?.address_line_1,
+					studentInfo?.address_line_2,
+					studentInfo?.city,
+					studentInfo?.pincode,
+					studentInfo?.state,
+					studentInfo?.country
+				].map(item => item?.trim()).filter(Boolean).join(', ')
 			},
 		]
 	},

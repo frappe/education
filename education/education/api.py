@@ -709,3 +709,12 @@ def get_program_from_fee_schedule(fee_schedule):
 		"Fee Schedule", filters={"name": fee_schedule}, fieldname=["program"]
 	)
 	return program
+
+
+@frappe.whitelist()
+def get_school_abbr_logo():
+	abbr = frappe.db.get_single_value(
+		"Education Settings", "school_college_name_abbreviation"
+	)
+	logo = frappe.db.get_single_value("Education Settings", "school_college_logo")
+	return {"name": abbr, "logo": logo}

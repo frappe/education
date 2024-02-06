@@ -89,17 +89,16 @@ const grades = createListResource({
 	transform:() =>{},
 	
 	onSuccess:(response) => {
-		let data = Object.groupBy(response,row => row.assessment_group)
-		let exams = Object.keys(data)
+		let conductedExams = Object.groupBy(response,row => row.assessment_group)
+		let exams = Object.keys(conductedExams)
 		updateColumns(exams)
-
 		let courses = Object.groupBy(response, row => row.course)
 		Object.keys(courses).forEach((course) => {
 			let row = {}
 			row.course = course
 			row.batch = courses[course][0].student_group
 			exams.forEach((exam) => {
-				let examData = data[exam].find(row => row.course === course)
+				let examData = conductedExams[exam].find(row => row.course === course)
 				row[exam] = examData ? `${examData.total_score}/${examData.maximum_score}` : "-"
 			})
 			tableData.value.rows.push(row)

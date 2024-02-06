@@ -43,11 +43,10 @@ function get_earliest_time_from_events(events) {
 function parseTime (date) {
   return date.split(":").slice(0,-1).join(":")
 } 
-  
 
 const scheduleResource = createResource({
   url:"education.education.api.get_course_schedule_for_student",
-  params:{program_name:programName.value},
+  params: {program_name:programName.value},
   onSuccess:(response) => {
     let schedule = []
     response.forEach((classSchedule) => {

@@ -6,11 +6,9 @@
       </div>
       <div class="flex-1 flex flex-col h-full overflow-auto">
         <Navbar />
-        <Suspense>
           <router-view  
             class="flex-1 overflow-auto"
           />
-        </Suspense>
       </div>
     </div>
   </div>

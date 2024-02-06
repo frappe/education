@@ -10,8 +10,8 @@
 					<Button :label="selectedGroup">
 						<template #suffix>
 							<FeatherIcon
-							:name="open ? 'chevron-up' : 'chevron-down'"
-							class="h-4 text-gray-600"
+								:name="open ? 'chevron-up' : 'chevron-down'"
+								class="h-4 text-gray-600"
 							/>
 						</template>
 					</Button>
@@ -49,7 +49,12 @@
 			</template>
 			<template #actions="{ close }">
 				<div class="flex flex-row-reverse gap-2">
-				<Button variant="solid" label="Save" @click="createNewLeave(close)" />
+				<Button 
+					:disabled="!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason"
+					variant="solid" 
+					label="Save" 
+					@click="createNewLeave(close)" 
+				/>
 				</div>
 			</template>
 		</Dialog>
@@ -76,51 +81,50 @@ let studentInfo = getStudentInfo().value
 const { isAttendancePage } = storeToRefs(leaveStore())
 // can't get actions by using storeToRefs hence using store
 
-
-const tableData = reactive({
-	rows:[
-			{
-			id: 1,
-			course: 'DSA',
-			classes_conducted: 20,
-			leave: 5,
-			total_classes: 30,
-			attendance: '75%'
-			},
-			{
-			id: 2,
-			course: 'JavaScript',
-			classes_conducted: 20,
-			leave: 2,
-			total_classes: 30,
-			attendance:'90%'
-			},
-	],
-	columns:[
-		{
-		  label: 'Course',
-		  key: 'course',
-		  width: 1,
-		},
-		{
-		  label: 'Classes Conducted',
-		  key: 'classes_conducted',
-		  width: '200px',
-		},
-		{
-		  label: 'Leave',
-		  key: 'leave',
-		},
-		{
-		  label: 'Total Classes',
-		  key: 'total_classes',
-		},
-		{
-		  label: 'Attendance %',
-		  key: 'attendance',
-		}
-	], 
-})
+// const tableData = reactive({
+// 	rows:[
+// 			{
+// 			id: 1,
+// 			course: 'DSA',
+// 			classes_conducted: 20,
+// 			leave: 5,
+// 			total_classes: 30,
+// 			attendance: '75%'
+// 			},
+// 			{
+// 			id: 2,
+// 			course: 'JavaScript',
+// 			classes_conducted: 20,
+// 			leave: 2,
+// 			total_classes: 30,
+// 			attendance:'90%'
+// 			},
+// 	],
+// 	columns:[
+// 		{
+// 		  label: 'Course',
+// 		  key: 'course',
+// 		  width: 1,
+// 		},
+// 		{
+// 		  label: 'Classes Conducted',
+// 		  key: 'classes_conducted',
+// 		  width: '200px',
+// 		},
+// 		{
+// 		  label: 'Leave',
+// 		  key: 'leave',
+// 		},
+// 		{
+// 		  label: 'Total Classes',
+// 		  key: 'total_classes',
+// 		},
+// 		{
+// 		  label: 'Attendance %',
+// 		  key: 'attendance',
+// 		}
+// 	], 
+// })
 
 const newLeave = reactive({
 	student:studentInfo.name,
@@ -194,6 +198,7 @@ setStudentGroup()
 function createNewLeave (close) {
 	// validations
 	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
+		// TODO: Disabled button if fields are empty
 		console.log("Error")
 	}
 	applyLeave.submit()

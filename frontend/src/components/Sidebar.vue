@@ -1,18 +1,23 @@
 <template>
 	<div
+	
 	  class="flex h-full flex-col justify-between transition-all duration-300 ease-in-out"
 	  :class="isSidebarCollapsed ? 'w-12' : 'w-56'"
 	>
-	  <div class="flex flex-col overflow-hidden">
-		<UserDropdown class="p-2" :isCollapsed="isSidebarCollapsed" />
+	  <div class="flex flex-col overflow-hidden" >
+		<UserDropdown 
+			class="p-2"  
+			:isCollapsed="isSidebarCollapsed" 
+			:educationSettings ="!educationSettings.loading && educationSettings.data"
+		/>
 		<div class="flex flex-col overflow-y-auto">
 			<SidebarLink
-			  :label="link.label"
-			  v-for="link in links"
-			  :to="link.to"
-			  :isCollapsed="isSidebarCollapsed"
-			  :icon="link.icon"
-			  class="mx-2 my-0.5"
+				:label="link.label"
+				:to="link.to"
+				v-for="link in links"
+				:isCollapsed="isSidebarCollapsed"
+				:icon="link.icon"
+				class="mx-2 my-0.5"
 			/>
 		</div>
 	  </div>
@@ -41,6 +46,7 @@ import SidebarLink from '@/components/SidebarLink.vue'
 import { LayoutDashboard,CalendarCheck,GraduationCap, Banknote, UserCheck, ArrowLeftToLine, BookOpen } from 'lucide-vue-next';
 
 import UserDropdown from './UserDropdown.vue';
+import { createResource } from 'frappe-ui';
 
 const links = [
 	{
@@ -82,5 +88,11 @@ const links = [
 ]
 
 const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)
+
+// create a resource which call the function get_school_abbr_logo in api file using createResource
+const educationSettings = createResource({	
+	url: 'education.education.api.get_school_abbr_logo',
+	auto: true,
+})
 
 </script>

@@ -49,14 +49,15 @@
 			</template>
 			<template #actions="{ close }">
 				<div class="flex flex-row-reverse gap-2 ">
-					<Button  class="w-48 h-7" variant="solid" @click="openPaymentGateway(close)" icon-left="external-link">
-						<div v-if="paymentOptions.loading">
-							<Spinner class="w-4" />
-						</div>
-						<div v-else>
-							Proceed to Payment
-						</div>
-					</Button>
+
+					<Button 
+						class="w-48 h-7" 
+						variant="solid" 
+						@click="openPaymentGateway(close)" 	
+						icon-left="external-link"
+						:loading="paymentOptions.loading"
+						label="Proceed to Payment"
+					/>
 				</div>
 			</template>
 		</Dialog>
@@ -64,8 +65,8 @@
 	</div>
 </template>
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
-import {FormControl, Dialog,Button, createResource, ErrorMessage, Toast, Spinner, FeatherIcon} from 'frappe-ui';
+import { onMounted, reactive, ref } from 'vue';
+import { FormControl, Dialog, createResource, ErrorMessage } from 'frappe-ui';
 
 const props = defineProps({
   modelValue: {
