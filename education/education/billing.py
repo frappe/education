@@ -69,7 +69,7 @@ def get_payment_options(doctype, docname, phone, currency=None):
 
 
 def create_razorpay_payment_record(args, status):
-	payment_record = frappe.new_doc("Razorpay Payment Record")
+	payment_record = frappe.new_doc("Payment Record")
 	payment_record.order_id = args.get("razorpay_order_id", "")
 	payment_record.payment_id = args.get("razorpay_payment_id", "")
 	payment_record.signature = args.get("razorpay_signature", "")
@@ -96,7 +96,7 @@ def create_razorpay_payment_record(args, status):
 @frappe.whitelist()
 def handle_payment_success(response, against_invoice, billing_details):
 	if frappe.db.exists(
-		"Razorpay Payment Record",
+		"Payment Record",
 		{
 			"order_id": response["razorpay_order_id"],
 			"payment_id": response["razorpay_payment_id"],

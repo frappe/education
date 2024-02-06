@@ -176,7 +176,7 @@
  "modified": "2024-01-30 21:12:14.369506",
  "modified_by": "Administrator",
  "module": "Education",
- "name": "Razorpay Payment Record",
+ "name": "Payment Record",
  "owner": "Administrator",
  "permissions": [
   {

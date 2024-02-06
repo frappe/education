@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class RazorpayPaymentRecord(Document):
+class PaymentRecord(Document):
 	pass
