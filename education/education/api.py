@@ -622,7 +622,7 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 		pass
 
 	for course_schedule in course_schedule_in_leave_period:
-		# if attendance record does not exist for the student on the course schedule
+		# check if attendance record does not exist for the student on the course schedule
 		if not frappe.db.exists(
 			"Student Attendance",
 			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
