@@ -52,10 +52,11 @@ const scheduleResource = createResource({
     response.forEach((classSchedule) => {
       schedule.push({
         title:classSchedule.title,
-        with:classSchedule.title.split("by")[1].trim(),
+        with:classSchedule.instructor,
         // color:classSchedule.color || 'blue',
         color:'blue',
         id:classSchedule.name,
+        description:`Room: ${classSchedule.room}`,
         time :{ 
           start: `${classSchedule.schedule_date } ${parseTime(classSchedule.from_time) }`, 
           end: `${classSchedule.schedule_date } ${parseTime(classSchedule.to_time) }`
