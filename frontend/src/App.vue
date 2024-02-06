@@ -12,11 +12,12 @@
       </div>
     </div>
   </div>
+  <Toasts />
 </template>
 
 <script setup>
 import Sidebar from '@/components/Sidebar.vue'
 import Navbar from '@/components/Navbar.vue';
 import { RouterView } from 'vue-router';
-
+import { Toasts } from 'frappe-ui';
 </script>

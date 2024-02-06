@@ -1,36 +1,43 @@
 <template lang="">
-	<div class="px-5 py-4">
-		<Dropdown
-			class="mb-4"
-  			:options="allPrograms">
-			  <template #default="{ open }">
-				<Button :label="selectedProgram">
-					<template #suffix>
-						<FeatherIcon
-						  :name="open ? 'chevron-up' : 'chevron-down'"
-						  class="h-4 text-gray-600"
-						/>
-					</template>
-				</Button>
-			  </template>
-		</Dropdown>
-		<ListView
-			class="h-[250px]"
-			:columns="tableData.columns"
-			:rows="tableData.rows"
-			:options="{
-				selectable: false,
-				showTooltip: false,
-				onRowClick: () => {}
-			}"
-			row-key="id"
-		/>
+	<div v-if="grades.data?.length > 0">
+		<div class="px-5 py-4">
+			<Dropdown
+				class="mb-4"
+				:options="allPrograms">
+				<template #default="{ open }">
+					<Button :label="selectedProgram">
+						<template #suffix>
+							<FeatherIcon
+							:name="open ? 'chevron-up' : 'chevron-down'"
+							class="h-4 text-gray-600"
+							/>
+						</template>
+					</Button>
+				</template>
+			</Dropdown>
+			<ListView
+				class="h-[250px]"
+				:columns="tableData.columns"
+				:rows="tableData.rows"
+				:options="{
+					selectable: false,
+					showTooltip: false,
+					onRowClick: () => {}
+				}"
+				row-key="id"
+			/>
+		</div>
+	</div>
+	<div v-else>
+		<MissingData message="No grades found" />
 	</div>
 </template>
 <script setup>
 import { Dropdown, FeatherIcon,ListView, createResource,createListResource } from 'frappe-ui';
 import { ref } from 'vue';
 import { studentStore } from '@/stores/student';
+import MissingData from '@/components/MissingData.vue'
+
 
 const { getCurrentProgram, getStudentInfo} = studentStore() 
 
@@ -81,10 +88,10 @@ const grades = createListResource({
 	doctype: "Assessment Result",
 	fields:["name", "student_group", "course", "assessment_group", "total_score", "maximum_score", "grade"],
 	filters: {
-		// student:studentInfo.name,
-		// program:currentProgram.program,
-		student:"EDU-STU-2023-00005",
-		program:"Comp Science"
+		student:studentInfo.name,
+		program:currentProgram.program,
+		// student:"EDU-STU-2023-00005",
+		// program:"Comp Science"
 	},
 	transform:() =>{},
 	

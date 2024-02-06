@@ -49,11 +49,11 @@ import UserDropdown from './UserDropdown.vue';
 import { createResource } from 'frappe-ui';
 
 const links = [
-	{
-		label: 'Dashboard',
-		to: '/',
-		icon: LayoutDashboard,
-	},
+	// {
+	// 	label: 'Dashboard',
+	// 	to: '/',
+	// 	icon: LayoutDashboard,
+	// },
 	{
 		label: 'Schedule',
 		to: '/schedule',
@@ -74,12 +74,12 @@ const links = [
 		to: '/attendance',
 		icon: UserCheck,
 	},
-	{
-		// TODO: create School Diary Page with card like CRM and from ListView go to Resource Document of each Card
-		label: 'Notes',
-		to: '/notes',
-		icon: BookOpen,
-	},
+	// {
+	// 	// TODO: create School Diary Page with card like CRM and from ListView go to Resource Document of each Card
+	// 	label: 'Notes',
+	// 	to: '/notes',
+	// 	icon: BookOpen,
+	// },
 	// {
 	// 	label: 'Profile',
 	// 	to: '/profile',

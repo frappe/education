@@ -614,16 +614,27 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 		},
 		order_by="schedule_date asc",
 	)
+	print("-------------------")
+	print(course_schedule_in_leave_period)
+	print("-------------------")
+
+	if frappe.db.exists("Student Attendance", {"course_schedule": "EDU-CSH-2024-00003"}):
+		pass
 
 	for course_schedule in course_schedule_in_leave_period:
-		make_attendance_records(
-			leave_data.get("student"),
-			leave_data.get("student_name"),
-			"Absent",
-			course_schedule.get("name"),
-			None,
-			course_schedule.get("schedule_date"),
-		)
+		# if attendance record does not exist for the student on the course schedule
+		if not frappe.db.exists(
+			"Student Attendance",
+			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
+		):
+			make_attendance_records(
+				leave_data.get("student"),
+				leave_data.get("student_name"),
+				"Absent",
+				course_schedule.get("name"),
+				None,
+				course_schedule.get("schedule_date"),
+			)
 
 
 def apply_leave_based_on_student_group(leave_data, program_name):
@@ -634,7 +645,7 @@ def apply_leave_based_on_student_group(leave_data, program_name):
 			leave_data.get("student_name"),
 			"Absent",
 			None,
-			student_group.get("parent"),
+			student_group.get("label"),
 			leave_data.get("from_date"),
 		)
 

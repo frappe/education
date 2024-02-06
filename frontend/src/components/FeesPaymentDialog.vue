@@ -67,6 +67,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
 import { FormControl, Dialog, createResource, ErrorMessage } from 'frappe-ui';
+import { createToast } from '../utils';
 
 const props = defineProps({
   modelValue: {
@@ -111,7 +112,6 @@ const paymentFailureResource = createResource({
 })
 
 function openPaymentGateway (close) {
-
 	if (!billingDetails.mobile_number || !billingDetails.email) {
 		validateFields()
 		return
@@ -195,7 +195,11 @@ function handleFailure (response) {
 
 function showError (err) {
 	console.log(err)
-	alert(err)
+	createToast({
+		message: 'Something went wrong',
+        icon: 'x',
+        iconClasses: 'text-red-600',
+	})
 }
 
 // const isMobilePresent = computed(() => billingDetails.mobile_number ? true : false)

@@ -4,11 +4,11 @@ import { sessionStore } from '@/stores/session'
 import { studentStore } from '@/stores/student'
 
 const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: () => import('@/pages/Home.vue'),
-  },
+  // {
+  //   path: '/',
+  //   name: 'Home',
+  //   component: () => import('@/pages/Home.vue'),
+  // },
   {
     name: 'Login',
     path: '/login',
@@ -38,17 +38,21 @@ const routes = [
     name: "Attendance",
     component: () => import('@/pages/Attendance.vue'),
   },
-  {
-    path: "/attendance/:course",
-    name: "Attendance Detail",
-    component: () => import('@/pages/AttendanceDetail.vue'),
-    props: true,
-  },
+  // {
+  //   path: "/attendance/:course",
+  //   name: "Attendance Detail",
+  //   component: () => import('@/pages/AttendanceDetail.vue'),
+  //   props: true,
+  // },
   {
     path: '/notes',
     name: 'Notes',
     component: () => import('@/pages/SchoolDiary.vue'),
   },
+  {
+    path :'/:catchAll(.*)',
+    redirect: '/schedule',
+  }
   // TODO: add star and redirect to schedule page
 
 ]

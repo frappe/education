@@ -1,7 +1,7 @@
 <template>
-	<div class="px-5 py-4 flex flex-col">
+	<div class="py-4 flex flex-col">
 
-		<div class="flex items-center gap-2">
+		<div class=" px-5 flex items-center gap-2">
 			<h2 class=" font-semibold text-2xl"> {{ programName }}</h2>
 			<Dropdown
 				:options="allStudentGroups"
@@ -69,6 +69,7 @@ import { Dialog, ListView, createResource, createListResource, Dropdown, Feather
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
 import CalendarView from '@/components/CalendarView.vue';
+import { createToast } from '@/utils'
 
 const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
 const programName = ref(getCurrentProgram().value?.program)
@@ -178,9 +179,20 @@ const applyLeave = createResource({
 	},
 	onSuccess:() => {
 		isAttendancePage.value = false
+		attendanceData.reload()
+		createToast({
+			title: 'Attendance Applied Successful',
+			icon: 'check',
+			iconClasses: 'text-green-600',
+		})
 	},
 	onError:(err) => {
 		console.log("Error",err)
+		createToast({
+			title: 'Something went wrong',
+			icon: 'x',
+			iconClasses: 'text-red-600',
+		})
 	},
 })
 
