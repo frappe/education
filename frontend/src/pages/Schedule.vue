@@ -28,6 +28,7 @@ const config = {
     start: 8,
     end: 22,
   },
+  defaultMode: 'month',
 }
 
 function get_earliest_time_from_events(events) {

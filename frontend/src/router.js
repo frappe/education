@@ -9,12 +9,12 @@ const routes = [
   //   name: 'Home',
   //   component: () => import('@/pages/Home.vue'),
   // },
-  {
-    name: 'Login',
-    path: '/login',
-    component: () => import('@/pages/Login.vue'),
-    props: true,
-  },
+  // {
+  //   name: 'Login',
+  //   path: '/login',
+  //   component: () => import('@/pages/Login.vue'),
+  //   props: true,
+  // },
   {
     path: '/schedule',
     name: 'Schedule',
@@ -53,7 +53,6 @@ const routes = [
     path :'/:catchAll(.*)',
     redirect: '/schedule',
   }
-  // TODO: add star and redirect to schedule page
 
 ]
 
