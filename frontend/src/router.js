@@ -4,11 +4,11 @@ import { sessionStore } from '@/stores/session'
 import { studentStore } from '@/stores/student'
 
 const routes = [
-  // {
-  //   path: '/',
-  //   name: 'Home',
-  //   component: () => import('@/pages/Home.vue'),
-  // },
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/pages/Home.vue'),
+  },
   // {
   //   name: 'Login',
   //   path: '/login',

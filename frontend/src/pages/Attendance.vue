@@ -160,12 +160,14 @@ const attendanceData = createListResource({
 				title:attendance.status,
 				color:attendance.status === "Absent" ? "red" : "green",
 				id:attendance.name,
+				date:attendance.date,
 				time :{ 
 					start: `${attendance.date } 08:00`, 
 					end: `${attendance.date } 16:00`
 				}
 			})
 		})
+		console.log(events)
 		return events
 	}
 })
