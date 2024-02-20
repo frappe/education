@@ -4,12 +4,12 @@
     <template #target="{ togglePopover }">
       <div
         class="w-full p-2 rounded-lg "
-        :class="`bg-${event.color || 'green'}-100`"
+        :class="event.background_color "
 		@click="togglePopover"
       >
         <div
           class="flex gap-3 relative px-2 items-start"
-          :class="event.from_time && `border-l-2 border-${event.color || 'green'}-600`"
+          :class="event.from_time && ['border-l-2' , event.border_color]"
         >
           <FeatherIcon name="circle" class="h-4 text-black" />
 
@@ -57,10 +57,10 @@
     </template>
   </Popover>
 		<div
-		class="w-full p-2 rounded-lg "
-		:class="`bg-${event.color || 'green'}-100`"
-		@click="togglePopover"
-		v-else
+			v-else
+			class="w-full p-2 rounded-lg "
+			:class="`bg-${event.color || 'green'}-100`"
+			@click="togglePopover"
 		>
 		<div
 		class="flex gap-3 relative px-2 items-start"
@@ -93,6 +93,7 @@ const props = defineProps({
 	required: true,
   },
 })
+console.log(props.event)
 
 
 function parseDate() {
@@ -112,5 +113,6 @@ function parseDate() {
 </script>
 
 <style>
+
 
 </style>

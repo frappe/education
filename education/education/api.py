@@ -577,7 +577,7 @@ def get_course_schedule_for_student(program_name):
 		fields=[
 			"schedule_date",
 			"room",
-			"color",
+			"class_schedule_color",
 			"course",
 			"from_time",
 			"to_time",

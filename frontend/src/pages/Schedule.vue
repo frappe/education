@@ -14,24 +14,51 @@ import {ref} from 'vue'
 import { studentStore } from '@/stores/student';
 const { getCurrentProgram } = studentStore()
 
-
 const programName = ref(getCurrentProgram()?.value?.program)
 const events= ref([])
 
+let colorMap = {
+  green:{
+    background_color:'bg-green-100',
+    border_color:'border-green-600'
+  },
+  blue:{
+    background_color:'bg-blue-100',
+    border_color:'border-blue-600'
+  },
+  orange:{
+    background_color:'bg-orange-100',
+    border_color:'border-orange-600'
+  },
+  yellow: {
+    background_color:'bg-yellow-100',
+    border_color:'border-yellow-600'
+  },
+  purple: {
+    background_color:'bg-purple-100',
+    border_color:'border-purple-600'
+  },
+  pink: {
+    background_color:'bg-pink-100',
+    border_color:'border-pink-600'
+  },
+  olive: {
+    background_color:'bg-olive-100',
+    border_color:'border-olive-600'
+  }
 
-// function get_earliest_time_from_events(events) {
-//   let earliest_times = []
-//   events.forEach(event => {
-//     earliest_times.push(event.time.start.split(" ")[1].split(":")[0])
-//   });
-//   earliest_times.sort()
-//   config.dayBoundaries.start = parseInt(earliest_times[0]) - 1
-//   config.dayBoundaries.end = parseInt(earliest_times[earliest_times.length - 1]) + 7
-// }
+}
 
-// function parseTime (date) {
-//   return date.split(":").slice(0,-1).join(":")
-// } 
+function colorToTailwindColor (color) {
+
+  if (colorMap.hasOwnProperty(color)) {
+    return colorMap[color]
+  }
+  else{
+    return colorMap['green']
+  }
+}
+
 
 const scheduleResource = createResource({
   url:"education.education.api.get_course_schedule_for_student",
@@ -42,13 +69,13 @@ const scheduleResource = createResource({
       schedule.push({
         title: classSchedule.title,
         with: classSchedule.instructor,
-        // color:classSchedule.color || 'blue',
-        color:'green',
         name: classSchedule.name,
         room: classSchedule.room,
         date: classSchedule.schedule_date,
         from_time: classSchedule.from_time,
         to_time: classSchedule.to_time,
+        background_color:colorToTailwindColor(classSchedule.class_schedule_color).background_color,
+        border_color: colorToTailwindColor(classSchedule.class_schedule_color).border_color
       })
     })
     events.value = schedule
@@ -56,10 +83,7 @@ const scheduleResource = createResource({
   auto:true
 })
 
-// take hex code and convert it into the a string of color
-// function hexToRgb(hex) {
 
-// }
 
 
 </script>

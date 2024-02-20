@@ -45,14 +45,12 @@
 									:event="calendarEvent"  
 									:date="date"
 									class="mb-2 cursor-pointer w-full" 
-									:draggable="true"
+									:draggable="false"
 									:key="calendarEvent.name"
 								/>
 
 							</div>
 	
-
-
 						</div>
 						<span v-else >{{ shortMonthList[date.getMonth()] +" "+ date.getDate() }}</span>
 					</div>
@@ -80,7 +78,6 @@ const props = defineProps({
 	}
 })
 
-
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())
 
@@ -96,7 +93,7 @@ let currentMonthDates = computed(() => {
 	return allDates
 })
 
-let parsedData = computed( ()=> Object.groupBy(props.events, (row) => row.date))
+let parsedData = computed(()=> Object.groupBy(props.events, (row) => row.date))
 
 
 function parseDate(date) {
