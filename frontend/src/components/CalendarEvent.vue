@@ -49,9 +49,9 @@
 
 		</template>
 	</Popover>
-	<div v-else class="w-full p-2 rounded-lg " :class="event.background_color || 'bg-green-100'" @click="togglePopover">
+	<div v-else class="w-full p-2 rounded-lg " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
 		<div class="flex gap-3 relative px-2 items-start"
-			:class="event.from_time && ['border-l-2', event.border_color || 'border-green-600']">
+		>
 			<FeatherIcon name="circle" class="h-4 text-black" />
 
 			<div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
@@ -79,7 +79,6 @@ const props = defineProps({
 		required: true,
 	},
 })
-console.log(props.event.border_color, props.event.background_color)
 
 
 function parseDate() {

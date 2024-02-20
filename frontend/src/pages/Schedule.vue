@@ -4,8 +4,6 @@
       v-if="!scheduleResource.loading && scheduleResource.data"
       :events="events"
     />
-    <div class="w-4 h-4 p-2 bg-teal-100">
-    </div>
 	</div>
 </template>
 
