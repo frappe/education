@@ -10,11 +10,21 @@
 		
 		<div class="flex justify-between mb-2">
 			<span class=" text-xl font-medium"> {{ getMonth() +", " + currentYear }}</span>	
-			<div class="flex gap-x-2">
+			<div class="flex gap-x-1">
 				<!-- <button class="border-2 border-green-500 p-2">Previous</button> -->
-				<FeatherIcon @click="decrementMonth"  name="chevron-left" class="h-6 w-6 cursor-pointer" />
-				<FeatherIcon @click="incrementMonth"  name="chevron-right" class="h-6 w-6 cursor-pointer" />
-				<!-- <button @click="incrementMonth" class="border-2 border-green-500 ml-2 p-2">Next</button> -->
+				<Button
+					@click="decrementMonth"
+					variant="ghost"
+					class="h-4 w-4"
+					icon="chevron-left"
+				/>
+				<Button
+					@click="incrementMonth"
+					variant="ghost"
+					class="h-4 w-4"
+					icon="chevron-right"
+				/>
+				
 			</div>
 		</div>
 		
@@ -68,7 +78,7 @@
 import { getCalendarDates } from '../utils';
 import { computed, ref } from 'vue';
 import CalendarEvent from './CalendarEvent.vue';
-import { FeatherIcon } from 'frappe-ui';
+import { FeatherIcon,Button } from 'frappe-ui';
 
 
 const props = defineProps({
