@@ -87,8 +87,8 @@ const scheduleResource = createResource({
         name: classSchedule.name,
         room: classSchedule.room,
         date: classSchedule.schedule_date,
-        from_time: classSchedule.from_time,
-        to_time: classSchedule.to_time,
+        from_time: classSchedule.from_time.split(".")[0],
+        to_time: classSchedule.to_time.split(".")[0],
         background_color:colorToTailwindColor(classSchedule.class_schedule_color).background_color,
         border_color: colorToTailwindColor(classSchedule.class_schedule_color).border_color
       })

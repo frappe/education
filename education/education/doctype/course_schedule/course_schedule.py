@@ -117,4 +117,4 @@ class CourseSchedule(Document):
 			"pink": "#FEEEF8",
 			"purple": "#F9F0FF",
 		}
-		self.color = colors[self.class_schedule_color]
+		self.color = colors[self.class_schedule_color or "green"]

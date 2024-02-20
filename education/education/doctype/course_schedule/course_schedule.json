@@ -126,6 +126,7 @@
    "read_only": 1
   },
   {
+   "default": "blue",
    "fieldname": "class_schedule_color",
    "fieldtype": "Select",
    "label": "Class Schedule Color",
@@ -134,7 +135,7 @@
   }
  ],
  "links": [],
- "modified": "2024-02-20 15:28:59.143269",
+ "modified": "2024-02-20 16:02:05.583081",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Schedule",

@@ -17,6 +17,7 @@
   "instructor_name",
   "column_break_9",
   "room",
+  "class_schedule_color",
   "section_break_7",
   "days_html",
   "section_break_14",
@@ -146,12 +147,18 @@
   {
    "fieldname": "section_break_14",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "class_schedule_color",
+   "fieldtype": "Select",
+   "label": "Class Schedule Color",
+   "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple"
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-01 16:27:41.914305",
+ "modified": "2024-02-20 17:01:28.249624",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Scheduling Tool",

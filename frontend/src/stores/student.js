@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, computed, reactive } from 'vue'
-import { usersStore } from '@/stores/user';
-import { createDocumentResource, createResource } from 'frappe-ui';
+import { ref } from 'vue'
+import { createResource } from 'frappe-ui';
 
 export const studentStore = defineStore('education-student', () => {
 
@@ -13,8 +12,7 @@ export const studentStore = defineStore('education-student', () => {
 		url: 'education.education.api.get_student_info',
 		onSuccess(info) {
 			if (!info) {
-				console.log("Admin Not Allowed to access the student portal")
-				return
+				window.location.href = "/app"
 			}
 			currentProgram.value = info.current_program
 			// remove current_program from info

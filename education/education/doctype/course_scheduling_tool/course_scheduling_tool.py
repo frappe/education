@@ -116,4 +116,5 @@ class CourseSchedulingTool(Document):
 		course_schedule.schedule_date = date
 		course_schedule.from_time = self.from_time
 		course_schedule.to_time = self.to_time
+		course_schedule.class_schedule_color = self.class_schedule_color
 		return course_schedule
