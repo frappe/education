@@ -15,6 +15,7 @@
   "program",
   "course",
   "color",
+  "class_schedule_color",
   "section_break_6",
   "schedule_date",
   "room",
@@ -71,6 +72,7 @@
   {
    "fieldname": "color",
    "fieldtype": "Color",
+   "hidden": 1,
    "label": "Color",
    "print_hide": 1
   },
@@ -122,10 +124,17 @@
    "label": "Program",
    "options": "Program",
    "read_only": 1
+  },
+  {
+   "fieldname": "class_schedule_color",
+   "fieldtype": "Select",
+   "label": "Class Schedule Color",
+   "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple",
+   "print_hide": 1
   }
  ],
  "links": [],
- "modified": "2023-12-19 10:05:21.266203",
+ "modified": "2024-02-20 15:28:59.143269",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Schedule",

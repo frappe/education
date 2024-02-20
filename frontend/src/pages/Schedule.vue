@@ -4,6 +4,8 @@
       v-if="!scheduleResource.loading && scheduleResource.data"
       :events="events"
     />
+    <div class="w-4 h-4 p-2 bg-teal-100">
+    </div>
 	</div>
 </template>
 
@@ -18,13 +20,17 @@ const programName = ref(getCurrentProgram()?.value?.program)
 const events= ref([])
 
 let colorMap = {
+  blue:{
+    background_color:'bg-blue-100',
+    border_color:'border-blue-600'
+  },
   green:{
     background_color:'bg-green-100',
     border_color:'border-green-600'
   },
-  blue:{
-    background_color:'bg-blue-100',
-    border_color:'border-blue-600'
+  red:{
+    background_color:'bg-red-100',
+    border_color:'border-red-600'
   },
   orange:{
     background_color:'bg-orange-100',
@@ -34,6 +40,18 @@ let colorMap = {
     background_color:'bg-yellow-100',
     border_color:'border-yellow-600'
   },
+  teal: {
+    background_color:'bg-teal-100',
+    border_color:'border-teal-600'
+  },
+  violet: {
+    background_color:'bg-violet-100',
+    border_color:'border-violet-600'
+  },
+  cyan: {
+    background_color:'bg-cyan-100',
+    border_color:'border-cyan-600'
+  },
   purple: {
     background_color:'bg-purple-100',
     border_color:'border-purple-600'
@@ -42,15 +60,14 @@ let colorMap = {
     background_color:'bg-pink-100',
     border_color:'border-pink-600'
   },
-  olive: {
-    background_color:'bg-olive-100',
-    border_color:'border-olive-600'
+  amber: {
+    background_color:'bg-amber-100',
+    border_color:'border-amber-600'
   }
 
 }
 
 function colorToTailwindColor (color) {
-
   if (colorMap.hasOwnProperty(color)) {
     return colorMap[color]
   }

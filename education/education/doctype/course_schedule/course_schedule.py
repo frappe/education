@@ -105,12 +105,16 @@ class CourseSchedule(Document):
 
 	def set_hex_color(self):
 		colors = {
-			"green": "#29CD42",
-			"orange": "#EC864B",
-			"blue": "#449CF0",
-			"yellow": "#ECAD4B",
-			"purple": "#761ACB",
-			"pink": "#ED6396",
-			"olive": "#B4CD29",
+			"blue": "#EDF6FD",
+			"green": "#E4F5E9",
+			"red": "#FFF0F0",
+			"orange": "#FFF1E7",
+			"yellow": "#FFF7D3",
+			"teal": "#E6F7F4",
+			"violet": "#F5F2FF",
+			"cyan": "#E0F8FF",
+			"amber": "#FCF3CF",
+			"pink": "#FEEEF8",
+			"purple": "#F9F0FF",
 		}
 		self.color = colors[self.class_schedule_color]
