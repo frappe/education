@@ -12,6 +12,10 @@ export const studentStore = defineStore('education-student', () => {
 	const student = createResource({
 		url: 'education.education.api.get_student_info',
 		onSuccess(info) {
+			if (!info) {
+				console.log("Admin Not Allowed to access the student portal")
+				return
+			}
 			currentProgram.value = info.current_program
 			// remove current_program from info
 			delete info.current_program

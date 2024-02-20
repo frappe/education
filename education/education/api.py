@@ -508,13 +508,14 @@ def get_user_info():
 		filters={"name": frappe.session.user},
 	)[0]
 	current_user["session_user"] = True
-
 	return current_user
 
 
 @frappe.whitelist()
 def get_student_info():
 	email = frappe.session.user
+	if email == "Administrator":
+		return
 	student_info = frappe.db.get_list(
 		"Student",
 		fields=["*"],
