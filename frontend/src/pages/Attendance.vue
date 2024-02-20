@@ -18,7 +18,7 @@
 				</template>
 			</Dropdown>
 		</div>
-		<div class="flex items-center justify-center flex-col flex-1">
+		<div class="h-full">
 			<!-- <ListView
 				class="h-[250px]"
 				:columns="tableData.columns"
@@ -30,9 +30,9 @@
 				}"
 				row-key="id"
 			/> -->
-			<CalendarView
+			
+			<Calendar
 				v-if="!attendanceData.loading && attendanceData.data"
-				:showMonthlyView="true"
 				:events="attendanceData.data"
 			/>
 		</div>
@@ -68,7 +68,7 @@ import { studentStore } from '@/stores/student';
 import { Dialog, ListView, createResource, createListResource, Dropdown, FeatherIcon} from 'frappe-ui';
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
-import CalendarView from '@/components/CalendarView.vue';
+import Calendar from '@/components/Calendar.vue';
 import { createToast } from '@/utils'
 
 const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
@@ -78,6 +78,7 @@ const allStudentGroups = ref()
 
 
 let studentInfo = getStudentInfo().value
+
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
 // can't get actions by using storeToRefs hence using store
@@ -159,15 +160,11 @@ const attendanceData = createListResource({
 			events.push({
 				title:attendance.status,
 				color:attendance.status === "Absent" ? "red" : "green",
-				id:attendance.name,
+				name:attendance.name,
 				date:attendance.date,
-				time :{ 
-					start: `${attendance.date } 08:00`, 
-					end: `${attendance.date } 16:00`
-				}
+				status:attendance.status,
 			})
 		})
-		console.log(events)
 		return events
 	}
 })

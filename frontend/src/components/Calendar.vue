@@ -1,9 +1,21 @@
 <template>
-	<div class="p-4 h-full">
-		<div>
-			<button @click="decrementMonth" class="border-2 border-green-500 p-2">Previous</button>
-			<button @click="incrementMonth" class="border-2 border-green-500 ml-2 p-2">Next</button>
-			<span> {{ getMonth() +", " + currentYear }}</span>
+	<div class="p-5  h-full">
+		<!-- actions buttons for calendar -->
+
+		<!-- left side  -->
+			<!-- Year, Month & Current Program and Dropdown -->
+		<!-- right side -->
+			<!-- Increment and Decrement Button, View change button default is months or can be set via props! -->
+
+		
+		<div class="flex justify-between mb-2">
+			<span class=" text-xl font-medium"> {{ getMonth() +", " + currentYear }}</span>	
+			<div class="flex gap-x-2">
+				<!-- <button class="border-2 border-green-500 p-2">Previous</button> -->
+				<FeatherIcon @click="decrementMonth"  name="chevron-left" class="h-6 w-6 cursor-pointer" />
+				<FeatherIcon @click="incrementMonth"  name="chevron-right" class="h-6 w-6 cursor-pointer" />
+				<!-- <button @click="incrementMonth" class="border-2 border-green-500 ml-2 p-2">Next</button> -->
+			</div>
 		</div>
 		
 		<div class="h-[92%] min-h-[600px] min-w-[600px]">
@@ -23,7 +35,6 @@
 							
 							<span class="py-1 sticky top-0 bg-white w-full text-center z-10"
 								:class="date.toDateString() === new Date().toDateString() && 'font-bold' "
-								@click="console.log(date.toISOString() )"
 							>
 								{{ date.getDate() }} 
 							</span>
@@ -56,47 +67,23 @@
 	</div>
 </template>
 <script setup>
-import { getCalendarDates, dataFromBackend, dataFromBackend2 } from '../utils';
+import { getCalendarDates } from '../utils';
 import { computed, ref } from 'vue';
 import CalendarEvent from './CalendarEvent.vue';
-import { Popover } from 'frappe-ui';
+import { FeatherIcon } from 'frappe-ui';
 
 
 const props = defineProps({
 	events: {
 		type: Object,
 		required: false,
-		default: () => {
-			return {
-				todo: {
-					color: "yellow",
-					icon: "circle",
-				},
-				call: {
-					color: "green",
-					icon: "phone",
-				},
-				meeting: {
-					color: "blue",
-					icon: "briefcase",
-				},
-				class: {
-					color: "green",
-					icon: "book-open",
-				},
-				full_day: {
-					color: "red",
-					icon: "sun",
-				},
-			}
-		}
 	}
 })
 
+
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())
-// let firstDate = ref(new Date())
-// console.log(currentMonth)
+
 let monthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 let shortMonthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -106,21 +93,18 @@ let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 let currentMonthDates = computed(() => {
 	let allDates = getCalendarDates(currentMonth.value, currentYear.value)
-	// currentMonth.value = firstDate.getMonth()
 	return allDates
 })
-console.log(currentMonthDates.value[0])
 
-let parsedData = Object.groupBy(dataFromBackend, (row) => row.date)
-console.log(parsedData)
+let parsedData = computed( ()=> Object.groupBy(props.events, (row) => row.date))
+
 
 function parseDate(date) {
 	return date.toLocaleDateString().split('/').reverse().join('-')
 }
 
 
-// console.log(parsedData)
-// debugger
+
 function getMonth() {
 	return monthList[currentMonth.value]
 }
@@ -145,11 +129,6 @@ function currentMonthDate(date) {
 	return date.getMonth() === currentMonth.value
 }
 
-function showEventInfoDialog(e, event) {
-	console.log(e, event)
-	console.log(e.pageX, e.pageY)
-	// console.log(first)
-}
 
 
 </script>

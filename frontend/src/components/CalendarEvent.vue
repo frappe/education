@@ -1,10 +1,10 @@
 <template> 
-	<!-- placement to right how? -->
-  <Popover placement="right">
+
+	<Popover placement="right" v-if="!event.status">
     <template #target="{ togglePopover }">
       <div
         class="w-full p-2 rounded-lg "
-        :class="  `bg-${event.color || 'green'}-100`"
+        :class="`bg-${event.color || 'green'}-100`"
 		@click="togglePopover"
       >
         <div
@@ -39,6 +39,10 @@
 				<FeatherIcon name="calendar" class="h-4 w-4" />
 				<span class="text-sm font-normal"> {{parseDate()}} </span>
 			</div>
+			<div class="flex gap-2 items-center" v-if="event.with">
+				<FeatherIcon name="user" class="h-4 w-4" />
+				<span class="text-sm font-normal" > {{ event.with }} </span>
+			</div>
 			<div class="flex gap-2 items-center" v-if="event.from_time && event.to_time">
 				<FeatherIcon name="clock" class="h-4 w-4" />
 				<span class="text-sm font-normal" > {{ event.from_time }} - {{ event.to_time }} </span>
@@ -52,6 +56,28 @@
 	  
     </template>
   </Popover>
+		<div
+		class="w-full p-2 rounded-lg "
+		:class="`bg-${event.color || 'green'}-100`"
+		@click="togglePopover"
+		v-else
+		>
+		<div
+		class="flex gap-3 relative px-2 items-start"
+		:class="event.from_time && `border-l-2 border-${event.color || 'green'}-600`"
+		>
+		<FeatherIcon name="circle" class="h-4 text-black" />
+
+		<div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
+			<p class="font-medium text-sm text-gray-800 text-ellipsis">
+			{{ event.title }}
+			</p>
+			<p class="font-normal text-xs text-gray-800 text-ellipsis" v-if="event.from_time">
+			{{ event.from_time }} - {{ event.to_time }}
+			</p>
+		</div>
+		</div>
+		</div>
 </template>
 
 <script setup>
