@@ -15,6 +15,7 @@
   "program",
   "course",
   "color",
+  "class_schedule_color",
   "section_break_6",
   "schedule_date",
   "room",
@@ -71,6 +72,7 @@
   {
    "fieldname": "color",
    "fieldtype": "Color",
+   "hidden": 1,
    "label": "Color",
    "print_hide": 1
   },
@@ -122,10 +124,18 @@
    "label": "Program",
    "options": "Program",
    "read_only": 1
+  },
+  {
+   "default": "blue",
+   "fieldname": "class_schedule_color",
+   "fieldtype": "Select",
+   "label": "Class Schedule Color",
+   "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple",
+   "print_hide": 1
   }
  ],
  "links": [],
- "modified": "2022-12-13 15:49:43.766325",
+ "modified": "2024-02-20 16:02:05.583081",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Schedule",
@@ -143,9 +153,17 @@
    "role": "Academics User",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Student",
+   "share": 1
   }
  ],
- "restrict_to_domain": "",
  "sort_field": "schedule_date",
  "sort_order": "DESC",
  "states": [],

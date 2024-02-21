@@ -14,8 +14,16 @@
   "academic_term_reqd",
   "user_creation_skip",
   "auto_submit_sales_invoice",
+  "sales_invoice_posting_date_fee_schedule",
   "section_break_7",
-  "instructor_created_by"
+  "instructor_created_by",
+  "portal_settings_tab",
+  "attendance_based_on_course_schedule",
+  "razorpay_key",
+  "razorpay_secret",
+  "column_break_atxc",
+  "school_college_name_abbreviation",
+  "school_college_logo"
  ],
  "fields": [
   {
@@ -84,11 +92,54 @@
    "fieldname": "auto_submit_sales_invoice",
    "fieldtype": "Check",
    "label": "Submit Sales Invoice from Program Enrollment / Fee Schedule"
+  },
+  {
+   "fieldname": "portal_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Portal Settings"
+  },
+  {
+   "default": "0",
+   "description": "If enabled, the attendance will be marked on Course Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Group Basis for that particular date.",
+   "fieldname": "attendance_based_on_course_schedule",
+   "fieldtype": "Check",
+   "label": "Attendance Based on Course Schedule"
+  },
+  {
+   "fieldname": "razorpay_key",
+   "fieldtype": "Data",
+   "label": "Razorpay Key"
+  },
+  {
+   "fieldname": "razorpay_secret",
+   "fieldtype": "Password",
+   "label": "Razorpay Secret"
+  },
+  {
+   "fieldname": "column_break_atxc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "school_college_name_abbreviation",
+   "fieldtype": "Data",
+   "label": "School / College Name Abbreviation"
+  },
+  {
+   "fieldname": "school_college_logo",
+   "fieldtype": "Attach Image",
+   "label": "School / College Logo"
+  },
+  {
+   "default": "1",
+   "description": "By default, the Sales Invoice's  Posting Date will be equal to Fee Schedule's Posting Date. If disabled then Sales Invoice,s Posting Date will be today's date.",
+   "fieldname": "sales_invoice_posting_date_fee_schedule",
+   "fieldtype": "Check",
+   "label": "Sales Invoice Posting Date should be same as Fee Schedule Posting Date"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2024-01-24 14:43:09.520597",
+ "modified": "2024-02-20 17:41:45.721252",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",

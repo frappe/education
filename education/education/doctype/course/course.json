@@ -92,10 +92,11 @@
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2023-01-13 17:12:58.871929",
+ "modified": "2023-12-19 10:03:17.393260",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

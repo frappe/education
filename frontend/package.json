@@ -1,0 +1,28 @@
+{
+  "name": "frappe-ui-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=/assets/education/frontend/ && yarn copy-html-entry",
+    "preview": "vite preview",
+    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/frontend.html"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.10",
+    "feather-icons": "^4.28.0",
+    "frappe-ui": "^0.1.17",
+    "lucide-vue-next": "^0.259.0",
+    "pinia": "^2.1.7",
+    "qalendar": "^3.6.1",
+    "vue": "^3.2.25",
+    "vue-router": "^4.0.12"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^2.0.0",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.5",
+    "tailwindcss": "^3.0.15",
+    "vite": "^2.7.2"
+  }
+}

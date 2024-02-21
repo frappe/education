@@ -97,7 +97,6 @@ def mark_attendance(
 	:param student_group: Student Group.
 	:param date: Date.
 	"""
-
 	if student_group:
 		academic_year = frappe.db.get_value("Student Group", student_group, "academic_year")
 		if academic_year:
@@ -499,13 +498,180 @@ def get_instructors(student_group):
 
 
 @frappe.whitelist()
+def get_user_info():
+	if frappe.session.user == "Guest":
+		frappe.throw("Authentication failed", exc=frappe.AuthenticationError)
+
+	current_user = frappe.db.get_list(
+		"User",
+		fields=["name", "email", "enabled", "user_image", "full_name", "user_type"],
+		filters={"name": frappe.session.user},
+	)[0]
+	current_user["session_user"] = True
+	return current_user
+
+
+@frappe.whitelist()
+def get_student_info():
+	email = frappe.session.user
+	if email == "Administrator":
+		return
+	student_info = frappe.db.get_list(
+		"Student",
+		fields=["*"],
+		filters={"user": email},
+	)[0]
+
+	current_program = get_current_enrollment(student_info.name)
+	student_groups = get_student_groups(student_info.name, current_program.program)
+	student_info["student_groups"] = student_groups
+	student_info["current_program"] = current_program
+	return student_info
+
+
+@frappe.whitelist()
+def get_student_programs(student):
+	# student = 'EDU-STU-2023-00043'
+	programs = frappe.db.get_list(
+		"Program Enrollment",
+		fields=["program", "name"],
+		filters={"docstatus": 1, "student": student},
+	)
+	return programs
+
+
+def get_student_groups(student, program_name):
+	# student = 'EDU-STU-2023-00043'
+
+	student_group = frappe.qb.DocType("Student Group")
+	student_group_students = frappe.qb.DocType("Student Group Student")
+
+	student_group_query = (
+		frappe.qb.from_(student_group)
+		.inner_join(student_group_students)
+		.on(student_group.name == student_group_students.parent)
+		.select((student_group_students.parent).as_("label"))
+		.where(student_group_students.student == student)
+		.where(student_group.program == program_name)
+		.run(as_dict=1)
+	)
+
+	return student_group_query
+
+
+@frappe.whitelist()
+def get_course_list_based_on_program(program_name):
+	program = frappe.get_doc("Program", program_name)
+
+	course_list = []
+
+	for course in program.courses:
+		course_list.append(course.course)
+	return course_list
+
+
+@frappe.whitelist()
+def get_course_schedule_for_student(program_name):
+	schedule = frappe.db.get_list(
+		"Course Schedule",
+		fields=[
+			"schedule_date",
+			"room",
+			"class_schedule_color",
+			"course",
+			"from_time",
+			"to_time",
+			"instructor",
+			"title",
+			"name",
+		],
+		filters={"program": program_name},
+		order_by="schedule_date asc",
+	)
+	return schedule
+
+
+@frappe.whitelist()
+def apply_leave(leave_data, program_name):
+	attendance_based_on_course_schedule = frappe.db.get_single_value(
+		"Education Settings", "attendance_based_on_course_schedule"
+	)
+	if attendance_based_on_course_schedule:
+		apply_leave_based_on_course_schedule(leave_data, program_name)
+	else:
+		apply_leave_based_on_student_group(leave_data, program_name)
+
+
+def apply_leave_based_on_course_schedule(leave_data, program_name):
+	course_schedule_in_leave_period = frappe.db.get_list(
+		"Course Schedule",
+		fields=["name", "schedule_date"],
+		filters={
+			"program": program_name,
+			"schedule_date": [
+				"between",
+				[leave_data.get("from_date"), leave_data.get("to_date")],
+			],
+		},
+		order_by="schedule_date asc",
+	)
+	print("-------------------")
+	print(course_schedule_in_leave_period)
+	print("-------------------")
+
+	if frappe.db.exists("Student Attendance", {"course_schedule": "EDU-CSH-2024-00003"}):
+		pass
+
+	for course_schedule in course_schedule_in_leave_period:
+		# check if attendance record does not exist for the student on the course schedule
+		if not frappe.db.exists(
+			"Student Attendance",
+			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
+		):
+			make_attendance_records(
+				leave_data.get("student"),
+				leave_data.get("student_name"),
+				"Absent",
+				course_schedule.get("name"),
+				None,
+				course_schedule.get("schedule_date"),
+			)
+
+
+def apply_leave_based_on_student_group(leave_data, program_name):
+	student_groups = get_student_groups(leave_data.get("student"), program_name)
+	for student_group in student_groups:
+		make_attendance_records(
+			leave_data.get("student"),
+			leave_data.get("student_name"),
+			"Absent",
+			None,
+			student_group.get("label"),
+			leave_data.get("from_date"),
+		)
+
+
+@frappe.whitelist()
 def get_student_invoices(student):
 	student_sales_invoices = []
 
 	sales_invoice_list = frappe.db.get_list(
 		"Sales Invoice",
-		filters={"student": student, "status": ["in", ["Paid", "Unpaid"]]},
-		fields=["name", "status", "student", "due_date", "fee_schedule", "grand_total"],
+		filters={
+			"student": student,
+			"status": ["in", ["Paid", "Unpaid", "Overdue"]],
+			"docstatus": 1,
+		},
+		fields=[
+			"name",
+			"status",
+			"student",
+			"due_date",
+			"fee_schedule",
+			"grand_total",
+			"currency",
+		],
+		order_by="status desc",
 	)
 
 	for si in sales_invoice_list:
@@ -514,25 +680,32 @@ def get_student_invoices(student):
 		student_program_invoice_status["program"] = get_program_from_fee_schedule(
 			si.fee_schedule
 		)
-		student_program_invoice_status["amount"] = si.grand_total
-
+		symbol = get_currency_symbol(si.get("currency", "INR"))
+		student_program_invoice_status["amount"] = symbol + " " + str(si.grand_total)
+		# TODO: get currency
+		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
 			student_program_invoice_status[
 				"payment_date"
 			] = get_posting_date_from_payment_entry_against_sales_invoice(si.name)
-			student_program_invoice_status["due_date"] = ""
+			student_program_invoice_status["due_date"] = "-"
 		else:
 			student_program_invoice_status["due_date"] = si.due_date
-			student_program_invoice_status["payment_date"] = ""
+			student_program_invoice_status["payment_date"] = "-"
 
 		student_sales_invoices.append(student_program_invoice_status)
 
 	return student_sales_invoices
 
 
+def get_currency_symbol(currency):
+	return frappe.db.get_value("Currency", currency, "symbol")
+
+
 def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 	payment_entry = frappe.qb.DocType("Payment Entry")
 	payment_entry_reference = frappe.qb.DocType("Payment Entry Reference")
+
 	q = (
 		frappe.qb.from_(payment_entry)
 		.inner_join(payment_entry_reference)
@@ -540,13 +713,24 @@ def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 		.select(payment_entry.posting_date)
 		.where(payment_entry_reference.reference_name == sales_invoice)
 	).run(as_dict=1)
-	payment_date = q[0].get("posting_date")
-	return payment_date
+
+	if len(q) > 0:
+		payment_date = q[0].get("posting_date")
+		return payment_date
 
 
 def get_program_from_fee_schedule(fee_schedule):
-	# fee_schedule = "EDU-FSH-2024-00023"
+
 	program = frappe.db.get_value(
 		"Fee Schedule", filters={"name": fee_schedule}, fieldname=["program"]
 	)
 	return program
+
+
+@frappe.whitelist()
+def get_school_abbr_logo():
+	abbr = frappe.db.get_single_value(
+		"Education Settings", "school_college_name_abbreviation"
+	)
+	logo = frappe.db.get_single_value("Education Settings", "school_college_logo")
+	return {"name": abbr, "logo": logo}

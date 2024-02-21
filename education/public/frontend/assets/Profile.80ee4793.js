@@ -1,0 +1,1 @@
+import{G as n,q as s,B as e,v as l}from"./frappe-ui.49d8c9fc.js";const d={},o=l("h1",null,null,-1),t=l("p",null,null,-1),c=l("ul",null,[l("li",null,"sjdnsjdb"),l("li",null,"sjdnsjdb"),l("li",null,"sjdnsjdb"),l("li",null,"sjdnsjdb"),l("li",null,"sjdnsjdb")],-1),_=[o,t,c];function u(i,r){return s(),e("div",null,_)}var j=n(d,[["render",u]]);export{j as default};

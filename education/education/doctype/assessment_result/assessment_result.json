@@ -173,10 +173,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-08-03 11:47:54.119489",
+ "modified": "2023-12-19 10:15:59.176904",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -193,11 +194,20 @@
    "share": 1,
    "submit": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Student",
+   "share": 1
   }
  ],
- "restrict_to_domain": "",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "student_name"
 }

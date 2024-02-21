@@ -21,6 +21,9 @@ class CourseSchedule(Document):
 		self.validate_time()
 		self.validate_overlap()
 
+	def before_save(self):
+		self.set_hex_color()
+
 	def set_title(self):
 		"""Set document Title"""
 		self.title = (
@@ -99,3 +102,19 @@ class CourseSchedule(Document):
 
 		validate_overlap_for(self, "Assessment Plan", "room")
 		validate_overlap_for(self, "Assessment Plan", "supervisor", self.instructor)
+
+	def set_hex_color(self):
+		colors = {
+			"blue": "#EDF6FD",
+			"green": "#E4F5E9",
+			"red": "#FFF0F0",
+			"orange": "#FFF1E7",
+			"yellow": "#FFF7D3",
+			"teal": "#E6F7F4",
+			"violet": "#F5F2FF",
+			"cyan": "#E0F8FF",
+			"amber": "#FCF3CF",
+			"pink": "#FEEEF8",
+			"purple": "#F9F0FF",
+		}
+		self.color = colors[self.class_schedule_color or "green"]

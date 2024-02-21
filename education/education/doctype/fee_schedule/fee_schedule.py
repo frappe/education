@@ -19,6 +19,9 @@ class FeeSchedule(Document):
 		info = self.get_dashboard_info()
 		self.set_onload("dashboard_info", info)
 
+	# def on_cancel(self):
+	# 	frappe.db.set_value("Fee Schedule", self.name, "fee_creation_status", "Cancelled")
+
 	def get_dashboard_info(self):
 		info = {
 			"total_paid": 0,
@@ -167,6 +170,10 @@ def create_sales_invoice(fee_schedule, student_id):
 	)
 	sales_invoice_doc.student = student.name
 	sales_invoice_doc.customer = customer
+	if frappe.db.get_single_value(
+		"Education Settings", "sales_invoice_posting_date_fee_schedule"
+	):
+		sales_invoice_doc.set_posting_time = 1
 
 	for item in sales_invoice_doc.items:
 		item.qty = 1
