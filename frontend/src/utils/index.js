@@ -62,3 +62,15 @@ export function createToast(options) {
 		return year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)
 	}
 }
+
+export function groupBy (obj,fn) {
+	if (typeof fn !== 'function') throw new Error(`${fn} should be a function`)
+	return Object.keys(obj).reduce((acc,key) => {
+		const group = fn(obj[key])
+		if (!acc[group]) {
+			acc[group] = []
+		}
+		acc[group].push(obj[key])
+		return acc
+	},{})
+}

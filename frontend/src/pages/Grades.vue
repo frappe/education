@@ -36,6 +36,9 @@
 import { Dropdown, FeatherIcon,ListView, createResource,createListResource } from 'frappe-ui';
 import { ref } from 'vue';
 import { studentStore } from '@/stores/student';
+import { groupBy } from '@/utils'
+
+
 import MissingData from '@/components/MissingData.vue'
 
 
@@ -96,10 +99,10 @@ const grades = createListResource({
 	transform:() =>{},
 	
 	onSuccess:(response) => {
-		let conductedExams = Object.groupBy(response,row => row.assessment_group)
+		let conductedExams = groupBy(response,row => row.assessment_group)
 		let exams = Object.keys(conductedExams)
 		updateColumns(exams)
-		let courses = Object.groupBy(response, row => row.course)
+		let courses = groupBy(response, row => row.course)
 		Object.keys(courses).forEach((course) => {
 			let row = {}
 			row.course = course

@@ -93,6 +93,9 @@ const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)
 const educationSettings = createResource({	
 	url: 'education.education.api.get_school_abbr_logo',
 	auto: true,
+	onSuccess: (response) => {
+		window.document.title = response.name || "Portal"
+	}
 })
 
 </script>

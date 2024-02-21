@@ -1,9 +1,9 @@
 <template>
 	<Popover placement="right" v-if="!event.status">
 		<template #target="{ togglePopover }">
-			<div class="w-full p-2 rounded-lg " :class="event.background_color || 'bg-green-100'" @click="togglePopover">
+			<div class="w-full p-2 rounded-lg" :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @click="togglePopover">
 				<div class="flex gap-3 relative px-2 items-start"
-					:class="event.from_time && ['border-l-2', event.border_color || 'border-green-600']">
+					:class="event.from_time && ['border-l-2', colorMap[event?.color]?.border_color || 'border-green-600']">
 					<FeatherIcon name="circle" class="h-4 text-black" />
 
 					<div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
@@ -81,6 +81,53 @@ const props = defineProps({
 })
 
 
+let colorMap = {
+  blue:{
+    background_color:'bg-blue-100',
+    border_color:'border-blue-600'
+  },
+  green:{
+    background_color:'bg-green-100',
+    border_color:'border-green-600'
+  },
+  red:{
+    background_color:'bg-red-100',
+    border_color:'border-red-600'
+  },
+  orange:{
+    background_color:'bg-orange-100',
+    border_color:'border-orange-600'
+  },
+  yellow: {
+    background_color:'bg-yellow-100',
+    border_color:'border-yellow-600'
+  },
+  teal: {
+    background_color:'bg-teal-100',
+    border_color:'border-teal-600'
+  },
+  violet: {
+    background_color:'bg-violet-100',
+    border_color:'border-violet-600'
+  },
+  cyan: {
+    background_color:'bg-cyan-100',
+    border_color:'border-cyan-600'
+  },
+  purple: {
+    background_color:'bg-purple-100',
+    border_color:'border-purple-600'
+  },
+  pink: {
+    background_color:'bg-pink-100',
+    border_color:'border-pink-600'
+  },
+  amber: {
+    background_color:'bg-amber-100',
+    border_color:'border-amber-600'
+  }
+}
+
 function parseDate() {
 	let date = props.date.toDateString().split(" ").slice(0, 3)
 	let day = date[0]
@@ -88,13 +135,6 @@ function parseDate() {
 	return `${day}, ${eventDate}`
 }
 
-// In event check whether the property color is given or not
-// if given then use that color
-// else if check whether bg-color and border-color both are given or not
-// else not given then use default color
-
-// let parsedEvents = Object.groupBy(singleEvent, (row) => row.schedule_date)
-// console.log(parsedEvents)
 </script>
 
 <style></style>

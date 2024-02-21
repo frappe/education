@@ -115,7 +115,6 @@ const tableData = reactive({
 
 const currentRow = ref(null)
 const showPaymentDialog = ref(false)
-const showToast = ref(false)
 
 const openInvoicePDF = (row) => {
 	let url = `/api/method/frappe.utils.print_format.download_pdf?

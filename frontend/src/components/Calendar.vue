@@ -79,6 +79,8 @@ import { getCalendarDates } from '../utils';
 import { computed, ref } from 'vue';
 import CalendarEvent from './CalendarEvent.vue';
 import { FeatherIcon,Button } from 'frappe-ui';
+import { groupBy } from '@/utils'
+
 
 
 const props = defineProps({
@@ -87,6 +89,7 @@ const props = defineProps({
 		required: false,
 	}
 })
+
 
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())
@@ -103,15 +106,18 @@ let currentMonthDates = computed(() => {
 	return allDates
 })
 
-let parsedData = computed(()=> {
-	let events = props.events
-
-	return Object.groupBy(props.events, (row) => row.date)
-})
+let parsedData = computed(()=> groupBy(props.events, (row) => row.date))
 
 
 function parseDate(date) {
-	return date.toLocaleDateString().split('/').reverse().join('-')
+	let dd = date.getDate()
+	let mm = date.getMonth() + 1
+	let yyyy = date.getFullYear()
+
+	if (dd < 10) dd = '0' + dd;
+	if (mm < 10) mm = '0' + mm;
+	
+	return `${yyyy}-${mm}-${dd}`
 }
 
 
