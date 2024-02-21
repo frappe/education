@@ -14,6 +14,7 @@
   "academic_term_reqd",
   "user_creation_skip",
   "auto_submit_sales_invoice",
+  "sales_invoice_posting_date_fee_schedule",
   "section_break_7",
   "instructor_created_by",
   "portal_settings_tab",
@@ -127,11 +128,18 @@
    "fieldname": "school_college_logo",
    "fieldtype": "Attach Image",
    "label": "School / College Logo"
+  },
+  {
+   "default": "1",
+   "description": "By default, the Sales Invoice's  Posting Date will be equal to Fee Schedule's Posting Date. If disabled then Sales Invoice,s Posting Date will be today's date.",
+   "fieldname": "sales_invoice_posting_date_fee_schedule",
+   "fieldtype": "Check",
+   "label": "Sales Invoice Posting Date should be same as Fee Schedule Posting Date"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2024-02-06 13:25:11.988224",
+ "modified": "2024-02-20 17:41:45.721252",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
