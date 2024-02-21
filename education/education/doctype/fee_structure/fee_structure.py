@@ -143,6 +143,8 @@ def make_fee_schedule(
 	]
 
 	for distribution in dialog_values.get("distribution", []):
+		validate_due_date(distribution.get("due_date"), distribution.get("idx"))
+
 		doc = get_mapped_doc(
 			"Fee Structure",
 			source_name,
@@ -175,6 +177,13 @@ def make_fee_schedule(
 	# return doc
 
 	# create fee schedule for
+
+
+def validate_due_date(due_date, idx):
+	if due_date < frappe.utils.nowdate():
+		frappe.throw(
+			_("Due Date in row {0} should be greater than or same as today's date.").format(idx)
+		)
 
 
 @frappe.whitelist()
