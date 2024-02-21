@@ -31,6 +31,10 @@ class ProgramEnrollment(Document):
 		self.make_fee_records()
 		self.create_course_enrollments()
 
+	def on_cancel(self):
+		self.delete_course_enrollments()
+		pass
+
 	def validate_academic_year(self):
 		start_date, end_date = frappe.db.get_value(
 			"Academic Year", self.academic_year, ["year_start_date", "year_end_date"]
@@ -155,6 +159,10 @@ class ProgramEnrollment(Document):
 		quiz_progress.name = self.program
 		quiz_progress.program = self.program
 		return quiz_progress
+
+	def delete_course_enrollments(self):
+		for course_enrollment in self.get_all_course_enrollments():
+			frappe.delete_doc("Course Enrollment", course_enrollment.name)
 
 
 @frappe.whitelist()
