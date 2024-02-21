@@ -95,6 +95,13 @@ const educationSettings = createResource({
 	auto: true,
 	onSuccess: (response) => {
 		window.document.title = response.name || "Portal"
+		let link = document.querySelector("link[rel~='icon']");
+		if (!link) {
+			link = document.createElement('link');
+			link.rel = 'icon';
+			document.getElementsByTagName('head')[0].appendChild(link);
+		}
+		link.href = response.logo || '/favicon.png';
 	}
 })
 

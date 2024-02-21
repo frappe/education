@@ -657,7 +657,11 @@ def get_student_invoices(student):
 
 	sales_invoice_list = frappe.db.get_list(
 		"Sales Invoice",
-		filters={"student": student, "status": ["in", ["Paid", "Unpaid", "Overdue"]]},
+		filters={
+			"student": student,
+			"status": ["in", ["Paid", "Unpaid", "Overdue"]],
+			"docstatus": 1,
+		},
 		fields=[
 			"name",
 			"status",
