@@ -103,7 +103,11 @@ let currentMonthDates = computed(() => {
 	return allDates
 })
 
-let parsedData = computed(()=> Object.groupBy(props.events, (row) => row.date))
+let parsedData = computed(()=> {
+	let events = props.events
+
+	return Object.groupBy(props.events, (row) => row.date)
+})
 
 
 function parseDate(date) {

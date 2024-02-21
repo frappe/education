@@ -98,9 +98,6 @@ const scheduleResource = createResource({
   auto:true
 })
 
-
-
-
 </script>
 
 <style>
