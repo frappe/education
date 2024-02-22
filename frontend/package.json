@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build --base=/assets/education/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
-    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/frontend.html"
+    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/education.html"
   },
   "dependencies": {
     "dayjs": "^1.11.10",
