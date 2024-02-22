@@ -42,8 +42,8 @@ sed -i 's/redis_socketio:/# redis_socketio:/g' Procfile
 
 bench get-app https://github.com/frappe/erpnext --branch "$BRANCH_TO_CLONE" --resolve-deps
 bench get-app education "${GITHUB_WORKSPACE}"
-bench build
 bench setup requirements --dev
+bench build
 
 bench start &>> ~/frappe-bench/bench_start.log &
 bench --site test_site reinstall --yes
