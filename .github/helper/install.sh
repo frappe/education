@@ -45,7 +45,7 @@ bench get-app education "${GITHUB_WORKSPACE}"
 bench setup requirements --dev
 
 bench start &>> ~/frappe-bench/bench_start.log &
-CI=Yes bench build --app frappe &
+CI=Yes bench build &
 bench --site test_site reinstall --yes
 
 bench --verbose --site test_site install-app education
