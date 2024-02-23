@@ -93,16 +93,6 @@ const isSidebarCollapsed = useStorage('sidebar_is_collapsed', false)
 const educationSettings = createResource({	
 	url: 'education.education.api.get_school_abbr_logo',
 	auto: true,
-	onSuccess: (response) => {
-		window.document.title = response.name || "Portal"
-		let link = document.querySelector("link[rel~='icon']");
-		if (!link) {
-			link = document.createElement('link');
-			link.rel = 'icon';
-			document.getElementsByTagName('head')[0].appendChild(link);
-		}
-		link.href = response.logo || '/favicon.png';
-	}
 })
 
 </script>
