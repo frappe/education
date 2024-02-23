@@ -21,6 +21,9 @@ export const studentStore = defineStore('education-student', () => {
 			delete info.student_groups
 			studentInfo.value = info
 		},
+		onError(err) {
+			console.error(err)
+		}
 	})
 
 	// const s = createDocumentResource({
