@@ -13,6 +13,14 @@
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
+      window.document.title = '{{ abbr }}'
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = '{{ logo }}'
     </script>
     <script type="module" src="/src/main.js"></script>
   </body>

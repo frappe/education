@@ -5,10 +5,10 @@
     <link rel="icon" href="/assets/education/frontend/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Frappe Education</title>
-    <script type="module" crossorigin src="/assets/education/frontend/assets/index.e31c6ed8.js"></script>
-    <link rel="modulepreload" href="/assets/education/frontend/assets/frappe-ui.49d8c9fc.js">
+    <script type="module" crossorigin src="/assets/education/frontend/assets/index.5fb23331.js"></script>
+    <link rel="modulepreload" href="/assets/education/frontend/assets/frappe-ui.cf491ab7.js">
     <link rel="stylesheet" href="/assets/education/frontend/assets/frappe-ui.005832b0.css">
-    <link rel="stylesheet" href="/assets/education/frontend/assets/index.26ffe8ab.css">
+    <link rel="stylesheet" href="/assets/education/frontend/assets/index.570170c2.css">
   </head>
   <body>
     <div id="app"></div>
@@ -17,6 +17,14 @@
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
+      window.document.title = '{{ abbr }}'
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = '{{ logo }}'
     </script>
 
   </body>

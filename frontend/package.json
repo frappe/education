@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build --base=/assets/education/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
-    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/frontend.html"
+    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/education.html"
   },
   "dependencies": {
     "dayjs": "^1.11.10",
@@ -16,13 +16,17 @@
     "pinia": "^2.1.7",
     "qalendar": "^3.6.1",
     "vue": "^3.2.25",
-    "vue-router": "^4.0.12"
+    "tailwindcss": "^3.3.3",
+    "vue-router": "^4.0.12",
+    "vite": "^2.7.2",
+    "@vitejs/plugin-vue": "^2.0.0",
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.0.0",
     "autoprefixer": "^10.4.2",
     "postcss": "^8.4.5",
-    "tailwindcss": "^3.0.15",
     "vite": "^2.7.2"
   }
 }
