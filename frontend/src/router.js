@@ -5,17 +5,6 @@ import { studentStore } from '@/stores/student'
 
 const routes = [
   {
-    path: '/',
-    name: 'Home',
-    component: () => import('@/pages/Home.vue'),
-  },
-  // {
-  //   name: 'Login',
-  //   path: '/login',
-  //   component: () => import('@/pages/Login.vue'),
-  //   props: true,
-  // },
-  {
     path: '/schedule',
     name: 'Schedule',
     component: () => import('@/pages/Schedule.vue'),
@@ -38,22 +27,10 @@ const routes = [
     name: "Attendance",
     component: () => import('@/pages/Attendance.vue'),
   },
-  // {
-  //   path: "/attendance/:course",
-  //   name: "Attendance Detail",
-  //   component: () => import('@/pages/AttendanceDetail.vue'),
-  //   props: true,
-  // },
-  {
-    path: '/notes',
-    name: 'Notes',
-    component: () => import('@/pages/SchoolDiary.vue'),
-  },
   {
     path :'/:catchAll(.*)',
     redirect: '/schedule',
   }
-
 ]
 
 let router = createRouter({
