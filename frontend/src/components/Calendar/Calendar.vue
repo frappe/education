@@ -32,60 +32,22 @@
 				
 			</div>
 		</div>
-		
-		<div class="h-[92%] min-h-[600px] min-w-[600px]" v-if="activeView === 'Month' ">
-			<!-- Day List -->
-			<div class="grid grid-cols-7 w-full pb-2">
-				<span v-for="day in daysList" class=" text-center text-gray-600 font-normal text-sm ">{{day}}</span>
-			</div>
-	
-			<!-- Date Grid -->
-			<div class="grid grid-cols-7 border-t-[1px] border-l-[1px] h-full w-full grid-rows-6">
-				<div v-for="date in currentMonthDates" class="border-r-[1px] border-b-[1px] border-gray-200">
-					<div 
-						class="flex justify-center h-full font-normal mx-2"
-						:class="currentMonthDate(date) ? 'text-gray-500'  : 'text-gray-200' " 
-					>
-						<div v-if="currentMonthDate(date)" class="relative flex flex-col items-center w-full overflow-y-auto" > 
-							
-							<span class="py-1 sticky top-0 bg-white w-full text-center z-10"
-								:class="date.toDateString() === new Date().toDateString() && 'font-bold' "
-							>
-								{{ date.getDate() }} 
-							</span>
-
-							<div class="w-full">
-								<CalendarEvent 
-									v-for="calendarEvent in parsedData[parseDate(date)]"
-									:event="calendarEvent"  
-									:date="date"
-									class="mb-2 cursor-pointer w-full" 
-									:draggable="false"
-									:key="calendarEvent.name"
-								/>
-
-							</div>
-	
-						</div>
-						<span v-else >{{ shortMonthList[date.getMonth()] +" "+ date.getDate() }}</span>
-					</div>
-
-				</div>
-			</div>
-			<!-- <div class=" w-20 h-20 bg-orange-400 absolute top-[212px] left">
-				
-			</div> -->
-
-		</div>
+		<CalendarMonthlyVue 
+			v-if="activeView === 'Month'"
+			:events="events"
+			:currentMonthDates="currentMonthDates"
+			:daysList="daysList"
+			:parsedData="parsedData"
+			:currentMonth="currentMonth"
+			:currentYear="currentYear"
+		/>
 	</div>
 </template>
 <script setup>
-import { getCalendarDates } from '../utils';
 import { computed, ref } from 'vue';
-import CalendarEvent from './CalendarEvent.vue';
-import { FeatherIcon,Button, TabButtons } from 'frappe-ui';
-import { groupBy } from '@/utils'
-
+import { Button, TabButtons } from 'frappe-ui';
+import { groupBy, getCalendarDates } from '@/utils'
+import CalendarMonthlyVue from '@/components/Calendar/CalendarMonthly.vue'
 
 
 const props = defineProps({
@@ -114,7 +76,6 @@ let currentMonthDates = computed(() => {
 
 let parsedData = computed(()=> groupBy(props.events, (row) => row.date))
 
-
 function parseDate(date) {
 	let dd = date.getDate()
 	let mm = date.getMonth() + 1
@@ -125,7 +86,6 @@ function parseDate(date) {
 	
 	return `${yyyy}-${mm}-${dd}`
 }
-
 
 
 function getMonth() {
@@ -148,9 +108,6 @@ function decrementMonth() {
 	}
 }
 
-function currentMonthDate(date) {
-	return date.getMonth() === currentMonth.value
-}
 
 
 

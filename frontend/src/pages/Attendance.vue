@@ -68,7 +68,7 @@ import { studentStore } from '@/stores/student';
 import { Dialog, ListView, createResource, createListResource, Dropdown, FeatherIcon} from 'frappe-ui';
 import { storeToRefs } from 'pinia';
 import NewLeave from '@/components/NewLeave.vue';
-import Calendar from '@/components/Calendar.vue';
+import Calendar from '@/components/Calendar/Calendar.vue';
 import { createToast } from '@/utils'
 
 const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 

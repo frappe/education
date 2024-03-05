@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import Calendar from '@/components/Calendar.vue'
+import Calendar from '@/components/Calendar/Calendar.vue'
 import { createResource } from 'frappe-ui';
 import {ref} from 'vue'
 import { studentStore } from '@/stores/student';
