@@ -24,11 +24,16 @@
 					class="h-4 w-4"
 					icon="chevron-right"
 				/>
+				<TabButtons
+					:buttons="[{ label: 'Day',variant:'solid' },{ label: 'Week',variant:'solid' }, { label: 'Month',variant:'solid' }]"
+					class=" ml-2"
+					v-model="activeView"
+				/>
 				
 			</div>
 		</div>
 		
-		<div class="h-[92%] min-h-[600px] min-w-[600px]">
+		<div class="h-[92%] min-h-[600px] min-w-[600px]" v-if="activeView === 'Month' ">
 			<!-- Day List -->
 			<div class="grid grid-cols-7 w-full pb-2">
 				<span v-for="day in daysList" class=" text-center text-gray-600 font-normal text-sm ">{{day}}</span>
@@ -78,7 +83,7 @@
 import { getCalendarDates } from '../utils';
 import { computed, ref } from 'vue';
 import CalendarEvent from './CalendarEvent.vue';
-import { FeatherIcon,Button } from 'frappe-ui';
+import { FeatherIcon,Button, TabButtons } from 'frappe-ui';
 import { groupBy } from '@/utils'
 
 
@@ -90,6 +95,7 @@ const props = defineProps({
 	}
 })
 
+let activeView = ref('Month')
 
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())
