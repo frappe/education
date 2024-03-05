@@ -1,15 +1,12 @@
 <template>
-	<div class="p-5  h-full">
-		<!-- actions buttons for calendar -->
-
-		<!-- left side  -->
-			<!-- Year, Month & Current Program and Dropdown -->
-		<!-- right side -->
-			<!-- Increment and Decrement Button, View change button default is months or can be set via props! -->
-
-		
+	<div class="p-5 h-full">
 		<div class="flex justify-between mb-2">
+			<!-- left side  -->
+				<!-- Year, Month -->
 			<span class=" text-xl font-medium"> {{ getMonth() +", " + currentYear }}</span>	
+			<!-- right side -->
+				<!-- actions buttons for calendar -->
+				<!-- Increment and Decrement Button, View change button default is months or can be set via props! -->
 			<div class="flex gap-x-1">
 				<!-- <button class="border-2 border-green-500 p-2">Previous</button> -->
 				<Button
@@ -32,7 +29,7 @@
 				
 			</div>
 		</div>
-		<CalendarMonthlyVue 
+		<CalendarMonthly
 			v-if="activeView === 'Month'"
 			:events="events"
 			:currentMonthDates="currentMonthDates"
@@ -41,13 +38,19 @@
 			:currentMonth="currentMonth"
 			:currentYear="currentYear"
 		/>
+		<CalendarWeekly
+			v-else
+			:events="events"
+			:weeklyDates="datesAsWeeks"
+		/>
 	</div>
 </template>
 <script setup>
 import { computed, ref } from 'vue';
 import { Button, TabButtons } from 'frappe-ui';
 import { groupBy, getCalendarDates } from '@/utils'
-import CalendarMonthlyVue from '@/components/Calendar/CalendarMonthly.vue'
+import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
+import CalendarWeekly from './CalendarWeekly.vue';
 
 
 const props = defineProps({
@@ -61,6 +64,7 @@ let activeView = ref('Month')
 
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())
+let datesAsWeeks = ref([])
 
 let monthList = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -71,6 +75,12 @@ let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 let currentMonthDates = computed(() => {
 	let allDates = getCalendarDates(currentMonth.value, currentYear.value)
+	// weeklyDates.value = allDates
+	let dates = allDates.slice()
+	while (dates.length) {
+		let week = dates.splice(0, 7)
+		datesAsWeeks.value.push(week)
+	}	
 	return allDates
 })
 

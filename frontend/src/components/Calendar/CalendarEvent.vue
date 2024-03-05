@@ -1,8 +1,8 @@
 <template>
 	<Popover placement="right" v-if="!event.status">
 		<template #target="{ togglePopover }">
-			<div class="w-full p-2 rounded-lg" :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @click="togglePopover">
-				<div class="flex gap-3 relative px-2 items-start"
+			<div class="p-2 rounded-lg w-full " :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @dblclick="togglePopover">
+				<div class="flex gap-3 relative px-2 items-start h-full  overflow-hidden"
 					:class="event.from_time && ['border-l-2', colorMap[event?.color]?.border_color || 'border-green-600']">
 					<FeatherIcon name="circle" class="h-4 text-black" />
 
