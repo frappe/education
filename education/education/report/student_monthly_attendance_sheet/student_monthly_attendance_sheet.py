@@ -159,3 +159,13 @@ def mark_holidays(att_map, from_date, to_date, students_list):
 				att_map.setdefault(student, frappe._dict()).setdefault(dt, "Holiday")
 
 	return att_map
+
+@frappe.whitelist()
+def get_year_list():
+	all_academic_years = frappe.db.get_list("Academic Year", pluck="year_start_date")
+
+	year_list = [date.year for date in all_academic_years]
+	year_list = list(set(year_list))
+	year_list.sort()
+
+	return year_list
