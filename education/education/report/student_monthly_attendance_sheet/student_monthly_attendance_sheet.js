@@ -15,8 +15,8 @@ frappe.query_reports["Student Monthly Attendance Sheet"] = {
 	{
 		"fieldname": "year",
 		"label": __("Year"),
-		"fieldtype": "Link",
-		"options":"Academic Year",
+		"fieldtype": "Select",
+		"options":"",
 		"reqd": 1
 	},
 	{
@@ -27,4 +27,17 @@ frappe.query_reports["Student Monthly Attendance Sheet"] = {
 		"reqd": 1
 	}
 	],
+	onload: function() {
+		return  frappe.call({
+			// method: "hrms.hr.report.monthly_attendance_sheet.monthly_attendance_sheet.get_attendance_years",
+			method: "education.education.report.student_monthly_attendance_sheet.student_monthly_attendance_sheet.get_year_list",
+			callback: function(r) {
+				let year_filter = frappe.query_report.get_filter('year');
+				year_filter.df.options = r.message;
+				year_filter.df.default = r.message.join("\n");
+				year_filter.refresh();
+				year_filter.set_input(year_filter.df.default);
+			}
+		});
+	},
 }
