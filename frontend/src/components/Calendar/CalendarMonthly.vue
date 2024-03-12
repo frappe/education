@@ -10,11 +10,11 @@
 			<div v-for="date in currentMonthDates" class="border-r-[1px] border-b-[1px] border-gray-200">
 				<div 
 					class="flex justify-center h-full font-normal mx-2"
-					:class="currentMonthDate(date) ? 'text-gray-500'  : 'text-gray-200' " 
+					:class="currentMonthDate(date) ? 'text-black-900'  : 'text-black-200 ' " 
 				>
 					<div v-if="currentMonthDate(date)" class="relative flex flex-col items-center w-full overflow-y-auto" > 
 						
-						<span class="py-1 sticky top-0 bg-white w-full text-center z-10"
+						<span class="py-1 sticky top-0 bg-white w-full text-center z-10 "
 							:class="date.toDateString() === new Date().toDateString() && 'font-bold' "
 						>
 							{{ date.getDate() }} 
@@ -75,7 +75,15 @@ let shortMonthList = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 
-let parsedData = computed(()=> groupBy(props.events, (row) => row.date))
+let parsedData = computed(()=> {
+	let groupByDate = Object.groupBy(props.events, (row) => row.date)
+	let sortedArray = {}
+	for (const [key, value] of Object.entries(groupByDate)) {
+		let sortedEvents = value.sort((a, b) => a.from_time < b.from_time ? -1 : 1)
+		sortedArray[key] = sortedEvents
+	}
+	return sortedArray
+})
 
 
 function parseDate(date) {

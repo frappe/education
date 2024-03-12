@@ -1,7 +1,8 @@
 <template>
 	<Popover placement="right" v-if="!event.status">
 		<template #target="{ togglePopover }">
-			<div class="p-2 rounded-lg w-full " :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @dblclick="togglePopover">
+			<div class="p-2 rounded-lg w-full " :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @dblclick="togglePopover"
+			>
 				<div class="flex gap-3 relative px-2 items-start h-full  overflow-hidden"
 					:class="event.from_time && ['border-l-2', colorMap[event?.color]?.border_color || 'border-green-600']">
 					<FeatherIcon name="circle" class="h-4 text-black" />
@@ -68,6 +69,11 @@
 
 <script setup>
 import { FeatherIcon, Popover } from 'frappe-ui'
+import {onMounted} from 'vue'
+
+onMounted(()=>{
+	debugger
+})
 
 const props = defineProps({
 	event: {
@@ -78,6 +84,10 @@ const props = defineProps({
 		type: Date,
 		required: true,
 	},
+	stylesProp:{
+		type:Object,
+		required:false
+	}
 })
 
 
@@ -138,3 +148,6 @@ function parseDate() {
 </script>
 
 <style></style>
+import { onMounted } from 'vue';
+import { onMounted } from 'vue';
+

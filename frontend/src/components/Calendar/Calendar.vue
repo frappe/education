@@ -80,7 +80,7 @@ let currentMonthDates = computed(() => {
 	while (dates.length) {
 		let week = dates.splice(0, 7)
 		datesAsWeeks.value.push(week)
-	}	
+	}
 	return allDates
 })
 

@@ -6,7 +6,8 @@
 			<div class="flex">
 				<div class="w-16"></div>
 				<div class="grid grid-cols-7 w-full pb-2">
-					<span v-for="date in weeklyDates[currentWeek-1]" class=" text-center text-gray-600 font-normal text-sm"
+					<span v-for="date in weeklyDates[currentWeek]" class=" text-center text-gray-600 font-normal text-sm"
+					:class="new Date(date).toDateString() === new Date().toDateString() && 'font-black' "
 					>
 						{{ getweeklyDates(date) }}
 					</span>
@@ -30,7 +31,7 @@
 
 				<!-- Grid -->
 				<div class="grid grid-cols-7 w-full pb-2" >
-					<div v-for="(date,index) in weeklyDates[currentWeek-1]"  class="border-r-[1px] border-b-[1px] relative calendar-column">
+					<div v-for="(date,index) in weeklyDates[currentWeek]"  class="border-r-[1px] border-b-[1px] relative calendar-column">
 						
 						<!-- Top Redundant Cell before time starts for giving the calendar some space -->
 						<div class=" w-full border-b-[1px]  border-gray-200"
@@ -48,11 +49,12 @@
 						<CalendarEvent
 							v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
 							:event="calendarEvent"  
-							class="mb-2 cursor-pointer absolute w-full h-[72px] top-[1174px]" 
+							class="mb-2 cursor-pointer absolute w-full" 
 							:draggable="false"
 							:key="calendarEvent.name"
 							:date="date"
 							:style="setEventStyles(calendarEvent, idx)"
+							:stylesProp="setEventStyles(calendarEvent, idx)"
 							@click="(e)=>handleClick(e)"
 							@mouseout="(e)=>handleBlur(e)"
 						/>
@@ -97,6 +99,7 @@ const gridRef = ref(null)
 onMounted(()=>{
 	let scollTop = (props.config.scrollToHour * 60) * minuteHeight
 	gridRef.value.scrollBy(0, scollTop)
+	console.log(props.weeklyDates)
 })
 
 let increaseZIndex = ref(false)
@@ -120,8 +123,8 @@ let setCurrentTime = computed(()=>{
 function setEventStyles(event, index){
 	let diff = calculateDiff(event.from_time, event.to_time)
 	let height = (diff * minuteHeight) + "px"
-	let top = ( (calculateMinutes(event.from_time) ) * minuteHeight + redundantCellHeight) + "px"
-	debugger
+	let top = ((calculateMinutes(event.from_time)) * minuteHeight + redundantCellHeight) + "px"
+	// debugger
 	return {height, top, zIndex: index}
 }
 
@@ -143,12 +146,11 @@ function calculateDiff(from, to){
 	return toMinutes - fromMinutes
 }
 
-
 let daysList = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function getweeklyDates(date){
 	let d = new Date(date)
-	let weekDate = d.toISOString().split("T")[0].split("-")[2]
+	let weekDate = d.toLocaleDateString().split("/")[0]
 	let day = d.getDay()
 	return daysList[day] + " " + weekDate
 }
