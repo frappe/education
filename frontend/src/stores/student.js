@@ -14,7 +14,7 @@ export const studentStore = defineStore('education-student', () => {
 			if (!info) {
 				window.location.href = "/app"
 			}
-			currentProgram.value = info.current_program
+			currentProgram.value = info.current_program 
 			// remove current_program from info
 			delete info.current_program
 			studentGroups.value = info.student_groups
