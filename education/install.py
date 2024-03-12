@@ -2,10 +2,6 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.desk.page.setup_wizard.setup_wizard import make_records
 
-# TODO: create uninstall file and remove all the custom fields, roles, assessment groups, fixtures, etc
-# TODO: Remove all Items created when Fee Category is created
-# TODO: Remove all Customers (with group = Student) & Users created (with role = Student) when Student is created.
-
 
 def after_install():
 	setup_fixtures()
