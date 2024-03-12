@@ -69,11 +69,7 @@
 
 <script setup>
 import { FeatherIcon, Popover } from 'frappe-ui'
-import {onMounted} from 'vue'
 
-onMounted(()=>{
-	debugger
-})
 
 const props = defineProps({
 	event: {
@@ -146,8 +142,3 @@ function parseDate() {
 }
 
 </script>
-
-<style></style>
-import { onMounted } from 'vue';
-import { onMounted } from 'vue';
-
