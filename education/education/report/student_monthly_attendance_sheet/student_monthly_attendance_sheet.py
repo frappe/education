@@ -17,15 +17,8 @@ def execute(filters=None):
 	if not filters:
 		filters = {}
 
-	filter_year = str(
-		frappe.db.get_value(
-			"Academic Year", {"name": filters["year"]}, fieldname="year_start_date"
-		).year
-	)
-
-	from_date = get_first_day(filters["month"] + "-" + filter_year)
-	to_date = get_last_day(filters["month"] + "-" + filter_year)
-
+	from_date = get_first_day(filters["month"] + "-" + filters["year"])
+	to_date = get_last_day(filters["month"] + "-" + filters["year"])
 	total_days_in_month = date_diff(to_date, from_date) + 1
 	columns = get_columns(total_days_in_month)
 	students = get_student_group_students(filters.get("student_group"), 1)
@@ -159,3 +152,14 @@ def mark_holidays(att_map, from_date, to_date, students_list):
 				att_map.setdefault(student, frappe._dict()).setdefault(dt, "Holiday")
 
 	return att_map
+
+
+@frappe.whitelist()
+def get_year_list():
+	all_academic_years = frappe.db.get_list("Academic Year", pluck="year_start_date")
+
+	year_list = [date.year for date in all_academic_years]
+	year_list = list(set(year_list))
+	year_list.sort()
+
+	return year_list
