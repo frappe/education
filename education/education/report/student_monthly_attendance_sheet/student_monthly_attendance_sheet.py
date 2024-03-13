@@ -156,7 +156,7 @@ def mark_holidays(att_map, from_date, to_date, students_list):
 
 @frappe.whitelist()
 def get_year_list():
-	all_academic_years = frappe.db.get_list("Academic Year", pluck="year_start_date")
+	all_academic_years = frappe.db.get_list("Student Attendance", pluck="date")
 
 	year_list = [date.year for date in all_academic_years if date]
 	year_list = list(set(year_list))
