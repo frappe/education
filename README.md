@@ -36,6 +36,7 @@ Here are some of the standout features of the Frappe Education module:
 - **Attendance Management**: Track and manage student attendance records. ✔️
 - **Assessment Planning & Results**: Plan assessments and manage results effectively. 📝
 - **Reports**: Generate various reports including final grades, course-wise assessment, student absent report, attendance report, and fee collection. 📊
+- **Portal**: Students can visit portal to check their time table, attendance, pay fees online and see current and previous grades.
 
 
 ## Installation
