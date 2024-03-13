@@ -1,12 +1,11 @@
 <template>
 	<div class="p-4 h-dvh">
-
 		<div class="h-[80%] min-h-[500px] min-w-[600px]">
 			<!-- Day List -->
 			<div class="flex">
 				<div class="w-16"></div>
 				<div class="grid grid-cols-7 w-full pb-2">
-					<span v-for="date in weeklyDates[currentWeek]" class=" text-center text-gray-600 font-normal text-sm"
+					<span v-for="date in weeklyDates[currentWeek-1]" class=" text-center text-gray-600 font-normal text-sm"
 					:class="new Date(date).toDateString() === new Date().toDateString() && 'font-black' "
 					>
 						{{ getweeklyDates(date) }}
@@ -31,7 +30,7 @@
 
 				<!-- Grid -->
 				<div class="grid grid-cols-7 w-full pb-2" >
-					<div v-for="(date,index) in weeklyDates[currentWeek]"  class="border-r-[1px] border-b-[1px] relative calendar-column">
+					<div v-for="(date,index) in weeklyDates[currentWeek-1]"  class="border-r-[1px] border-b-[1px] relative calendar-column">
 						
 						<!-- Top Redundant Cell before time starts for giving the calendar some space -->
 						<div class=" w-full border-b-[1px]  border-gray-200"
@@ -124,7 +123,6 @@ function setEventStyles(event, index){
 	let diff = calculateDiff(event.from_time, event.to_time)
 	let height = (diff * minuteHeight) + "px"
 	let top = ((calculateMinutes(event.from_time)) * minuteHeight + redundantCellHeight) + "px"
-	// debugger
 	return {height, top, zIndex: index}
 }
 

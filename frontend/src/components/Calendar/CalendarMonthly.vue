@@ -10,7 +10,7 @@
 			<div v-for="date in currentMonthDates" class="border-r-[1px] border-b-[1px] border-gray-200">
 				<div 
 					class="flex justify-center h-full font-normal mx-2"
-					:class="currentMonthDate(date) ? 'text-black-900'  : 'text-black-200 ' " 
+					:class="currentMonthDate(date) ? 'text-gray-700'  : 'text-gray-200' " 
 				>
 					<div v-if="currentMonthDate(date)" class="relative flex flex-col items-center w-full overflow-y-auto" > 
 						
