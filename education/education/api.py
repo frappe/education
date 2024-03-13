@@ -618,9 +618,6 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 		},
 		order_by="schedule_date asc",
 	)
-	print("-------------------")
-	print(course_schedule_in_leave_period)
-	print("-------------------")
 
 	if frappe.db.exists("Student Attendance", {"course_schedule": "EDU-CSH-2024-00003"}):
 		pass
