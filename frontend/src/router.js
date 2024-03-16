@@ -34,7 +34,7 @@ const routes = [
 ]
 
 let router = createRouter({
-  history: createWebHistory('/education'),
+  history: createWebHistory('/student-portal'),
   routes,
 })
 
