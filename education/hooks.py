@@ -35,7 +35,7 @@ website_generators = ["Student Admission"]
 
 website_route_rules = [
 	{"from_route": "/admissions", "to_route": "Student Admission"},
-	{"from_route": "/education/<path:app_path>", "to_route": "education"},
+	{"from_route": "/student-portal/<path:app_path>", "to_route": "student-portal"},
 ]
 
 treeviews = ["Assessment Group"]
