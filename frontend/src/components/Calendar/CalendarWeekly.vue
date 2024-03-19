@@ -5,7 +5,7 @@
 			<div class="flex">
 				<div class="w-16"></div>
 				<div class="grid grid-cols-7 w-full pb-2">
-					<span v-for="date in weeklyDates[currentWeek-1]" class=" text-center text-gray-600 font-normal text-sm"
+					<span v-for="date in weeklyDates[currentWeek]" class=" text-center text-gray-600 font-normal text-sm"
 					:class="new Date(date).toDateString() === new Date().toDateString() && 'font-black' "
 					>
 						{{ getweeklyDates(date) }}
@@ -30,7 +30,9 @@
 
 				<!-- Grid -->
 				<div class="grid grid-cols-7 w-full pb-2" >
-					<div v-for="(date,index) in weeklyDates[currentWeek-1]"  class="border-r-[1px] border-b-[1px] relative calendar-column">
+					<div v-for="(date,index) in weeklyDates[currentWeek]"  class="border-r-[1px] border-b-[1px] relative calendar-column"
+
+					>
 						
 						<!-- Top Redundant Cell before time starts for giving the calendar some space -->
 						<div class=" w-full border-b-[1px]  border-gray-200"
@@ -38,7 +40,7 @@
 						/>
 						
 						<!-- Time Grid -->
-						<div class="flex relative" v-for="time in twentyFourHourFormat" :data-time-attr="time ">
+						<div class="flex relative " v-for="time in twentyFourHourFormat" :data-time-attr="time ">
 							<div class=" w-full border-b-[1px]  border-gray-200  "
 							:style="{height: `${hourHeight}px`}"
 							/>
@@ -54,12 +56,11 @@
 							:date="date"
 							:style="setEventStyles(calendarEvent, idx)"
 							:stylesProp="setEventStyles(calendarEvent, idx)"
-							@click="(e)=>handleClick(e)"
 							@mouseout="(e)=>handleBlur(e)"
 						/>
 
 						<!-- Current time style  -->
-						<div class="pl-2 absolute top-20 w-full z-[99999] "
+						<div class="pl-2 absolute top-20 w-full z-50 "
 							v-if="new Date(date).toDateString() === new Date().toDateString()"
 							:style="setCurrentTime"
 						>
@@ -95,10 +96,9 @@ let props = defineProps({
 })
 const gridRef = ref(null)
 
-onMounted(()=>{
+onMounted( ()=> {
 	let scollTop = (props.config.scrollToHour * 60) * minuteHeight
 	gridRef.value.scrollBy(0, scollTop)
-	console.log(props.weeklyDates)
 })
 
 let increaseZIndex = ref(false)
@@ -111,7 +111,7 @@ let redundantCellHeight = props.config.redundantCellHeight
 
 let twentyFourHourFormat = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"]
 
-let setCurrentTime = computed(()=>{
+let setCurrentTime = computed(()=> {
 	let d = new Date()
 	let hour = d.getHours()
 	let minutes = d.getMinutes()

@@ -1,7 +1,9 @@
 <template>
-	<Popover placement="right" v-if="!event.status">
-		<template #target="{ togglePopover }">
-			<div class="p-2 rounded-lg w-full " :class="colorMap[event?.color]?.background_color || 'bg-green-100'" @dblclick="togglePopover"
+			<div
+				v-bind="$attrs"
+				class="p-2 rounded-lg w-full"
+				ref="eventRef" :class="colorMap[event?.color]?.background_color || 'bg-green-100'"
+				@click="updatePosition"
 			>
 				<div class="flex gap-3 relative px-2 items-start h-full  overflow-hidden select-none"
 					:class="event.from_time && ['border-l-2', colorMap[event?.color]?.border_color || 'border-green-600']">
@@ -17,13 +19,11 @@
 					</div>
 				</div>
 			</div>
-		</template>
-		<template #body-main>
-			<!-- <div class="p-2">Popover content {{ event.color }}</div> -->
+			
 
-			<!-- container div -->
-			<div class="flex flex-col gap-5 pt-5 px-6 pb-6">
-
+			<div ref="popoverRef" class="flex flex-col gap-5 pt-5 px-6 pb-6 w-80 bg-white rounded shadow relativ"
+				v-show="opened"
+			>
 				<!-- heading  -->
 				<div class="font-semibold text-xl">{{ event.title }}</div>
 
@@ -47,10 +47,8 @@
 					</div>
 				</div>
 			</div>
-
-		</template>
-	</Popover>
-	<div v-else class="w-full p-2 rounded-md " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
+			
+	<!-- <div v-else class="w-full p-2 rounded-md " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
 		<div class="flex gap-3 relative px-2 items-start select-none"
 		>
 			<FeatherIcon name="circle" class="h-4 text-black" />
@@ -64,12 +62,15 @@
 				</p>
 			</div>
 		</div>
-	</div>
+	</div> -->
 </template>
 
 <script setup>
 import { FeatherIcon, Popover } from 'frappe-ui'
+import NestedPopover from '@/components/NestedPopover.vue'
+import { createPopper } from '@popperjs/core'
 
+import { ref } from 'vue'
 
 const props = defineProps({
 	event: {
@@ -86,6 +87,10 @@ const props = defineProps({
 	}
 })
 
+const opened = ref(false)
+const eventRef = ref(null)
+const popoverRef = ref(null)
+let popper = ref(null)
 
 let colorMap = {
   blue:{
@@ -139,6 +144,21 @@ function parseDate() {
 	let day = date[0]
 	let eventDate = date[1] + " " + date[2]
 	return `${day}, ${eventDate}`
+}
+
+function setupPopper() {
+	if (!popper.value) {
+	  popper.value = createPopper(eventRef.value.el, popoverRef.value.el, {
+		placement: "right-start",
+	  })
+	} else {
+	  popper.value.update()
+	}
+}
+
+function updatePosition() {
+	opened.value = !opened.value
+	nextTick(() => setupPopper())
 }
 
 </script>
