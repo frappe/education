@@ -7,3 +7,5 @@ education.patches.v14_0.lms_deprecation_message #22-12-2022
 education.patches.v14_0.student_name
 education.patches.v14_0.delete_lms_user_role
 education.patches.v15_0.fees_student_email
+education.patches.v15_0.student_role_desk_access
+education.patches.v15_0.sales_invoice_student_field

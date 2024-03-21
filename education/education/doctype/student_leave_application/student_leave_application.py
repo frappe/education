@@ -71,7 +71,6 @@ class StudentLeaveApplication(Document):
 			},
 			fields=["name"],
 		)
-		print("leave_classes", leave_classes)
 
 		holiday_list = get_holiday_list()
 
