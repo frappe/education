@@ -12,7 +12,7 @@
 					class="flex justify-center h-full font-normal mx-2"
 					:class="currentMonthDate(date) ? 'text-gray-700'  : 'text-gray-200' " 
 				>
-					<div v-if="currentMonthDate(date)" class="relative flex flex-col items-center w-full overflow-y-auto" > 
+					<div v-if="currentMonthDate(date)" class="flex flex-col items-center w-full overflow-y-auto" > 
 						
 						<span class="py-1 sticky top-0 bg-white w-full text-center z-10 "
 							:class="date.toDateString() === new Date().toDateString() && 'font-bold' "
@@ -66,7 +66,10 @@ const props = defineProps({
 	currentYear: {
 		type: Number,
 		required: true,
-	}
+	},
+	config:{
+		type: Object,
+	},
 })
 
 let activeView = ref('Month')

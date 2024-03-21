@@ -159,7 +159,7 @@ const attendanceData = createListResource({
 		attendance.forEach((attendance) => {
 			events.push({
 				title:attendance.status,
-				background_color:attendance.status === "Absent" ? "bg-red-200" : "bg-green-100",
+				color:attendance.status === "Absent" ? "red" : "green",
 				name:attendance.name,
 				date:attendance.date,
 				status:attendance.status,

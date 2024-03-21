@@ -5,8 +5,8 @@
 			<div class="flex">
 				<div class="w-16"></div>
 				<div class="grid grid-cols-7 w-full pb-2">
-					<span v-for="date in weeklyDates[currentWeek]" class=" text-center text-gray-600 font-normal text-sm"
-					:class="new Date(date).toDateString() === new Date().toDateString() && 'font-black' "
+					<span v-for="date in weeklyDates[currentWeek]" class=" text-center text-gray-600  text-sm"
+						:class="new Date(date).toDateString() === new Date().toDateString() ? 'font-bold' : 'font-normal' "
 					>
 						{{ getweeklyDates(date) }}
 					</span>
@@ -18,19 +18,19 @@
 				<p class=" w-16 text-center">All Day</p>
 			</div>
 	
-			<div class="border-l-[1px] h-full w-full overflow-scroll flex" ref="gridRef">
+			<div class="border-l-[1px] border-b-[1px]  h-full w-full overflow-scroll flex" ref="gridRef">
 				
 				<!-- Time List form 0 - 24 -->
 				<div class="grid grid-cols-1 h-full w-16 ">
-					<span v-for="time in 24" class="text-center text-gray-600 font-normal text-sm flex items-end justify-center h-[72px] border-r-[1px] "
-					:style="{height: `${hourHeight}px`}"
+					<span v-for="time in 24" 
+						class="text-center text-gray-600 font-normal text-sm flex items-end justify-center h-[72px]  "
+						:style="{height: `${hourHeight}px`}"
 					/>
-				
 				</div>
 
 				<!-- Grid -->
 				<div class="grid grid-cols-7 w-full pb-2" >
-					<div v-for="(date,index) in weeklyDates[currentWeek]"  class="border-r-[1px] border-b-[1px] relative calendar-column"
+					<div v-for="(date,index) in weeklyDates[currentWeek]"  class="border-r-[1px] relative calendar-column"
 
 					>
 						
@@ -71,6 +71,7 @@
 			</div>
 		</div>
 	</div>
+	<div class=" mt-20">aa</div>
 </template>
 <script setup>
 import { computed, ref, onMounted } from 'vue';
@@ -83,22 +84,25 @@ let props = defineProps({
 	},
 	config:{
 		type: Object,
-		default: {
-			scrollToHour: 15,
-			hourHeight: 72,
-			redundantCellHeight: 22
-		}
+	},
+	currentMonthDates:{
+		type: Object,
+		required: true
 	},
 	weeklyDates:{
 		type: Array,
 		required: false
+	},
+	activeView:{
+		type: String,
 	}
 })
 const gridRef = ref(null)
 
-onMounted( ()=> {
-	let scollTop = (props.config.scrollToHour * 60) * minuteHeight
-	gridRef.value.scrollBy(0, scollTop)
+onMounted(()=> {
+	let scrollTop = (props.config.scrollToHour * 60) * minuteHeight
+	gridRef.value.scrollBy(0, scrollTop)
+	debugger
 })
 
 let increaseZIndex = ref(false)
@@ -126,6 +130,17 @@ function setEventStyles(event, index){
 	return {height, top, zIndex: index}
 }
 
+function calculateDiff(from, to){
+	let fromMinutes = calculateMinutes(from)
+	let toMinutes = calculateMinutes(to)
+	return toMinutes - fromMinutes
+}
+
+function calculateMinutes(time){
+	let [hours,minutes] = time.split(":")
+	return parseInt(hours) * 60 + parseInt(minutes)
+}
+
 function handleClick(e){
 	// change the event z-index to 100
 	increaseZIndex.value = true
@@ -138,11 +153,6 @@ function handleBlur(e,calendarEvent){
 	e.target.parentElement.style.zIndex = 0
 }
 
-function calculateDiff(from, to){
-	let fromMinutes = calculateMinutes(from)
-	let toMinutes = calculateMinutes(to)
-	return toMinutes - fromMinutes
-}
 
 let daysList = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -163,25 +173,26 @@ let parsedData = computed(()=> {
 	return sortedArray
 })
 
-function calculateMinutes(time){
-	let [hours,minutes] = time.split(":")
-	return parseInt(hours) * 60 + parseInt(minutes)
-}
+
 
 function parseDate(date) {
-
 	return new Date(date).toLocaleDateString().split('/').reverse().join('-')
 }
 
 </script>
 
-<style scoped>
+<style>
+.calendar-column:first-child>div {
+	border-left: 1px solid #e5e5e5;
+}
 .calendar-column:first-child>div::before {
 	content: attr(data-time-attr);
 	position: absolute;
 	left: -45px;
 	top: -9px;
 	font-size: 12px;
+	font-weight: 400;
+
 }
 
 .current-time::before {

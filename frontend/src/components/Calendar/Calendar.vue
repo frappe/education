@@ -37,11 +37,24 @@
 			:parsedData="parsedData"
 			:currentMonth="currentMonth"
 			:currentYear="currentYear"
+			:config="props.config"
 		/>
+		
 		<CalendarWeekly
-			v-else
+			v-else-if="activeView === 'Week'"
 			:events="events"
 			:weeklyDates="datesAsWeeks"
+			:config="props.config"
+			:activeView="activeView"
+			:currentMonthDates="currentMonthDates"
+		/>
+
+		<CalendarDaily
+			v-else
+			:events="events"
+			:currentMonthDates="parsedData"
+			:daysList="daysList"
+			:config="props.config"
 		/>
 	</div>
 </template>
@@ -51,16 +64,24 @@ import { Button, TabButtons } from 'frappe-ui';
 import { groupBy, getCalendarDates } from '@/utils'
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
 import CalendarWeekly from './CalendarWeekly.vue';
-
+import CalendarDaily from './CalendarDaily.vue';
 
 const props = defineProps({
 	events: {
 		type: Object,
 		required: false,
+	},
+	config:{
+		type: Object,
+		default: {
+			scrollToHour: 15,
+			hourHeight: 72,
+			redundantCellHeight: 22
+		}
 	}
 })
 
-let activeView = ref('Month')
+let activeView = ref('Week')
 
 let currentMonth = ref(new Date().getMonth())
 let currentYear = ref(new Date().getFullYear())

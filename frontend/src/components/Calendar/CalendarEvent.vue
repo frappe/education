@@ -2,7 +2,7 @@
 			<div
 				v-bind="$attrs"
 				class="p-2 rounded-lg w-full"
-				ref="eventRef" :class="colorMap[event?.color]?.background_color || 'bg-green-100'"
+				ref="eventRef" :class="colorMap[event?.color]?.background_color || 'bg-green-100' "
 				@click="updatePosition"
 			>
 				<div class="flex gap-3 relative px-2 items-start h-full  overflow-hidden select-none"
@@ -21,7 +21,7 @@
 			</div>
 			
 
-			<div ref="popoverRef" class="flex flex-col gap-5 pt-5 px-6 pb-6 w-80 bg-white rounded shadow relativ"
+			<div ref="popoverRef" class="flex flex-col gap-5 pt-5 px-6 pb-6 w-80 bg-white rounded shadow fixed z-20"
 				v-show="opened"
 			>
 				<!-- heading  -->
@@ -70,7 +70,7 @@ import { FeatherIcon, Popover } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
 import { createPopper } from '@popperjs/core'
 
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 
 const props = defineProps({
 	event: {
@@ -102,7 +102,7 @@ let colorMap = {
     border_color:'border-green-600'
   },
   red:{
-    background_color:'bg-red-100',
+    background_color:'bg-red-200',
     border_color:'border-red-600'
   },
   orange:{
