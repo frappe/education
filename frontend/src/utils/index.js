@@ -60,10 +60,8 @@ export function getCalendarDates(month, year) {
         getNextMonthDates ? date.getMonth() + 1 : date.getMonth(),
         index * stepper
       )
-      // debugger
       allDates.push(tempDate)
     }
-    // debugger
     return allDates
   }
 

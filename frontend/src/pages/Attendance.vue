@@ -1,25 +1,22 @@
 <template>
-	<div class="py-4 flex flex-col">
-
-		<div class=" px-5 flex items-center gap-2">
-			<h2 class=" font-semibold text-2xl"> {{ programName }}</h2>
-			<Dropdown
-				:options="allStudentGroups"
-				>
-				<template #default="{ open }">
-					<Button :label="selectedGroup">
-						<template #suffix>
-							<FeatherIcon
-								:name="open ? 'chevron-up' : 'chevron-down'"
-								class="h-4 text-gray-600"
-							/>
-						</template>
-					</Button>
-				</template>
-			</Dropdown>
-		</div>
-		<div class="h-full">
-			<!-- <ListView
+  <div class="py-4 flex flex-col">
+    <div class="px-5 flex items-center gap-2">
+      <h2 class="font-semibold text-2xl">{{ programName }}</h2>
+      <Dropdown :options="allStudentGroups">
+        <template #default="{ open }">
+          <Button :label="selectedGroup">
+            <template #suffix>
+              <FeatherIcon
+                :name="open ? 'chevron-up' : 'chevron-down'"
+                class="h-4 text-gray-600"
+              />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
+    </div>
+    <div class="h-full">
+      <!-- <ListView
 				class="h-[250px]"
 				:columns="tableData.columns"
 				:rows="tableData.rows"
@@ -30,54 +27,71 @@
 				}"
 				row-key="id"
 			/> -->
-			
-			<Calendar
-				v-if="!attendanceData.loading && attendanceData.data"
-				:events="attendanceData.data"
-			/>
-		</div>
-		<Dialog
-			v-model="isAttendancePage"
-			:options="{
-				size: '2xl',
-				title: 'Apply Leave',
-				actions: [{ label: 'Save', variant: 'solid' }],
-			  }"
-		>
-			<template #body-content>
-				<NewLeave :newLeave="newLeave" />
-			</template>
-			<template #actions="{ close }">
-				<div class="flex flex-row-reverse gap-2">
-				<Button 
-					:disabled="!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason"
-					variant="solid" 
-					label="Save" 
-					@click="createNewLeave(close)" 
-				/>
-				</div>
-			</template>
-		</Dialog>
-	</div>
+
+      <Calendar
+        v-if="!attendanceData.loading && attendanceData.data"
+        :events="attendanceData.data"
+        :config="config"
+      />
+    </div>
+    <Dialog
+      v-model="isAttendancePage"
+      :options="{
+        size: '2xl',
+        title: 'Apply Leave',
+        actions: [{ label: 'Save', variant: 'solid' }],
+      }"
+    >
+      <template #body-content>
+        <NewLeave :newLeave="newLeave" />
+      </template>
+      <template #actions="{ close }">
+        <div class="flex flex-row-reverse gap-2">
+          <Button
+            :disabled="
+              !newLeave.from_date ||
+              !newLeave.to_date ||
+              !newLeave.total_days ||
+              !newLeave.reason
+            "
+            variant="solid"
+            label="Save"
+            @click="createNewLeave(close)"
+          />
+        </div>
+      </template>
+    </Dialog>
+  </div>
 </template>
 <script setup>
-import { reactive,ref } from 'vue';
-import { leaveStore } from '@/stores/leave';
-import { studentStore } from '@/stores/student';	
+import { reactive, ref } from 'vue'
+import { leaveStore } from '@/stores/leave'
+import { studentStore } from '@/stores/student'
 
-import { Dialog, ListView, createResource, createListResource, Dropdown, FeatherIcon} from 'frappe-ui';
-import { storeToRefs } from 'pinia';
-import NewLeave from '@/components/NewLeave.vue';
-import Calendar from '@/components/Calendar/Calendar.vue';
+import {
+  Dialog,
+  ListView,
+  createResource,
+  createListResource,
+  Dropdown,
+  FeatherIcon,
+} from 'frappe-ui'
+import { storeToRefs } from 'pinia'
+import NewLeave from '@/components/NewLeave.vue'
+import Calendar from '@/components/Calendar/Calendar.vue'
 import { createToast } from '@/utils'
 
-const { getCurrentProgram, getStudentInfo,getStudentGroups} = studentStore() 
+const { getCurrentProgram, getStudentInfo, getStudentGroups } = studentStore()
 const programName = ref(getCurrentProgram().value?.program)
 const selectedGroup = ref('Select Student Group')
 const allStudentGroups = ref()
 
-
 let studentInfo = getStudentInfo().value
+
+let config = {
+  disableModes: ['Week', 'Day'],
+  defaultMode: 'Month',
+}
 
 // storeToRefs converts isAttendancePage to a ref, hence achieving reactivity
 const { isAttendancePage } = storeToRefs(leaveStore())
@@ -125,95 +139,100 @@ const { isAttendancePage } = storeToRefs(leaveStore())
 // 		  label: 'Attendance %',
 // 		  key: 'attendance',
 // 		}
-// 	], 
+// 	],
 // })
 
 const newLeave = reactive({
-	student:studentInfo.name,
-	student_name: studentInfo.student_name,
-	from_date: '',
-	to_date: '',
-	reason: '',
-	total_days: '',
+  student: studentInfo.name,
+  student_name: studentInfo.student_name,
+  from_date: '',
+  to_date: '',
+  reason: '',
+  total_days: '',
 })
 
 const attendanceData = createListResource({
-	doctype:"Student Attendance",
-	fields:['date','status','name'],
-	filters: {
-		student:studentInfo.name,
-		student_group:selectedGroup,
-		docstatus:1,
-	},
-	// cache:selectedGroup.value, STRONG CACHE
-	transform: (attendance) => {
-		// filter attendance to remove duplicate attendance data
-		attendance = attendance.filter((attendance, index, self) =>
-			index === self.findIndex((t) => (
-				t.date === attendance.date
-			))
-		)
+  doctype: 'Student Attendance',
+  fields: ['date', 'status', 'name'],
+  filters: {
+    student: studentInfo.name,
+    student_group: selectedGroup,
+    docstatus: 1,
+  },
+  // cache:selectedGroup.value, STRONG CACHE
+  transform: (attendance) => {
+    // filter attendance to remove duplicate attendance data
+    attendance = attendance.filter(
+      (attendance, index, self) =>
+        index === self.findIndex((t) => t.date === attendance.date)
+    )
 
-		let events = []
+    let events = []
 
-		attendance.forEach((attendance) => {
-			events.push({
-				title:attendance.status,
-				color:attendance.status === "Absent" ? "red" : "green",
-				name:attendance.name,
-				date:attendance.date,
-				status:attendance.status,
-			})
-		})
-		return events
-	}
+    attendance.forEach((attendance) => {
+      events.push({
+        title: attendance.status,
+        color: attendance.status === 'Absent' ? 'red' : 'green',
+        name: attendance.name,
+        date: attendance.date,
+        status: attendance.status,
+      })
+    })
+    return events
+  },
 })
 
-
 const applyLeave = createResource({
-	url:"education.education.api.apply_leave",
-	params:{
-		leave_data:newLeave,
-		program_name:programName.value,
-	},
-	onSuccess:() => {
-		isAttendancePage.value = false
-		attendanceData.reload()
-		createToast({
-			title: 'Attendance Applied Successful',
-			icon: 'check',
-			iconClasses: 'text-green-600',
-		})
-	},
-	onError:(err) => {
-		console.log("Error",err)
-		createToast({
-			title: 'Something went wrong',
-			icon: 'x',
-			iconClasses: 'text-red-600',
-		})
-	},
+  url: 'education.education.api.apply_leave',
+  params: {
+    leave_data: newLeave,
+    program_name: programName.value,
+  },
+  onSuccess: () => {
+    isAttendancePage.value = false
+    attendanceData.reload()
+    createToast({
+      title: 'Attendance Applied Successful',
+      icon: 'check',
+      iconClasses: 'text-green-600',
+    })
+  },
+  onError: (err) => {
+    console.log('Error', err)
+    createToast({
+      title: 'Something went wrong',
+      icon: 'x',
+      iconClasses: 'text-red-600',
+    })
+  },
 })
 
 function setStudentGroup() {
-	allStudentGroups.value = getStudentGroups().value
-	allStudentGroups.value.forEach((group) => group.onClick = () => {
-		selectedGroup.value = group.label
-		attendanceData.reload()
-	})
-	selectedGroup.value = allStudentGroups.value[0].label || 'Select Student Group'
-	attendanceData.reload()
+  allStudentGroups.value = getStudentGroups().value
+  allStudentGroups.value.forEach(
+    (group) =>
+      (group.onClick = () => {
+        selectedGroup.value = group.label
+        attendanceData.reload()
+      })
+  )
+  selectedGroup.value =
+    allStudentGroups.value[0].label || 'Select Student Group'
+  attendanceData.reload()
 }
 setStudentGroup()
 
-function createNewLeave (close) {
-	// validations
-	if (!newLeave.from_date || !newLeave.to_date || !newLeave.total_days || !newLeave.reason) {
-		// TODO: Disabled button if fields are empty
-		console.log("Error")
-	}
-	applyLeave.submit()
+function createNewLeave(close) {
+  // validations
+  if (
+    !newLeave.from_date ||
+    !newLeave.to_date ||
+    !newLeave.total_days ||
+    !newLeave.reason
+  ) {
+    // TODO: Disabled button if fields are empty
+    console.log('Error')
+  }
+  applyLeave.submit()
 }
-
-
 </script>
