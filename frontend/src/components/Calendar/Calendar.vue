@@ -47,6 +47,7 @@
       :events="events"
       :currentMonthEvents="parsedData"
       :daysList="daysList"
+      :current-date="currentMonthDates[date]"
       :config="overrideConfig"
     />
   </div>
@@ -159,6 +160,12 @@ let currentWeek = computed(() =>
 )
 let week = ref(currentWeek.value)
 
+let date = ref(
+  currentMonthDates.value.findIndex(
+    (date) => new Date(date).toDateString() === currentDate.value.toDateString()
+  )
+)
+
 let parsedData = computed(() => groupBy(props.events, (row) => row.date))
 
 let incrementClickEvents = {
@@ -176,6 +183,7 @@ let decrementClickEvents = {
 function incrementMonth() {
   currentMonth.value++
   week.value = 0
+  date.value = findFirstDateOfMonth(currentMonth.value, currentYear.value)
   if (currentMonth.value > 11) {
     currentMonth.value = 0
     currentYear.value++
@@ -184,6 +192,8 @@ function incrementMonth() {
 
 function decrementMonth() {
   currentMonth.value--
+  date.value = findLastDateOfMonth(currentMonth.value, currentYear.value)
+  week.value = datesInWeeks.value.length - 1
   if (currentMonth.value < 0) {
     currentMonth.value = 11
     currentYear.value--
@@ -192,7 +202,14 @@ function decrementMonth() {
 
 function incrementWeek() {
   week.value += 1
+
+  debugger
+  if (week.value < datesInWeeks.value.length) {
+    date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
+  }
+
   if (week.value > datesInWeeks.value.length - 1) {
+    // date.value = 0
     week.value = 0
     incrementMonth()
   }
@@ -200,18 +217,56 @@ function incrementWeek() {
 
 function decrementWeek() {
   week.value -= 1
+
+  if (week.value > 0) {
+    date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
+  }
+
   if (week.value < 0) {
-    week.value = datesInWeeks.value.length - 1
     decrementMonth()
   }
 }
 
 function incrementDay() {
-  console.log('incrementDay')
+  date.value++
+  if (
+    date.value > currentMonthDates.value.length - 1 ||
+    !isCurrentMonthDate(currentMonthDates.value[date.value])
+  ) {
+    incrementMonth()
+  }
 }
 
 function decrementDay() {
-  console.log('decrementDay')
+  date.value--
+  if (
+    date.value < 0 ||
+    !isCurrentMonthDate(currentMonthDates.value[date.value])
+  ) {
+    decrementMonth()
+  }
+}
+
+function findLastDateOfMonth(month, year) {
+  let inputDate = new Date(year, month + 1, 0)
+  let lastDateIndex = currentMonthDates.value.findIndex(
+    (date) => new Date(date).toDateString() === inputDate.toDateString()
+  )
+  return lastDateIndex
+}
+
+function findFirstDateOfMonth(month, year) {
+  let inputDate = new Date(year, month, 1)
+  let firstDateIndex = currentMonthDates.value.findIndex(
+    (date) => new Date(date).toDateString() === inputDate.toDateString()
+  )
+  return firstDateIndex
+}
+
+function findIndexOfDate(date) {
+  return currentMonthDates.value.findIndex(
+    (d) => new Date(d).toDateString() === new Date(date).toDateString()
+  )
 }
 
 function parseDate(date) {
@@ -227,6 +282,11 @@ function parseDate(date) {
 
 function getMonth() {
   return monthList[currentMonth.value]
+}
+
+function isCurrentMonthDate(date) {
+  date = new Date(date)
+  return date.getMonth() === currentMonth.value
 }
 </script>
 

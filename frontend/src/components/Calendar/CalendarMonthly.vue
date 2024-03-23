@@ -99,9 +99,7 @@ let shortMonthList = [
   'Dec',
 ]
 let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-onMounted(() => {
-  debugger
-})
+
 let parsedData = computed(() => {
   let groupByDate = groupBy(props.events, (row) => row.date)
   let sortedArray = {}

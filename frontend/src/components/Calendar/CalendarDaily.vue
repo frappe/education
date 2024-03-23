@@ -50,7 +50,10 @@
             <!-- Current time style  -->
             <div
               class="pl-2 absolute top-20 w-full z-50"
-              v-if="currentDate.toDateString() === new Date().toDateString()"
+              v-if="
+                new Date(currentDate).toDateString() ===
+                new Date().toDateString()
+              "
               :style="setCurrentTime"
             >
               <div class="h-0.5 bg-red-600 current-time relative" />
@@ -58,9 +61,6 @@
           </div>
         </div>
       </div>
-      <!-- <li
-		v-if="date === parseDate(currentDate)"
-		>{{ currentMonthDates[parseDate(currentDate)] }}</li> -->
     </div>
   </div>
 </template>
@@ -84,6 +84,10 @@ const props = defineProps({
   config: {
     type: Object,
   },
+  currentDate: {
+    type: Object,
+    required: true,
+  },
 })
 
 let redundantCellHeight = props.config.redundantCellHeight
@@ -91,11 +95,11 @@ let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
 let increaseZIndex = ref(false)
 
-const currentDate = computed(() => new Date())
 function parseDate(date) {
   return new Date(date).toLocaleDateString().split('/').reverse().join('-')
 }
 function getDailyViewDate(date) {
+  date = new Date(date)
   return props.daysList[date.getDay()] + ', ' + date.getDate()
 }
 
