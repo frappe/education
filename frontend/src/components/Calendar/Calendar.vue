@@ -203,7 +203,6 @@ function decrementMonth() {
 function incrementWeek() {
   week.value += 1
 
-  debugger
   if (week.value < datesInWeeks.value.length) {
     date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
   }
