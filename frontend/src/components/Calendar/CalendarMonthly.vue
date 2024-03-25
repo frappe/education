@@ -16,6 +16,9 @@
       <div
         v-for="date in currentMonthDates"
         class="border-r-[1px] border-b-[1px] border-gray-200"
+        @dragover.prevent
+        @drageneter.prevent
+        @drop="onDrop($event, date)"
       >
         <div
           class="flex justify-center h-full font-normal mx-2"
@@ -40,8 +43,9 @@
                 :event="calendarEvent"
                 :date="date"
                 class="mb-2 cursor-pointer w-full"
-                :draggable="false"
                 :key="calendarEvent.name"
+                :draggable="true"
+                @dragstart="startDrag($event, calendarEvent.name)"
               />
             </div>
           </div>
@@ -125,6 +129,19 @@ function parseDate(date) {
 
 function currentMonthDate(date) {
   return date.getMonth() === props.currentMonth
+}
+
+const startDrag = (event, calendarEventID) => {
+  console.log(event, calendarEventID)
+  event.dataTransfer.dropEffect = 'move'
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('calendarEventID', calendarEventID)
+}
+
+const onDrop = (event, date) => {
+  let calendarEvent = event.dataTransfer.getData('calendarEventID')
+  console.log(calendarEvent)
+  console.log(date, 'date')
 }
 </script>
 
