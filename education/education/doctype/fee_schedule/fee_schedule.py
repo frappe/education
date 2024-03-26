@@ -31,7 +31,7 @@ class FeeSchedule(Document):
 
 		fees_amount = frappe.db.sql(
 			"""select sum(grand_total), sum(outstanding_amount) from `tabSales Invoice`
-            where fee_schedule=%s and docstatus=1 and student is not null""",
+			where fee_schedule=%s and docstatus=1 and student is not null""",
 			(self.name),
 		)
 
@@ -78,21 +78,21 @@ class FeeSchedule(Document):
 			frappe.msgprint(
 				_(
 					"""Fee records will be created in the background.
-                In case of any error the error message will be updated in the Schedule."""
+				In case of any error the error message will be updated in the Schedule."""
 				)
 			)
 			enqueue(
-				generate_sales_invoice,
+				generate_fees,
 				queue="default",
 				timeout=6000,
-				event="generate_sales_invoice",
+				event="generate_fees",
 				fee_schedule=self.name,
 			)
 		else:
-			generate_sales_invoice(self.name)
+			generate_fees(self.name)
 
 
-def generate_sales_invoice(fee_schedule):
+def generate_fees(fee_schedule):
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	total_records = sum([int(d.total_students) for d in doc.student_groups])
@@ -108,7 +108,10 @@ def generate_sales_invoice(fee_schedule):
 		for student in students:
 			try:
 				student_id = student.student
-				create_sales_invoice(fee_schedule, student_id)
+				if frappe.db.get_single_value("Education Settings", "create_so"):
+					create_sales_order(fee_schedule, student_id)
+				else:
+					create_sales_invoice(fee_schedule, student_id)
 				created_records += 1
 				frappe.publish_realtime(
 					"fee_schedule_progress",
@@ -246,13 +249,13 @@ def get_students(
 		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
 	students = frappe.db.sql(
 		"""
-        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
-        from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
-        where
-            pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
-            and sgs.parent = %s and sgs.active = 1
-            {conditions}
-        """.format(
+		select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
+		from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
+		where
+			pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
+			and sgs.parent = %s and sgs.active = 1
+			{conditions}
+		""".format(
 			conditions=conditions
 		),
 		(academic_year, student_group),

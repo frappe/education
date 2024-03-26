@@ -280,9 +280,13 @@
   {
    "link_doctype": "Sales Invoice",
    "link_fieldname": "fee_schedule"
+  },
+  {
+   "link_doctype": "Sales Order",
+   "link_fieldname": "fee_schedule"
   }
  ],
- "modified": "2024-01-23 12:18:14.075608",
+ "modified": "2024-03-26 14:37:05.652436",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
