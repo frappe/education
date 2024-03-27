@@ -96,7 +96,6 @@ class FeeSchedule(Document):
 		)
 
 		total_records = sum([int(d.total_students) for d in self.student_groups])
-
 		if total_records > 10:
 			frappe.msgprint(
 				_(
@@ -119,13 +118,13 @@ def generate_fees(fee_schedule):
 
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
+	create_so = frappe.db.get_single_value("Education Settings", "create_so")
 	total_records = sum([int(d.total_students) for d in doc.student_groups])
 	created_records = 0
 
 	if not total_records:
 		frappe.throw(_("Please setup Students under Student Groups"))
 
-	create_so = frappe.db.get_single_value("Education Settings", "create_so")
 	for d in doc.student_groups:
 		students = get_students(
 			d.student_group, doc.academic_year, doc.academic_term, doc.student_category
@@ -156,10 +155,9 @@ def generate_fees(fee_schedule):
 		frappe.db.set_value("Fee Schedule", fee_schedule, "error_log", err_msg)
 
 	else:
-		if frappe.db.get_single_value("Education Settings", "create_so"):
+		if create_so:
 			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Order Created")
 		else:
-			# if
 			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Invoice Created")
 		frappe.db.set_value("Fee Schedule", fee_schedule, "error_log", None)
 

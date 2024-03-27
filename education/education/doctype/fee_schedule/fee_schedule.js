@@ -49,11 +49,9 @@ frappe.ui.form.on("Fee Schedule", {
 		});
 
 		frappe.realtime.on("fee_schedule_progress", function (data) {
-			console.log(data)
-			console.log("Hereee")
-			// if (data.reload && data.reload === 1) {
-			// 	frm.reload_doc();
-			// }
+			if (data.reload && data.reload === 1) {
+				frm.reload_doc();
+			}
 			if (data.progress) {
 				let progress_bar = $(cur_frm.dashboard.progress_area.body).find(
 					".progress-bar"
@@ -101,7 +99,6 @@ frappe.ui.form.on("Fee Schedule", {
 			let button_label = "Create Sales Invoice";
 
 			frappe.db.get_value("Education Settings", {}, "create_so", (r) => {
-				console.log("ran")
 				// convert r.create_so to number
 				if (+r.create_so) {
 					button_label = "Create Sales Order";
