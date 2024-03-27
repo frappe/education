@@ -225,7 +225,7 @@ frappe.ui.form.on('Fee Component', {
 	},
 	discount: function(frm,cdt,cdn) {
 		let d = locals[cdt][cdn];
-		if (d.discount < 100) {
+		if (d.discount <= 100) {
 			d.total = d.amount - (d.amount * (d.discount / 100) );
 		}
 		refresh_field('components');
