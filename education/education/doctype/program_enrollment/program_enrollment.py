@@ -8,7 +8,10 @@ from frappe.desk.reportview import get_match_cond
 from frappe.model.document import Document
 from frappe.query_builder.functions import Min
 from frappe.utils import comma_and, get_link_to_form, getdate
-from education.education.doctype.fee_schedule.fee_schedule import create_sales_invoice
+from education.education.doctype.fee_schedule.fee_schedule import (
+	create_sales_invoice,
+	create_sales_order,
+)
 
 
 class ProgramEnrollment(Document):
@@ -102,16 +105,26 @@ class ProgramEnrollment(Document):
 	def make_fee_records(self):
 		from education.education.api import get_fee_components
 
-		sales_invoice_list = []
+		create_so = frappe.db.get_single_value("Education Settings", "create_so")
+
+		fees_list = []
+		doctype = ""
 		for d in self.fees:
-			sales_invoice = create_sales_invoice(d.fee_schedule, self.student)
-			sales_invoice_list.append(sales_invoice)
-		if sales_invoice_list:
-			sales_invoice_list = [
-				"""<a href="/app/Form/Sales Invoice/%s" target="_blank">%s</a>""" % (fee, fee)
-				for fee in sales_invoice_list
+			if create_so:
+				sales_order = create_sales_order(d.fee_schedule, self.student)
+				doctype = "Sales Order"
+				fees_list.append(sales_order)
+			else:
+				sales_invoice = create_sales_invoice(d.fee_schedule, self.student)
+				doctype = "Sales Invoice"
+				fees_list.append(sales_invoice)
+
+		if fees_list:
+			fees_list = [
+				"""<a href="/app/Form/%s/%s" target="_blank">%s</a>""" % (doctype, fee, fee)
+				for fee in fees_list
 			]
-			msgprint(_("Fee Records Created - {0}").format(comma_and(sales_invoice_list)))
+			msgprint(_("Fee Records Created - {0}").format(comma_and(fees_list)))
 
 	@frappe.whitelist()
 	def get_courses(self):
@@ -175,12 +188,12 @@ def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
 	doctype = "Program Course"
 	return frappe.db.sql(
 		"""select course, course_name from `tabProgram Course`
-		where  parent = %(program)s and course like %(txt)s {match_cond}
-		order by
-			if(locate(%(_txt)s, course), locate(%(_txt)s, course), 99999),
-			idx desc,
-			`tabProgram Course`.course asc
-		limit {start}, {page_len}""".format(
+        where  parent = %(program)s and course like %(txt)s {match_cond}
+        order by
+            if(locate(%(_txt)s, course), locate(%(_txt)s, course), 99999),
+            idx desc,
+            `tabProgram Course`.course asc
+        limit {start}, {page_len}""".format(
 			match_cond=get_match_cond(doctype), start=start, page_len=page_len
 		),
 		{
@@ -213,14 +226,14 @@ def get_students(doctype, txt, searchfield, start, page_len, filters):
 
 	return frappe.db.sql(
 		"""select
-			name, student_name from tabStudent
-		where
-			name not in (%s)
-		and
-			`%s` LIKE %s
-		order by
-			idx desc, name
-		limit %s, %s"""
+            name, student_name from tabStudent
+        where
+            name not in (%s)
+        and
+            `%s` LIKE %s
+        order by
+            idx desc, name
+        limit %s, %s"""
 		% (", ".join(["%s"] * len(students)), searchfield, "%s", "%s", "%s"),
 		tuple(students + ["%%%s%%" % txt, start, page_len]),
 	)
