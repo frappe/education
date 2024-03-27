@@ -117,28 +117,6 @@ frappe.ui.form.on("Fee Schedule", {
 				}
 			});
 		}
-		if (frm.doc.status === "Sales Order Created" || frm.doc.status === "Sales Invoice Created") {
-			frm.add_custom_button(
-				__("View Sales Order"),
-				function () {
-					frappe.route_options = {
-						fee_schedule: frm.doc.name,
-					};
-					frappe.set_route("List", "Sales Order");
-				},
-				__("View Records")
-			);
-			frm.add_custom_button(
-				__("View Sales Invoice"),
-				function () {
-					frappe.route_options = {
-						fee_schedule: frm.doc.name,
-					};
-					frappe.set_route("List", "Sales Invoice");
-				},
-				__("View Records")
-			);
-		}
 	},
 
 	fee_structure: function (frm) {

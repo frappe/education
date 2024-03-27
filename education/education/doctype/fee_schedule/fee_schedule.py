@@ -203,11 +203,6 @@ def create_sales_order(fee_schedule, student_id):
 		customer=customer,
 	)
 
-	if frappe.db.get_single_value(
-		"Education Settings", "sales_order_posting_date_fee_schedule"
-	):
-		sales_order_doc.set_posting_time = 1
-
 	for item in sales_order_doc.items:
 		item.qty = 1
 
@@ -252,8 +247,11 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 		table_map["Fee Schedule"]["field_map"]["due_date"] = "due_date"
 		table_map["Fee Schedule"]["field_map"]["posting_date"] = "posting_date"
 	else:
-		table_map["Fee Schedule"]["field_map"]["posting_date"] = "transaction_date"
 		table_map["Fee Schedule"]["field_map"]["due_date"] = "delivery_date"
+		if frappe.db.get_single_value(
+			"Education Settings", "sales_order_transaction_date_fee_schedule"
+		):
+			table_map["Fee Schedule"]["field_map"]["posting_date"] = "transaction_date"
 
 	doc = get_mapped_doc(
 		"Fee Schedule",
