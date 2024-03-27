@@ -19,8 +19,24 @@ class FeeSchedule(Document):
 		info = self.get_dashboard_info()
 		self.set_onload("dashboard_info", info)
 
+	def before_submit(self):
+		self.status = self.get_status()
+
 	# def on_cancel(self):
 	# 	frappe.db.set_value("Fee Schedule", self.name, "fee_creation_status", "Cancelled")
+
+	def get_status(self):
+		status = ""
+		if self.docstatus == 0:
+			status = "Draft"
+		elif self.docstatus == 1:
+			if frappe.db.get_single_value("Education Settings", "create_so"):
+				status = "Sales Order Creation Pending"
+			else:
+				status = "Sales Invoice Creation Pending"
+		elif self.docstatus == 2:
+			status = "Cancelled"
+		return status
 
 	def get_dashboard_info(self):
 		info = {
@@ -31,7 +47,7 @@ class FeeSchedule(Document):
 
 		fees_amount = frappe.db.sql(
 			"""select sum(grand_total), sum(outstanding_amount) from `tabSales Invoice`
-			where fee_schedule=%s and docstatus=1 and student is not null""",
+            where fee_schedule=%s and docstatus=1 and student is not null""",
 			(self.name),
 		)
 
@@ -49,7 +65,10 @@ class FeeSchedule(Document):
 		for d in self.student_groups:
 			# if not d.total_students:
 			d.total_students = get_total_students(
-				d.student_group, self.academic_year, self.academic_term, self.student_category
+				d.student_group,
+				self.academic_year,
+				self.academic_term,
+				self.student_category,
 			)
 			no_of_students += cint(d.total_students)
 
@@ -68,17 +87,21 @@ class FeeSchedule(Document):
 
 	@frappe.whitelist()
 	def create_fees(self):
-		self.db_set("fee_creation_status", "In Process")
+		self.db_set("status", "In Process")
+
 		frappe.publish_realtime(
-			"fee_schedule_progress", {"progress": "0", "reload": 1}, user=frappe.session.user
+			"fee_schedule_progress",
+			{"progress": "0", "reload": 1},
+			user=frappe.session.user,
 		)
 
 		total_records = sum([int(d.total_students) for d in self.student_groups])
+
 		if total_records > 10:
 			frappe.msgprint(
 				_(
 					"""Fee records will be created in the background.
-				In case of any error the error message will be updated in the Schedule."""
+                In case of any error the error message will be updated in the Schedule."""
 				)
 			)
 			enqueue(
@@ -93,6 +116,7 @@ class FeeSchedule(Document):
 
 
 def generate_fees(fee_schedule):
+
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	total_records = sum([int(d.total_students) for d in doc.student_groups])
@@ -101,6 +125,7 @@ def generate_fees(fee_schedule):
 	if not total_records:
 		frappe.throw(_("Please setup Students under Student Groups"))
 
+	create_so = frappe.db.get_single_value("Education Settings", "create_so")
 	for d in doc.student_groups:
 		students = get_students(
 			d.student_group, doc.academic_year, doc.academic_term, doc.student_category
@@ -108,7 +133,7 @@ def generate_fees(fee_schedule):
 		for student in students:
 			try:
 				student_id = student.student
-				if frappe.db.get_single_value("Education Settings", "create_so"):
+				if create_so:
 					create_sales_order(fee_schedule, student_id)
 				else:
 					create_sales_invoice(fee_schedule, student_id)
@@ -127,15 +152,21 @@ def generate_fees(fee_schedule):
 
 	if error:
 		frappe.db.rollback()
-		frappe.db.set_value("Fee Schedule", fee_schedule, "fee_creation_status", "Failed")
+		frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Failed")
 		frappe.db.set_value("Fee Schedule", fee_schedule, "error_log", err_msg)
 
 	else:
-		frappe.db.set_value("Fee Schedule", fee_schedule, "fee_creation_status", "Successful")
+		if frappe.db.get_single_value("Education Settings", "create_so"):
+			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Order Created")
+		else:
+			# if
+			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Invoice Created")
 		frappe.db.set_value("Fee Schedule", fee_schedule, "error_log", None)
 
 	frappe.publish_realtime(
-		"fee_schedule_progress", {"progress": "100", "reload": 1}, user=frappe.session.user
+		"fee_schedule_progress",
+		{"progress": "100", "reload": 1},
+		user=frappe.session.user,
 	)
 
 
@@ -199,7 +230,6 @@ def get_customer_from_student(student_id):
 
 
 def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
-
 	table_map = {
 		"Fee Schedule": {
 			"doctype": doctype,
@@ -249,13 +279,13 @@ def get_students(
 		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
 	students = frappe.db.sql(
 		"""
-		select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
-		from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
-		where
-			pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
-			and sgs.parent = %s and sgs.active = 1
-			{conditions}
-		""".format(
+        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
+        from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
+        where
+            pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
+            and sgs.parent = %s and sgs.active = 1
+            {conditions}
+        """.format(
 			conditions=conditions
 		),
 		(academic_year, student_group),

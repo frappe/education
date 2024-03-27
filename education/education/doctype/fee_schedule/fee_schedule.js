@@ -7,6 +7,7 @@ frappe.ui.form.on("Fee Schedule", {
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
 	},
 
+
 	onload: function (frm) {
 		frm.set_query("receivable_account", function (doc) {
 			return {
@@ -48,9 +49,11 @@ frappe.ui.form.on("Fee Schedule", {
 		});
 
 		frappe.realtime.on("fee_schedule_progress", function (data) {
-			if (data.reload && data.reload === 1) {
-				frm.reload_doc();
-			}
+			console.log(data)
+			console.log("Hereee")
+			// if (data.reload && data.reload === 1) {
+			// 	frm.reload_doc();
+			// }
 			if (data.progress) {
 				let progress_bar = $(cur_frm.dashboard.progress_area.body).find(
 					".progress-bar"
@@ -72,7 +75,7 @@ frappe.ui.form.on("Fee Schedule", {
 			!frm.doc.__islocal &&
 			frm.doc.__onload &&
 			frm.doc.__onload.dashboard_info &&
-			frm.doc.fee_creation_status === "Successful"
+			(frm.doc.status === "Sales Order Created" || frm.doc.status === "Sales Invoice Created")
 		) {
 			var info = frm.doc.__onload.dashboard_info;
 			frm.dashboard.add_indicator(
@@ -88,33 +91,36 @@ frappe.ui.form.on("Fee Schedule", {
 				info.total_unpaid ? "orange" : "green"
 			);
 		}
-		if (frm.doc.fee_creation_status === "In Process") {
+		if (frm.doc.doc === "In Process") {
 			frm.dashboard.add_progress("Fee Creation Status", "0");
 		}
 		if (
-			(frm.doc.docstatus === 1 && !frm.doc.fee_creation_status) ||
-			frm.doc.fee_creation_status === "Failed"
+			(frm.doc.docstatus === 1) ||
+			frm.doc.status === "Failed"
 		) {
 			let button_label = "Create Sales Invoice";
 
 			frappe.db.get_value("Education Settings", {}, "create_so", (r) => {
+				console.log("ran")
 				// convert r.create_so to number
 				if (+r.create_so) {
 					button_label = "Create Sales Order";
 					// set indicator in the frm
 				}
-				frm.add_custom_button(__(button_label), function () {
-					frappe.call({
-						method: "create_fees",
-						doc: frm.doc,
-						callback: function () {
-							frm.refresh();
-						},
+				if (frm.doc.status === "Sales Order Creation Pending" || frm.doc.status === "Sales Invoice Creation Pending") {
+					frm.add_custom_button(__(button_label), function () {
+						frappe.call({
+							method: "create_fees",
+							doc: frm.doc,
+							callback: function () {
+								frm.refresh();
+							},
+						});
 					});
-				});
+				}
 			});
 		}
-		if (frm.doc.fee_creation_status === "Successful") {
+		if (frm.doc.status === "Sales Order Created" || frm.doc.status === "Sales Invoice Created") {
 			frm.add_custom_button(
 				__("View Sales Order"),
 				function () {
