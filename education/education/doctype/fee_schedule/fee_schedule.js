@@ -73,7 +73,7 @@ frappe.ui.form.on("Fee Schedule", {
 			!frm.doc.__islocal &&
 			frm.doc.__onload &&
 			frm.doc.__onload.dashboard_info &&
-			(frm.doc.status === "Sales Order Created" || frm.doc.status === "Sales Invoice Created")
+			(frm.doc.status === "Order Created" || frm.doc.status === "Invoice Created")
 		) {
 			var info = frm.doc.__onload.dashboard_info;
 			frm.dashboard.add_indicator(
@@ -104,7 +104,7 @@ frappe.ui.form.on("Fee Schedule", {
 					button_label = "Create Sales Order";
 					// set indicator in the frm
 				}
-				if (frm.doc.status === "Sales Order Creation Pending" || frm.doc.status === "Sales Invoice Creation Pending") {
+				if (frm.doc.status === "Order Pending" || frm.doc.status === "Invoice Pending") {
 					frm.add_custom_button(__(button_label), function () {
 						frappe.call({
 							method: "create_fees",

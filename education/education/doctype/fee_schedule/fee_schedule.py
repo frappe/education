@@ -31,9 +31,9 @@ class FeeSchedule(Document):
 			status = "Draft"
 		elif self.docstatus == 1:
 			if frappe.db.get_single_value("Education Settings", "create_so"):
-				status = "Sales Order Creation Pending"
+				status = "Order Pending"
 			else:
-				status = "Sales Invoice Creation Pending"
+				status = "Invoice Pending"
 		elif self.docstatus == 2:
 			status = "Cancelled"
 		return status
@@ -156,9 +156,9 @@ def generate_fees(fee_schedule):
 
 	else:
 		if create_so:
-			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Order Created")
+			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Order Created")
 		else:
-			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Sales Invoice Created")
+			frappe.db.set_value("Fee Schedule", fee_schedule, "status", "Invoice Created")
 		frappe.db.set_value("Fee Schedule", fee_schedule, "error_log", None)
 
 	frappe.publish_realtime(

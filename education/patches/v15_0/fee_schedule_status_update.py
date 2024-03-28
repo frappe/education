@@ -3,7 +3,7 @@ import frappe
 
 def execute():
 	status_map = {
-		"Successful": "Sales Invoice Created",
+		"Successful": "Invoice Created",
 		"In Process": "In Process",
 		"Failed": "Fee Creation Failed",
 	}
@@ -15,6 +15,6 @@ def execute():
 			"Fee Schedule",
 			fee_schedule.name,
 			"status",
-			status_map.get(fee_schedule.fee_creation_status, "Sales Invoice Creation Pending"),
+			status_map.get(fee_schedule.fee_creation_status, "Invoice Pending"),
 			update_modified=False,
 		)

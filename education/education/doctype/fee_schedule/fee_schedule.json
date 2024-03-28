@@ -76,7 +76,7 @@
       "label": "Status",
       "length": 30,
       "no_copy": 1,
-      "options": "Draft\nCancelled\nSales Invoice Creation Pending\nSales Order Creation Pending\nIn Process\nSales Invoice Created\nSales Order Created\nFailed",
+      "options": "Draft\nCancelled\nInvoice Pending\nOrder Pending\nIn Process\nInvoice Created\nOrder Created\nFailed",
       "print_hide": 1,
       "read_only": 1
     },
@@ -290,7 +290,7 @@
       "link_fieldname": "fee_schedule"
     }
   ],
-  "modified": "2024-03-26 16:12:45.570210",
+  "modified": "2024-03-27 22:48:15.293321",
   "modified_by": "Administrator",
   "module": "Education",
   "name": "Fee Schedule",
@@ -341,5 +341,30 @@
   ],
   "sort_field": "modified",
   "sort_order": "DESC",
-  "states": []
+  "states": [
+    {
+      "color": "Orange",
+      "title": "Invoice Pending"
+    },
+    {
+      "color": "Orange",
+      "title": "Order Pending"
+    },
+    {
+      "color": "Orange",
+      "title": "In Process"
+    },
+    {
+      "color": "Green",
+      "title": "Order Created"
+    },
+    {
+      "color": "Green",
+      "title": "Invoice Created"
+    },
+    {
+      "color": "Red",
+      "title": "Fee Creation Failed"
+    }
+  ]
 }

@@ -12,4 +12,4 @@ education.patches.v15_0.sales_invoice_student_field
 education.patches.v15_0.create_parent_assessment_group
 education.patches.v15_0.student_role_permission_sales_invoice
 education.patches.v15_0.sales_order_student_field
-education.patches.v15_0.fee_schedule_status_update #29-03-2024
+education.patches.v15_0.fee_schedule_status_update #28-03-2024
