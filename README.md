@@ -11,6 +11,16 @@
 Frappe Education is an open-source and user-friendly Education Management System designed to streamline the administrative and academic processes of educational institutions. It is a powerful module based on the ERPNext software.
 
 Frappe Education is dedicated to making education management more efficient and less time-consuming. The module offers a range of features that cater to the needs of educators and administrators, facilitating a more organized and effective learning environment.
+
+## Table of Contents
+
+- [Key Features](#key-features)
+- [Installation](#installation)
+- [Deployment](#deployment)
+- [Contribution & Community](#contributions--community)
+- [Links](#links)
+- [License](#license)
+
 ## Key Features
 
 <details>
@@ -112,19 +122,6 @@ Frappe Education is dedicated to making education management more efficient and 
 
 <br>
 </details>
-
-
-
-## Table of Contents
-
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Deployment](#deployment)
-- [Contribution & Community](#contributions--community)
-- [Links](#links)
-- [License](#license)
-
-
 
 
 
