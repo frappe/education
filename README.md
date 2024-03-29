@@ -11,83 +11,104 @@
 Frappe Education is an open-source and user-friendly Education Management System designed to streamline the administrative and academic processes of educational institutions. It is a powerful module based on the ERPNext software.
 
 Frappe Education is dedicated to making education management more efficient and less time-consuming. The module offers a range of features that cater to the needs of educators and administrators, facilitating a more organized and effective learning environment.
+## Key Features
 
-<details open>
+<details>
   <summary>Education Sub modules</summary>
+    
   <br>
 
-1. Student Master
+1. **Student Master**
 
-<img width="1316" alt="Screenshot 2024-03-16 at 4 15 33 PM" src="https://github.com/frappe/education/assets/65544983/8a22a217-e637-451a-b95e-489aac846b43">
+    Maintain comprehensive profiles for students, guardians, and siblings. 👨‍👩‍👧‍👦
+
+    <img width="1316" alt="Screenshot 2024-03-16 at 4 15 33 PM" src="https://github.com/frappe/education/assets/65544983/8a22a217-e637-451a-b95e-489aac846b43">
 <br>
 
-2. Instructor Master
 
-<img width="1200" alt="Screenshot 2023-11-22 at 11 42 46 AM" src="https://github.com/frappe/education/assets/65544983/11524744-de95-4b4a-8cb9-55479ae7aa60">
+2. **Instructor Master**
+    Maintain comprehensive profiles for Instructor,and Instructor Log. 🧑‍🏫
+
+    <img width="1200" alt="Screenshot 2023-11-22 at 11 42 46 AM" src="https://github.com/frappe/education/assets/65544983/11524744-de95-4b4a-8cb9-55479ae7aa60">
 <br>
 
-3. Student Admission
-
-<img width="1311" alt="Screenshot 2024-03-08 at 1 18 55 AM" src="https://github.com/frappe/education/assets/65544983/cc40d89d-725e-48aa-a264-99f8d5aa2257">
+3. **Student Admission**
+    Streamline the admission process for new students. 🎓
+   
+    <img width="1311" alt="Screenshot 2024-03-08 at 1 18 55 AM" src="https://github.com/frappe/education/assets/65544983/cc40d89d-725e-48aa-a264-99f8d5aa2257">
 <br>
 
-4. Student Promotion
-
-<img width="1060" alt="Screenshot 2024-03-08 at 1 21 27 AM" src="https://github.com/frappe/education/assets/65544983/5669fe9a-04a0-48af-9bc0-bf5ebb43f325">
+5. **Student Promotion**
+    Promote Students from one class to another. 📋
+   
+    <img width="1060" alt="Screenshot 2024-03-08 at 1 21 27 AM" src="https://github.com/frappe/education/assets/65544983/5669fe9a-04a0-48af-9bc0-bf5ebb43f325">
 <br>
 
-5. Fee Structure
-
-<img width="1242" alt="Screenshot 2024-03-08 at 1 21 58 AM" src="https://github.com/frappe/education/assets/65544983/a021627f-f2a0-4032-8a7a-d10d5493daa1">
+6. **Fee Structure**
+    Organize and manage the fee structure and schedule payments. 💰
+   
+    <img width="1242" alt="Screenshot 2024-03-08 at 1 21 58 AM" src="https://github.com/frappe/education/assets/65544983/a021627f-f2a0-4032-8a7a-d10d5493daa1">
 <br>
 
-6. Fee Plans
-
-<img width="1350" alt="Screenshot 2024-03-16 at 4 19 48 PM" src="https://github.com/frappe/education/assets/65544983/dd3b30a7-6dee-4dd8-959c-cf2acd681657">
+7. **Fee Plans**
+    Manage fee structure and divide it based on fee plans, such as "Term Wise/Quaterly/Half Yearly/Yearly".
+   
+    <img width="1350" alt="Screenshot 2024-03-16 at 4 19 48 PM" src="https://github.com/frappe/education/assets/65544983/dd3b30a7-6dee-4dd8-959c-cf2acd681657">
 <br>
 
-7. Course Scheduling
-
-<img width="1178" alt="Screenshot 2024-03-08 at 1 31 28 AM" src="https://github.com/frappe/education/assets/65544983/e0368d6c-888b-4815-a918-31bc8261996a">
+8. **Course Scheduling**
+    Efficiently schedule courses and manage course calendars. 🗓️
+    
+    <img width="1178" alt="Screenshot 2024-03-08 at 1 31 28 AM" src="https://github.com/frappe/education/assets/65544983/e0368d6c-888b-4815-a918-31bc8261996a">
 <br>
 
-8. Student Attendance
-
-<img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/1529aab5-8b1d-4ff2-ae71-05c5eb293e08">
+9. **Student Attendance**
+    Track and manage student attendance records. ✔️
+    
+    <img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/1529aab5-8b1d-4ff2-ae71-05c5eb293e08">
 <br>
 
-9. Exam Planning
-
-<img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/b7ed68ea-db57-41de-b4ac-0d9e5432cf45">
+10. **Exam Planning**
+    Plan Exams effectively. 📝
+    
+    <img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/b7ed68ea-db57-41de-b4ac-0d9e5432cf45">
 <br>
 
-10. Exam Results
-
-<img width="1297" alt="Screenshot 2024-03-08 at 1 26 25 AM" src="https://github.com/frappe/education/assets/65544983/1b4e12a9-f6b8-46ec-9d14-79a9c5974d21">
+11. **Exam Results**
+    Manage results for the Exams Scheduled.
+    
+    <img width="1297" alt="Screenshot 2024-03-08 at 1 26 25 AM" src="https://github.com/frappe/education/assets/65544983/1b4e12a9-f6b8-46ec-9d14-79a9c5974d21">
 <br>
 
-11. Student Portal
+12. **Student Portal**
+    Students can visit portal to check their time table, attendance, pay fees online and see current and previous grades.
+    - Student Time Table
+      
+        <img width="1439" alt="Screenshot 2024-02-21 at 6 03 02 PM" src="https://github.com/frappe/education/assets/65544983/3bc3f873-ab07-460d-874a-1f051b58a693">
 
-- Student Time Table
-<img width="1439" alt="Screenshot 2024-02-21 at 6 03 02 PM" src="https://github.com/frappe/education/assets/65544983/3bc3f873-ab07-460d-874a-1f051b58a693">
+    - Grades/Results
+      
+        <img width="1435" alt="Screenshot 2024-02-21 at 6 03 09 PM" src="https://github.com/frappe/education/assets/65544983/226acaff-57ef-4205-ba92-a19affba3136">
 
-- Grades/Results
-<img width="1435" alt="Screenshot 2024-02-21 at 6 03 09 PM" src="https://github.com/frappe/education/assets/65544983/226acaff-57ef-4205-ba92-a19affba3136">
+    - Fee Payment History
+      
+        <img width="1440" alt="Screenshot 2024-02-21 at 6 03 20 PM" src="https://github.com/frappe/education/assets/65544983/c1e6c407-7eef-4ed5-b204-ca5ea66957ff">
 
-- Fee Payment History
-<img width="1440" alt="Screenshot 2024-02-21 at 6 03 20 PM" src="https://github.com/frappe/education/assets/65544983/c1e6c407-7eef-4ed5-b204-ca5ea66957ff">
-
-- Fee Payment via Razorpay
-<img width="1440" alt="Screenshot 2024-02-21 at 6 03 54 PM" src="https://github.com/frappe/education/assets/65544983/ef2cc6ca-d4b7-46b6-ae23-f904866f68d7">
-
-- Student Attendance
-<img width="1440" alt="Screenshot 2024-02-21 at 6 04 12 PM" src="https://github.com/frappe/education/assets/65544983/4aa46b76-a2c3-4aae-a8c6-bd55303644a6">
-
-- Apply for Leave
-<img width="1440" alt="Screenshot 2024-02-21 at 6 04 27 PM" src="https://github.com/frappe/education/assets/65544983/80169122-000c-4aa5-be04-a26b534189ae">
-
-- Student Profile Date
-<img width="1440" alt="Screenshot 2024-02-21 at 6 09 03 PM" src="https://github.com/frappe/education/assets/65544983/00d2d84f-4c53-43ad-9fb5-2650da506f07">
+    - Fee Payment via Razorpay
+      
+        <img width="1440" alt="Screenshot 2024-02-21 at 6 03 54 PM" src="https://github.com/frappe/education/assets/65544983/ef2cc6ca-d4b7-46b6-ae23-f904866f68d7">
+        
+    - Student Attendance
+      
+        <img width="1440" alt="Screenshot 2024-02-21 at 6 04 12 PM" src="https://github.com/frappe/education/assets/65544983/4aa46b76-a2c3-4aae-a8c6-bd55303644a6">
+    
+    - Apply for Leave
+      
+        <img width="1440" alt="Screenshot 2024-02-21 at 6 04 27 PM" src="https://github.com/frappe/education/assets/65544983/80169122-000c-4aa5-be04-a26b534189ae">
+    
+    - Student Profile Date
+      
+        <img width="1440" alt="Screenshot 2024-02-21 at 6 09 03 PM" src="https://github.com/frappe/education/assets/65544983/00d2d84f-4c53-43ad-9fb5-2650da506f07">
 
 <br>
 </details>
@@ -103,19 +124,8 @@ Frappe Education is dedicated to making education management more efficient and 
 - [Links](#links)
 - [License](#license)
 
-## Key Features
 
-Here are some of the standout features of the Frappe Education module:
 
-- **Student Admission**: Streamline the admission process for new students. 🎓
-- **Program Enrollment**: Manage and keep track of student enrollments in various programs. 📋
-- **Guardian, Student & Sibling Management**: Maintain comprehensive profiles for students, guardians, and siblings. 👨‍👩‍👧‍👦
-- **Fee Structure and Scheduling**: Organize and manage the fee structure and schedule payments. 💰
-- **Course Scheduling**: Efficiently schedule courses and manage course calendars. 🗓️
-- **Attendance Management**: Track and manage student attendance records. ✔️
-- **Assessment Planning & Results**: Plan assessments and manage results effectively. 📝
-- **Reports**: Generate various reports including final grades, course-wise assessment, student absent report, attendance report, and fee collection. 📊
-- **Portal**: Students can visit portal to check their time table, attendance, pay fees online and see current and previous grades.
 
 
 ## Installation
