@@ -189,7 +189,7 @@ def validate_due_date(due_date, idx):
 
 @frappe.whitelist()
 def make_term_wise_fee_schedule(source_name, target_doc=None):
-	print(source_name, target_doc)
+
 	return get_mapped_doc(
 		"Fee Structure",
 		source_name,
