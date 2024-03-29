@@ -156,23 +156,6 @@ class ProgramEnrollment(Document):
 			for course_enrollment in course_enrollment_names
 		]
 
-	def get_quiz_progress(self):
-		student = frappe.get_doc("Student", self.student)
-		quiz_progress = frappe._dict()
-		progress_list = []
-		for course_enrollment in self.get_all_course_enrollments():
-			course_progress = course_enrollment.get_progress(student)
-			for progress_item in course_progress:
-				if progress_item["content_type"] == "Quiz":
-					progress_item["course"] = course_enrollment.course
-					progress_list.append(progress_item)
-		if not progress_list:
-			return None
-		quiz_progress.quiz_attempt = progress_list
-		quiz_progress.name = self.program
-		quiz_progress.program = self.program
-		return quiz_progress
-
 	def delete_course_enrollments(self):
 		for course_enrollment in self.get_all_course_enrollments():
 			frappe.delete_doc("Course Enrollment", course_enrollment.name)

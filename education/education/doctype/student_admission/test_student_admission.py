@@ -1,10 +1,11 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # See license.txt
 
-import unittest
+
+from frappe.tests.utils import FrappeTestCase
 
 # test_records = frappe.get_test_records('Student Admission')
 
 
-class TestStudentAdmission(unittest.TestCase):
+class TestStudentAdmission(FrappeTestCase):
 	pass

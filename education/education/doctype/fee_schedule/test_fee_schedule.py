@@ -27,9 +27,9 @@ class TestFeeSchedule(FrappeTestCase):
 		create_academic_term(
 			term_name="Term 2", term_start_date="2023-10-01", term_end_date="2024-03-31"
 		)
+		create_program("Class 1")
 		create_fee_category("Tuition Fee")
 		create_fee_category("Library Fee")
-		create_program("Class 1")
 		fee_components = [
 			{"fees_category": "Tuition Fee", "amount": 2000, "discount": 0},
 			{"fees_category": "Library Fee", "amount": 2000, "discount": 0},

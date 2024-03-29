@@ -1,12 +1,13 @@
 # Copyright (c) 2018, Frappe Technologies Pvt. Ltd. and Contributors
 # See license.txt
 
-import unittest
+
+from frappe.tests.utils import FrappeTestCase
 
 import frappe
 
 
-class TestCourseActivity(unittest.TestCase):
+class TestCourseActivity(FrappeTestCase):
 	pass
 
 

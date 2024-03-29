@@ -32,6 +32,8 @@ def create_academic_term(**args):
 
 
 def create_fee_category(category_name=DEFAULT_FEES_CATEGORY):
+	if frappe.db.exists("Fee Category", {"category_name": category_name}):
+		return frappe.get_doc("Fee Category", {"category_name": category_name})
 	fee_category = frappe.new_doc("Fee Category")
 	fee_category.category_name = category_name
 	fee_category.save()
@@ -68,6 +70,14 @@ def create_student(**args):
 	"""
 	args first_name,last_name, student_email_id
 	"""
+
+	if frappe.db.exists(
+		"Student", {"student_email_id": args.get("student_email_id", "test@gmail.com")}
+	):
+		return frappe.get_doc(
+			"Student", {"student_email_id": args.get("student_email_id", "test@gmail.com")}
+		)
+
 	student = frappe.new_doc("Student")
 	student.first_name = args.get("first_name", "Test")
 	student.last_name = args.get("last_name", "Student")
@@ -151,3 +161,21 @@ def create_fee_schedule(**args):
 		fee_schedule.submit()
 
 	return fee_schedule
+
+
+def create_instructor(instructor_name="Test Instructor"):
+	instructor = frappe.new_doc("Instructor")
+	instructor.instructor_name = instructor_name
+	instructor.save()
+
+
+def create_course(course_name="Test Course"):
+	course = frappe.new_doc("Course")
+	course.course_name = course_name
+	course.save()
+
+
+def create_room(room_name="Test Room"):
+	room = frappe.new_doc("Room")
+	room.room_name = room_name
+	room.save()

@@ -1,21 +1,34 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # See license.txt
 
-import unittest
 
 import frappe
+from frappe.tests.utils import FrappeTestCase
 from erpnext import get_default_company
 from frappe.utils import add_days, add_months, getdate
 
-from education.education.doctype.student.test_student import create_student
-from education.education.doctype.student_group.test_student_group import \
-    get_random_group
+from education.education.test_utils import (
+	create_academic_year,
+	create_academic_term,
+	create_program,
+	create_student,
+	create_program_enrollment,
+	create_student_group,
+)
 
 
-class TestStudentLeaveApplication(unittest.TestCase):
+class TestStudentLeaveApplication(FrappeTestCase):
 	def setUp(self):
 		frappe.db.sql("""delete from `tabStudent Leave Application`""")
 		create_holiday_list()
+		create_academic_year()
+		create_academic_term(
+			term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30"
+		)
+		create_program()
+		student = create_student()
+		create_program_enrollment(student_name=student.name, submit=1)
+		create_student_group()
 
 	def test_attendance_record_creation(self):
 		leave_application = create_leave_application()
@@ -78,8 +91,7 @@ class TestStudentLeaveApplication(unittest.TestCase):
 		)
 
 	def tearDown(self):
-		company = get_default_company() or frappe.get_all("Company")[0].name
-		frappe.db.set_value("Company", company, "default_holiday_list", "_Test Holiday List")
+		frappe.db.rollback()
 
 
 def create_leave_application(from_date=None, to_date=None, mark_as_present=0, submit=1):
@@ -88,7 +100,7 @@ def create_leave_application(from_date=None, to_date=None, mark_as_present=0, su
 	leave_application = frappe.new_doc("Student Leave Application")
 	leave_application.student = student.name
 	leave_application.attendance_based_on = "Student Group"
-	leave_application.student_group = get_random_group().name
+	leave_application.student_group = "Test Student Group"
 	leave_application.from_date = from_date if from_date else getdate()
 	leave_application.to_date = from_date if from_date else getdate()
 	leave_application.mark_as_present = mark_as_present
@@ -108,16 +120,15 @@ def create_student_attendance(date=None, status=None):
 			"student": student.name,
 			"status": status if status else "Present",
 			"date": date if date else getdate(),
-			"student_group": get_random_group().name,
+			"student_group": "Test Student Group",
 		}
 	).insert()
 	return attendance
 
 
 def get_student():
-	return create_student(
-		dict(email="test_student@gmail.com", first_name="Test", last_name="Student")
-	)
+	student = frappe.get_doc("Student", {"student_email_id": "test@gmail.com"})
+	return student
 
 
 def create_holiday_list():
