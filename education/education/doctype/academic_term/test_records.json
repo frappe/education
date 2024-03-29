@@ -1,27 +1,30 @@
 [
-    {
-        "doctype": "Academic Term",
-        "academic_year": "2014-2015",
-        "term_name": "_Test Academic Term"
-    },
-    {
-        "doctype": "Academic Term",
-        "academic_year": "2014-2015",
-        "term_name": "_Test Academic Term 1"
-    },
-    {
-        "doctype": "Academic Term",
-        "academic_year": "2014-2015",
-        "term_name": "_Test Academic Term 2"
-    },
-    {
-        "doctype": "Academic Term",
-        "academic_year": "2017-2018",
-        "term_name": "_Test AT1"
-    },
-    {
-        "doctype": "Academic Term",
-        "academic_year": "2017-2018",
-        "term_name": "_Test AT2"
-    }
-]    
+  {
+    "doctype": "Academic Term",
+    "academic_year": "2014-2015",
+    "term_name": "_Test Academic Term 1",
+    "term_start_date": "2014-04-01",
+    "term_end_date": "2014-08-01"
+  },
+  {
+    "doctype": "Academic Term",
+    "academic_year": "2014-2015",
+    "term_name": "_Test Academic Term 2",
+    "term_start_date": "2014-08-02",
+    "term_end_date": "2015-04-01"
+  },
+  {
+    "doctype": "Academic Term",
+    "academic_year": "2017-2018",
+    "term_name": "_Test AT1",
+    "term_start_date": "2017-04-01",
+    "term_end_date": "2017-08-01"
+  },
+  {
+    "doctype": "Academic Term",
+    "academic_year": "2017-2018",
+    "term_name": "_Test AT2",
+    "term_start_date": "2017-08-02",
+    "term_end_date": "2018-04-01"
+  }
+]
