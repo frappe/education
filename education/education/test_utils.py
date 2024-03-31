@@ -92,6 +92,9 @@ def make_holiday_list(holiday_list_name="Test Holiday List"):
 
 
 def create_academic_year(**args):
+	if frappe.db.exists("Academic Year", {"academic_year_name": DEFAULT_ACADEMIC_YEAR}):
+		return
+
 	academic_year = frappe.new_doc("Academic Year")
 	academic_year.academic_year_name = args.get(
 		"academic_year_name", DEFAULT_ACADEMIC_YEAR
@@ -102,7 +105,9 @@ def create_academic_year(**args):
 
 
 def create_academic_term(**args):
-	# create 2 terms inside the academic year
+	if frappe.db.exists("Academic Term", {"term_name": "Term 1"}):
+		return
+
 	academic_term = frappe.new_doc("Academic Term")
 	academic_term.academic_year = args.get("academic_year", DEFAULT_ACADEMIC_YEAR)
 	academic_term.term_name = args.get("term_name", "Term 1")
@@ -120,6 +125,8 @@ def create_fee_category(category_name=DEFAULT_FEES_CATEGORY):
 
 
 def create_program(name=DEFAULT_PROGRAM_NAME):
+	if frappe.db.exists("Program", {"program_name": name}):
+		return
 	program = frappe.new_doc("Program")
 	program.program_name = name
 	program.save()
@@ -186,6 +193,8 @@ def create_student_group(**args):
 	"""
 	args have academic_year, academic_term, group_based_on, program, student_group_name
 	"""
+	if frappe.db.exists("Student Group", {"student_group_name": DEFAULT_STUDENT_GROUP}):
+		return frappe.get_doc("Student Group", {"student_group_name": DEFAULT_STUDENT_GROUP})
 	student_group = frappe.new_doc("Student Group")
 	student_group.student_group_name = args.get(
 		"student_group_name", DEFAULT_STUDENT_GROUP
