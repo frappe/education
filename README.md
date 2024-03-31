@@ -37,60 +37,70 @@ Frappe Education is dedicated to making education management more efficient and 
 
 
 2. **Instructor Master**
+
     Maintain comprehensive profiles for Instructor,and Instructor Log. 🧑‍🏫
 
     <img width="1200" alt="Screenshot 2023-11-22 at 11 42 46 AM" src="https://github.com/frappe/education/assets/65544983/11524744-de95-4b4a-8cb9-55479ae7aa60">
 <br>
 
 3. **Student Admission**
+   
     Streamline the admission process for new students. 🎓
    
     <img width="1311" alt="Screenshot 2024-03-08 at 1 18 55 AM" src="https://github.com/frappe/education/assets/65544983/cc40d89d-725e-48aa-a264-99f8d5aa2257">
 <br>
 
-5. **Student Promotion**
+4. **Student Promotion**
+   
     Promote Students from one class to another. 📋
    
     <img width="1060" alt="Screenshot 2024-03-08 at 1 21 27 AM" src="https://github.com/frappe/education/assets/65544983/5669fe9a-04a0-48af-9bc0-bf5ebb43f325">
 <br>
 
-6. **Fee Structure**
+5. **Fee Structure**
+   
     Organize and manage the fee structure and schedule payments. 💰
    
     <img width="1242" alt="Screenshot 2024-03-08 at 1 21 58 AM" src="https://github.com/frappe/education/assets/65544983/a021627f-f2a0-4032-8a7a-d10d5493daa1">
 <br>
 
-7. **Fee Plans**
+6. **Fee Plans**
+   
     Manage fee structure and divide it based on fee plans, such as "Term Wise/Quaterly/Half Yearly/Yearly".
    
     <img width="1350" alt="Screenshot 2024-03-16 at 4 19 48 PM" src="https://github.com/frappe/education/assets/65544983/dd3b30a7-6dee-4dd8-959c-cf2acd681657">
 <br>
 
-8. **Course Scheduling**
+7. **Course Scheduling**
+   
     Efficiently schedule courses and manage course calendars. 🗓️
     
     <img width="1178" alt="Screenshot 2024-03-08 at 1 31 28 AM" src="https://github.com/frappe/education/assets/65544983/e0368d6c-888b-4815-a918-31bc8261996a">
 <br>
 
-9. **Student Attendance**
+8. **Student Attendance**
+   
     Track and manage student attendance records. ✔️
     
     <img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/1529aab5-8b1d-4ff2-ae71-05c5eb293e08">
 <br>
 
-10. **Exam Planning**
+9. **Exam Planning**
+    
     Plan Exams effectively. 📝
     
     <img width="1328" alt="Screenshot 2024-03-16 at 4 28 38 PM" src="https://github.com/frappe/education/assets/65544983/b7ed68ea-db57-41de-b4ac-0d9e5432cf45">
 <br>
 
-11. **Exam Results**
-    Manage results for the Exams Scheduled.
+10. **Exam Results**
+    
+    Manage results for the exams scheduled.
     
     <img width="1297" alt="Screenshot 2024-03-08 at 1 26 25 AM" src="https://github.com/frappe/education/assets/65544983/1b4e12a9-f6b8-46ec-9d14-79a9c5974d21">
 <br>
 
-12. **Student Portal**
+11. **Student Portal**
+    
     Students can visit portal to check their time table, attendance, pay fees online and see current and previous grades.
     - Student Time Table
       
