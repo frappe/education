@@ -14,11 +14,15 @@ from education.education.test_utils import (
 	create_student,
 	create_program_enrollment,
 	create_student_group,
+	before_tests,
 )
 
 
 class TestStudentLeaveApplication(FrappeTestCase):
 	def setUp(self):
+		frappe.db.set_value(
+			"Company", "Wind Power LLC", "default_holiday_list", "Test Holiday List"
+		)
 		frappe.db.sql("""delete from `tabStudent Leave Application`""")
 		create_holiday_list()
 		create_academic_year()
@@ -29,6 +33,9 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		student = create_student()
 		create_program_enrollment(student_name=student.name, submit=1)
 		create_student_group()
+
+	def tearDown(self):
+		frappe.db.rollback()
 
 	def test_attendance_record_creation(self):
 		leave_application = create_leave_application()
@@ -89,9 +96,6 @@ class TestStudentLeaveApplication(FrappeTestCase):
 				{"leave_application": leave_application.name, "date": add_days(today, 1)},
 			)
 		)
-
-	def tearDown(self):
-		frappe.db.rollback()
 
 
 def create_leave_application(from_date=None, to_date=None, mark_as_present=0, submit=1):

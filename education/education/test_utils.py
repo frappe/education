@@ -1,6 +1,8 @@
 import frappe
 from education.education.doctype.fee_schedule.fee_schedule import get_fee_structure
 from education.education.doctype.student_group.student_group import get_students
+from erpnext.setup.utils import enable_all_roles_and_domains
+from frappe.utils import now_datetime, add_years, nowdate
 
 
 DEFAULT_PROGRAM_NAME = "Class 1"
@@ -9,6 +11,84 @@ DEFAULT_ACADEMIC_TERM = "2023-2024 (Term 1)"
 DEFAULT_STUDENT_GROUP = "Test Student Group"
 DEFAULT_GROUP_BASED_ON = "Batch"
 DEFAULT_FEES_CATEGORY = "Tuition Fee"
+
+
+def before_tests():
+	frappe.clear_cache()
+	# complete setup if missing
+	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+
+	year = now_datetime().year
+	if not frappe.get_list("Company"):
+		setup_complete(
+			{
+				"currency": "INR",
+				"full_name": "Test User",
+				"company_name": "_Test Company",
+				"timezone": "Asia/Kolkata",
+				"company_abbr": "_TC",
+				"industry": "Manufacturing",
+				"country": "India",
+				"fy_start_date": f"{year}-01-01",
+				"fy_end_date": f"{year}-12-31",
+				"language": "english",
+				"company_tagline": "Testing",
+				"email": "test@erpnext.com",
+				"password": "test",
+				"chart_of_accounts": "Standard",
+			}
+		)
+
+	frappe.db.set_value(
+		"Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0
+	)
+	enable_all_roles_and_domains()
+	make_holiday_list()
+	frappe.db.commit()
+
+	# create_tax_account()
+
+
+def create_tax_account():
+	company = "Wind Power LLC"
+	account_name = "Output Tax GST"
+
+	parent = (
+		frappe.db.get_value(
+			"Account", {"company": company, "account_type": "Tax", "is_group": 1}
+		)
+		or "Duties and Taxes - WP"
+	)
+
+	frappe.get_doc(
+		{
+			"doctype": "Account",
+			"account_name": account_name,
+			"is_group": 0,
+			"company": company,
+			"root_type": "Liability",
+			"report_type": "Balance Sheet",
+			"account_currency": "INR",
+			"parent_account": parent,
+			"account_type": "Tax",
+			"tax_rate": 18,
+		}
+	).insert()
+
+
+def make_holiday_list(holiday_list_name="Test Holiday List"):
+	if not frappe.db.get_value("Holiday List", holiday_list_name):
+		holiday_list = frappe.get_doc(
+			{
+				"doctype": "Holiday List",
+				"holiday_list_name": holiday_list_name,
+				"from_date": nowdate(),
+				"to_date": add_years(nowdate(), 1),
+				"weekly_off": "Sunday",
+			}
+		).insert()
+		holiday_list.get_weekly_off_dates()
+		holiday_list.save()
 
 
 def create_academic_year(**args):
@@ -164,18 +244,35 @@ def create_fee_schedule(**args):
 
 
 def create_instructor(instructor_name="Test Instructor"):
-	instructor = frappe.new_doc("Instructor")
-	instructor.instructor_name = instructor_name
-	instructor.save()
+	if not frappe.db.exists("Instructor", {"instructor_name": instructor_name}):
+		instructor = frappe.new_doc("Instructor")
+		instructor.instructor_name = instructor_name
+		instructor.save()
 
 
 def create_course(course_name="Test Course"):
-	course = frappe.new_doc("Course")
-	course.course_name = course_name
-	course.save()
+	if not frappe.db.exists("Course", {"course_name": course_name}):
+		course = frappe.new_doc("Course")
+		course.course_name = course_name
+		course.save()
 
 
 def create_room(room_name="Test Room"):
-	room = frappe.new_doc("Room")
-	room.room_name = room_name
-	room.save()
+	if not frappe.db.exists("Room", {"room_name": room_name}):
+		room = frappe.new_doc("Room")
+		room.room_name = room_name
+		room.save()
+
+
+def create_grading_scale(grading_scale_name="_Test Grading Scale"):
+	if frappe.db.exists("Grading Scale", grading_scale_name):
+		return
+
+	grading_scale = frappe.new_doc("Grading Scale")
+	grading_scale.grading_scale_name = grading_scale_name
+	grades = {"A": 80, "B": 70, "C": 60, "D": 50, "F": 0}
+	for grade, threshold in grades.items():
+		grading_scale.append("intervals", {"grade_code": grade, "threshold": threshold})
+
+	grading_scale.save()
+	grading_scale.submit()
