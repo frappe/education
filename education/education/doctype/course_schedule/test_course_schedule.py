@@ -34,7 +34,7 @@ class TestCourseSchedule(FrappeTestCase):
 		create_program("Class 1")
 		student = create_student()
 		create_program_enrollment(student_name=student.name, submit=1)
-		create_student_group()
+		create_student_group(student_group_name="Test Student Group")
 		create_student_group(student_group_name="Test Student Group 2")
 
 		create_instructor()

@@ -193,8 +193,12 @@ def create_student_group(**args):
 	"""
 	args have academic_year, academic_term, group_based_on, program, student_group_name
 	"""
-	if frappe.db.exists("Student Group", {"student_group_name": DEFAULT_STUDENT_GROUP}):
-		return frappe.get_doc("Student Group", {"student_group_name": DEFAULT_STUDENT_GROUP})
+	if frappe.db.exists(
+		"Student Group", {"student_group_name": args.get("student_group_name")}
+	):
+		return frappe.get_doc(
+			"Student Group", {"student_group_name": args.get("student_group_name")}
+		)
 	student_group = frappe.new_doc("Student Group")
 	student_group.student_group_name = args.get(
 		"student_group_name", DEFAULT_STUDENT_GROUP
