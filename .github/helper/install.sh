@@ -50,4 +50,5 @@ bench start &>> ~/frappe-bench/bench_start.log &
 CI=Yes bench build --app frappe &
 bench --site test_site reinstall --yes
 
+bench --verbose --site test_site install-app payments
 bench --verbose --site test_site install-app education
