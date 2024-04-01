@@ -29,6 +29,14 @@ frappe.ui.form.on("Fee Schedule", {
 			};
 		});
 
+		frm.set_query("fee_structure", () => {
+			return {
+				filters: {
+					docstatus: 1,
+				},
+			};
+		})
+
 		frm.set_query("academic_term", function (doc) {
 			return {
 				filters: {
