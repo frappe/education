@@ -222,7 +222,7 @@ after_install = "education.install.after_install"
 # Testing
 # -------
 
-# before_tests = "education.install.before_tests"
+before_tests = "education.education.test_utils.before_tests"
 
 # Overriding Methods
 # ------------------------------

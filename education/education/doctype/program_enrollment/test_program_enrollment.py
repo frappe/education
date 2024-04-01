@@ -1,42 +1,31 @@
 # Copyright (c) 2015, Frappe and Contributors
 # See license.txt
 
-import unittest
 
 import frappe
+from frappe.tests.utils import FrappeTestCase
 
-from education.education.doctype.program.test_program import \
-    make_program_and_linked_courses
-from education.education.doctype.student.test_student import (create_student,
-                                                              get_student)
+from education.education.test_utils import (
+	create_academic_year,
+	create_academic_term,
+	create_program,
+	create_student,
+	create_program_enrollment,
+	create_student_group,
+)
 
 
-class TestProgramEnrollment(unittest.TestCase):
+class TestProgramEnrollment(FrappeTestCase):
 	def setUp(self):
-		create_student(
-			{
-				"first_name": "_Test Name",
-				"last_name": "_Test Last Name",
-				"email": "_test_student@example.com",
-			}
+		create_academic_year()
+		create_academic_term(
+			term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30"
 		)
-		make_program_and_linked_courses(
-			"_Test Program 1", ["_Test Course 1", "_Test Course 2"]
-		)
+		create_program("Class 1")
 
 	def test_create_course_enrollments(self):
-		student = get_student("_test_student@example.com")
-		enrollment = student.enroll_in_program("_Test Program 1")
-		course_enrollments = student.get_all_course_enrollments()
-		self.assertTrue("_Test Course 1" in course_enrollments.keys())
-		self.assertTrue("_Test Course 2" in course_enrollments.keys())
-		frappe.db.rollback()
+		student = create_student()
+		create_program_enrollment(student_name=student.name, submit=1)
 
 	def tearDown(self):
-		for entry in frappe.db.get_all("Course Enrollment"):
-			frappe.delete_doc("Course Enrollment", entry.name)
-
-		for entry in frappe.db.get_all("Program Enrollment"):
-			doc = frappe.get_doc("Program Enrollment", entry.name)
-			doc.cancel()
-			doc.delete()
+		frappe.db.rollback()

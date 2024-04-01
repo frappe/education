@@ -1,12 +1,12 @@
 # Copyright (c) 2018, Frappe Technologies Pvt. Ltd. and Contributors
 # See license.txt
 
-import unittest
 
 import frappe
+from frappe.tests.utils import FrappeTestCase
 
 
-class TestTopic(unittest.TestCase):
+class TestTopic(FrappeTestCase):
 	def setUp(self):
 		make_topic_and_linked_content(
 			"_Test Topic 1", [{"type": "Article", "name": "_Test Article 1"}]

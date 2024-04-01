@@ -69,4 +69,32 @@ def get_custom_fields():
 				"insert_after": "column_break_ejcc",
 			},
 		],
+		"Sales Order": [
+			{
+				"fieldname": "student_info_section",
+				"fieldtype": "Section Break",
+				"label": "Student Info",
+				"collapsible": 1,
+				"insert_after": "ignore_pricing_rule",
+			},
+			{
+				"fieldname": "student",
+				"fieldtype": "Link",
+				"label": "Student",
+				"options": "Student",
+				"insert_after": "student_info_section",
+			},
+			{
+				"fieldname": "column_break_ejcc",
+				"fieldtype": "Column Break",
+				"insert_after": "student",
+			},
+			{
+				"fieldname": "fee_schedule",
+				"fieldtype": "Link",
+				"label": "Fee Schedule",
+				"options": "Fee Schedule",
+				"insert_after": "column_break_ejcc",
+			},
+		],
 	}

@@ -1,12 +1,12 @@
 # Copyright (c) 2015, Frappe Technologies and Contributors
 # See license.txt
 
-import unittest
 
 import frappe
+from frappe.tests.utils import FrappeTestCase
 
 
-class TestAcademicYear(unittest.TestCase):
+class TestAcademicYear(FrappeTestCase):
 	def test_date_validation(self):
 		year = frappe.get_doc(
 			{

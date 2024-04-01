@@ -21,6 +21,7 @@ class FeeStructure(Document):
 		"""Calculates total amount."""
 		self.total_amount = 0
 		for d in self.components:
+			d.total = flt(d.amount) - (d.amount * (flt(d.discount) / 100))
 			self.total_amount += d.total
 
 	def validate_discount(self):
@@ -188,6 +189,7 @@ def validate_due_date(due_date, idx):
 
 @frappe.whitelist()
 def make_term_wise_fee_schedule(source_name, target_doc=None):
+
 	return get_mapped_doc(
 		"Fee Structure",
 		source_name,

@@ -1,17 +1,19 @@
 # Copyright (c) 2015, Frappe Technologies and Contributors
 # See license.txt
 
-import unittest
 
 import frappe
 
 from education.education.doctype.topic.test_topic import (
-    make_topic, make_topic_and_linked_content)
+	make_topic,
+	make_topic_and_linked_content,
+)
+from frappe.tests.utils import FrappeTestCase
 
 # test_records = frappe.get_test_records('Course')
 
 
-class TestCourse(unittest.TestCase):
+class TestCourse(FrappeTestCase):
 	def setUp(self):
 		make_topic_and_linked_content(
 			"_Test Topic 1", [{"type": "Article", "name": "_Test Article 1"}]

@@ -13,8 +13,13 @@
   "validate_course",
   "academic_term_reqd",
   "user_creation_skip",
+  "accounting_section",
+  "create_so",
+  "column_break_aimg",
   "auto_submit_sales_invoice",
   "sales_invoice_posting_date_fee_schedule",
+  "auto_submit_sales_order",
+  "sales_order_transaction_date_fee_schedule",
   "section_break_7",
   "instructor_created_by",
   "portal_settings_tab",
@@ -88,6 +93,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval: !doc.create_so",
    "description": "By default, the Sales Invoice Created will be in Draft Mode. If enabled, the Sales Invoice will be submitted once created.",
    "fieldname": "auto_submit_sales_invoice",
    "fieldtype": "Check",
@@ -131,15 +137,48 @@
   },
   {
    "default": "1",
-   "description": "By default, the Sales Invoice's  Posting Date will be equal to Fee Schedule's Posting Date. If disabled then Sales Invoice,s Posting Date will be today's date.",
+   "depends_on": "eval: !doc.create_so",
+   "description": "By default, the Sales Invoice's  Posting Date will be equal to Fee Schedule's Posting Date. If disabled then Sales Invoice's Posting Date will be today's date.",
    "fieldname": "sales_invoice_posting_date_fee_schedule",
    "fieldtype": "Check",
    "label": "Sales Invoice Posting Date should be same as Fee Schedule Posting Date"
+  },
+  {
+   "fieldname": "accounting_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting"
+  },
+  {
+   "fieldname": "column_break_aimg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "By default, Sales Invoice will be created against Program Enrollment / Fee Schedule.\nIf enabled Sales Order will be created",
+   "fieldname": "create_so",
+   "fieldtype": "Check",
+   "label": "Create Sales Order instead of Sales Invoice"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval: doc.create_so",
+   "description": "By default, the Sales Order Created will be in Draft Mode. If enabled, the Sales Order will be submitted once created.",
+   "fieldname": "auto_submit_sales_order",
+   "fieldtype": "Check",
+   "label": "Submit Sales Order from Program Enrollment / Fee Schedule"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval: doc.create_so",
+   "description": "By default, the Sales Order's  Transaction Date will be equal to Fee Schedule's Transaction Date. If disabled then Sales Order's Transaction Date will be today's date.",
+   "fieldname": "sales_order_transaction_date_fee_schedule",
+   "fieldtype": "Check",
+   "label": "Sales Order Posting Date should be same as Fee Schedule Posting Date"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2024-02-20 17:41:45.721252",
+ "modified": "2024-03-27 15:05:41.058873",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
