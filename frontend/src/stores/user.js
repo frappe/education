@@ -9,7 +9,6 @@ export const usersStore = defineStore('education-users', () => {
 		initialData: [],
 		onError(error) {
 			console.log(error)
-			console.log("aasass")
 			console.log(error.exc_type)
 			if (error && error.exc_type === 'AuthenticationError') {
 				router.push('/login')

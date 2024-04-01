@@ -9,11 +9,14 @@ frappe.ui.form.on('Student Group', {
 		});
 		if (!frm.__islocal) {
 			frm.set_query('student', 'students', function () {
-				return {
-					query: 'education.education.doctype.student_group.student_group.fetch_students',
-					filters: {
+				let filters = {
+					'group_based_on': frm.doc.group_based_on,
+				}
+
+				if (!(frm.doc.group_based_on === 'Activity')) {
+					filters = {
+						...filters,
 						'academic_year': frm.doc.academic_year,
-						'group_based_on': frm.doc.group_based_on,
 						'academic_term': frm.doc.academic_term,
 						'program': frm.doc.program,
 						'batch': frm.doc.batch,
@@ -21,6 +24,11 @@ frappe.ui.form.on('Student Group', {
 						'course': frm.doc.course,
 						'student_group': frm.doc.name
 					}
+				}
+
+				return {
+					query: 'education.education.doctype.student_group.student_group.fetch_students',
+					filters: filters
 				}
 			});
 		}
@@ -105,7 +113,6 @@ frappe.ui.form.on('Student Group', {
 					},
 					callback: function (r) {
 						if (r.message) {
-							console.log(r.message)
 							$.each(r.message, function (i, d) {
 								if (!in_list(student_list, d.student)) {
 									var s = frm.add_child('students');
