@@ -91,7 +91,7 @@ class FeeSchedule(Document):
 
 		frappe.publish_realtime(
 			"fee_schedule_progress",
-			{"progress": "0", "reload": 1},
+			{"progress": 0, "reload": 1},
 			user=frappe.session.user,
 		)
 
@@ -139,7 +139,7 @@ def generate_fees(fee_schedule):
 				created_records += 1
 				frappe.publish_realtime(
 					"fee_schedule_progress",
-					{"progress": str(int(created_records * 100 / total_records))},
+					{"progress": int(created_records * 100 / total_records)},
 					user=frappe.session.user,
 				)
 
@@ -163,7 +163,7 @@ def generate_fees(fee_schedule):
 
 	frappe.publish_realtime(
 		"fee_schedule_progress",
-		{"progress": "100", "reload": 1},
+		{"progress": 100, "reload": 1},
 		user=frappe.session.user,
 	)
 

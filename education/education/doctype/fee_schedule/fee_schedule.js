@@ -89,7 +89,7 @@ frappe.ui.form.on("Fee Schedule", {
 				info.total_unpaid ? "orange" : "green"
 			);
 		}
-		if (frm.doc.doc === "In Process") {
+		if (frm.doc.status === "In Process") {
 			frm.dashboard.add_progress("Fee Creation Status", "0");
 		}
 		if (
