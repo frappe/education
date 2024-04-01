@@ -12,13 +12,10 @@ from education.education.utils import OverlapError
 from education.education.test_utils import (
 	create_academic_year,
 	create_academic_term,
-	create_fee_category,
 	create_program,
-	create_fee_structure,
 	create_student,
 	create_program_enrollment,
 	create_student_group,
-	create_fee_schedule,
 	create_instructor,
 	create_course,
 	create_room,

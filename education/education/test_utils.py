@@ -11,11 +11,11 @@ DEFAULT_ACADEMIC_TERM = "2023-2024 (Term 1)"
 DEFAULT_STUDENT_GROUP = "Test Student Group"
 DEFAULT_GROUP_BASED_ON = "Batch"
 DEFAULT_FEES_CATEGORY = "Tuition Fee"
+DEFAULT_STUDENT_EMAIL_ID = "test@example.com"
 
 
 def before_tests():
 	frappe.clear_cache()
-	# complete setup if missing
 	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 
 	year = now_datetime().year
@@ -46,35 +46,6 @@ def before_tests():
 	make_holiday_list()
 	frappe.db.commit()
 
-	# create_tax_account()
-
-
-def create_tax_account():
-	company = "Wind Power LLC"
-	account_name = "Output Tax GST"
-
-	parent = (
-		frappe.db.get_value(
-			"Account", {"company": company, "account_type": "Tax", "is_group": 1}
-		)
-		or "Duties and Taxes - WP"
-	)
-
-	frappe.get_doc(
-		{
-			"doctype": "Account",
-			"account_name": account_name,
-			"is_group": 0,
-			"company": company,
-			"root_type": "Liability",
-			"report_type": "Balance Sheet",
-			"account_currency": "INR",
-			"parent_account": parent,
-			"account_type": "Tax",
-			"tax_rate": 18,
-		}
-	).insert()
-
 
 def make_holiday_list(holiday_list_name="Test Holiday List"):
 	if not frappe.db.get_value("Holiday List", holiday_list_name):
@@ -91,28 +62,30 @@ def make_holiday_list(holiday_list_name="Test Holiday List"):
 		holiday_list.save()
 
 
-def create_academic_year(**args):
+def create_academic_year(
+	academic_year_name=DEFAULT_ACADEMIC_YEAR, year_start_date=None, year_end_date=None
+):
 	if frappe.db.exists("Academic Year", {"academic_year_name": DEFAULT_ACADEMIC_YEAR}):
 		return
 
 	academic_year = frappe.new_doc("Academic Year")
-	academic_year.academic_year_name = args.get(
-		"academic_year_name", DEFAULT_ACADEMIC_YEAR
-	)
-	academic_year.year_start_date = args.get("year_start_date", "2023-04-01")
-	academic_year.year_end_date = args.get("year_end_date", "2024-03-31")
+	academic_year.academic_year_name = academic_year_name
+	academic_year.year_start_date = year_start_date or "2023-04-01"
+	academic_year.year_end_date = year_end_date or "2024-03-31"
 	academic_year.save()
 
 
-def create_academic_term(**args):
+def create_academic_term(
+	term_start_date, term_end_date, academic_year=DEFAULT_ACADEMIC_YEAR, term_name="Term 1"
+):
 	if frappe.db.exists("Academic Term", {"term_name": "Term 1"}):
 		return
 
 	academic_term = frappe.new_doc("Academic Term")
-	academic_term.academic_year = args.get("academic_year", DEFAULT_ACADEMIC_YEAR)
-	academic_term.term_name = args.get("term_name", "Term 1")
-	academic_term.term_start_date = args.get("term_start_date")
-	academic_term.term_end_date = args.get("term_end_date")
+	academic_term.academic_year = academic_year
+	academic_term.term_name = term_name
+	academic_term.term_start_date = term_start_date
+	academic_term.term_end_date = term_end_date
 	academic_term.save()
 
 
@@ -132,12 +105,18 @@ def create_program(name=DEFAULT_PROGRAM_NAME):
 	program.save()
 
 
-def create_fee_structure(**args):
+def create_fee_structure(
+	academic_year=DEFAULT_ACADEMIC_YEAR,
+	academic_term=DEFAULT_ACADEMIC_TERM,
+	program=DEFAULT_PROGRAM_NAME,
+	components=None,
+	submit=False,
+):
 	fee_structure = frappe.new_doc("Fee Structure")
-	fee_structure.academic_year = args.get("academic_year", DEFAULT_ACADEMIC_YEAR)
-	fee_structure.academic_term = args.get("academic_term", DEFAULT_ACADEMIC_TERM)
-	fee_structure.program = args.get("program", DEFAULT_PROGRAM_NAME)
-	for i in args.get("components"):
+	fee_structure.academic_year = academic_year or DEFAULT_ACADEMIC_YEAR
+	fee_structure.academic_term = academic_term or DEFAULT_ACADEMIC_TERM
+	fee_structure.program = program or DEFAULT_PROGRAM_NAME
+	for i in components:
 		fee_structure.append(
 			"components",
 			{
@@ -148,72 +127,63 @@ def create_fee_structure(**args):
 			},
 		)
 	fee_structure.save()
-	if args.get("submit"):
+	if submit:
 		fee_structure.submit()
 	return fee_structure
 
 
-def create_student(**args):
-	"""
-	args first_name,last_name, student_email_id
-	"""
+def create_student(
+	first_name="Test", last_name="Student", student_email_id=DEFAULT_STUDENT_EMAIL_ID
+):
 
-	if frappe.db.exists(
-		"Student", {"student_email_id": args.get("student_email_id", "test@gmail.com")}
-	):
-		return frappe.get_doc(
-			"Student", {"student_email_id": args.get("student_email_id", "test@gmail.com")}
-		)
+	if frappe.db.exists("Student", {"student_email_id": student_email_id}):
+		return frappe.get_doc("Student", {"student_email_id": student_email_id})
 
 	student = frappe.new_doc("Student")
-	student.first_name = args.get("first_name", "Test")
-	student.last_name = args.get("last_name", "Student")
-	student.student_email_id = args.get("student_email_id", "test@gmail.com")
+	student.first_name = first_name
+	student.last_name = last_name
+	student.student_email_id = student_email_id
 	student.save()
 	return student
 
 
-def create_program_enrollment(**args):
-	"""
-	args program, student ID(student.name), academic_year, academic_term, enrollment_date
-	"""
+def create_program_enrollment(
+	student_name,
+	program=DEFAULT_PROGRAM_NAME,
+	academic_year=DEFAULT_ACADEMIC_YEAR,
+	academic_term=DEFAULT_ACADEMIC_TERM,
+	enrollment_date="2023-04-01",
+	submit=False,
+):
 	program_enrollment = frappe.new_doc("Program Enrollment")
-	program_enrollment.student = args.get("student_name")
-	program_enrollment.program = args.get("program", DEFAULT_PROGRAM_NAME)
-	program_enrollment.academic_year = args.get("academic_year", DEFAULT_ACADEMIC_YEAR)
-	program_enrollment.academic_term = args.get("academic_term", DEFAULT_ACADEMIC_TERM)
-	program_enrollment.enrollment_date = args.get("enrollment_date", "2023-04-01")
+	program_enrollment.student = student_name
+	program_enrollment.program = program
+	program_enrollment.academic_year = academic_year
+	program_enrollment.academic_term = academic_term
+	program_enrollment.enrollment_date = enrollment_date
 	program_enrollment.save()
-	if args.get("submit"):
+	if submit:
 		program_enrollment.submit()
 	return program_enrollment
 
 
-def create_student_group(**args):
-	"""
-	args have academic_year, academic_term, group_based_on, program, student_group_name
-	"""
-	if frappe.db.exists(
-		"Student Group", {"student_group_name": args.get("student_group_name")}
-	):
-		return frappe.get_doc(
-			"Student Group", {"student_group_name": args.get("student_group_name")}
-		)
+def create_student_group(
+	student_group_name=DEFAULT_STUDENT_GROUP,
+	academic_year=DEFAULT_ACADEMIC_YEAR,
+	academic_term=DEFAULT_ACADEMIC_TERM,
+	group_based_on=DEFAULT_GROUP_BASED_ON,
+	program=DEFAULT_PROGRAM_NAME,
+):
+	if frappe.db.exists("Student Group", {"student_group_name": student_group_name}):
+		return frappe.get_doc("Student Group", {"student_group_name": student_group_name})
 	student_group = frappe.new_doc("Student Group")
-	student_group.student_group_name = args.get(
-		"student_group_name", DEFAULT_STUDENT_GROUP
-	)
-	student_group.academic_year = args.get("academic_year", DEFAULT_ACADEMIC_YEAR)
-	student_group.academic_term = args.get("academic_term", DEFAULT_ACADEMIC_TERM)
-	student_group.group_based_on = args.get("group_based_on", DEFAULT_GROUP_BASED_ON)
-	student_group.program = args.get("program", DEFAULT_PROGRAM_NAME)
+	student_group.student_group_name = student_group_name
+	student_group.academic_year = academic_year
+	student_group.academic_term = academic_term
+	student_group.group_based_on = group_based_on
+	student_group.program = program
 
-	students_in_group = get_students(
-		args.get("academic_year", DEFAULT_ACADEMIC_YEAR),
-		args.get("group_based_on", DEFAULT_GROUP_BASED_ON),
-		args.get("academic_term", DEFAULT_ACADEMIC_TERM),
-		args.get("program", DEFAULT_PROGRAM_NAME),
-	)
+	students_in_group = get_students(academic_year, group_based_on, academic_term, program)
 
 	for student in students_in_group:
 		student_group.append("students", {"student": student.get("student")})
@@ -222,20 +192,17 @@ def create_student_group(**args):
 	return student_group
 
 
-def create_fee_schedule(**args):
-	"""
-	args: fee_structure,
-	"""
+def create_fee_schedule(
+	academic_year=DEFAULT_ACADEMIC_YEAR, due_date="2023-04-01", submit=False
+):
 	fee_structure = frappe.db.get_value(
-		"Fee Structure",
-		{"academic_year": args.get("academic_year", DEFAULT_ACADEMIC_YEAR)},
-		"name",
+		"Fee Structure", {"academic_year": academic_year}, "name"
 	)
 
 	fee_schedule = frappe.new_doc("Fee Schedule")
 	fee_schedule.fee_structure = fee_structure
 	fee_schedule = get_fee_structure(fee_schedule)
-	fee_schedule.due_date = args.get("due_date", "2023-04-01")
+	fee_schedule.due_date = due_date
 
 	student_groups = frappe.db.get_list(
 		"Student Group",
@@ -250,7 +217,7 @@ def create_fee_schedule(**args):
 		fee_schedule.append("student_groups", {"student_group": group.get("name")})
 
 	fee_schedule.save()
-	if args.get("submit"):
+	if submit:
 		fee_schedule.submit()
 
 	return fee_schedule

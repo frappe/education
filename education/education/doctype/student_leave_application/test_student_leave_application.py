@@ -131,7 +131,7 @@ def create_student_attendance(date=None, status=None):
 
 
 def get_student():
-	student = frappe.get_doc("Student", {"student_email_id": "test@gmail.com"})
+	student = frappe.get_doc("Student", {"student_email_id": "test@example.com"})
 	return student
 
 
