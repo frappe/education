@@ -1,9 +1,9 @@
 <template>
-  <div class="font-bold">
-    {{ getDailyViewDate(currentDate) }}
-    <div>
+  <div class="h-[90%] min-h-[500px] min-w-[600px]">
+    <span class="font-bold">{{ getDailyViewDate(currentDate) }}</span>
+    <div class="h-full overflow-hidden">
       <div
-        class="border-l-[1px] border-t-[1px] border-b-[1px] h-full w-full overflow-scroll flex"
+        class="border-l-[1px] border-t-[1px] border-b-[1px] h-full w-full flex overflow-scroll"
         ref="gridRef"
       >
         <!-- Left column -->

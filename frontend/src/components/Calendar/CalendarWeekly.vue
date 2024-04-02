@@ -1,6 +1,6 @@
 <template>
-  <div class="p-4 h-dvh">
-    <div class="h-[80%] min-h-[500px] min-w-[600px]">
+  <div class="p-4 h-[90%]">
+    <div class="h-full min-h-[500px] min-w-[600px]">
       <!-- Day List -->
       <div class="flex">
         <div class="w-16"></div>
