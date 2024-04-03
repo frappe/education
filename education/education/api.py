@@ -574,7 +574,9 @@ def get_course_list_based_on_program(program_name):
 
 
 @frappe.whitelist()
-def get_course_schedule_for_student(program_name):
+def get_course_schedule_for_student(program_name, student_groups):
+	student_groups = [sg.get("label") for sg in student_groups]
+
 	schedule = frappe.db.get_list(
 		"Course Schedule",
 		fields=[
@@ -588,7 +590,7 @@ def get_course_schedule_for_student(program_name):
 			"title",
 			"name",
 		],
-		filters={"program": program_name},
+		filters={"program": program_name, "student_group": ["in", student_groups]},
 		order_by="schedule_date asc",
 	)
 	return schedule
