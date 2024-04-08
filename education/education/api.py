@@ -695,7 +695,9 @@ def get_student_invoices(student):
 
 		student_sales_invoices.append(student_program_invoice_status)
 
-	return student_sales_invoices
+	print_format = get_fees_print_format() or "Standard"
+
+	return {"invoices": student_sales_invoices, "print_format": print_format}
 
 
 def get_currency_symbol(currency):
@@ -717,6 +719,14 @@ def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
 	if len(q) > 0:
 		payment_date = q[0].get("posting_date")
 		return payment_date
+
+
+def get_fees_print_format():
+	return frappe.db.get_value(
+		"Property Setter",
+		dict(property="default_print_format", doc_type="Sales Invoice"),
+		"value",
+	)
 
 
 def get_program_from_fee_schedule(fee_schedule):
