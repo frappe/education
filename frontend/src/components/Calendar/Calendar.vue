@@ -53,7 +53,7 @@
   </div>
 </template>
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, provide, ref } from 'vue'
 import { Button, TabButtons } from 'frappe-ui'
 import { groupBy, getCalendarDates } from '@/utils'
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
@@ -86,6 +86,23 @@ let defaultConfig = {
 }
 
 let overrideConfig = { ...defaultConfig, ...props.config }
+
+let events = computed({
+  get() {
+    return props.events
+  },
+  set(newVal) {
+    emit('dragEvent', newVal)
+  },
+})
+
+provide('updateEventState', updateEventState)
+
+function updateEventState(updatedState) {
+  const { date, calendarEventID } = updatedState
+  let event = events.value.findIndex((e) => e.name === calendarEventID)
+  events.value[event].date = parseDate(date)
+}
 
 // Calendar View Options
 const actionOptions = [
@@ -203,7 +220,6 @@ function decrementMonth() {
 
 function incrementWeek() {
   week.value += 1
-  debugger
   if (week.value < datesInWeeks.value.length) {
     date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
   }

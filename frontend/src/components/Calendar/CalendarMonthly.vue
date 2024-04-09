@@ -63,8 +63,9 @@
 
 <script setup>
 import { groupBy } from '@/utils'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, inject } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
+import { isNavigationFailure } from 'vue-router'
 
 const props = defineProps({
   events: {
@@ -132,16 +133,23 @@ function currentMonthDate(date) {
 }
 
 const startDrag = (event, calendarEventID) => {
-  console.log(event, calendarEventID)
   event.dataTransfer.dropEffect = 'move'
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('calendarEventID', calendarEventID)
 }
 
+let updateEventState = inject('updateEventState')
 const onDrop = (event, date) => {
-  let calendarEvent = event.dataTransfer.getData('calendarEventID')
-  console.log(calendarEvent)
-  console.log(date, 'date')
+  let calendarEventID = event.dataTransfer.getData('calendarEventID')
+
+  // if same date then return
+  let e = props.events.find((e) => e.name === calendarEventID)
+  if (parseDate(date) === e.date) return
+
+  updateEventState({
+    date: date,
+    calendarEventID: calendarEventID,
+  })
 }
 </script>
 
