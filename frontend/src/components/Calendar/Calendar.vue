@@ -149,16 +149,17 @@ let datesInWeeks = computed(() => {
   return datesInWeeks
 })
 
-let currentWeek = computed(() =>
-  datesInWeeks.value.findIndex((week) =>
+function findCurrentWeek(date) {
+  return datesInWeeks.value.findIndex((week) =>
     week.find(
-      (date) =>
-        new Date(date).toLocaleDateString().split('T')[0] ===
-        new Date().toLocaleDateString().split('T')[0]
+      (d) =>
+        new Date(d).toLocaleDateString().split('T')[0] ===
+        new Date(date).toLocaleDateString().split('T')[0]
     )
   )
-)
-let week = ref(currentWeek.value)
+}
+
+let week = ref(findCurrentWeek(currentDate.value))
 
 let date = ref(
   currentMonthDates.value.findIndex(
@@ -182,8 +183,8 @@ let decrementClickEvents = {
 
 function incrementMonth() {
   currentMonth.value++
-  week.value = 0
   date.value = findFirstDateOfMonth(currentMonth.value, currentYear.value)
+  week.value = findCurrentWeek(currentMonthDates.value[date.value]) + 1
   if (currentMonth.value > 11) {
     currentMonth.value = 0
     currentYear.value++
@@ -193,7 +194,7 @@ function incrementMonth() {
 function decrementMonth() {
   currentMonth.value--
   date.value = findLastDateOfMonth(currentMonth.value, currentYear.value)
-  week.value = datesInWeeks.value.length - 1
+  week.value = findCurrentWeek(currentMonthDates.value[date.value])
   if (currentMonth.value < 0) {
     currentMonth.value = 11
     currentYear.value--
@@ -202,28 +203,44 @@ function decrementMonth() {
 
 function incrementWeek() {
   week.value += 1
-
+  debugger
   if (week.value < datesInWeeks.value.length) {
     date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
   }
-
   if (week.value > datesInWeeks.value.length - 1) {
-    // date.value = 0
-    week.value = 0
     incrementMonth()
+  }
+  let nextMonthDates = filterCurrentWeekDates()
+  if (nextMonthDates.length > 0) {
+    incrementMonth()
+    week.value = findCurrentWeek(nextMonthDates[0])
   }
 }
 
 function decrementWeek() {
   week.value -= 1
+  if (week.value < 0) {
+    decrementMonth()
+    return
+  }
 
   if (week.value > 0) {
     date.value = findIndexOfDate(datesInWeeks.value[week.value][0])
   }
 
-  if (week.value < 0) {
+  let previousMonthDates = filterCurrentWeekDates()
+  if (previousMonthDates.length > 0) {
     decrementMonth()
+    week.value = findCurrentWeek(previousMonthDates[0])
   }
+}
+
+function filterCurrentWeekDates() {
+  let currentWeekDates = datesInWeeks.value[week.value]
+  let differentMonthDates = currentWeekDates.filter(
+    (d) => d.getMonth() !== currentMonth.value
+  )
+  return differentMonthDates
 }
 
 function incrementDay() {
