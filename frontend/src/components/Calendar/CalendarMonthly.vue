@@ -50,7 +50,7 @@
             </div>
           </div>
           <span v-else>{{
-            shortMonthList[date.getMonth()] + ' ' + date.getDate()
+            parseDateEventPopupFormat(date, (showDay = false))
           }}</span>
         </div>
       </div>
@@ -62,10 +62,15 @@
 </template>
 
 <script setup>
-import { groupBy } from '@/utils'
-import { computed, ref, onMounted, inject } from 'vue'
+import {
+  groupBy,
+  parseDateEventPopupFormat,
+  daysList,
+  calculateMinutes,
+  parseDate,
+} from './calendarUtils'
+import { computed, inject } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
-import { isNavigationFailure } from 'vue-router'
 
 const props = defineProps({
   events: {
@@ -89,48 +94,34 @@ const props = defineProps({
   },
 })
 
-let shortMonthList = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
-let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
 let parsedData = computed(() => {
   let groupByDate = groupBy(props.events, (row) => row.date)
   let sortedArray = {}
   for (const [key, value] of Object.entries(groupByDate)) {
-    let sortedEvents = value.sort((a, b) =>
-      a.from_time < b.from_time ? -1 : 1
-    )
+    let sortedEvents = sortEvents(value)
     sortedArray[key] = sortedEvents
   }
   return sortedArray
 })
 
-function parseDate(date) {
-  let dd = date.getDate()
-  let mm = date.getMonth() + 1
-  let yyyy = date.getFullYear()
-
-  if (dd < 10) dd = '0' + dd
-  if (mm < 10) mm = '0' + mm
-
-  return `${yyyy}-${mm}-${dd}`
+function sortEvents(value) {
+  let sortedEvents = value.sort((a, b) =>
+    a.from_time !== b.from_time
+      ? calculateMinutes(a.from_time) > calculateMinutes(b.from_time)
+        ? 1
+        : -1
+      : calculateMinutes(a.to_time) > calculateMinutes(b.to_time)
+      ? 1
+      : -1
+  )
+  return sortedEvents
 }
 
 function currentMonthDate(date) {
   return date.getMonth() === props.currentMonth
 }
+
+let updateEventState = inject('updateEventState')
 
 const startDrag = (event, calendarEventID) => {
   event.dataTransfer.dropEffect = 'move'
@@ -138,17 +129,15 @@ const startDrag = (event, calendarEventID) => {
   event.dataTransfer.setData('calendarEventID', calendarEventID)
 }
 
-let updateEventState = inject('updateEventState')
 const onDrop = (event, date) => {
   let calendarEventID = event.dataTransfer.getData('calendarEventID')
-
   // if same date then return
   let e = props.events.find((e) => e.name === calendarEventID)
   if (parseDate(date) === e.date) return
 
   updateEventState({
-    date: date,
     calendarEventID: calendarEventID,
+    date: date,
   })
 }
 </script>

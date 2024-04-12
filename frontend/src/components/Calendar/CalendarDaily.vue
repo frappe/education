@@ -1,6 +1,6 @@
 <template>
   <div class="h-[90%] min-h-[500px] min-w-[600px]">
-    <span class="font-bold">{{ getDailyViewDate(currentDate) }}</span>
+    <span class="font-bold">{{ parseDateWithComma(currentDate) }}</span>
     <div class="h-full overflow-hidden">
       <div
         class="border-l-[1px] border-t-[1px] border-b-[1px] h-full w-full flex overflow-scroll"
@@ -26,7 +26,7 @@
             <!-- Day Grid -->
             <div
               class="flex relative"
-              v-for="time in twentyFourHourFormat"
+              v-for="time in twentyFourHoursFormat"
               :data-time-attr="time"
             >
               <div
@@ -66,8 +66,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
+import {
+  parseDate,
+  parseDateWithComma,
+  calculateDiff,
+  calculateMinutes,
+  twentyFourHoursFormat,
+} from './calendarUtils'
 
 const props = defineProps({
   events: {
@@ -95,41 +102,6 @@ let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
 let increaseZIndex = ref(false)
 
-function parseDate(date) {
-  return new Date(date).toLocaleDateString().split('/').reverse().join('-')
-}
-function getDailyViewDate(date) {
-  date = new Date(date)
-  return props.daysList[date.getDay()] + ', ' + date.getDate()
-}
-
-let twentyFourHourFormat = [
-  '00:00',
-  '01:00',
-  '02:00',
-  '03:00',
-  '04:00',
-  '05:00',
-  '06:00',
-  '07:00',
-  '08:00',
-  '09:00',
-  '10:00',
-  '11:00',
-  '12:00',
-  '13:00',
-  '14:00',
-  '15:00',
-  '16:00',
-  '17:00',
-  '18:00',
-  '19:00',
-  '20:00',
-  '21:00',
-  '22:00',
-  '23:00',
-]
-
 let setCurrentTime = computed(() => {
   let d = new Date()
   let hour = d.getHours()
@@ -146,17 +118,6 @@ function setEventStyles(event, index) {
     redundantCellHeight +
     'px'
   return { height, top, zIndex: index }
-}
-
-function calculateDiff(from, to) {
-  let fromMinutes = calculateMinutes(from)
-  let toMinutes = calculateMinutes(to)
-  return toMinutes - fromMinutes
-}
-
-function calculateMinutes(time) {
-  let [hours, minutes] = time.split(':')
-  return parseInt(hours) * 60 + parseInt(minutes)
 }
 
 function handleClick(e) {

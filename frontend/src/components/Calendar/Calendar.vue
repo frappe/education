@@ -55,7 +55,13 @@
 <script setup>
 import { computed, provide, ref } from 'vue'
 import { Button, TabButtons } from 'frappe-ui'
-import { groupBy, getCalendarDates } from '@/utils'
+import {
+  groupBy,
+  getCalendarDates,
+  monthList,
+  daysList,
+  parseDate,
+} from './calendarUtils'
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
 import CalendarWeekly from './CalendarWeekly.vue'
 import CalendarDaily from './CalendarDaily.vue'
@@ -72,7 +78,7 @@ const props = defineProps({
       hourHeight: 72,
       redundantCellHeight: 22,
       disableModes: [],
-      defaultMode: 'Month',
+      defaultMode: 'Week',
     },
   },
 })
@@ -98,10 +104,12 @@ let events = computed({
 
 provide('updateEventState', updateEventState)
 
-function updateEventState(updatedState) {
-  const { date, calendarEventID } = updatedState
+function updateEventState(...updatedState) {
+  debugger
+  const { calendarEventID, date, height } = updatedState[0]
   let event = events.value.findIndex((e) => e.name === calendarEventID)
   events.value[event].date = parseDate(date)
+  events.value[event].to_time = '16:00:00'
 }
 
 // Calendar View Options
@@ -110,6 +118,7 @@ const actionOptions = [
   { label: 'Week', variant: 'solid' },
   { label: 'Month', variant: 'solid' },
 ]
+
 let enabledModes = actionOptions.filter(
   (mode) => !overrideConfig.disableModes.includes(mode.label)
 )
@@ -118,38 +127,6 @@ let activeView = ref(overrideConfig.defaultMode)
 let currentYear = ref(new Date().getFullYear())
 let currentMonth = ref(new Date().getMonth())
 let currentDate = ref(new Date())
-
-let monthList = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
-
-let shortMonthList = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
-
-let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 let currentMonthDates = computed(() => {
   let dates = getCalendarDates(currentMonth.value, currentYear.value)
@@ -299,17 +276,6 @@ function findIndexOfDate(date) {
   return currentMonthDates.value.findIndex(
     (d) => new Date(d).toDateString() === new Date(date).toDateString()
   )
-}
-
-function parseDate(date) {
-  let dd = date.getDate()
-  let mm = date.getMonth() + 1
-  let yyyy = date.getFullYear()
-
-  if (dd < 10) dd = '0' + dd
-  if (mm < 10) mm = '0' + mm
-
-  return `${yyyy}-${mm}-${dd}`
 }
 
 function getMonth() {

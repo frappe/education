@@ -14,7 +14,7 @@
                 : 'font-normal'
             "
           >
-            {{ getweeklyDates(date) }}
+            {{ parseDateWithComma(date) }}
           </span>
         </div>
       </div>
@@ -51,7 +51,7 @@
             <!-- Time Grid -->
             <div
               class="flex relative cell"
-              v-for="time in twentyFourHourFormat"
+              v-for="time in twentyFourHoursFormat"
               :data-time-attr="time"
             >
               <div
@@ -64,13 +64,16 @@
             <CalendarEvent
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
               :event="calendarEvent"
-              class="mb-2 cursor-pointer absolute w-full"
+              class="mb-2 cursor-pointer absolute w-[90%]"
               :draggable="false"
               :key="calendarEvent.name"
               :date="date"
               :style="setEventStyles(calendarEvent, idx)"
               :stylesProp="setEventStyles(calendarEvent, idx)"
               @mouseout="(e) => handleBlur(e)"
+              @click="(e) => handleClick(e)"
+              @mousedown="(e) => handleMouseMove(e)"
+              @resize="(e) => console.log(e)"
             />
 
             <!-- Current time style  -->
@@ -90,6 +93,13 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
+import {
+  calculateDiff,
+  calculateMinutes,
+  parseDateEventPopupFormat,
+  parseDateWithComma,
+  twentyFourHoursFormat,
+} from './calendarUtils'
 
 let props = defineProps({
   events: {
@@ -118,33 +128,6 @@ let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
 let redundantCellHeight = props.config.redundantCellHeight
 
-let twentyFourHourFormat = [
-  '00:00',
-  '01:00',
-  '02:00',
-  '03:00',
-  '04:00',
-  '05:00',
-  '06:00',
-  '07:00',
-  '08:00',
-  '09:00',
-  '10:00',
-  '11:00',
-  '12:00',
-  '13:00',
-  '14:00',
-  '15:00',
-  '16:00',
-  '17:00',
-  '18:00',
-  '19:00',
-  '20:00',
-  '21:00',
-  '22:00',
-  '23:00',
-]
-
 let setCurrentTime = computed(() => {
   let d = new Date()
   let hour = d.getHours()
@@ -163,17 +146,6 @@ function setEventStyles(event, index) {
   return { height, top, zIndex: index }
 }
 
-function calculateDiff(from, to) {
-  let fromMinutes = calculateMinutes(from)
-  let toMinutes = calculateMinutes(to)
-  return toMinutes - fromMinutes
-}
-
-function calculateMinutes(time) {
-  let [hours, minutes] = time.split(':')
-  return parseInt(hours) * 60 + parseInt(minutes)
-}
-
 function handleClick(e) {
   // change the event z-index to 100
   increaseZIndex.value = true
@@ -186,13 +158,8 @@ function handleBlur(e, calendarEvent) {
   e.target.parentElement.style.zIndex = 0
 }
 
-let daysList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-function getweeklyDates(date) {
-  let d = new Date(date)
-  let weekDate = d.toLocaleDateString().split('/')[0]
-  let day = d.getDay()
-  return daysList[day] + ' ' + weekDate
+function handleMouseMove(e) {
+  // console.log(e)
 }
 
 let parsedData = computed(() => {
@@ -208,7 +175,14 @@ let parsedData = computed(() => {
 })
 
 function parseDate(date) {
-  return new Date(date).toLocaleDateString().split('/').reverse().join('-')
+  let dd = date.getDate()
+  let mm = date.getMonth() + 1
+  let yyyy = date.getFullYear()
+
+  if (dd < 10) dd = '0' + dd
+  if (mm < 10) mm = '0' + mm
+
+  return `${yyyy}-${mm}-${dd}`
 }
 </script>
 
