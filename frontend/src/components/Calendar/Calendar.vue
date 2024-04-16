@@ -79,6 +79,7 @@ const props = defineProps({
       redundantCellHeight: 22,
       disableModes: [],
       defaultMode: 'Week',
+      isEditMode: false,
     },
   },
 })
@@ -91,7 +92,11 @@ let defaultConfig = {
   defaultMode: 'Week',
 }
 
-let overrideConfig = { ...defaultConfig, ...props.config }
+const overrideConfig = { ...defaultConfig, ...props.config }
+let activeView = ref(overrideConfig.defaultMode)
+
+provide('overrideConfig', overrideConfig)
+provide('activeView', activeView)
 
 let events = computed({
   get() {
@@ -105,11 +110,12 @@ let events = computed({
 provide('updateEventState', updateEventState)
 
 function updateEventState(...updatedState) {
-  debugger
-  const { calendarEventID, date, height } = updatedState[0]
+  const { calendarEventID, date, to_time } = updatedState[0]
   let event = events.value.findIndex((e) => e.name === calendarEventID)
   events.value[event].date = parseDate(date)
-  events.value[event].to_time = '16:00:00'
+  if (to_time) {
+    events.value[event].to_time = to_time
+  }
 }
 
 // Calendar View Options
@@ -122,7 +128,6 @@ const actionOptions = [
 let enabledModes = actionOptions.filter(
   (mode) => !overrideConfig.disableModes.includes(mode.label)
 )
-let activeView = ref(overrideConfig.defaultMode)
 
 let currentYear = ref(new Date().getFullYear())
 let currentMonth = ref(new Date().getMonth())

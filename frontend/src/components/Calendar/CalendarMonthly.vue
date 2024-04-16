@@ -45,7 +45,9 @@
                 class="mb-2 cursor-pointer w-full"
                 :key="calendarEvent.name"
                 :draggable="true"
-                @dragstart="startDrag($event, calendarEvent.name)"
+                @dragstart="dragStart($event, calendarEvent.name)"
+                @dragend="$event.target.style.opacity = '1'"
+                @dragover="dragOver($event)"
               />
             </div>
           </div>
@@ -123,14 +125,22 @@ function currentMonthDate(date) {
 
 let updateEventState = inject('updateEventState')
 
-const startDrag = (event, calendarEventID) => {
+const dragStart = (event, calendarEventID) => {
+  event.target.style.opacity = '0.5'
+  event.target.style.cursor = 'move'
   event.dataTransfer.dropEffect = 'move'
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('calendarEventID', calendarEventID)
 }
 
+const dragOver = (event) => {
+  event.preventDefault()
+  console.log('here')
+}
+
 const onDrop = (event, date) => {
   let calendarEventID = event.dataTransfer.getData('calendarEventID')
+  event.target.style.cursor = 'default'
   // if same date then return
   let e = props.events.find((e) => e.name === calendarEventID)
   if (parseDate(date) === e.date) return

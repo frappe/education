@@ -1,7 +1,7 @@
 <template>
   <div
     v-bind="$attrs"
-    class="p-2 rounded-lg w-full"
+    class="p-2 rounded-lg"
     ref="eventRef"
     :class="colorMap[event?.color]?.background_color || 'bg-green-100'"
     @click="updatePosition"
@@ -30,6 +30,7 @@
       </div>
     </div>
     <div
+      v-if="activeView !== 'Month'"
       class="absolute h-[8px] w-[100%] cursor-row-resize"
       ref="resize"
       @mousedown="handleMouseDown"
@@ -94,7 +95,9 @@ import { FeatherIcon, Popover } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
 import { createPopper } from '@popperjs/core'
 
-import { ref, nextTick, inject } from 'vue'
+import { ref, nextTick, inject, computed } from 'vue'
+
+import { calculateMinutes, convertMinutesToHours } from './calendarUtils'
 
 const props = defineProps({
   event: {
@@ -110,6 +113,10 @@ const props = defineProps({
     required: false,
   },
 })
+
+const activeView = inject('activeView')
+
+let event = computed(() => props.event)
 
 const eventRef = ref(null)
 const popoverRef = ref(null)
@@ -175,30 +182,36 @@ function parseDate(date) {
 
 let updateEventState = inject('updateEventState')
 function handleMouseDown(e) {
+  // console.log(event.value)
   e.preventDefault()
+
   window.addEventListener('mousemove', resize)
   window.addEventListener('mouseup', stopResize, { once: true })
+
   function resize(e) {
     eventRef.value.style.height =
       e.clientY - eventRef.value.getBoundingClientRect().top + 'px'
+    eventRef.value.style.width = '100%'
+    event.value.to_time = newEventDuration(eventRef.value.style.height)
   }
+
   function stopResize() {
     window.removeEventListener('mousemove', resize)
-    newEventDuration(eventRef.value.style.height)
-    debugger
+
+    eventRef.value.style.width = '90%'
     updateEventState({
-      calendarEventID: props.event.name,
-      date: props.event.date,
-      height: eventRef.value.style.height,
+      calendarEventID: event.value.name,
+      date: event.value.date,
+      to_time: event.value.to_time,
     })
   }
 }
 
-function newEventDuration(height) {
-  let oldHeight = props.stylesProp.height
-  let newHeight = height
-  let updatedEventDurationHeight = parseFloat(newHeight) - parseFloat(oldHeight)
-  debugger
+function newEventDuration(newHeight) {
+  let newEventDuration =
+    parseFloat(newHeight) / 1.2 + calculateMinutes(props.event.from_time)
+  newEventDuration = Math.floor(newEventDuration)
+  return convertMinutesToHours(newEventDuration)
 }
 
 function setupPopper() {

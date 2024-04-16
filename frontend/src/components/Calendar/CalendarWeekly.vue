@@ -41,6 +41,9 @@
           <div
             v-for="(date, index) in weeklyDates"
             class="border-r-[1px] relative calendar-column"
+            @dragover.prevent
+            @drageneter.prevent
+            @drop="onDrop($event, date)"
           >
             <!-- Top Redundant Cell before time starts for giving the calendar some space -->
             <div
@@ -65,15 +68,15 @@
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
               :event="calendarEvent"
               class="mb-2 cursor-pointer absolute w-[90%]"
-              :draggable="false"
+              :draggable="true"
               :key="calendarEvent.name"
               :date="date"
               :style="setEventStyles(calendarEvent, idx)"
               :stylesProp="setEventStyles(calendarEvent, idx)"
+              ref="calendarEventRef"
+              @dragstart="startDrag($event, calendarEvent.name)"
               @mouseout="(e) => handleBlur(e)"
               @click="(e) => handleClick(e)"
-              @mousedown="(e) => handleMouseMove(e)"
-              @resize="(e) => console.log(e)"
             />
 
             <!-- Current time style  -->
@@ -116,7 +119,7 @@ let props = defineProps({
   },
 })
 const gridRef = ref(null)
-
+const calendarEventRef = ref(null)
 onMounted(() => {
   let scrollTop = props.config.scrollToHour * 60 * minuteHeight
   gridRef.value.scrollBy(0, scrollTop)
@@ -143,6 +146,7 @@ function setEventStyles(event, index) {
     calculateMinutes(event.from_time) * minuteHeight +
     redundantCellHeight +
     'px'
+
   return { height, top, zIndex: index }
 }
 
@@ -158,8 +162,36 @@ function handleBlur(e, calendarEvent) {
   e.target.parentElement.style.zIndex = 0
 }
 
+function handleDragOver(e) {
+  console.log(e)
+}
+
 function handleMouseMove(e) {
-  // console.log(e)
+  console.log(e)
+  e.target.addEventListener('mousemove', (e) => {
+    console.log(e.offsetY, e.offsetX)
+    if (e.offsetX === -2) {
+      console.log(calendarEventRef.value)
+      // calendarEventRef.value.style.left = -180 + 'px'
+    }
+  })
+}
+
+const startDrag = (event, calendarEventID) => {
+  event.dataTransfer.dropEffect = 'move'
+  event.dataTransfer.effectAllowed = 'copyMove'
+  event.dataTransfer.setData('calendarEventID', calendarEventID)
+  console.log('here')
+}
+
+const onDrop = (event, date) => {
+  let calendarEventID = event.dataTransfer.getData('calendarEventID')
+  console.log(calendarEventID)
+  console.log(date)
+  console.log(event.target.getBoundingClientRect())
+  console.log(event.screenX, event.screenY)
+  console.log(event.pageX, event.pageY)
+  console.log(event.clientX, event.clientY)
 }
 
 let parsedData = computed(() => {
