@@ -1,17 +1,19 @@
 <template>
   <div
     v-bind="$attrs"
-    class="p-2 rounded-lg"
+    class="p-2 rounded-lg h-min-[18px] w-[90%]"
     ref="eventRef"
-    :class="colorMap[event?.color]?.background_color || 'bg-green-100'"
+    :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
+    :style="setEventStyles"
     @click="updatePosition"
+    @mousedown="(e) => handleRepositionMouseDown(e)"
   >
     <div
       class="flex gap-3 relative px-2 items-start h-full overflow-hidden select-none"
       :class="
-        event.from_time && [
+        calendarEvent.from_time && [
           'border-l-2',
-          colorMap[event?.color]?.border_color || 'border-green-600',
+          colorMap[calendarEvent?.color]?.border_color || 'border-green-600',
         ]
       "
     >
@@ -19,13 +21,13 @@
 
       <div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
         <p class="font-medium text-sm text-gray-800 text-ellipsis">
-          {{ event.title }}
+          {{ calendarEvent.title }}
         </p>
         <p
           class="font-normal text-xs text-gray-800 text-ellipsis"
-          v-if="event.from_time"
+          v-if="calendarEvent.from_time"
         >
-          {{ event.from_time }} - {{ event.to_time }}
+          {{ calendarEvent.from_time }} - {{ calendarEvent.to_time }}
         </p>
       </div>
     </div>
@@ -33,7 +35,7 @@
       v-if="activeView !== 'Month'"
       class="absolute h-[8px] w-[100%] cursor-row-resize"
       ref="resize"
-      @mousedown="handleMouseDown"
+      @mousedown="handleResizeMouseDown"
     ></div>
   </div>
 
@@ -43,31 +45,33 @@
     v-show="opened"
   >
     <!-- heading  -->
-    <div class="font-semibold text-xl">{{ event.title }}</div>
+    <div class="font-semibold text-xl">{{ calendarEvent.title }}</div>
 
     <!-- event info container -->
     <div class="flex flex-col gap-4">
       <div class="flex gap-2 items-center">
         <FeatherIcon name="calendar" class="h-4 w-4" />
-        <span class="text-sm font-normal"> {{ parseDate(date) }} </span>
+        <span class="text-sm font-normal">
+          {{ parseDateEventPopupFormat(date) }}
+        </span>
       </div>
-      <div class="flex gap-2 items-center" v-if="event.with">
+      <div class="flex gap-2 items-center" v-if="calendarEvent.with">
         <FeatherIcon name="user" class="h-4 w-4" />
-        <span class="text-sm font-normal"> {{ event.with }} </span>
+        <span class="text-sm font-normal"> {{ calendarEvent.with }} </span>
       </div>
       <div
         class="flex gap-2 items-center"
-        v-if="event.from_time && event.to_time"
+        v-if="calendarEvent.from_time && calendarEvent.to_time"
       >
         <FeatherIcon name="clock" class="h-4 w-4" />
         <span class="text-sm font-normal">
-          {{ event.from_time }} - {{ event.to_time }}
+          {{ calendarEvent.from_time }} - {{ calendarEvent.to_time }}
         </span>
       </div>
-      <div class="flex gap-2 items-center" v-if="event.room">
+      <div class="flex gap-2 items-center" v-if="calendarEvent.room">
         <FeatherIcon name="circle" class="h-4 w-4" />
         <span class="text-sm font-normal">
-          Room No: &nbsp {{ event.room }}
+          Room No: &nbsp {{ calendarEvent.room }}
         </span>
       </div>
     </div>
@@ -97,7 +101,13 @@ import { createPopper } from '@popperjs/core'
 
 import { ref, nextTick, inject, computed } from 'vue'
 
-import { calculateMinutes, convertMinutesToHours } from './calendarUtils'
+import {
+  calculateMinutes,
+  convertMinutesToHours,
+  calculateDiff,
+  parseDate,
+  parseDateEventPopupFormat,
+} from './calendarUtils'
 
 const props = defineProps({
   event: {
@@ -108,22 +118,45 @@ const props = defineProps({
     type: Date,
     required: true,
   },
-  stylesProp: {
-    type: Object,
-    required: false,
-  },
 })
-
 const activeView = inject('activeView')
 
-let event = computed(() => props.event)
+const calendarEvent = ref(props.event)
+
+const setEventStyles = computed(() => {
+  const minuteHeight = 1.2
+  const redundantCellHeight = 22
+
+  let diff = calculateDiff(
+    calendarEvent.value.from_time,
+    calendarEvent.value.to_time
+  )
+  let height = diff * minuteHeight + 'px'
+  if (activeView.value === 'Month') {
+    height = 'auto'
+  }
+  let top =
+    calculateMinutes(calendarEvent.value.from_time) * minuteHeight +
+    redundantCellHeight +
+    'px'
+
+  return {
+    height,
+    top,
+    zIndex: calendarEvent.value.idx,
+    left: '0',
+  }
+})
 
 const eventRef = ref(null)
 const popoverRef = ref(null)
 const popper = ref(null)
 const opened = ref(false)
 const resize = ref(null)
-
+const eventStepper = ref(0)
+const isResizing = ref(false)
+const isRepositioning = ref(false)
+const isEventUpdated = ref(false)
 let colorMap = {
   blue: {
     background_color: 'bg-blue-100',
@@ -171,47 +204,170 @@ let colorMap = {
   },
 }
 
-function parseDate(date) {
-  const options = {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  }
-  return date.toLocaleDateString('en-US', options)
+let updateEventState = inject('updateEventState')
+
+function newEventEndTime(newHeight) {
+  // TODO:Instead of 1.2 bring defaultCellHeight from Provide
+  let newEndTime =
+    parseFloat(newHeight) / 1.2 +
+    calculateMinutes(calendarEvent.value.from_time)
+  newEndTime = Math.floor(newEndTime)
+  return convertMinutesToHours(newEndTime)
 }
 
-let updateEventState = inject('updateEventState')
-function handleMouseDown(e) {
-  // console.log(event.value)
-  e.preventDefault()
+function newEventDuration(changeInTime) {
+  let newFromTime =
+    calculateMinutes(calendarEvent.value.from_time) + changeInTime / 1.2
+  let newToTime =
+    calculateMinutes(calendarEvent.value.to_time) + changeInTime / 1.2
+  if (newFromTime < 0) {
+    newFromTime = 0
+    newToTime = calculateDiff(
+      calendarEvent.value.from_time,
+      calendarEvent.value.to_time
+    )
+  }
 
+  if (newToTime > 1440) {
+    newToTime = 1440
+    newFromTime =
+      newToTime -
+      calculateDiff(calendarEvent.value.from_time, calendarEvent.value.to_time)
+  }
+
+  return [convertMinutesToHours(newFromTime), convertMinutesToHours(newToTime)]
+}
+
+function handleResizeMouseDown(e) {
+  isResizing.value = true
+  isRepositioning.value = false
+  if (isRepositioning.value) return
   window.addEventListener('mousemove', resize)
   window.addEventListener('mouseup', stopResize, { once: true })
 
   function resize(e) {
+    let height_15_min = 18
+    //take difference between where mouse is and where event's top is
     eventRef.value.style.height =
-      e.clientY - eventRef.value.getBoundingClientRect().top + 'px'
+      Math.round(
+        (e.clientY - eventRef.value.getBoundingClientRect().top) / height_15_min
+      ) *
+        height_15_min +
+      'px'
+
     eventRef.value.style.width = '100%'
-    event.value.to_time = newEventDuration(eventRef.value.style.height)
+    calendarEvent.value.to_time = newEventEndTime(eventRef.value.style.height)
   }
 
   function stopResize() {
-    window.removeEventListener('mousemove', resize)
-
     eventRef.value.style.width = '90%'
-    updateEventState({
-      calendarEventID: event.value.name,
-      date: event.value.date,
-      to_time: event.value.to_time,
-    })
+    isResizing.value = false
+
+    updateEventState(calendarEvent.value)
+
+    window.removeEventListener('mousemove', resize)
   }
 }
 
-function newEventDuration(newHeight) {
-  let newEventDuration =
-    parseFloat(newHeight) / 1.2 + calculateMinutes(props.event.from_time)
-  newEventDuration = Math.floor(newEventDuration)
-  return convertMinutesToHours(newEventDuration)
+function handleRepositionMouseDown(e) {
+  if (activeView.value === 'Month') return
+  let prevY = e.clientY
+  isRepositioning.value = true
+
+  if (isResizing.value) return
+
+  window.addEventListener('mousemove', mousemove)
+  window.addEventListener('mouseup', mouseup)
+
+  function mousemove(e) {
+    if (!eventRef.value) return
+    let oldCalendarEvent = { ...calendarEvent.value }
+    eventRef.value.style.cursor = 'move'
+    eventRef.value.style.width = '100%'
+
+    // handle movement between days
+    handleHorizontalMovement(e.clientX)
+    // handle movement within the same day
+    handleVerticalMovement(e.clientY, prevY)
+    prevY = e.clientY
+
+    if (
+      oldCalendarEvent.from_time !== calendarEvent.value.from_time ||
+      oldCalendarEvent.to_time !== calendarEvent.value.to_time ||
+      oldCalendarEvent.date !== calendarEvent.value.date
+    ) {
+      isEventUpdated.value = true
+    }
+  }
+
+  function mouseup() {
+    isRepositioning.value = false
+
+    if (!eventRef.value) return
+
+    eventRef.value.style.cursor = 'pointer'
+    eventRef.value.style.width = '90%'
+
+    window.removeEventListener('mousemove', mousemove)
+    window.removeEventListener('mouseup', mouseup)
+
+    if (isEventUpdated.value) {
+      updateEventState(calendarEvent.value)
+      isEventUpdated.value = false
+    }
+  }
+}
+
+function getDate(date, nextDate = 0) {
+  let newDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + nextDate
+  )
+  return newDate
+}
+
+function handleHorizontalMovement(clientX) {
+  const rect = eventRef.value.getBoundingClientRect()
+  let currentDate = new Date(
+    eventRef.value.parentNode.getAttribute('data-date-attr')
+  )
+  let oldDate = calendarEvent.value.date
+  let newDate = oldDate
+  if (clientX < rect.left) {
+    newDate = parseDate(getDate(currentDate, -1))
+    calendarEvent.value.date = newDate
+  } else if (clientX > rect.right) {
+    newDate = parseDate(getDate(currentDate, 1))
+    calendarEvent.value.date = newDate
+  }
+
+  if (oldDate !== newDate) {
+    updateEventState(calendarEvent.value)
+  }
+}
+
+function handleVerticalMovement(clientY, prevY) {
+  let diffY = clientY - prevY
+  diffY = Math.round(diffY / 18) * 18
+
+  let [oldFromTime, oldToTime] = [
+    calendarEvent.value.from_time,
+    calendarEvent.value.to_time,
+  ]
+
+  oldFromTime = removeSeconds(oldFromTime)
+  oldToTime = removeSeconds(oldToTime)
+
+  const [newFromTime, newToTime] = newEventDuration(diffY)
+
+  if (oldFromTime === newFromTime && oldToTime === newToTime) return
+  calendarEvent.value.from_time = newFromTime
+  calendarEvent.value.to_time = newToTime
+}
+
+function removeSeconds(time) {
+  return time.split(':').slice(0, 2).join(':') + ':00'
 }
 
 function setupPopper() {

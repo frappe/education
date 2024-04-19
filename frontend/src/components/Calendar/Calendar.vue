@@ -53,7 +53,7 @@
   </div>
 </template>
 <script setup>
-import { computed, provide, ref } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 import { Button, TabButtons } from 'frappe-ui'
 import {
   groupBy,
@@ -65,6 +65,8 @@ import {
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
 import CalendarWeekly from './CalendarWeekly.vue'
 import CalendarDaily from './CalendarDaily.vue'
+
+const emit = defineEmits(['updateEvent', 'createEvent', 'deleteEvent'])
 
 const props = defineProps({
   events: {
@@ -78,7 +80,7 @@ const props = defineProps({
       hourHeight: 72,
       redundantCellHeight: 22,
       disableModes: [],
-      defaultMode: 'Week',
+      defaultMode: 'Month',
       isEditMode: false,
     },
   },
@@ -89,7 +91,8 @@ let defaultConfig = {
   hourHeight: 72,
   redundantCellHeight: 22,
   disableModes: [],
-  defaultMode: 'Week',
+  defaultMode: 'Month',
+  isEditMode: false,
 }
 
 const overrideConfig = { ...defaultConfig, ...props.config }
@@ -98,24 +101,20 @@ let activeView = ref(overrideConfig.defaultMode)
 provide('overrideConfig', overrideConfig)
 provide('activeView', activeView)
 
-let events = computed({
-  get() {
-    return props.events
-  },
-  set(newVal) {
-    emit('dragEvent', newVal)
-  },
-})
+let events = ref(props.events)
+watch(
+  () => props.events,
+  (newVal) => (events.value = newVal),
+  { deep: true }
+)
 
 provide('updateEventState', updateEventState)
 
-function updateEventState(...updatedState) {
-  const { calendarEventID, date, to_time } = updatedState[0]
-  let event = events.value.findIndex((e) => e.name === calendarEventID)
-  events.value[event].date = parseDate(date)
-  if (to_time) {
-    events.value[event].to_time = to_time
-  }
+function updateEventState(event) {
+  const eventID = event.name
+  let eventIndex = events.value.findIndex((e) => e.name === eventID)
+  events.value[eventIndex] = event
+  emit('updateEvent', events.value[eventIndex])
 }
 
 // Calendar View Options

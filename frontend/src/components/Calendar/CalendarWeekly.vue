@@ -41,9 +41,7 @@
           <div
             v-for="(date, index) in weeklyDates"
             class="border-r-[1px] relative calendar-column"
-            @dragover.prevent
-            @drageneter.prevent
-            @drop="onDrop($event, date)"
+            :data-date-attr="date"
           >
             <!-- Top Redundant Cell before time starts for giving the calendar some space -->
             <div
@@ -58,7 +56,7 @@
               :data-time-attr="time"
             >
               <div
-                class="w-full border-b-[1px] border-gray-200"
+                class="w-full border-b-[1px] border-gray-200 -z-10"
                 :style="{ height: `${hourHeight}px` }"
               />
             </div>
@@ -66,15 +64,14 @@
             <!-- Calendar Events populations  -->
             <CalendarEvent
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
-              :event="calendarEvent"
               class="mb-2 cursor-pointer absolute w-[90%]"
-              :draggable="true"
+              ref="calendarEventRef"
+              :event="{
+                idx: idx,
+                ...calendarEvent,
+              }"
               :key="calendarEvent.name"
               :date="date"
-              :style="setEventStyles(calendarEvent, idx)"
-              :stylesProp="setEventStyles(calendarEvent, idx)"
-              ref="calendarEventRef"
-              @dragstart="startDrag($event, calendarEvent.name)"
               @mouseout="(e) => handleBlur(e)"
               @click="(e) => handleClick(e)"
             />
@@ -99,7 +96,6 @@ import CalendarEvent from './CalendarEvent.vue'
 import {
   calculateDiff,
   calculateMinutes,
-  parseDateEventPopupFormat,
   parseDateWithComma,
   twentyFourHoursFormat,
 } from './calendarUtils'
@@ -120,6 +116,7 @@ let props = defineProps({
 })
 const gridRef = ref(null)
 const calendarEventRef = ref(null)
+
 onMounted(() => {
   let scrollTop = props.config.scrollToHour * 60 * minuteHeight
   gridRef.value.scrollBy(0, scrollTop)
@@ -139,16 +136,19 @@ let setCurrentTime = computed(() => {
   return { top }
 })
 
-function setEventStyles(event, index) {
-  let diff = calculateDiff(event.from_time, event.to_time)
-  let height = diff * minuteHeight + 'px'
-  let top =
-    calculateMinutes(event.from_time) * minuteHeight +
-    redundantCellHeight +
-    'px'
+// function setEventStyles(event, index) {
+//   let diff = calculateDiff(event.from_time, event.to_time)
+//   let height = diff * minuteHeight + 'px'
 
-  return { height, top, zIndex: index }
-}
+//   let top =
+//     calculateMinutes(event.from_time) * minuteHeight +
+//     redundantCellHeight +
+//     'px'
+
+//   console.log('top', top)
+
+//   return { height, top, zIndex: index }
+// }
 
 function handleClick(e) {
   // change the event z-index to 100
@@ -162,36 +162,35 @@ function handleBlur(e, calendarEvent) {
   e.target.parentElement.style.zIndex = 0
 }
 
-function handleDragOver(e) {
-  console.log(e)
-}
+function handleMouseDown(e) {
+  window.addEventListener('mousemove', mousemove)
+  window.addEventListener('mouseup', mouseup)
 
-function handleMouseMove(e) {
-  console.log(e)
-  e.target.addEventListener('mousemove', (e) => {
-    console.log(e.offsetY, e.offsetX)
-    if (e.offsetX === -2) {
-      console.log(calendarEventRef.value)
-      // calendarEventRef.value.style.left = -180 + 'px'
-    }
-  })
-}
+  let prevX = e.clientX
+  let prevY = e.clientY
 
-const startDrag = (event, calendarEventID) => {
-  event.dataTransfer.dropEffect = 'move'
-  event.dataTransfer.effectAllowed = 'copyMove'
-  event.dataTransfer.setData('calendarEventID', calendarEventID)
-  console.log('here')
-}
+  function mousemove(e) {
+    let diffX = e.clientX - prevX
+    let diffY = e.clientY - prevY
 
-const onDrop = (event, date) => {
-  let calendarEventID = event.dataTransfer.getData('calendarEventID')
-  console.log(calendarEventID)
-  console.log(date)
-  console.log(event.target.getBoundingClientRect())
-  console.log(event.screenX, event.screenY)
-  console.log(event.pageX, event.pageY)
-  console.log(event.clientX, event.clientY)
+    let newTop = calendarEventRef.value.style.top + diffY + 'px'
+    let newLeft = calendarEventRef.value.style.left + diffX + 'px'
+
+    console.log(calendarEventRef.value.style)
+    console.log('NEW TOP', newTop)
+    console.log('NEW LEFT', newLeft)
+
+    // calendarEventRef.value.style.top = newTop
+    // calendarEventRef.value.style.left = newLeft
+
+    // prevX = e.clientX
+    // prevY = e.clientY
+  }
+
+  function mouseup() {
+    window.removeEventListener('mousemove', mousemove)
+    window.removeEventListener('mouseup', mouseup)
+  }
 }
 
 let parsedData = computed(() => {

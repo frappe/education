@@ -135,7 +135,6 @@ const dragStart = (event, calendarEventID) => {
 
 const dragOver = (event) => {
   event.preventDefault()
-  console.log('here')
 }
 
 const onDrop = (event, date) => {
@@ -144,11 +143,9 @@ const onDrop = (event, date) => {
   // if same date then return
   let e = props.events.find((e) => e.name === calendarEventID)
   if (parseDate(date) === e.date) return
-
-  updateEventState({
-    calendarEventID: calendarEventID,
-    date: date,
-  })
+  let calendarEvent = props.events.find((e) => e.name === calendarEventID)
+  calendarEvent.date = parseDate(date)
+  updateEventState(calendarEvent)
 }
 </script>
 
