@@ -75,31 +75,24 @@ const props = defineProps({
   },
   config: {
     type: Object,
-    default: {
-      scrollToHour: 15,
-      hourHeight: 72,
-      redundantCellHeight: 22,
-      disableModes: [],
-      defaultMode: 'Month',
-      isEditMode: false,
-    },
   },
 })
 
-let defaultConfig = {
+const defaultConfig = {
   scrollToHour: 15,
   hourHeight: 72,
   redundantCellHeight: 22,
   disableModes: [],
   defaultMode: 'Month',
   isEditMode: false,
+  eventIcons: {},
 }
 
 const overrideConfig = { ...defaultConfig, ...props.config }
 let activeView = ref(overrideConfig.defaultMode)
 
-provide('overrideConfig', overrideConfig)
 provide('activeView', activeView)
+provide('config', overrideConfig)
 
 let events = ref(props.events)
 watch(
@@ -109,7 +102,6 @@ watch(
 )
 
 provide('updateEventState', updateEventState)
-
 function updateEventState(event) {
   const eventID = event.name
   let eventIndex = events.value.findIndex((e) => e.name === eventID)
@@ -123,7 +115,6 @@ const actionOptions = [
   { label: 'Week', variant: 'solid' },
   { label: 'Month', variant: 'solid' },
 ]
-
 let enabledModes = actionOptions.filter(
   (mode) => !overrideConfig.disableModes.includes(mode.label)
 )

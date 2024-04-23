@@ -67,13 +67,11 @@
               class="mb-2 cursor-pointer absolute w-[90%]"
               ref="calendarEventRef"
               :event="{
-                idx: idx,
+                idx: idx + 1,
                 ...calendarEvent,
               }"
               :key="calendarEvent.name"
               :date="date"
-              @mouseout="(e) => handleBlur(e)"
-              @click="(e) => handleClick(e)"
             />
 
             <!-- Current time style  -->
@@ -162,37 +160,6 @@ function handleBlur(e, calendarEvent) {
   e.target.parentElement.style.zIndex = 0
 }
 
-function handleMouseDown(e) {
-  window.addEventListener('mousemove', mousemove)
-  window.addEventListener('mouseup', mouseup)
-
-  let prevX = e.clientX
-  let prevY = e.clientY
-
-  function mousemove(e) {
-    let diffX = e.clientX - prevX
-    let diffY = e.clientY - prevY
-
-    let newTop = calendarEventRef.value.style.top + diffY + 'px'
-    let newLeft = calendarEventRef.value.style.left + diffX + 'px'
-
-    console.log(calendarEventRef.value.style)
-    console.log('NEW TOP', newTop)
-    console.log('NEW LEFT', newLeft)
-
-    // calendarEventRef.value.style.top = newTop
-    // calendarEventRef.value.style.left = newLeft
-
-    // prevX = e.clientX
-    // prevY = e.clientY
-  }
-
-  function mouseup() {
-    window.removeEventListener('mousemove', mousemove)
-    window.removeEventListener('mouseup', mouseup)
-  }
-}
-
 let parsedData = computed(() => {
   let groupByDate = Object.groupBy(props.events, (row) => row.date)
   let sortedArray = {}
@@ -200,10 +167,25 @@ let parsedData = computed(() => {
     let sortedEvents = value.sort((a, b) =>
       a.from_time < b.from_time ? -1 : 1
     )
+    findOverlappingEventsCount(sortedEvents)
+
     sortedArray[key] = sortedEvents
   }
   return sortedArray
 })
+
+function findOverlappingEventsCount(events) {
+  let count = 1
+
+  for (let i = 0; i < events.length; i++) {
+    for (let j = i + 1; j < events.length; j++) {
+      if (events[i].from_time === events[j].from_time) {
+        count++
+      }
+    }
+    events[i].overlapingCount = count
+  }
+}
 
 function parseDate(date) {
   let dd = date.getDate()

@@ -44,7 +44,7 @@
                 :date="date"
                 class="mb-2 cursor-pointer w-full"
                 :key="calendarEvent.name"
-                :draggable="true"
+                :draggable="config.isEditMode"
                 @dragstart="dragStart($event, calendarEvent.name)"
                 @dragend="$event.target.style.opacity = '1'"
                 @dragover="dragOver($event)"
@@ -95,6 +95,8 @@ const props = defineProps({
     type: Object,
   },
 })
+
+const config = inject('config')
 
 let parsedData = computed(() => {
   let groupByDate = groupBy(props.events, (row) => row.date)

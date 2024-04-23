@@ -5,11 +5,12 @@
     ref="eventRef"
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="setEventStyles"
-    @click="updatePosition"
-    @mousedown="(e) => handleRepositionMouseDown(e)"
+    @mouseout="(e) => handleBlur(e)"
+    @click="(e) => handleClick(e)"
+    v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
-      class="flex gap-3 relative px-2 items-start h-full overflow-hidden select-none"
+      class="flex gap-2 relative px-2 items-start h-full overflow-hidden select-none"
       :class="
         calendarEvent.from_time && [
           'border-l-2',
@@ -17,7 +18,12 @@
         ]
       "
     >
-      <FeatherIcon name="circle" class="h-4 text-black" />
+      <component
+        v-if="eventIcons[calendarEvent.type]"
+        :is="eventIcons[calendarEvent.type]"
+        class="h-4 w-4 text-black"
+      />
+      <FeatherIcon v-else name="circle" class="h-4 text-black" />
 
       <div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
         <p class="font-medium text-sm text-gray-800 text-ellipsis">
@@ -32,7 +38,7 @@
       </div>
     </div>
     <div
-      v-if="activeView !== 'Month'"
+      v-if="config.isEditMode && activeView !== 'Month'"
       class="absolute h-[8px] w-[100%] cursor-row-resize"
       ref="resize"
       @mousedown="handleResizeMouseDown"
@@ -95,11 +101,11 @@
 </template>
 
 <script setup>
-import { FeatherIcon, Popover } from 'frappe-ui'
+import { FeatherIcon, Popover, call } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
 import { createPopper } from '@popperjs/core'
 
-import { ref, nextTick, inject, computed } from 'vue'
+import { ref, nextTick, inject, computed, watch, onMounted } from 'vue'
 
 import {
   calculateMinutes,
@@ -119,14 +125,17 @@ const props = defineProps({
     required: true,
   },
 })
-const activeView = inject('activeView')
 
 const calendarEvent = ref(props.event)
+// console.log(calendarEvent.value.overlapingCount)
+// calendarEvent.value.type = Math.random() > 0.5 && 'phone'
+const activeView = inject('activeView')
+const config = inject('config')
+const eventIcons = config.eventIcons
+const minuteHeight = config.hourHeight / 60
 
 const setEventStyles = computed(() => {
-  const minuteHeight = 1.2
-  const redundantCellHeight = 22
-
+  const redundantCellHeight = config.redundantCellHeight
   let diff = calculateDiff(
     calendarEvent.value.from_time,
     calendarEvent.value.to_time
@@ -140,23 +149,42 @@ const setEventStyles = computed(() => {
     redundantCellHeight +
     'px'
 
+  let left = '0'
+  let width = '100%'
+  let overlapCount = calendarEvent.value.overlapingCount
+  if (overlapCount > 1) {
+    width = `${100 / overlapCount}%`
+    // left = (100 - parseFloat(width)) * calendarEvent.value.idx + 'px'
+    // console.log(left)
+  }
+
   return {
     height,
     top,
     zIndex: calendarEvent.value.idx,
-    left: '0',
+    left,
+    // width,
   }
 })
+
+// onMounted(() => {
+//   console.log(props.event.idx)
+// })
+
+watch(
+  () => props.event.idx,
+  (newVal) => console.log(newVal)
+)
 
 const eventRef = ref(null)
 const popoverRef = ref(null)
 const popper = ref(null)
 const opened = ref(false)
 const resize = ref(null)
-const eventStepper = ref(0)
 const isResizing = ref(false)
 const isRepositioning = ref(false)
 const isEventUpdated = ref(false)
+
 let colorMap = {
   blue: {
     background_color: 'bg-blue-100',
@@ -204,12 +232,11 @@ let colorMap = {
   },
 }
 
-let updateEventState = inject('updateEventState')
+const updateEventState = inject('updateEventState')
 
 function newEventEndTime(newHeight) {
-  // TODO:Instead of 1.2 bring defaultCellHeight from Provide
   let newEndTime =
-    parseFloat(newHeight) / 1.2 +
+    parseFloat(newHeight) / minuteHeight +
     calculateMinutes(calendarEvent.value.from_time)
   newEndTime = Math.floor(newEndTime)
   return convertMinutesToHours(newEndTime)
@@ -217,9 +244,10 @@ function newEventEndTime(newHeight) {
 
 function newEventDuration(changeInTime) {
   let newFromTime =
-    calculateMinutes(calendarEvent.value.from_time) + changeInTime / 1.2
+    calculateMinutes(calendarEvent.value.from_time) +
+    changeInTime / minuteHeight
   let newToTime =
-    calculateMinutes(calendarEvent.value.to_time) + changeInTime / 1.2
+    calculateMinutes(calendarEvent.value.to_time) + changeInTime / minuteHeight
   if (newFromTime < 0) {
     newFromTime = 0
     newToTime = calculateDiff(
@@ -246,7 +274,7 @@ function handleResizeMouseDown(e) {
   window.addEventListener('mouseup', stopResize, { once: true })
 
   function resize(e) {
-    let height_15_min = 18
+    let height_15_min = minuteHeight * 15
     //take difference between where mouse is and where event's top is
     eventRef.value.style.height =
       Math.round(
@@ -290,7 +318,6 @@ function handleRepositionMouseDown(e) {
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
     prevY = e.clientY
-
     if (
       oldCalendarEvent.from_time !== calendarEvent.value.from_time ||
       oldCalendarEvent.to_time !== calendarEvent.value.to_time ||
@@ -380,6 +407,17 @@ function setupPopper() {
   }
 }
 
+function handleClick(e) {
+  // change the event z-index to 100
+  eventRef.value.style.zIndex = 100
+}
+
+function handleBlur(e) {
+  // change the event z-index to 0
+
+  console.log(calendarEvent.value.overlapingCount)
+  eventRef.value.style.zIndex = calendarEvent.value.idx
+}
 function updatePosition() {
   opened.value = !opened.value
   nextTick(() => setupPopper())

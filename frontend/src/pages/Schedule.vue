@@ -3,6 +3,13 @@
     <Calendar
       v-if="!scheduleResource.loading && scheduleResource.data"
       :events="events"
+      :config="{
+        defaultMode: 'Week',
+        scrollToHour: 8,
+        eventIcons: eventIcons,
+        isEditMode: false,
+      }"
+      @updateEvent="updateEvent"
     />
   </div>
 </template>
@@ -12,10 +19,21 @@ import Calendar from '@/components/Calendar/Calendar.vue'
 import { createResource } from 'frappe-ui'
 import { ref } from 'vue'
 import { studentStore } from '@/stores/student'
+import { FeatherIcon } from 'frappe-ui'
 const { getCurrentProgram } = studentStore()
+import { PhoneCallIcon, MailIcon } from 'lucide-vue-next'
+
+const eventIcons = {
+  phone: PhoneCallIcon,
+  mail: MailIcon,
+}
 
 const programName = ref(getCurrentProgram()?.value?.program)
 const events = ref([])
+
+function updateEvent(event) {
+  // console.log(event)
+}
 
 const scheduleResource = createResource({
   url: 'education.education.api.get_course_schedule_for_student',
