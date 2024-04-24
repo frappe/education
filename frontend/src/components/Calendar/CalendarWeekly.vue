@@ -179,12 +179,19 @@ function findOverlappingEventsCount(events) {
 
   for (let i = 0; i < events.length; i++) {
     for (let j = i + 1; j < events.length; j++) {
-      if (events[i].from_time === events[j].from_time) {
+      if (
+        events[i].date === events[j].date &&
+        events[i].from_time === events[j].from_time
+      ) {
         count++
       }
+      events[j].overlapingCount = count
     }
     events[i].overlapingCount = count
   }
+  events.forEach((event) => {
+    console.log(event.overlapingCount)
+  })
 }
 
 function parseDate(date) {

@@ -150,7 +150,7 @@ const setEventStyles = computed(() => {
     'px'
 
   let left = '0'
-  let width = '100%'
+  let width = isResizing.value || isRepositioning.value ? '100%' : '90%'
   let overlapCount = calendarEvent.value.overlapingCount
   if (overlapCount > 1) {
     width = `${100 / overlapCount}%`
@@ -163,13 +163,9 @@ const setEventStyles = computed(() => {
     top,
     zIndex: calendarEvent.value.idx,
     left,
-    // width,
+    width,
   }
 })
-
-// onMounted(() => {
-//   console.log(props.event.idx)
-// })
 
 watch(
   () => props.event.idx,
@@ -239,6 +235,10 @@ function newEventEndTime(newHeight) {
     parseFloat(newHeight) / minuteHeight +
     calculateMinutes(calendarEvent.value.from_time)
   newEndTime = Math.floor(newEndTime)
+  // console.log(newEndTime, typeof newEndTime)
+  if (newEndTime > 1440) {
+    newEndTime = 1440
+  }
   return convertMinutesToHours(newEndTime)
 }
 
@@ -275,7 +275,7 @@ function handleResizeMouseDown(e) {
 
   function resize(e) {
     let height_15_min = minuteHeight * 15
-    //take difference between where mouse is and where event's top is
+    // difference between where mouse is and where event's top is, to find the new height
     eventRef.value.style.height =
       Math.round(
         (e.clientY - eventRef.value.getBoundingClientRect().top) / height_15_min
@@ -415,7 +415,7 @@ function handleClick(e) {
 function handleBlur(e) {
   // change the event z-index to 0
 
-  console.log(calendarEvent.value.overlapingCount)
+  // console.log(calendarEvent.value.overlapingCount)
   eventRef.value.style.zIndex = calendarEvent.value.idx
 }
 function updatePosition() {
