@@ -45,42 +45,8 @@
     ></div>
   </div>
 
-  <div
-    ref="popoverRef"
-    class="flex flex-col gap-5 pt-5 px-6 pb-6 w-80 bg-white rounded shadow fixed z-20"
-    v-show="opened"
-  >
-    <!-- heading  -->
-    <div class="font-semibold text-xl">{{ calendarEvent.title }}</div>
-
-    <!-- event info container -->
-    <div class="flex flex-col gap-4">
-      <div class="flex gap-2 items-center">
-        <FeatherIcon name="calendar" class="h-4 w-4" />
-        <span class="text-sm font-normal">
-          {{ parseDateEventPopupFormat(date) }}
-        </span>
-      </div>
-      <div class="flex gap-2 items-center" v-if="calendarEvent.with">
-        <FeatherIcon name="user" class="h-4 w-4" />
-        <span class="text-sm font-normal"> {{ calendarEvent.with }} </span>
-      </div>
-      <div
-        class="flex gap-2 items-center"
-        v-if="calendarEvent.from_time && calendarEvent.to_time"
-      >
-        <FeatherIcon name="clock" class="h-4 w-4" />
-        <span class="text-sm font-normal">
-          {{ calendarEvent.from_time }} - {{ calendarEvent.to_time }}
-        </span>
-      </div>
-      <div class="flex gap-2 items-center" v-if="calendarEvent.room">
-        <FeatherIcon name="circle" class="h-4 w-4" />
-        <span class="text-sm font-normal">
-          Room No: &nbsp {{ calendarEvent.room }}
-        </span>
-      </div>
-    </div>
+  <div ref="floating" :style="{ ...floatingStyles, zIndex: 100 }" v-if="opened">
+    <EventModalContent :calendarEvent="calendarEvent" :date="date" />
   </div>
 
   <!-- <div v-else class="w-full p-2 rounded-md " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
@@ -101,9 +67,19 @@
 </template>
 
 <script setup>
-import { FeatherIcon, Popover, call } from 'frappe-ui'
+import { FeatherIcon } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
-import { createPopper } from '@popperjs/core'
+import UsePopover from '@/components/UsePopover.vue'
+import EventModalContent from './EventModalContent.vue'
+import {
+  useFloating,
+  shift,
+  flip,
+  offset,
+  arrow,
+  autoUpdate,
+  autoPlacement,
+} from '@floating-ui/vue'
 
 import { ref, nextTick, inject, computed, watch, onMounted } from 'vue'
 
@@ -163,16 +139,18 @@ const setEventStyles = computed(() => {
     top,
     zIndex: calendarEvent.value.idx,
     left,
-    width,
+    // width,
   }
 })
 
-watch(
-  () => props.event.idx,
-  (newVal) => console.log(newVal)
-)
-
+const floating = ref(null)
 const eventRef = ref(null)
+const { floatingStyles, middlewareData } = useFloating(eventRef, floating, {
+  placement: activeView.value === 'Day' ? 'top' : 'right',
+  middleware: [offset(10), flip(), shift()],
+  whileElementsMounted: autoUpdate,
+})
+
 const popoverRef = ref(null)
 const popper = ref(null)
 const opened = ref(false)
@@ -397,19 +375,16 @@ function removeSeconds(time) {
   return time.split(':').slice(0, 2).join(':') + ':00'
 }
 
-function setupPopper() {
-  if (!popper.value) {
-    popper.value = createPopper(eventRef.value.el, popoverRef.value.el, {
-      placement: 'right-start',
-    })
-  } else {
-    popper.value.update()
-  }
-}
-
+let position = ref('right-start')
 function handleClick(e) {
-  // change the event z-index to 100
-  eventRef.value.style.zIndex = 100
+  opened.value = !opened.value
+
+  if (parseFloat(e.screenX) + 320 > screen.width) {
+    position.value = 'left-start'
+  } else {
+    position.value = 'right-start'
+  }
+  console.log(position.value)
 }
 
 function handleBlur(e) {
@@ -417,9 +392,5 @@ function handleBlur(e) {
 
   // console.log(calendarEvent.value.overlapingCount)
   eventRef.value.style.zIndex = calendarEvent.value.idx
-}
-function updatePosition() {
-  opened.value = !opened.value
-  nextTick(() => setupPopper())
 }
 </script>

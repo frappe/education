@@ -101,15 +101,15 @@ const config = inject('config')
 let parsedData = computed(() => {
   let groupByDate = groupBy(props.events, (row) => row.date)
   let sortedArray = {}
-  for (const [key, value] of Object.entries(groupByDate)) {
-    let sortedEvents = sortEvents(value)
-    sortedArray[key] = sortedEvents
+  for (const [date, events] of Object.entries(groupByDate)) {
+    let sortedEvents = sortEvents(events)
+    sortedArray[date] = sortedEvents
   }
   return sortedArray
 })
 
-function sortEvents(value) {
-  let sortedEvents = value.sort((a, b) =>
+function sortEvents(events) {
+  let sortedEvents = events.sort((a, b) =>
     a.from_time !== b.from_time
       ? calculateMinutes(a.from_time) > calculateMinutes(b.from_time)
         ? 1

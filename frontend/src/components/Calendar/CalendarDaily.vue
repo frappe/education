@@ -38,9 +38,8 @@
               v-for="(calendarEvent, idx) in currentMonthEvents[
                 parseDate(currentDate)
               ]"
-              class="mb-2 cursor-pointer absolute w-full"
+              class="mb-2 cursor-pointer absolute"
               :event="calendarEvent"
-              :draggable="false"
               :key="calendarEvent.name"
               :date="currentDate"
               :style="setEventStyles(calendarEvent, idx)"
