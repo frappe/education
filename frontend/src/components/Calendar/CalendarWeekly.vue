@@ -65,7 +65,6 @@
             <CalendarEvent
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
               class="mb-2 cursor-pointer absolute w-[90%]"
-              ref="calendarEventRef"
               :event="{
                 ...calendarEvent,
                 idx,
@@ -107,7 +106,6 @@ let props = defineProps({
   },
 })
 const gridRef = ref(null)
-const calendarEventRef = ref(null)
 
 onMounted(() => {
   let scrollTop = props.config.scrollToHour * 60 * minuteHeight
@@ -161,6 +159,7 @@ let parsedData = computed(() => {
     let sortedEvents = value.sort((a, b) =>
       a.from_time < b.from_time ? -1 : 1
     )
+    // console.log(key, value)
     findOverlappingEventsCount(sortedEvents)
 
     sortedArray[key] = sortedEvents
@@ -170,7 +169,9 @@ let parsedData = computed(() => {
 
 function findOverlappingEventsCount(events) {
   let count = 1
-
+  // if (events[0].date === '2024-04-03') {
+  //   console.log(events)
+  // }
   for (let i = 0; i < events.length; i++) {
     for (let j = i + 1; j < events.length; j++) {
       if (
@@ -179,6 +180,7 @@ function findOverlappingEventsCount(events) {
       ) {
         count++
       }
+      // else if (events[i].t)
       events[j].overlapingCount = count
     }
     events[i].overlapingCount = count

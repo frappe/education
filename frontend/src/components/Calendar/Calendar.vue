@@ -61,6 +61,7 @@ import {
   monthList,
   daysList,
   parseDate,
+  removeSeconds,
 } from './calendarUtils'
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
 import CalendarWeekly from './CalendarWeekly.vue'
@@ -94,12 +95,19 @@ let activeView = ref(overrideConfig.defaultMode)
 provide('activeView', activeView)
 provide('config', overrideConfig)
 
-let events = ref(props.events)
 watch(
   () => props.events,
-  (newVal) => (events.value = newVal),
+  (newVal) => {
+    events.value = newVal
+  },
   { deep: true }
 )
+
+let events = ref(props.events)
+events.value.forEach((event) => {
+  event.from_time = removeSeconds(event.from_time)
+  event.to_time = removeSeconds(event.to_time)
+})
 
 provide('updateEventState', updateEventState)
 function updateEventState(event) {
