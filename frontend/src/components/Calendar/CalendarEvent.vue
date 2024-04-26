@@ -106,10 +106,7 @@ const props = defineProps({
     required: true,
   },
 })
-function updateShow(value) {
-  console.log(value)
-  opened.value = value
-}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -148,12 +145,16 @@ const setEventStyles = computed(() => {
     'px'
 
   let left = '0'
-  let width
+  // let width = '100%'
   let overlapCount = calendarEvent.value.overlapingCount
+  // TODO: Clashing Events
   if (overlapCount > 1) {
-    console.log('here', overlapCount, props.event.name)
-    width = `${100 / overlapCount}%`
-    // left = (100 - parseFloat(width)) * calendarEvent.value.idx + 'px'
+    console.log('here', overlapCount, props.event.name, props.event.idx)
+    // width = `${100 / overlapCount}%`
+    left = `${(90 / overlapCount) * props.event.idx}%`
+    // if (!isResizing.value && !isRepositioning.value) {
+    //   width = `${90 / overlapCount}%`
+    // }
     // console.log(left)
   }
   // let date = props.date.getMonth() + 1
@@ -164,9 +165,9 @@ const setEventStyles = computed(() => {
   return {
     height,
     top,
-    zIndex: props.event.idx,
+    zIndex: props.event.idx + 1,
     left,
-    // width: width && width,
+    // width: (!isResizing.value || !isRepositioning.value) && width,
   }
 })
 
@@ -183,7 +184,7 @@ const resize = ref(null)
 const isResizing = ref(false)
 const isRepositioning = ref(false)
 const isEventUpdated = ref(false)
-const updatedDate = ref(null)
+const updatedDate = ref(props.event.date)
 
 let colorMap = {
   blue: {
@@ -274,18 +275,16 @@ function handleResizeMouseDown(e) {
   isResizing.value = true
   isRepositioning.value = false
   if (isRepositioning.value) return
+  let oldTime = calendarEvent.value.to_time
   window.addEventListener('mousemove', resize)
   window.addEventListener('mouseup', stopResize, { once: true })
 
   function resize(e) {
     let height_15_min = minuteHeight * 15
     // difference between where mouse is and where event's top is, to find the new height
+    let diffX = e.clientY - eventRef.value.getBoundingClientRect().top
     eventRef.value.style.height =
-      Math.round(
-        (e.clientY - eventRef.value.getBoundingClientRect().top) / height_15_min
-      ) *
-        height_15_min +
-      'px'
+      Math.round(diffX / height_15_min) * height_15_min + 'px'
 
     eventRef.value.style.width = '100%'
     calendarEvent.value.to_time = newEventEndTime(eventRef.value.style.height)
@@ -294,8 +293,9 @@ function handleResizeMouseDown(e) {
   function stopResize() {
     eventRef.value.style.width = '90%'
     isResizing.value = false
-
-    updateEventState(calendarEvent.value)
+    if (oldTime !== calendarEvent.value.to_time) {
+      updateEventState(calendarEvent.value)
+    }
 
     window.removeEventListener('mousemove', resize)
   }
@@ -305,6 +305,7 @@ function handleRepositionMouseDown(e) {
   if (activeView.value === 'Month') return
   let prevY = e.clientY
   const rect = eventRef.value.getBoundingClientRect()
+  const oldEvent = { ...calendarEvent.value }
   isRepositioning.value = true
   if (isResizing.value) return
 
@@ -317,35 +318,39 @@ function handleRepositionMouseDown(e) {
     eventRef.value.style.width = '100%'
     // handle movement between days
     handleHorizontalMovement(e.clientX, rect)
+
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
+
     prevY = e.clientY
     if (
-      props.event.from_time !== calendarEvent.value.from_time ||
-      props.event.to_time !== calendarEvent.value.to_time ||
-      props.event.date !== calendarEvent.value.date
+      oldEvent.from_time !== calendarEvent.value.from_time &&
+      oldEvent.to_time !== calendarEvent.value.to_time
     ) {
       isEventUpdated.value = true
+    } else {
+      isEventUpdated.value = false
     }
   }
 
   function mouseup() {
     isRepositioning.value = false
-
     if (!eventRef.value) return
 
     eventRef.value.style.cursor = 'pointer'
     eventRef.value.style.width = '90%'
 
-    window.removeEventListener('mousemove', mousemove)
-    window.removeEventListener('mouseup', mouseup)
-
-    // console.log(updatedDate)
-    calendarEvent.value.date = updatedDate.value
+    if (calendarEvent.value.date !== updatedDate.value) {
+      calendarEvent.value.date = updatedDate.value
+      isEventUpdated.value = true
+    }
     if (isEventUpdated.value) {
       updateEventState(calendarEvent.value)
       isEventUpdated.value = false
     }
+
+    window.removeEventListener('mousemove', mousemove)
+    window.removeEventListener('mouseup', mouseup)
   }
 }
 
@@ -359,37 +364,36 @@ function getDate(date, nextDate = 0) {
 }
 
 function handleHorizontalMovement(clientX, rect) {
-  let currentDate = new Date(
+  const currentDate = new Date(
     eventRef.value.parentNode.getAttribute('data-date-attr')
   )
+  const leftPadding = currentDate.getDay()
+  const rightPadding = 6 - currentDate.getDay()
 
-  let diff = Math.floor((clientX - rect.left) / 180)
+  let eventWidth = eventRef.value.clientWidth
+  let diff = Math.floor((clientX - rect.left) / eventWidth)
+  if (diff < -leftPadding) {
+    diff = -leftPadding
+  } else if (diff > rightPadding) {
+    diff = rightPadding
+  }
+  //TODO: find diff based on leftPadding and rightPadding of Days
+  let xPos = Math.ceil(diff * eventWidth)
 
-  let xPos = Math.floor((diff * rect.width) / 180) * 180
-  // let xPos = Math.floor(diff * rect.width)
-  console.log(diff, xPos)
-  // eve
   if (eventRef.value.style.transform !== `translateX(${xPos}px)`) {
     eventRef.value.style.transform = `translateX(${xPos}px)`
   }
-  if (diff < 0) {
-    updatedDate.value = parseDate(getDate(currentDate, diff))
-  } else if (diff > 0) {
-    updatedDate.value = parseDate(getDate(currentDate, diff))
-  }
+  updatedDate.value = parseDate(getDate(currentDate, diff))
 }
 
 function handleVerticalMovement(clientY, prevY) {
   let diffY = clientY - prevY
   diffY = Math.round(diffY / 18) * 18
 
-  let [oldFromTime, oldToTime] = [
+  const [oldFromTime, oldToTime] = [
     calendarEvent.value.from_time,
     calendarEvent.value.to_time,
   ]
-
-  oldFromTime = removeSeconds(oldFromTime)
-  oldToTime = removeSeconds(oldToTime)
 
   const [newFromTime, newToTime] = newEventDuration(diffY)
 
@@ -398,15 +402,10 @@ function handleVerticalMovement(clientY, prevY) {
   calendarEvent.value.to_time = newToTime
 }
 
-function removeSeconds(time) {
-  return time.split(':').slice(0, 2).join(':') + ':00'
-}
-
 const toggle = () => (opened.value = !opened.value)
-const open = () => (opened.value = true)
 const close = () => (opened.value = false)
 
 function handleBlur(e) {
-  eventRef.value.style.zIndex = props.event.idx
+  eventRef.value.style.zIndex = props.event.idx + 1
 }
 </script>
