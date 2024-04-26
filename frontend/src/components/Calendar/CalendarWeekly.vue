@@ -67,8 +67,8 @@
               class="mb-2 cursor-pointer absolute w-[90%]"
               ref="calendarEventRef"
               :event="{
-                idx: idx + 1,
                 ...calendarEvent,
+                idx,
               }"
               :key="calendarEvent.name"
               :date="date"
@@ -91,12 +91,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
-import {
-  calculateDiff,
-  calculateMinutes,
-  parseDateWithComma,
-  twentyFourHoursFormat,
-} from './calendarUtils'
+import { parseDateWithComma, twentyFourHoursFormat } from './calendarUtils'
 
 let props = defineProps({
   events: {
@@ -106,7 +101,6 @@ let props = defineProps({
   config: {
     type: Object,
   },
-
   weeklyDates: {
     type: Array,
     required: false,
@@ -189,9 +183,6 @@ function findOverlappingEventsCount(events) {
     }
     events[i].overlapingCount = count
   }
-  events.forEach((event) => {
-    console.log(event.overlapingCount)
-  })
 }
 
 function parseDate(date) {

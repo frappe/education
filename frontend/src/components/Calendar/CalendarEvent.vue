@@ -6,7 +6,7 @@
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="setEventStyles"
     @mouseout="(e) => handleBlur(e)"
-    @click="(e) => handleClick(e)"
+    @dblclick="toggle()"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
@@ -46,8 +46,21 @@
   </div>
 
   <div ref="floating" :style="{ ...floatingStyles, zIndex: 100 }" v-if="opened">
-    <EventModalContent :calendarEvent="calendarEvent" :date="date" />
+    <EventModalContent
+      :calendarEvent="calendarEvent"
+      :date="date"
+      @close="close"
+    />
   </div>
+  <!-- <FloatingPopover
+    :targetElement="eventRef"
+    :activeView="activeView"
+    :calendarEvent="calendarEvent"
+    :date="date"
+    :opened="opened"
+    @update:show="updateShow"
+    v-if="opened"
+  /> -->
 
   <!-- <div v-else class="w-full p-2 rounded-md " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
 		<div class="flex gap-3 relative px-2 items-start select-none"
@@ -71,24 +84,16 @@ import { FeatherIcon } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
 import UsePopover from '@/components/UsePopover.vue'
 import EventModalContent from './EventModalContent.vue'
-import {
-  useFloating,
-  shift,
-  flip,
-  offset,
-  arrow,
-  autoUpdate,
-  autoPlacement,
-} from '@floating-ui/vue'
+import { useFloating, shift, flip, offset, autoUpdate } from '@floating-ui/vue'
+import FloatingPopover from './FloatingPopover.vue'
 
-import { ref, nextTick, inject, computed, watch, onMounted } from 'vue'
+import { ref, inject, computed, onMounted, onBeforeUnmount } from 'vue'
 
 import {
   calculateMinutes,
   convertMinutesToHours,
   calculateDiff,
   parseDate,
-  parseDateEventPopupFormat,
 } from './calendarUtils'
 
 const props = defineProps({
@@ -101,6 +106,23 @@ const props = defineProps({
     required: true,
   },
 })
+function updateShow(value) {
+  console.log(value)
+  opened.value = value
+}
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+const handleClickOutside = (e) => {
+  const insidePopover = floating.value && floating.value.contains(e.target)
+  if (insidePopover) return
+  const insideTarget = eventRef.value && eventRef.value.contains(e.target)
+  if (insideTarget) return
+  close()
+}
 
 const calendarEvent = ref(props.event)
 // console.log(calendarEvent.value.overlapingCount)
@@ -126,38 +148,42 @@ const setEventStyles = computed(() => {
     'px'
 
   let left = '0'
-  let width = isResizing.value || isRepositioning.value ? '100%' : '90%'
+  let width
   let overlapCount = calendarEvent.value.overlapingCount
   if (overlapCount > 1) {
+    console.log('here', overlapCount, props.event.name)
     width = `${100 / overlapCount}%`
     // left = (100 - parseFloat(width)) * calendarEvent.value.idx + 'px'
     // console.log(left)
   }
+  // let date = props.date.getMonth() + 1
+  // if (date === 4) {
+  //   console.log(props.event)
+  // }
 
   return {
     height,
     top,
-    zIndex: calendarEvent.value.idx,
+    zIndex: props.event.idx,
     left,
-    // width,
+    // width: width && width,
   }
 })
 
 const floating = ref(null)
 const eventRef = ref(null)
-const { floatingStyles, middlewareData } = useFloating(eventRef, floating, {
+const { floatingStyles } = useFloating(eventRef, floating, {
   placement: activeView.value === 'Day' ? 'top' : 'right',
   middleware: [offset(10), flip(), shift()],
   whileElementsMounted: autoUpdate,
 })
 
-const popoverRef = ref(null)
-const popper = ref(null)
 const opened = ref(false)
 const resize = ref(null)
 const isResizing = ref(false)
 const isRepositioning = ref(false)
 const isEventUpdated = ref(false)
+const updatedDate = ref(null)
 
 let colorMap = {
   blue: {
@@ -278,8 +304,8 @@ function handleResizeMouseDown(e) {
 function handleRepositionMouseDown(e) {
   if (activeView.value === 'Month') return
   let prevY = e.clientY
+  const rect = eventRef.value.getBoundingClientRect()
   isRepositioning.value = true
-
   if (isResizing.value) return
 
   window.addEventListener('mousemove', mousemove)
@@ -287,19 +313,17 @@ function handleRepositionMouseDown(e) {
 
   function mousemove(e) {
     if (!eventRef.value) return
-    let oldCalendarEvent = { ...calendarEvent.value }
     eventRef.value.style.cursor = 'move'
     eventRef.value.style.width = '100%'
-
     // handle movement between days
-    handleHorizontalMovement(e.clientX)
+    handleHorizontalMovement(e.clientX, rect)
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
     prevY = e.clientY
     if (
-      oldCalendarEvent.from_time !== calendarEvent.value.from_time ||
-      oldCalendarEvent.to_time !== calendarEvent.value.to_time ||
-      oldCalendarEvent.date !== calendarEvent.value.date
+      props.event.from_time !== calendarEvent.value.from_time ||
+      props.event.to_time !== calendarEvent.value.to_time ||
+      props.event.date !== calendarEvent.value.date
     ) {
       isEventUpdated.value = true
     }
@@ -316,6 +340,8 @@ function handleRepositionMouseDown(e) {
     window.removeEventListener('mousemove', mousemove)
     window.removeEventListener('mouseup', mouseup)
 
+    // console.log(updatedDate)
+    calendarEvent.value.date = updatedDate.value
     if (isEventUpdated.value) {
       updateEventState(calendarEvent.value)
       isEventUpdated.value = false
@@ -332,23 +358,24 @@ function getDate(date, nextDate = 0) {
   return newDate
 }
 
-function handleHorizontalMovement(clientX) {
-  const rect = eventRef.value.getBoundingClientRect()
+function handleHorizontalMovement(clientX, rect) {
   let currentDate = new Date(
     eventRef.value.parentNode.getAttribute('data-date-attr')
   )
-  let oldDate = calendarEvent.value.date
-  let newDate = oldDate
-  if (clientX < rect.left) {
-    newDate = parseDate(getDate(currentDate, -1))
-    calendarEvent.value.date = newDate
-  } else if (clientX > rect.right) {
-    newDate = parseDate(getDate(currentDate, 1))
-    calendarEvent.value.date = newDate
-  }
 
-  if (oldDate !== newDate) {
-    updateEventState(calendarEvent.value)
+  let diff = Math.floor((clientX - rect.left) / 180)
+
+  let xPos = Math.floor((diff * rect.width) / 180) * 180
+  // let xPos = Math.floor(diff * rect.width)
+  console.log(diff, xPos)
+  // eve
+  if (eventRef.value.style.transform !== `translateX(${xPos}px)`) {
+    eventRef.value.style.transform = `translateX(${xPos}px)`
+  }
+  if (diff < 0) {
+    updatedDate.value = parseDate(getDate(currentDate, diff))
+  } else if (diff > 0) {
+    updatedDate.value = parseDate(getDate(currentDate, diff))
   }
 }
 
@@ -375,22 +402,11 @@ function removeSeconds(time) {
   return time.split(':').slice(0, 2).join(':') + ':00'
 }
 
-let position = ref('right-start')
-function handleClick(e) {
-  opened.value = !opened.value
-
-  if (parseFloat(e.screenX) + 320 > screen.width) {
-    position.value = 'left-start'
-  } else {
-    position.value = 'right-start'
-  }
-  console.log(position.value)
-}
+const toggle = () => (opened.value = !opened.value)
+const open = () => (opened.value = true)
+const close = () => (opened.value = false)
 
 function handleBlur(e) {
-  // change the event z-index to 0
-
-  // console.log(calendarEvent.value.overlapingCount)
-  eventRef.value.style.zIndex = calendarEvent.value.idx
+  eventRef.value.style.zIndex = props.event.idx
 }
 </script>
