@@ -4,7 +4,7 @@
     class="p-2 rounded-lg h-min-[18px] w-[90%]"
     ref="eventRef"
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
-    :style="setEventStyles"
+    :style="activeView !== 'Month' && setEventStyles"
     @mouseout="(e) => handleBlur(e)"
     @dblclick="toggle()"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
@@ -110,6 +110,7 @@ const props = defineProps({
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
+
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
@@ -145,17 +146,15 @@ const setEventStyles = computed(() => {
     'px'
 
   let left = '0'
-  // let width = '100%'
-  let overlapCount = calendarEvent.value.overlapingCount
+  let overlapCount = calendarEvent.value.overlapCount
+  let width = '90%'
+  if (isResizing.value || isRepositioning.value) width = '100%'
   // TODO: Clashing Events
   if (overlapCount > 1) {
-    console.log('here', overlapCount, props.event.name, props.event.idx)
-    // width = `${100 / overlapCount}%`
-    left = `${(90 / overlapCount) * props.event.idx}%`
-    // if (!isResizing.value && !isRepositioning.value) {
-    //   width = `${90 / overlapCount}%`
-    // }
-    // console.log(left)
+    left = `${(100 / overlapCount) * props.event.idx}%`
+    width = isResizing.value || `${100 / overlapCount}%`
+  } else {
+    left = '0'
   }
   // let date = props.date.getMonth() + 1
   // if (date === 4) {
@@ -167,12 +166,13 @@ const setEventStyles = computed(() => {
     top,
     zIndex: props.event.idx + 1,
     left,
-    // width: (!isResizing.value || !isRepositioning.value) && width,
+    width,
   }
 })
 
-const floating = ref(null)
 const eventRef = ref(null)
+// Popover Element Config
+const floating = ref(null)
 const { floatingStyles } = useFloating(eventRef, floating, {
   placement: activeView.value === 'Day' ? 'top' : 'right',
   middleware: [offset(10), flip(), shift()],
@@ -316,8 +316,12 @@ function handleRepositionMouseDown(e) {
     if (!eventRef.value) return
     eventRef.value.style.cursor = 'move'
     eventRef.value.style.width = '100%'
+    eventRef.value.style.zIndex = 100
+    eventRef.value.style.left = '0'
     // handle movement between days
-    handleHorizontalMovement(e.clientX, rect)
+    if (activeView.value === 'Week') {
+      handleHorizontalMovement(e.clientX, rect)
+    }
 
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
@@ -341,10 +345,10 @@ function handleRepositionMouseDown(e) {
     eventRef.value.style.width = '90%'
 
     if (calendarEvent.value.date !== updatedDate.value) {
-      calendarEvent.value.date = updatedDate.value
       isEventUpdated.value = true
     }
     if (isEventUpdated.value) {
+      calendarEvent.value.date = updatedDate.value
       updateEventState(calendarEvent.value)
       isEventUpdated.value = false
     }

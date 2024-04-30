@@ -1,6 +1,11 @@
 <template>
-  <div class="p-6 bg-white rounded shadow flex flex-col gap-5 w-80 !z-100">
-    <div class="font-semibold text-xl">{{ calendarEvent.title }}</div>
+  <div class="p-6 bg-white rounded shadow flex flex-col gap-5 w-80">
+    <div class="font-semibold text-xl flex justify-between">
+      <span>{{ calendarEvent.title }}</span>
+      <span class="ml-auto cursor-pointer" @click="$emit('close')">
+        <FeatherIcon name="x" class="h-4 w-4" />
+      </span>
+    </div>
     <div class="flex flex-col gap-4">
       <div class="flex gap-2 items-center">
         <FeatherIcon name="calendar" class="h-4 w-4" />
@@ -39,5 +44,7 @@ const props = defineProps({
   calendarEvent: { type: Object, required: true },
   date: { type: Date, required: true },
 })
+
+const emits = defineEmits(['close'])
 </script>
 <style></style>

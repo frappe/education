@@ -9,19 +9,20 @@
     "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/student-portal.html"
   },
   "dependencies": {
+    "@floating-ui/vue": "^1.0.6",
+    "@vitejs/plugin-vue": "^2.0.0",
+    "autoprefixer": "^10.4.2",
     "dayjs": "^1.11.10",
     "feather-icons": "^4.28.0",
     "frappe-ui": "^0.1.17",
     "lucide-vue-next": "^0.259.0",
     "pinia": "^2.1.7",
+    "postcss": "^8.4.5",
     "qalendar": "^3.6.1",
-    "vue": "^3.2.25",
     "tailwindcss": "^3.3.3",
-    "vue-router": "^4.0.12",
     "vite": "^2.7.2",
-    "@vitejs/plugin-vue": "^2.0.0",
-    "autoprefixer": "^10.4.2",
-    "postcss": "^8.4.5"
+    "vue": "^3.2.25",
+    "vue-router": "^4.0.12"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.0.0",

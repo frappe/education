@@ -105,6 +105,9 @@ watch(
 
 let events = ref(props.events)
 events.value.forEach((event) => {
+  if (!event.from_time || !event.to_time) {
+    return
+  }
   event.from_time = removeSeconds(event.from_time)
   event.to_time = removeSeconds(event.to_time)
 })

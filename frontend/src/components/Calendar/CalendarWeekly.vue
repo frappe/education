@@ -65,10 +65,7 @@
             <CalendarEvent
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
               class="mb-2 cursor-pointer absolute w-[90%]"
-              :event="{
-                ...calendarEvent,
-                idx,
-              }"
+              :event="calendarEvent"
               :key="calendarEvent.name"
               :date="date"
             />
@@ -161,30 +158,35 @@ let parsedData = computed(() => {
     )
     // console.log(key, value)
     findOverlappingEventsCount(sortedEvents)
-
     sortedArray[key] = sortedEvents
   }
+  // console.log('came here')
   return sortedArray
 })
 
 function findOverlappingEventsCount(events) {
-  let count = 1
-  // if (events[0].date === '2024-04-03') {
-  //   console.log(events)
-  // }
+  const overlapCounts = {}
+  const startTimeMap = new Map()
+
+  // Iterate through the events
   for (let i = 0; i < events.length; i++) {
-    for (let j = i + 1; j < events.length; j++) {
-      if (
-        events[i].date === events[j].date &&
-        events[i].from_time === events[j].from_time
-      ) {
-        count++
-      }
-      // else if (events[i].t)
-      events[j].overlapingCount = count
+    const currentEvent = events[i]
+    const startTime = currentEvent.from_time
+
+    // Check if the start time already exists in the hashmap
+    if (startTimeMap.has(startTime)) {
+      // If it exists, increment the count
+      startTimeMap.set(startTime, startTimeMap.get(startTime) + 1)
+    } else {
+      // If it doesn't exist, initialize the count to 1
+      startTimeMap.set(startTime, 1)
     }
-    events[i].overlapingCount = count
   }
+
+  events.forEach((event, idx) => {
+    event.overlapCount = startTimeMap.get(event.from_time) || 0
+    event.idx = idx
+  })
 }
 
 function parseDate(date) {
