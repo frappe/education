@@ -129,8 +129,8 @@ function submitEvent(close) {
     return
   }
 
-  let id = '#' + Math.random().toString(36).substring(7)
-  newEvent.name = id
+  let id = '#' + Math.random().toString(36).substring(3, 9)
+  newEvent.id = id
   if (!newEvent.title) {
     newEvent.title = '(No Title)'
   }

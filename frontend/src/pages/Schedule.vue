@@ -11,6 +11,7 @@
       }"
       @updateEvent="updateEvent"
       @createEvent="createEvent"
+      @deleteEvent="deleteEvent"
     />
   </div>
 </template>
@@ -38,6 +39,10 @@ function createEvent(event) {
   console.log('Event Created')
   console.log(event)
 }
+function deleteEvent(event) {
+  console.log('Event Deleted')
+  console.log(event)
+}
 
 const scheduleResource = createResource({
   url: 'education.education.api.get_course_schedule_for_student',
@@ -48,7 +53,7 @@ const scheduleResource = createResource({
       schedule.push({
         title: classSchedule.title,
         participant: classSchedule.instructor,
-        name: classSchedule.name,
+        id: classSchedule.name,
         venue: 'Room No: ' + classSchedule.room,
         date: classSchedule.schedule_date,
         from_time: parseTime(classSchedule.from_time),

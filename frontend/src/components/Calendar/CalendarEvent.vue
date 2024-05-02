@@ -49,7 +49,10 @@
     <EventModalContent
       :calendarEvent="calendarEvent"
       :date="date"
+      :isEditMode="config.isEditMode"
       @close="close"
+      @edit="handleEventEdit"
+      @delete="handleEventDelete"
     />
   </div>
 </template>
@@ -209,8 +212,6 @@ let colorMap = {
   },
 }
 
-const updateEventState = inject('updateEventState')
-
 function newEventEndTime(newHeight) {
   let newEndTime =
     parseFloat(newHeight) / minuteHeight +
@@ -246,6 +247,8 @@ function newEventDuration(changeInTime) {
 
   return [convertMinutesToHours(newFromTime), convertMinutesToHours(newToTime)]
 }
+
+const updateEventState = inject('updateEventState')
 
 function handleResizeMouseDown(e) {
   isResizing.value = true
@@ -387,5 +390,12 @@ const close = () => (opened.value = false)
 
 function handleBlur(e) {
   eventRef.value.style.zIndex = props.event.idx + 1
+}
+
+const deleteEvent = inject('deleteEvent')
+function handleEventEdit() {}
+
+function handleEventDelete() {
+  deleteEvent(calendarEvent.value.id)
 }
 </script>

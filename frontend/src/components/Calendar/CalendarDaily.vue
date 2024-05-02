@@ -40,7 +40,7 @@
               ]"
               class="mb-2 cursor-pointer absolute"
               :event="calendarEvent"
-              :key="calendarEvent.name"
+              :key="calendarEvent.id"
               :date="currentDate"
               :style="setEventStyles(calendarEvent, idx)"
               :stylesProp="setEventStyles(calendarEvent, idx)"

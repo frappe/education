@@ -43,9 +43,9 @@
                 :event="calendarEvent"
                 :date="date"
                 class="mb-2 cursor-pointer w-full"
-                :key="calendarEvent.name"
+                :key="calendarEvent.id"
                 :draggable="config.isEditMode"
-                @dragstart="dragStart($event, calendarEvent.name)"
+                @dragstart="dragStart($event, calendarEvent.id)"
                 @dragend="$event.target.style.opacity = '1'"
                 @dragover="dragOver($event)"
               />
@@ -143,9 +143,9 @@ const onDrop = (event, date) => {
   let calendarEventID = event.dataTransfer.getData('calendarEventID')
   event.target.style.cursor = 'default'
   // if same date then return
-  let e = props.events.find((e) => e.name === calendarEventID)
+  let e = props.events.find((e) => e.id === calendarEventID)
   if (parseDate(date) === e.date) return
-  let calendarEvent = props.events.find((e) => e.name === calendarEventID)
+  let calendarEvent = props.events.find((e) => e.id === calendarEventID)
   calendarEvent.date = parseDate(date)
   updateEventState(calendarEvent)
 }

@@ -114,16 +114,22 @@ events.value.forEach((event) => {
 
 provide('updateEventState', updateEventState)
 provide('createNewEvent', createNewEvent)
+provide('deleteEvent', deleteEvent)
+
 function updateEventState(event) {
-  const eventID = event.name
-  let eventIndex = events.value.findIndex((e) => e.name === eventID)
+  const eventID = event.id
+  let eventIndex = events.value.findIndex((e) => e.id === eventID)
   events.value[eventIndex] = event
   emit('updateEvent', events.value[eventIndex])
 }
 function createNewEvent(event) {
-  console.log(event)
   events.value.push(event)
   emit('createEvent', event)
+}
+
+function deleteEvent(eventID) {
+  events.value = events.value.filter((event) => event.id !== eventID)
+  emit('deleteEvent', eventID)
 }
 
 // Calendar View Options

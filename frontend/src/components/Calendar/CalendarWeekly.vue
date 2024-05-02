@@ -67,7 +67,7 @@
               v-for="(calendarEvent, idx) in parsedData[parseDate(date)]"
               class="mb-2 cursor-pointer absolute w-[90%]"
               :event="calendarEvent"
-              :key="calendarEvent.name"
+              :key="calendarEvent.id"
               :date="date"
             />
 
