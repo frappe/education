@@ -13,9 +13,11 @@
           {{ parseDateEventPopupFormat(date) }}
         </span>
       </div>
-      <div class="flex gap-2 items-center" v-if="calendarEvent.with">
+      <div class="flex gap-2 items-center" v-if="calendarEvent.participant">
         <FeatherIcon name="user" class="h-4 w-4" />
-        <span class="text-sm font-normal"> {{ calendarEvent.with }} </span>
+        <span class="text-sm font-normal">
+          {{ calendarEvent.participant }}
+        </span>
       </div>
       <div
         class="flex gap-2 items-center"
@@ -26,10 +28,10 @@
           {{ calendarEvent.from_time }} - {{ calendarEvent.to_time }}
         </span>
       </div>
-      <div class="flex gap-2 items-center" v-if="calendarEvent.room">
+      <div class="flex gap-2 items-center" v-if="calendarEvent.venue">
         <FeatherIcon name="map-pin" class="h-4 w-4" />
         <span class="text-sm font-normal">
-          Room No: &nbsp {{ calendarEvent.room }}
+          {{ calendarEvent.venue }}
         </span>
       </div>
     </div>

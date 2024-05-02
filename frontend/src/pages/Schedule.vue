@@ -7,7 +7,7 @@
         defaultMode: 'Week',
         scrollToHour: 8,
         eventIcons: eventIcons,
-        isEditMode: false,
+        isEditMode: true,
       }"
       @updateEvent="updateEvent"
       @createEvent="createEvent"
@@ -47,9 +47,9 @@ const scheduleResource = createResource({
     response.forEach((classSchedule) => {
       schedule.push({
         title: classSchedule.title,
-        with: classSchedule.instructor,
+        participant: classSchedule.instructor,
         name: classSchedule.name,
-        room: classSchedule.room,
+        venue: 'Room No: ' + classSchedule.room,
         date: classSchedule.schedule_date,
         from_time: parseTime(classSchedule.from_time),
         to_time: parseTime(classSchedule.to_time),

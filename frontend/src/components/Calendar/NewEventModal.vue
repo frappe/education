@@ -20,7 +20,6 @@
             v-model="newEvent.title"
             label="Title"
             placeholder="Meet with John Doe"
-            @blur="validateFields()"
           />
           <FormControl
             type="Date"
@@ -32,7 +31,7 @@
 
           <FormControl
             type="Input"
-            v-model="newEvent.person"
+            v-model="newEvent.participant"
             label="Person"
             placeholder="John Doe"
           />
@@ -79,12 +78,6 @@ import ErrorMessage from 'frappe-ui/src/components/ErrorMessage.vue'
 import { inject, reactive, ref } from 'vue'
 import { calculateDiff } from './calendarUtils'
 const show = defineModel()
-// Needs in Dialog
-// 1. Date
-// 2. Person
-// 3. From Time
-// 4. To Time
-// 5. Venue
 
 const props = defineProps({
   event: {
@@ -95,7 +88,7 @@ const props = defineProps({
 const newEvent = reactive({
   title: props.event?.title || '',
   date: props.event?.date || '',
-  person: props.event?.person || '',
+  participant: props.event?.participant || '',
   from_time: props.event?.from_time || '',
   to_time: props.event?.to_time || '',
   venue: props.event?.venue || '',
@@ -104,9 +97,7 @@ const newEvent = reactive({
 
 const errorMessage = ref('')
 function validateFields() {
-  if (!newEvent.title) {
-    errorMessage.value = 'Title is required'
-  } else if (!newEvent.date) {
+  if (!newEvent.date) {
     errorMessage.value = 'Date is required'
   } else if (!newEvent.from_time) {
     errorMessage.value = 'Start Time is required'
@@ -137,8 +128,12 @@ function submitEvent(close) {
   if (errorMessage.value) {
     return
   }
-  let id = Math.random(0, 1)
-  newEvent.id = id
+
+  let id = '#' + Math.random().toString(36).substring(7)
+  newEvent.name = id
+  if (!newEvent.title) {
+    newEvent.title = '(No Title)'
+  }
   createNewEvent(newEvent)
   close()
   // newEvent = {

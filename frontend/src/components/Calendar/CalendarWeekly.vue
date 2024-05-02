@@ -85,8 +85,8 @@
     </div>
   </div>
   <NewEventModal
-    v-model="showEventModal"
     v-if="showEventModal"
+    v-model="showEventModal"
     :event="newEvent"
   />
 </template>
@@ -189,14 +189,15 @@ function parseDate(date) {
 const showEventModal = ref(false)
 const newEvent = reactive({
   date: '',
-  person: '',
+  participant: '',
   from_time: '',
   to_time: '',
   venue: '',
   title: '',
 })
 function openNewEventModal(event, from_time) {
-  let date = event.target.parentNode.getAttribute('data-date-attr')
+  if (!props.config.isEditMode) return
+  let date = event?.target.parentNode.getAttribute('data-date-attr')
   let to_time = convertMinutesToHours(calculateMinutes(from_time) + 60).slice(
     0,
     -3
