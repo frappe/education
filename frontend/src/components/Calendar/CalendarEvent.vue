@@ -52,31 +52,6 @@
       @close="close"
     />
   </div>
-  <!-- <FloatingPopover
-    :targetElement="eventRef"
-    :activeView="activeView"
-    :calendarEvent="calendarEvent"
-    :date="date"
-    :opened="opened"
-    @update:show="updateShow"
-    v-if="opened"
-  /> -->
-
-  <!-- <div v-else class="w-full p-2 rounded-md " :class="event.background_color  || 'bg-green-100'" @click="togglePopover">
-		<div class="flex gap-3 relative px-2 items-start select-none"
-		>
-			<FeatherIcon name="circle" class="h-4 text-black" />
-
-			<div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
-				<p class="font-medium text-sm text-gray-800 text-ellipsis">
-					{{ event.title }}
-				</p>
-				<p class="font-normal text-xs text-gray-800 text-ellipsis" v-if="event.from_time">
-					{{ event.from_time }} - {{ event.to_time }}
-				</p>
-			</div>
-		</div>
-	</div> -->
 </template>
 
 <script setup>
@@ -84,6 +59,7 @@ import { FeatherIcon } from 'frappe-ui'
 import NestedPopover from '@/components/NestedPopover.vue'
 import UsePopover from '@/components/UsePopover.vue'
 import EventModalContent from './EventModalContent.vue'
+import NewEventModal from './NewEventModal.vue'
 import { useFloating, shift, flip, offset, autoUpdate } from '@floating-ui/vue'
 import FloatingPopover from './FloatingPopover.vue'
 

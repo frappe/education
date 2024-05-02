@@ -51,9 +51,10 @@
 
             <!-- Time Grid -->
             <div
-              class="flex relative cell"
+              class="flex relative cell cursor-pointer"
               v-for="time in twentyFourHoursFormat"
               :data-time-attr="time"
+              @click="openNewEventModal($event, time)"
             >
               <div
                 class="w-full border-b-[1px] border-gray-200 -z-10"
@@ -83,11 +84,22 @@
       </div>
     </div>
   </div>
+  <NewEventModal
+    v-model="showEventModal"
+    v-if="showEventModal"
+    :event="newEvent"
+  />
 </template>
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, reactive } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
-import { parseDateWithComma, twentyFourHoursFormat } from './calendarUtils'
+import NewEventModal from './NewEventModal.vue'
+import {
+  calculateMinutes,
+  convertMinutesToHours,
+  parseDateWithComma,
+  twentyFourHoursFormat,
+} from './calendarUtils'
 
 let props = defineProps({
   events: {
@@ -122,32 +134,6 @@ let setCurrentTime = computed(() => {
   let top = (hour * 60 + minutes) * minuteHeight + redundantCellHeight + 'px'
   return { top }
 })
-
-// function setEventStyles(event, index) {
-//   let diff = calculateDiff(event.from_time, event.to_time)
-//   let height = diff * minuteHeight + 'px'
-
-//   let top =
-//     calculateMinutes(event.from_time) * minuteHeight +
-//     redundantCellHeight +
-//     'px'
-
-//   console.log('top', top)
-
-//   return { height, top, zIndex: index }
-// }
-
-function handleClick(e) {
-  // change the event z-index to 100
-  increaseZIndex.value = true
-  e.target.parentElement.style.zIndex = 100
-}
-
-function handleBlur(e, calendarEvent) {
-  // change the event z-index to 0
-  increaseZIndex.value = false
-  e.target.parentElement.style.zIndex = 0
-}
 
 let parsedData = computed(() => {
   let groupByDate = Object.groupBy(props.events, (row) => row.date)
@@ -198,6 +184,28 @@ function parseDate(date) {
   if (mm < 10) mm = '0' + mm
 
   return `${yyyy}-${mm}-${dd}`
+}
+
+const showEventModal = ref(false)
+const newEvent = reactive({
+  date: '',
+  person: '',
+  from_time: '',
+  to_time: '',
+  venue: '',
+  title: '',
+})
+function openNewEventModal(event, from_time) {
+  let date = event.target.parentNode.getAttribute('data-date-attr')
+  let to_time = convertMinutesToHours(calculateMinutes(from_time) + 60).slice(
+    0,
+    -3
+  )
+
+  newEvent.date = parseDate(new Date(date))
+  newEvent.from_time = from_time
+  newEvent.to_time = to_time
+  showEventModal.value = true
 }
 </script>
 

@@ -27,7 +27,7 @@
         </span>
       </div>
       <div class="flex gap-2 items-center" v-if="calendarEvent.room">
-        <FeatherIcon name="circle" class="h-4 w-4" />
+        <FeatherIcon name="map-pin" class="h-4 w-4" />
         <span class="text-sm font-normal">
           Room No: &nbsp {{ calendarEvent.room }}
         </span>

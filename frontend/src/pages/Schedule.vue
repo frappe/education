@@ -7,9 +7,10 @@
         defaultMode: 'Week',
         scrollToHour: 8,
         eventIcons: eventIcons,
-        isEditMode: true,
+        isEditMode: false,
       }"
       @updateEvent="updateEvent"
+      @createEvent="createEvent"
     />
   </div>
 </template>
@@ -31,6 +32,10 @@ const programName = ref(getCurrentProgram()?.value?.program)
 const events = ref([])
 
 function updateEvent(event) {
+  console.log(event)
+}
+function createEvent(event) {
+  console.log('Event Created')
   console.log(event)
 }
 
