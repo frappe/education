@@ -108,12 +108,12 @@ const handleClickOutside = (e) => {
 }
 
 const calendarEvent = ref(props.event)
-// console.log(calendarEvent.value.overlapingCount)
-// calendarEvent.value.type = Math.random() > 0.5 && 'phone'
+calendarEvent.value.type = Math.random() > 0.67 ? 'mail' : 'phone'
 const activeView = inject('activeView')
 const config = inject('config')
 const eventIcons = config.eventIcons
 const minuteHeight = config.hourHeight / 60
+const height_15_min = minuteHeight * 15
 
 const setEventStyles = computed(() => {
   const redundantCellHeight = config.redundantCellHeight
@@ -133,7 +133,9 @@ const setEventStyles = computed(() => {
   let left = '0'
   let overlapCount = calendarEvent.value.overlapCount
   let width = '90%'
-  if (isResizing.value || isRepositioning.value) width = '100%'
+  if (isResizing.value || isRepositioning.value) {
+    width = '100%'
+  }
   // TODO: Clashing Events
   if (overlapCount > 1) {
     left = `${(100 / overlapCount) * props.event.idx}%`
@@ -141,10 +143,6 @@ const setEventStyles = computed(() => {
   } else {
     left = '0'
   }
-  // let date = props.date.getMonth() + 1
-  // if (date === 4) {
-  //   console.log(props.event)
-  // }
 
   return {
     height,
@@ -176,7 +174,6 @@ function newEventEndTime(newHeight) {
     parseFloat(newHeight) / minuteHeight +
     calculateMinutes(calendarEvent.value.from_time)
   newEndTime = Math.floor(newEndTime)
-  // console.log(newEndTime, typeof newEndTime)
   if (newEndTime > 1440) {
     newEndTime = 1440
   }
@@ -226,7 +223,6 @@ function handleResizeMouseDown(e) {
   window.addEventListener('mouseup', stopResize, { once: true })
 
   function resize(e) {
-    let height_15_min = minuteHeight * 15
     // difference between where mouse is and where event's top is, to find the new height
     let diffX = e.clientY - eventRef.value.getBoundingClientRect().top
     eventRef.value.style.height =
@@ -252,14 +248,16 @@ function handleRepositionMouseDown(e) {
   let prevY = e.clientY
   const rect = eventRef.value.getBoundingClientRect()
   const oldEvent = { ...calendarEvent.value }
-  isRepositioning.value = true
+
   if (isResizing.value) return
 
   window.addEventListener('mousemove', mousemove)
   window.addEventListener('mouseup', mouseup)
 
   function mousemove(e) {
+    isRepositioning.value = true
     if (!eventRef.value) return
+    close()
     eventRef.value.style.cursor = 'move'
     eventRef.value.style.width = '100%'
     eventRef.value.style.zIndex = 100
@@ -338,7 +336,7 @@ function handleHorizontalMovement(clientX, rect) {
 
 function handleVerticalMovement(clientY, prevY) {
   let diffY = clientY - prevY
-  diffY = Math.round(diffY / 18) * 18
+  diffY = Math.round(diffY / height_15_min) * height_15_min
 
   const [oldFromTime, oldToTime] = [
     calendarEvent.value.from_time,
@@ -361,11 +359,8 @@ function handleBlur(e) {
 
 const showEventModal = ref(false)
 function handleEventEdit() {
-  // console.log('Edit')
-  // console.log(props.event)
   close()
   showEventModal.value = true
-  // console.log(calendarEvent.value.id)
 }
 
 const deleteEvent = inject('deleteEvent')
