@@ -28,6 +28,7 @@
               class="flex relative"
               v-for="time in twentyFourHoursFormat"
               :data-time-attr="time"
+              @dblclick="openNewEventModal($event, time)"
             >
               <div
                 class="w-full border-b-[1px] border-gray-200"
@@ -43,7 +44,6 @@
               :key="calendarEvent.id"
               :date="currentDate"
               :style="setEventStyles(calendarEvent, idx)"
-              :stylesProp="setEventStyles(calendarEvent, idx)"
               @mouseout="(e) => handleBlur(e)"
             />
             <!-- Current time style  -->
@@ -62,17 +62,25 @@
       </div>
     </div>
   </div>
+  <NewEventModal
+    v-if="showEventModal"
+    v-model="showEventModal"
+    :event="newEvent"
+  />
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
+import NewEventModal from './NewEventModal.vue'
+
 import {
   parseDate,
   parseDateWithComma,
   calculateDiff,
   calculateMinutes,
   twentyFourHoursFormat,
+  convertMinutesToHours,
 } from './calendarUtils'
 
 const props = defineProps({
@@ -117,6 +125,29 @@ function setEventStyles(event, index) {
     redundantCellHeight +
     'px'
   return { height, top, zIndex: index }
+}
+
+const showEventModal = ref(false)
+const newEvent = reactive({
+  date: '',
+  participant: '',
+  from_time: '',
+  to_time: '',
+  venue: '',
+  title: '',
+})
+function openNewEventModal(event, from_time) {
+  if (!props.config.isEditMode) return
+  let date = props.currentDate
+  let to_time = convertMinutesToHours(calculateMinutes(from_time) + 60).slice(
+    0,
+    -3
+  )
+
+  newEvent.date = parseDate(date)
+  newEvent.from_time = from_time
+  newEvent.to_time = to_time
+  showEventModal.value = true
 }
 
 function handleClick(e) {
