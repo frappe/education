@@ -32,13 +32,16 @@ const eventIcons = {
 const programName = ref(getCurrentProgram()?.value?.program)
 const events = ref([])
 
-function updateEvent(event) {
-  console.log(event)
-}
 function createEvent(event) {
   console.log('Event Created')
   console.log(event)
 }
+
+function updateEvent(event) {
+  console.log('Event Updated')
+  console.log(event)
+}
+
 function deleteEvent(event) {
   console.log('Event Deleted')
   console.log(event)

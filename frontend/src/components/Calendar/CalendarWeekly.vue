@@ -54,7 +54,7 @@
               class="flex relative cell cursor-pointer"
               v-for="time in twentyFourHoursFormat"
               :data-time-attr="time"
-              @click="openNewEventModal($event, time)"
+              @dblclick="openNewEventModal($event, time)"
             >
               <div
                 class="w-full border-b-[1px] border-gray-200 -z-10"
@@ -135,18 +135,17 @@ let setCurrentTime = computed(() => {
   return { top }
 })
 
-let parsedData = computed(() => {
+const parsedData = computed(() => {
+  // console.log('here')
   let groupByDate = Object.groupBy(props.events, (row) => row.date)
   let sortedArray = {}
   for (const [key, value] of Object.entries(groupByDate)) {
     let sortedEvents = value.sort((a, b) =>
       a.from_time < b.from_time ? -1 : 1
     )
-    // console.log(key, value)
     findOverlappingEventsCount(sortedEvents)
     sortedArray[key] = sortedEvents
   }
-  // console.log('came here')
   return sortedArray
 })
 

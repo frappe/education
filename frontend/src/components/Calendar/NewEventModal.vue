@@ -82,7 +82,7 @@
 import { Dialog, FormControl } from 'frappe-ui'
 import ErrorMessage from 'frappe-ui/src/components/ErrorMessage.vue'
 import { computed, inject, reactive, ref } from 'vue'
-import { calculateDiff, colorMap } from './calendarUtils'
+import { calculateDiff, colorMap, removeSeconds } from './calendarUtils'
 const show = defineModel()
 
 const props = defineProps({
@@ -155,15 +155,22 @@ function submitEvent(close) {
     return
   }
 
+  // if it has ID then event already exists
   if (props.event.hasOwnProperty('id')) {
     newEvent.id = props.event.id
+    newEvent.from_time = removeSeconds(newEvent.from_time)
+    newEvent.to_time = removeSeconds(newEvent.to_time)
     updateEventState(newEvent)
-  } else {
+  }
+  // else new event is created with ID
+  else {
     const id = '#' + Math.random().toString(36).substring(3, 9)
     newEvent.id = id
     if (!newEvent.title) {
       newEvent.title = '(No Title)'
     }
+    newEvent.from_time = removeSeconds(newEvent.from_time)
+    newEvent.to_time = removeSeconds(newEvent.to_time)
     createNewEvent(newEvent)
   }
   close()
