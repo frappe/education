@@ -2,7 +2,7 @@
   <Dialog
     v-model="show"
     :options="{
-      title: 'Create New Event',
+      title: props.event.hasOwnProperty('id') ? 'Edit Event' : 'New Event',
       actions: [
         {
           label: 'Submit',
@@ -56,6 +56,12 @@
             label="Venue"
             placeholder="Frappe, Neelkanth Business Park"
           />
+          <FormControl
+            type="select"
+            v-model="newEvent.color"
+            :options="colors"
+            label="Color"
+          />
           <ErrorMessage :message="errorMessage" v-if="errorMessage" />
         </div>
       </div>
@@ -75,8 +81,8 @@
 <script setup>
 import { Dialog, FormControl } from 'frappe-ui'
 import ErrorMessage from 'frappe-ui/src/components/ErrorMessage.vue'
-import { inject, reactive, ref } from 'vue'
-import { calculateDiff } from './calendarUtils'
+import { computed, inject, reactive, ref } from 'vue'
+import { calculateDiff, colorMap } from './calendarUtils'
 const show = defineModel()
 
 const props = defineProps({
@@ -92,8 +98,23 @@ const newEvent = reactive({
   from_time: props.event?.from_time || '',
   to_time: props.event?.to_time || '',
   venue: props.event?.venue || '',
+  color: props.event?.color || '',
   id: '',
 })
+
+const isUpdated = computed(() => {
+  return (
+    newEvent.title !== props.event.title ||
+    newEvent.date !== props.event.date ||
+    newEvent.participant !== props.event.participant ||
+    newEvent.from_time !== props.event.from_time ||
+    newEvent.to_time !== props.event.to_time ||
+    newEvent.venue !== props.event.venue ||
+    newEvent.color !== props.event.color
+  )
+})
+
+const colors = Object.keys(colorMap)
 
 const errorMessage = ref('')
 function validateFields() {
@@ -122,27 +143,29 @@ function validateStartEndTime() {
 }
 
 const createNewEvent = inject('createNewEvent')
+const updateEventState = inject('updateEventState')
 
 function submitEvent(close) {
   validateFields()
   if (errorMessage.value) {
     return
   }
-
-  let id = '#' + Math.random().toString(36).substring(3, 9)
-  newEvent.id = id
-  if (!newEvent.title) {
-    newEvent.title = '(No Title)'
+  if (!isUpdated.value) {
+    close()
+    return
   }
-  createNewEvent(newEvent)
-  close()
-  // newEvent = {
-  //   date: '',
-  //   person: '',
-  //   from_time: '',
-  //   to_time: '',
-  //   venue: '',
-  // }
+
+  if (props.event.hasOwnProperty('id')) {
+    newEvent.id = props.event.id
+    updateEventState(newEvent)
+  } else {
+    const id = '#' + Math.random().toString(36).substring(3, 9)
+    newEvent.id = id
+    if (!newEvent.title) {
+      newEvent.title = '(No Title)'
+    }
+    createNewEvent(newEvent)
+  }
   close()
 }
 </script>
