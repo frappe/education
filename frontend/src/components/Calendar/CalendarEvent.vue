@@ -33,7 +33,7 @@
           class="font-normal text-xs text-gray-800 text-ellipsis"
           v-if="calendarEvent.from_time"
         >
-          {{ calendarEvent.from_time }} - {{ calendarEvent.to_time }}
+          {{ updatedTime.from_time }} - {{ updatedTime.to_time }}
         </p>
       </div>
     </div>
@@ -71,7 +71,15 @@ import NewEventModal from './NewEventModal.vue'
 import { useFloating, shift, flip, offset, autoUpdate } from '@floating-ui/vue'
 import FloatingPopover from './FloatingPopover.vue'
 
-import { ref, inject, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import {
+  ref,
+  inject,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  reactive,
+} from 'vue'
 
 import {
   calculateMinutes,
@@ -108,12 +116,17 @@ const handleClickOutside = (e) => {
 }
 
 const calendarEvent = ref(props.event)
-calendarEvent.value.type = Math.random() > 0.67 ? 'mail' : 'phone'
+// calendarEvent.value.type = Math.random() > 0.67 ? 'mail' : 'phone'
 const activeView = inject('activeView')
 const config = inject('config')
 const eventIcons = config.eventIcons
 const minuteHeight = config.hourHeight / 60
 const height_15_min = minuteHeight * 15
+
+const state = reactive({
+  xAxis: 0,
+  yAxis: 0,
+})
 
 const setEventStyles = computed(() => {
   const redundantCellHeight = config.redundantCellHeight
@@ -150,6 +163,7 @@ const setEventStyles = computed(() => {
     zIndex: props.event.idx + 1,
     left,
     width,
+    transform: `translate(${state.xAxis}px, ${state.yAxis}px)`,
   }
 })
 
@@ -270,7 +284,7 @@ function handleRepositionMouseDown(e) {
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
 
-    prevY = e.clientY
+    // prevY = e.clientY
     if (
       oldEvent.from_time !== calendarEvent.value.from_time &&
       oldEvent.to_time !== calendarEvent.value.to_time
@@ -293,6 +307,8 @@ function handleRepositionMouseDown(e) {
     }
     if (isEventUpdated.value) {
       calendarEvent.value.date = updatedDate.value
+      calendarEvent.value.from_time = updatedTime.from_time
+      calendarEvent.value.to_time = updatedTime.to_time
       updateEventState(calendarEvent.value)
       isEventUpdated.value = false
     }
@@ -325,29 +341,30 @@ function handleHorizontalMovement(clientX, rect) {
   } else if (diff > rightPadding) {
     diff = rightPadding
   }
-  //TODO: find diff based on leftPadding and rightPadding of Days
   let xPos = Math.ceil(diff * eventWidth)
-
-  if (eventRef.value.style.transform !== `translateX(${xPos}px)`) {
-    eventRef.value.style.transform = `translateX(${xPos}px)`
-  }
+  state.xAxis = xPos
   updatedDate.value = parseDate(getDate(currentDate, diff))
 }
+
+const updatedTime = reactive({
+  from_time: props.event.from_time,
+  to_time: props.event.to_time,
+})
 
 function handleVerticalMovement(clientY, prevY) {
   let diffY = clientY - prevY
   diffY = Math.round(diffY / height_15_min) * height_15_min
 
-  const [oldFromTime, oldToTime] = [
-    calendarEvent.value.from_time,
-    calendarEvent.value.to_time,
-  ]
+  state.yAxis = diffY
 
-  const [newFromTime, newToTime] = newEventDuration(diffY)
-
-  if (oldFromTime === newFromTime && oldToTime === newToTime) return
-  calendarEvent.value.from_time = newFromTime
-  calendarEvent.value.to_time = newToTime
+  updatedTime.from_time = convertMinutesToHours(
+    calculateMinutes(calendarEvent.value.from_time) +
+      Math.round(diffY / minuteHeight)
+  )
+  updatedTime.to_time = convertMinutesToHours(
+    calculateMinutes(calendarEvent.value.to_time) +
+      Math.round(diffY / minuteHeight)
+  )
 }
 
 const toggle = () => (opened.value = !opened.value)
