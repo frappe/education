@@ -136,7 +136,6 @@ let setCurrentTime = computed(() => {
 })
 
 const parsedData = computed(() => {
-  // console.log('here')
   let groupByDate = Object.groupBy(props.events, (row) => row.date)
   let sortedArray = {}
   for (const [key, value] of Object.entries(groupByDate)) {

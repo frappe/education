@@ -41,6 +41,7 @@
             v-model="newEvent.from_time"
             label="Start Time"
             @blur="validateFields()"
+            v-if="!newEvent.isFullDay"
           />
 
           <FormControl
@@ -48,6 +49,7 @@
             v-model="newEvent.to_time"
             label="End Time"
             @blur="validateFields()"
+            v-if="!newEvent.isFullDay"
           />
 
           <FormControl
@@ -61,6 +63,11 @@
             v-model="newEvent.color"
             :options="colors"
             label="Color"
+          />
+          <FormControl
+            type="checkbox"
+            label="Full Day Event?"
+            v-model="newEvent.isFullDay"
           />
           <ErrorMessage :message="errorMessage" v-if="errorMessage" />
         </div>
@@ -100,6 +107,7 @@ const newEvent = reactive({
   venue: props.event?.venue || '',
   color: props.event?.color || '',
   id: '',
+  isFullDay: props.event?.isFullDay || false,
 })
 
 const isUpdated = computed(() => {
@@ -110,7 +118,8 @@ const isUpdated = computed(() => {
     newEvent.from_time !== props.event.from_time ||
     newEvent.to_time !== props.event.to_time ||
     newEvent.venue !== props.event.venue ||
-    newEvent.color !== props.event.color
+    newEvent.color !== props.event.color ||
+    newEvent.isFullDay !== props.event.isFullDay
   )
 })
 
@@ -120,9 +129,9 @@ const errorMessage = ref('')
 function validateFields() {
   if (!newEvent.date) {
     errorMessage.value = 'Date is required'
-  } else if (!newEvent.from_time) {
+  } else if (!newEvent.from_time && !newEvent.isFullDay) {
     errorMessage.value = 'Start Time is required'
-  } else if (!newEvent.to_time) {
+  } else if (!newEvent.to_time && !newEvent.isFullDay) {
     errorMessage.value = 'End Time is required'
   } else {
     errorMessage.value = ''
@@ -158,22 +167,30 @@ function submitEvent(close) {
   // if it has ID then event already exists
   if (props.event.hasOwnProperty('id')) {
     newEvent.id = props.event.id
-    newEvent.from_time = removeSeconds(newEvent.from_time)
-    newEvent.to_time = removeSeconds(newEvent.to_time)
+    handleEventTime()
     updateEventState(newEvent)
   }
   // else new event is created with ID
   else {
-    const id = '#' + Math.random().toString(36).substring(3, 9)
-    newEvent.id = id
+    handleEventTime()
     if (!newEvent.title) {
       newEvent.title = '(No Title)'
     }
-    newEvent.from_time = removeSeconds(newEvent.from_time)
-    newEvent.to_time = removeSeconds(newEvent.to_time)
+    const id = '#' + Math.random().toString(36).substring(3, 9)
+    newEvent.id = id
     createNewEvent(newEvent)
   }
   close()
+}
+
+function handleEventTime() {
+  if (newEvent.isFullDay) {
+    newEvent.from_time = ''
+    newEvent.to_time = ''
+  } else {
+    newEvent.from_time = removeSeconds(newEvent.from_time)
+    newEvent.to_time = removeSeconds(newEvent.to_time)
+  }
 }
 </script>
 

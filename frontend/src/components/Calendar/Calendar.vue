@@ -95,14 +95,6 @@ let activeView = ref(overrideConfig.defaultMode)
 provide('activeView', activeView)
 provide('config', overrideConfig)
 
-watch(
-  () => props.events,
-  (newVal) => {
-    events.value = newVal
-  },
-  { deep: true }
-)
-
 let events = ref(props.events)
 events.value.forEach((event) => {
   if (!event.from_time || !event.to_time) {
