@@ -16,6 +16,7 @@
       <div
         v-for="date in currentMonthDates"
         class="border-r-[1px] border-b-[1px] border-gray-200"
+        @dblclick="openNewEventModal(date)"
         @dragover.prevent
         @drageneter.prevent
         @drop="onDrop($event, date)"
@@ -42,7 +43,7 @@
                 v-for="calendarEvent in parsedData[parseDate(date)]"
                 :event="calendarEvent"
                 :date="date"
-                class="mb-2 cursor-pointer w-full"
+                class="mb-2 cursor-pointer w-full z-10"
                 :key="calendarEvent.id"
                 :draggable="config.isEditMode"
                 @dragstart="dragStart($event, calendarEvent.id)"
@@ -57,10 +58,12 @@
         </div>
       </div>
     </div>
-    <!-- <div class=" w-20 h-20 bg-orange-400 absolute top-[212px] left">
-			
-		</div> -->
   </div>
+  <NewEventModal
+    v-if="showEventModal"
+    v-model="showEventModal"
+    :event="newEvent"
+  />
 </template>
 
 <script setup>
@@ -71,8 +74,9 @@ import {
   calculateMinutes,
   parseDate,
 } from './calendarUtils'
-import { computed, inject } from 'vue'
+import { computed, inject, ref, reactive } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
+import NewEventModal from './NewEventModal.vue'
 
 const props = defineProps({
   events: {
@@ -148,6 +152,20 @@ const onDrop = (event, date) => {
   let calendarEvent = props.events.find((e) => e.id === calendarEventID)
   calendarEvent.date = parseDate(date)
   updateEventState(calendarEvent)
+}
+const showEventModal = ref(false)
+const newEvent = reactive({
+  date: '',
+  participant: '',
+  from_time: '',
+  to_time: '',
+  venue: '',
+  title: '',
+})
+function openNewEventModal(date) {
+  if (!props.config.isEditMode) return
+  newEvent.date = parseDate(new Date(date))
+  showEventModal.value = true
 }
 </script>
 

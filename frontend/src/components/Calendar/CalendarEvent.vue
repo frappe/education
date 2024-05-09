@@ -6,7 +6,7 @@
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="activeView !== 'Month' && setEventStyles"
     @mouseout="(e) => handleBlur(e)"
-    @dblclick="toggle()"
+    @click="toggle()"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
