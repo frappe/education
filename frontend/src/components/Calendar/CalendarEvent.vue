@@ -261,7 +261,6 @@ function handleRepositionMouseDown(e) {
   if (activeView.value === 'Month') return
   let prevY = e.clientY
   const rect = eventRef.value.getBoundingClientRect()
-  const oldEvent = { ...calendarEvent.value }
 
   if (isResizing.value) return
 
@@ -276,6 +275,7 @@ function handleRepositionMouseDown(e) {
     eventRef.value.style.width = '100%'
     eventRef.value.style.zIndex = 100
     eventRef.value.style.left = '0'
+
     // handle movement between days
     if (activeView.value === 'Week') {
       handleHorizontalMovement(e.clientX, rect)
@@ -284,10 +284,9 @@ function handleRepositionMouseDown(e) {
     // handle movement within the same day
     handleVerticalMovement(e.clientY, prevY)
 
-    // prevY = e.clientY
     if (
-      oldEvent.from_time !== calendarEvent.value.from_time &&
-      oldEvent.to_time !== calendarEvent.value.to_time
+      calendarEvent.value.from_time !== updatedTime.from_time ||
+      calendarEvent.value.to_time !== updatedTime.to_time
     ) {
       isEventUpdated.value = true
     } else {
@@ -311,6 +310,8 @@ function handleRepositionMouseDown(e) {
       calendarEvent.value.to_time = updatedTime.to_time
       updateEventState(calendarEvent.value)
       isEventUpdated.value = false
+      state.xAxis = 0
+      state.yAxis = 0
     }
 
     window.removeEventListener('mousemove', mousemove)
