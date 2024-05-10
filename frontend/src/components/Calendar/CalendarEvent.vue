@@ -1,7 +1,7 @@
 <template>
   <div
-    v-bind="$attrs"
     class="p-2 rounded-lg h-min-[18px] w-[90%]"
+    v-bind="$attrs"
     ref="eventRef"
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="activeView !== 'Month' && setEventStyles"
@@ -38,11 +38,11 @@
       </div>
     </div>
     <div
-      v-if="config.isEditMode && activeView !== 'Month'"
+      v-if="config.isEditMode && activeView !== 'Month' && !event.isFullDay"
       class="absolute h-[8px] w-[100%] cursor-row-resize"
       ref="resize"
       @mousedown="handleResizeMouseDown"
-    ></div>
+    />
   </div>
 
   <div ref="floating" :style="{ ...floatingStyles, zIndex: 100 }" v-if="opened">
@@ -140,6 +140,13 @@ const state = reactive({
 })
 
 const setEventStyles = computed(() => {
+  if (props.event.isFullDay) {
+    return {
+      transform: `translate(${state.xAxis}px, ${state.yAxis}px)`,
+      zIndex: props.event.idx + 1,
+    }
+  }
+
   const redundantCellHeight = config.redundantCellHeight
   let diff = calculateDiff(
     calendarEvent.value.from_time,
@@ -283,7 +290,7 @@ function handleRepositionMouseDown(e) {
     }
 
     // handle movement within the same day
-    handleVerticalMovement(e.clientY, prevY)
+    if (!props.event.isFullDay) handleVerticalMovement(e.clientY, prevY)
 
     if (
       calendarEvent.value.from_time !== updatedTime.from_time ||
@@ -331,7 +338,9 @@ function getDate(date, nextDate = 0) {
 
 function handleHorizontalMovement(clientX, rect) {
   const currentDate = new Date(
-    eventRef.value.parentNode.getAttribute('data-date-attr')
+    props.event.isFullDay
+      ? eventRef.value.parentNode.parentNode.getAttribute('data-date-attr')
+      : eventRef.value.parentNode.getAttribute('data-date-attr')
   )
   const leftPadding = currentDate.getDay()
   const rightPadding = 6 - currentDate.getDay()

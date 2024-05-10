@@ -43,11 +43,20 @@
             class="border-r-[1px] relative calendar-column"
             :data-date-attr="date"
           >
-            <!-- Top Redundant Cell before time starts for giving the calendar some space -->
+            <!-- Top Cell for Full Day Event -->
             <div
-              class="w-full border-b-[1px] border-gray-200"
-              :style="{ height: `${redundantCellHeight}px` }"
-            />
+              class="w-full border-b-[1px] border-gray-200 h-[50px] transition-all overflow-y-scroll"
+              ref="allDayCell"
+              @dblclick="console.log(date)"
+            >
+              <CalendarEvent
+                v-for="(calendarEvent, idx) in fullDayEvents[parseDate(date)]"
+                class="cursor-pointer w-[90%] mb-1"
+                :event="{ ...calendarEvent, idx }"
+                :key="calendarEvent.id"
+                :date="date"
+              />
+            </div>
 
             <!-- Time Grid -->
             <div
@@ -91,7 +100,7 @@
   />
 </template>
 <script setup>
-import { computed, ref, onMounted, reactive } from 'vue'
+import { computed, ref, onMounted, reactive, watch } from 'vue'
 import CalendarEvent from './CalendarEvent.vue'
 import NewEventModal from './NewEventModal.vue'
 import {
@@ -100,6 +109,7 @@ import {
   parseDateWithComma,
   twentyFourHoursFormat,
 } from './calendarUtils'
+import { f } from 'feather-icons'
 
 let props = defineProps({
   events: {
@@ -115,6 +125,7 @@ let props = defineProps({
   },
 })
 const gridRef = ref(null)
+const allDayCell = ref(null)
 
 onMounted(() => {
   let scrollTop = props.config.scrollToHour * 60 * minuteHeight
@@ -140,11 +151,33 @@ const parsedData = computed(() => {
     let sortedEvents = value.sort((a, b) =>
       a.from_time < b.from_time ? -1 : 1
     )
+    sortedEvents = sortedEvents.filter((event) => !event.isFullDay)
     findOverlappingEventsCount(sortedEvents)
     sortedArray[key] = sortedEvents
   }
   return sortedArray
 })
+
+const fullDayEvents = computed(() => {
+  let fullDay = props.events.filter((event) => event.isFullDay)
+  let dateGroup = Object.groupBy(fullDay, (row) => row.date)
+  return dateGroup
+})
+
+watch(
+  () => fullDayEvents.value,
+  (newVal) => {
+    let lengthArray = []
+    Object.values(newVal).forEach((value) => {
+      lengthArray.push(value.length)
+    })
+    let maxLength = Math.max(...lengthArray)
+    let height = 49 + 36 * (maxLength - 1)
+    // allDayCell.value.forEach((cell) => {
+    //   cell.style.height = height + 'px'
+    // })
+  }
+)
 
 function findOverlappingEventsCount(events) {
   const startTimeMap = new Map()

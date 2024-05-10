@@ -8,9 +8,8 @@
       >
       <!-- right side -->
       <!-- actions buttons for calendar -->
-      <!-- Increment and Decrement Button, View change button default is months or can be set via props! -->
       <div class="flex gap-x-1">
-        <!-- <button class="border-2 border-green-500 p-2">Previous</button> -->
+        <!-- Increment and Decrement Button-->
         <Button
           @click="decrementClickEvents[activeView]"
           variant="ghost"
@@ -23,6 +22,7 @@
           class="h-4 w-4"
           icon="chevron-right"
         />
+        <!--  View change button default is months or can be set via props!  -->
         <TabButtons :buttons="enabledModes" class="ml-2" v-model="activeView" />
       </div>
     </div>
@@ -79,7 +79,7 @@ const props = defineProps({
 const defaultConfig = {
   scrollToHour: 15,
   hourHeight: 72,
-  redundantCellHeight: 22,
+  redundantCellHeight: 50,
   disableModes: [],
   defaultMode: 'Month',
   isEditMode: false,
