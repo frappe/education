@@ -99,6 +99,19 @@ const props = defineProps({
     required: true,
   },
 })
+watch(
+  () => props.event,
+  (newVal) => {
+    updatedTime.from_time = newVal.from_time
+    updatedTime.to_time = newVal.to_time
+    calendarEvent.value = newVal
+  },
+  { deep: true }
+)
+
+const activeView = inject('activeView')
+const config = inject('config')
+const { updateEventState, deleteEvent } = inject('eventActions')
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
@@ -117,8 +130,6 @@ const handleClickOutside = (e) => {
 
 const calendarEvent = ref(props.event)
 // calendarEvent.value.type = Math.random() > 0.67 ? 'mail' : 'phone'
-const activeView = inject('activeView')
-const config = inject('config')
 const eventIcons = config.eventIcons
 const minuteHeight = config.hourHeight / 60
 const height_15_min = minuteHeight * 15
@@ -217,16 +228,6 @@ function newEventDuration(changeInTime) {
 
   return [convertMinutesToHours(newFromTime), convertMinutesToHours(newToTime)]
 }
-
-const updateEventState = inject('updateEventState')
-
-watch(
-  () => props.event,
-  (newVal) => {
-    calendarEvent.value = newVal
-  },
-  { deep: true }
-)
 
 function handleResizeMouseDown(e) {
   isResizing.value = true
@@ -381,7 +382,6 @@ function handleEventEdit() {
   showEventModal.value = true
 }
 
-const deleteEvent = inject('deleteEvent')
 function handleEventDelete() {
   deleteEvent(calendarEvent.value.id)
 }

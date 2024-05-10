@@ -89,7 +89,7 @@
 import { Dialog, FormControl } from 'frappe-ui'
 import ErrorMessage from 'frappe-ui/src/components/ErrorMessage.vue'
 import { computed, inject, reactive, ref } from 'vue'
-import { calculateDiff, colorMap, removeSeconds } from './calendarUtils'
+import { calculateDiff, colorMap, handleSeconds } from './calendarUtils'
 const show = defineModel()
 
 const props = defineProps({
@@ -151,8 +151,7 @@ function validateStartEndTime() {
   }
 }
 
-const createNewEvent = inject('createNewEvent')
-const updateEventState = inject('updateEventState')
+const { updateEventState, createNewEvent } = inject('eventActions')
 
 function submitEvent(close) {
   validateFields()
@@ -188,8 +187,8 @@ function handleEventTime() {
     newEvent.from_time = ''
     newEvent.to_time = ''
   } else {
-    newEvent.from_time = removeSeconds(newEvent.from_time)
-    newEvent.to_time = removeSeconds(newEvent.to_time)
+    newEvent.from_time = handleSeconds(newEvent.from_time)
+    newEvent.to_time = handleSeconds(newEvent.to_time)
   }
 }
 </script>

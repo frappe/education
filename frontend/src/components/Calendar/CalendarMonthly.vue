@@ -102,7 +102,7 @@ const props = defineProps({
 
 const config = inject('config')
 
-let parsedData = computed(() => {
+const parsedData = computed(() => {
   let groupByDate = groupBy(props.events, (row) => row.date)
   let sortedArray = {}
   for (const [date, events] of Object.entries(groupByDate)) {
@@ -129,7 +129,7 @@ function currentMonthDate(date) {
   return date.getMonth() === props.currentMonth
 }
 
-let updateEventState = inject('updateEventState')
+const { updateEventState } = inject('eventActions')
 
 const dragStart = (event, calendarEventID) => {
   event.target.style.opacity = '0.5'
@@ -168,5 +168,3 @@ function openNewEventModal(date) {
   showEventModal.value = true
 }
 </script>
-
-<style></style>

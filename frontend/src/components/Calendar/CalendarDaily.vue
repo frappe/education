@@ -92,9 +92,6 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  daysList: {
-    type: Array,
-  },
   config: {
     type: Object,
   },

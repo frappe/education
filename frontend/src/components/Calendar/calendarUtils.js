@@ -124,7 +124,7 @@ export function calculateDiff(from, to) {
 	return toMinutes - fromMinutes
 }
 
-export function removeSeconds(time) {
+export function handleSeconds(time) {
 	return time.split(':').slice(0, 2).join(':') + ':00'
 }
 

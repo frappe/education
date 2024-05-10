@@ -121,13 +121,11 @@ onMounted(() => {
   gridRef.value.scrollBy(0, scrollTop)
 })
 
-let increaseZIndex = ref(false)
-
 let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
 let redundantCellHeight = props.config.redundantCellHeight
 
-let setCurrentTime = computed(() => {
+const setCurrentTime = computed(() => {
   let d = new Date()
   let hour = d.getHours()
   let minutes = d.getMinutes()
@@ -149,7 +147,6 @@ const parsedData = computed(() => {
 })
 
 function findOverlappingEventsCount(events) {
-  const overlapCounts = {}
   const startTimeMap = new Map()
 
   // Iterate through the events

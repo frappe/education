@@ -46,22 +46,19 @@
       v-else
       :events="events"
       :currentMonthEvents="parsedData"
-      :daysList="daysList"
       :current-date="currentMonthDates[date]"
       :config="overrideConfig"
     />
   </div>
 </template>
 <script setup>
-import { computed, provide, ref, watch } from 'vue'
+import { computed, provide, ref } from 'vue'
 import { Button, TabButtons } from 'frappe-ui'
 import {
   groupBy,
   getCalendarDates,
   monthList,
-  daysList,
-  parseDate,
-  removeSeconds,
+  handleSeconds,
 } from './calendarUtils'
 import CalendarMonthly from '@/components/Calendar/CalendarMonthly.vue'
 import CalendarWeekly from './CalendarWeekly.vue'
@@ -100,23 +97,22 @@ events.value.forEach((event) => {
   if (!event.from_time || !event.to_time) {
     return
   }
-  event.from_time = removeSeconds(event.from_time)
-  event.to_time = removeSeconds(event.to_time)
+  event.from_time = handleSeconds(event.from_time)
+  event.to_time = handleSeconds(event.to_time)
 })
 
-provide('updateEventState', updateEventState)
-provide('createNewEvent', createNewEvent)
-provide('deleteEvent', deleteEvent)
+provide('eventActions', { createNewEvent, updateEventState, deleteEvent })
+
+function createNewEvent(event) {
+  events.value.push(event)
+  emit('createEvent', event)
+}
 
 function updateEventState(event) {
   const eventID = event.id
   let eventIndex = events.value.findIndex((e) => e.id === eventID)
   events.value[eventIndex] = event
   emit('updateEvent', events.value[eventIndex])
-}
-function createNewEvent(event) {
-  events.value.push(event)
-  emit('createEvent', event)
 }
 
 function deleteEvent(eventID) {
