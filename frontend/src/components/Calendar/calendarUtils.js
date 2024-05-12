@@ -114,8 +114,12 @@ export function parseDateEventPopupFormat(date,showDay=true) {
 	return date.toLocaleDateString('en-US', options)
 }
 
-export function parseDateWithComma(date){
-	return parseDateEventPopupFormat(date, false).split(' ').join(', ')
+export function parseDateWithComma(date,showDay=false){
+	return parseDateEventPopupFormat(date, showDay).split(' ').join(', ')
+}
+
+export function parseDateWithDay(date){
+	return daysList[date.getDay()] + ', ' + date.getDate()
 }
 
 export function calculateDiff(from, to) {
@@ -126,6 +130,43 @@ export function calculateDiff(from, to) {
 
 export function handleSeconds(time) {
 	return time.split(':').slice(0, 2).join(':') + ':00'
+}
+
+export function findOverlappingEventsCount(events) {
+	let solution = []
+	for (let task of events) {
+		let taskScheduled = false
+		for (let hall of solution) {
+			if (hall[hall.length - 1].endTime <= task.startTime) {
+				hall.push(task)
+				taskScheduled = true
+				break
+			}
+		}
+		if (!taskScheduled) {
+			solution.push([task])
+		}
+	}
+
+	solution = solution.sort((a, b) => {
+		if (a[0].startTime < b[0].startTime) return -1
+		if (a[0].startTime > b[0].startTime) return 1
+
+		const durationA = a[0].endTime - a[0].startTime
+		const durationB = b[0].endTime - b[0].startTime
+
+		return durationB - durationA
+	})
+	return structuredTasks(solution)
+}
+function structuredTasks(solution) {
+	let structuredTasks = []
+	for (let i = 0; i < solution.length; i++) {
+		for (let j = 0; j < solution[i].length; j++) {
+			structuredTasks.push({ ...solution[i][j], hallNumber: i, idx: j })
+		}
+	}
+	return structuredTasks
 }
 
 // Helpers 

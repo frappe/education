@@ -5,8 +5,7 @@
     ref="eventRef"
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="activeView !== 'Month' && setEventStyles"
-    @mouseout="(e) => handleBlur(e)"
-    @click="toggle()"
+    @dblclick="toggle()"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
@@ -162,23 +161,21 @@ const setEventStyles = computed(() => {
     'px'
 
   let left = '0'
-  let overlapCount = calendarEvent.value.overlapCount
-  let width = '90%'
-  if (isResizing.value || isRepositioning.value) {
-    width = '100%'
-  }
-  // TODO: Clashing Events
-  if (overlapCount > 1) {
-    left = `${(100 / overlapCount) * props.event.idx}%`
-    width = isResizing.value || `${100 / overlapCount}%`
-  } else {
-    left = '0'
-  }
+  let hallNumber = calendarEvent.value.hallNumber
+  let width =
+    isResizing.value || isRepositioning.value
+      ? '100%'
+      : `${80 - hallNumber * 20}%`
+  left = isResizing.value || isRepositioning.value ? '0' : `${hallNumber * 20}%`
+  let zIndex =
+    isResizing.value || isRepositioning.value
+      ? 100
+      : props.event.idx * hallNumber + 1
 
   return {
     height,
     top,
-    zIndex: props.event.idx + 1,
+    zIndex: zIndex,
     left,
     width,
     transform: `translate(${state.xAxis}px, ${state.yAxis}px)`,
@@ -280,9 +277,6 @@ function handleRepositionMouseDown(e) {
     if (!eventRef.value) return
     close()
     eventRef.value.style.cursor = 'move'
-    eventRef.value.style.width = '100%'
-    eventRef.value.style.zIndex = 100
-    eventRef.value.style.left = '0'
 
     // handle movement between days
     if (activeView.value === 'Week') {
@@ -307,7 +301,6 @@ function handleRepositionMouseDown(e) {
     if (!eventRef.value) return
 
     eventRef.value.style.cursor = 'pointer'
-    eventRef.value.style.width = '90%'
 
     if (calendarEvent.value.date !== updatedDate.value) {
       isEventUpdated.value = true
@@ -376,14 +369,16 @@ function handleVerticalMovement(clientY, prevY) {
     calculateMinutes(calendarEvent.value.to_time) +
       Math.round(diffY / minuteHeight)
   )
+  if (updatedTime.from_time < '00:00:00') {
+    updatedTime.from_time = '00:00:00'
+  }
+  if (updatedTime.to_time > '24:00:00') {
+    updatedTime.to_time = '24:00:00'
+  }
 }
 
 const toggle = () => (opened.value = !opened.value)
 const close = () => (opened.value = false)
-
-function handleBlur(e) {
-  eventRef.value.style.zIndex = props.event.idx + 1
-}
 
 const showEventModal = ref(false)
 function handleEventEdit() {

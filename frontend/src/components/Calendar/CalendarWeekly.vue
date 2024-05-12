@@ -14,7 +14,7 @@
                 : 'font-normal'
             "
           >
-            {{ parseDateWithComma(date) }}
+            {{ parseDateWithDay(date) }}
           </span>
         </div>
       </div>
@@ -23,10 +23,7 @@
         <p class="w-16 text-center">All Day</p>
       </div>
 
-      <div
-        class="border-l-[1px] border-b-[1px] h-full w-full overflow-scroll flex"
-        ref="gridRef"
-      >
+      <div class="border-l-[1px] w-full overflow-x-visible flex" ref="gridRef">
         <!-- Time List form 0 - 24 -->
         <div class="grid grid-cols-1 h-full w-16">
           <span
@@ -106,10 +103,10 @@ import NewEventModal from './NewEventModal.vue'
 import {
   calculateMinutes,
   convertMinutesToHours,
-  parseDateWithComma,
   twentyFourHoursFormat,
+  findOverlappingEventsCount,
+  parseDateWithDay,
 } from './calendarUtils'
-import { f } from 'feather-icons'
 
 let props = defineProps({
   events: {
@@ -147,14 +144,19 @@ const setCurrentTime = computed(() => {
 const parsedData = computed(() => {
   let groupByDate = Object.groupBy(props.events, (row) => row.date)
   let sortedArray = {}
+
   for (const [key, value] of Object.entries(groupByDate)) {
-    let sortedEvents = value.sort((a, b) =>
-      a.from_time < b.from_time ? -1 : 1
-    )
-    sortedEvents = sortedEvents.filter((event) => !event.isFullDay)
-    findOverlappingEventsCount(sortedEvents)
-    sortedArray[key] = sortedEvents
+    value.forEach((task) => {
+      task.startTime = calculateMinutes(task.from_time)
+      task.endTime = calculateMinutes(task.to_time)
+    })
+    let sortedEvents = value
+      .filter((event) => !event.isFullDay)
+      .sort((a, b) => a.startTime - b.startTime)
+
+    sortedArray[key] = findOverlappingEventsCount(sortedEvents)
   }
+
   return sortedArray
 })
 
@@ -178,30 +180,6 @@ watch(
     // })
   }
 )
-
-function findOverlappingEventsCount(events) {
-  const startTimeMap = new Map()
-
-  // Iterate through the events
-  for (let i = 0; i < events.length; i++) {
-    const currentEvent = events[i]
-    const startTime = currentEvent.from_time
-
-    // Check if the start time already exists in the hashmap
-    if (startTimeMap.has(startTime)) {
-      // If it exists, increment the count
-      startTimeMap.set(startTime, startTimeMap.get(startTime) + 1)
-    } else {
-      // If it doesn't exist, initialize the count to 1
-      startTimeMap.set(startTime, 1)
-    }
-  }
-
-  events.forEach((event, idx) => {
-    event.overlapCount = startTimeMap.get(event.from_time) || 0
-    event.idx = idx
-  })
-}
 
 function parseDate(date) {
   let dd = date.getDate()
