@@ -16,7 +16,7 @@
       <div
         v-for="date in currentMonthDates"
         class="border-r-[1px] border-b-[1px] border-gray-200"
-        @dblclick="openNewEventModal(date)"
+        @dblclick.prevent="openNewEventModal(date)"
         @dragover.prevent
         @drageneter.prevent
         @drop="onDrop($event, date)"
@@ -27,10 +27,10 @@
         >
           <div
             v-if="currentMonthDate(date)"
-            class="flex flex-col items-center w-full overflow-y-auto"
+            class="flex flex-col items-center w-full"
           >
             <span
-              class="py-1 sticky top-0 bg-white w-full text-center z-10"
+              class="py-1 bg-white w-full text-center z-10"
               :class="
                 date.toDateString() === new Date().toDateString() && 'font-bold'
               "
@@ -38,7 +38,7 @@
               {{ date.getDate() }}
             </span>
 
-            <div class="w-full">
+            <div class="w-full overflow-y-auto">
               <CalendarEvent
                 v-for="calendarEvent in parsedData[parseDate(date)]"
                 :event="calendarEvent"
@@ -48,7 +48,7 @@
                 :draggable="config.isEditMode"
                 @dragstart="dragStart($event, calendarEvent.id)"
                 @dragend="$event.target.style.opacity = '1'"
-                @dragover="dragOver($event)"
+                @dragover.prevent
               />
             </div>
           </div>

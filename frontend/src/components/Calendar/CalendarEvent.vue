@@ -1,13 +1,22 @@
 <template>
   <div
-    class="p-2 rounded-lg h-min-[18px] w-[90%]"
-    v-bind="$attrs"
+    class="p-2 rounded-lg h-min-[18px] transition-all duration-75"
     ref="eventRef"
-    :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
+    v-bind="$attrs"
+    :class="[
+      colorMap[calendarEvent?.color]?.background_color || 'bg-green-100',
+      activeView !== 'Month' && 'shadow-lg',
+      opened && activeView !== 'Month' && ' drop-shadow-xl !z-20',
+    ]"
     :style="activeView !== 'Month' && setEventStyles"
-    @click="toggle()"
     @dblclick.prevent="handleEventEdit()"
-    v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
+    @click="handleEventClick()"
+    v-on="{
+      mousedown:
+        config.isEditMode &&
+        activeView !== 'Month' &&
+        handleRepositionMouseDown,
+    }"
   >
     <div
       class="flex gap-2 relative px-2 items-start h-full overflow-hidden select-none"
@@ -161,17 +170,19 @@ const setEventStyles = computed(() => {
     redundantCellHeight +
     'px'
 
-  let left = '0'
   let hallNumber = calendarEvent.value.hallNumber
   let width =
     isResizing.value || isRepositioning.value
       ? '100%'
       : `${80 - hallNumber * 20}%`
-  left = isResizing.value || isRepositioning.value ? '0' : `${hallNumber * 20}%`
+  let left =
+    isResizing.value || isRepositioning.value ? '0' : `${hallNumber * 20}%`
   let zIndex =
     isResizing.value || isRepositioning.value
       ? 100
-      : props.event.idx * hallNumber + 1
+      : (props.event.idx || 1) * hallNumber + 1
+  // border: 1px solid #fff;
+  let border = hallNumber >= 1 ? '1px solid #fff' : ''
 
   return {
     height,
@@ -180,6 +191,8 @@ const setEventStyles = computed(() => {
     left,
     width,
     transform: `translate(${state.xAxis}px, ${state.yAxis}px)`,
+    borderLeft: border,
+    borderTop: border,
   }
 })
 
@@ -234,15 +247,17 @@ function newEventDuration(changeInTime) {
   return [convertMinutesToHours(newFromTime), convertMinutesToHours(newToTime)]
 }
 
+const preventClick = ref(false)
 function handleResizeMouseDown(e) {
   isResizing.value = true
   isRepositioning.value = false
-  if (isRepositioning.value) return
+
   let oldTime = calendarEvent.value.to_time
   window.addEventListener('mousemove', resize)
   window.addEventListener('mouseup', stopResize, { once: true })
 
   function resize(e) {
+    preventClick.value = true
     // difference between where mouse is and where event's top is, to find the new height
     let diffX = e.clientY - eventRef.value.getBoundingClientRect().top
     eventRef.value.style.height =
@@ -254,7 +269,6 @@ function handleResizeMouseDown(e) {
   }
 
   function stopResize() {
-    eventRef.value.style.width = '90%'
     isResizing.value = false
     if (oldTime !== calendarEvent.value.to_time) {
       updateEventState(calendarEvent.value)
@@ -277,6 +291,7 @@ function handleRepositionMouseDown(e) {
 
   function mousemove(e) {
     isRepositioning.value = true
+    preventClick.value = true
     if (!eventRef.value) return
     close()
     eventRef.value.style.cursor = 'grabbing'
@@ -373,8 +388,18 @@ function handleVerticalMovement(clientY, prevY) {
     calculateMinutes(calendarEvent.value.to_time) +
       Math.round(diffY / minuteHeight)
   )
+  handleTimeConstraints()
+}
+
+function handleTimeConstraints() {
   if (updatedTime.from_time < '00:00:00') {
     updatedTime.from_time = '00:00:00'
+  }
+  if (updatedTime.from_time > '24:00:00') {
+    updatedTime.from_time = '24:00:00'
+  }
+  if (updatedTime.to_time < '00:00:00') {
+    updatedTime.to_time = '00:00:00'
   }
   if (updatedTime.to_time > '24:00:00') {
     updatedTime.to_time = '24:00:00'
@@ -384,8 +409,18 @@ function handleVerticalMovement(clientY, prevY) {
 const toggle = () => (opened.value = !opened.value)
 const close = () => (opened.value = false)
 
+function handleEventClick() {
+  // hack to precent event modal from opening when resizing or repositioning
+  if (preventClick.value) {
+    preventClick.value = false
+    return
+  }
+  toggle()
+}
+
 const showEventModal = ref(false)
 function handleEventEdit() {
+  if (!config.isEditMode) return
   close()
   showEventModal.value = true
 }

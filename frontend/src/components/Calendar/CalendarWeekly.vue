@@ -45,7 +45,7 @@
           >
             <!-- Top Cell for Full Day Event -->
             <div
-              class="w-full border-b-[1px] border-gray-200 h-[50px] transition-all overflow-y-scroll"
+              class="w-full border-b-[1px] border-gray-200 h-[50px] transition-all"
               ref="allDayCell"
               @dblclick="console.log(date)"
             >
