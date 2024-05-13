@@ -133,40 +133,31 @@ export function handleSeconds(time) {
 }
 
 export function findOverlappingEventsCount(events) {
-	let solution = []
-	for (let task of events) {
-		let taskScheduled = false
-		for (let hall of solution) {
-			if (hall[hall.length - 1].endTime <= task.startTime) {
-				hall.push(task)
-				taskScheduled = true
-				break
-			}
-		}
-		if (!taskScheduled) {
-			solution.push([task])
-		}
+	// Sort events based on start time
+	events.sort((a, b) => a.startTime - b.startTime);
+  
+	let hallNumber = 0;
+	const result = [];
+  
+	for (const event of events) {
+	  const availableHall = result.find(hall => hall[hall.length - 1].endTime <= event.startTime);
+
+	  if (availableHall) {
+		availableHall.push(event);
+	  } else {
+		result.push([event]);
+		hallNumber++;
+	  }
 	}
-
-	solution = solution.sort((a, b) => {
-		if (a[0].startTime < b[0].startTime) return -1
-		if (a[0].startTime > b[0].startTime) return 1
-
-		const durationA = a[0].endTime - a[0].startTime
-		const durationB = b[0].endTime - b[0].startTime
-
-		return durationB - durationA
-	})
-	return structuredTasks(solution)
-}
-function structuredTasks(solution) {
-	let structuredTasks = []
-	for (let i = 0; i < solution.length; i++) {
-		for (let j = 0; j < solution[i].length; j++) {
-			structuredTasks.push({ ...solution[i][j], hallNumber: i, idx: j })
-		}
-	}
-	return structuredTasks
+	
+	// flattening halls and events
+	return result.map((hall, idx) =>
+	  hall.map((event, eventIdx) => ({
+		...event,
+		hallNumber: idx,
+		idx: eventIdx
+	  }))
+	).flat();
 }
 
 // Helpers 
