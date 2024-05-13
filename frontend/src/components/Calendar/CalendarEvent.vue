@@ -6,7 +6,7 @@
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="activeView !== 'Month' && setEventStyles"
     @click="toggle()"
-    @dblclick.prevent="console.log('sdsdsd')"
+    @dblclick.prevent="handleEventEdit()"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
@@ -27,7 +27,7 @@
 
       <div class="flex flex-col whitespace-nowrap w-fit overflow-hidden">
         <p class="font-medium text-sm text-gray-800 text-ellipsis">
-          {{ calendarEvent.title }}
+          {{ calendarEvent.title || '(No Title)' }}
         </p>
         <p
           class="font-normal text-xs text-gray-800 text-ellipsis"

@@ -172,9 +172,6 @@ function submitEvent(close) {
   // else new event is created with ID
   else {
     handleEventTime()
-    if (!newEvent.title) {
-      newEvent.title = '(No Title)'
-    }
     const id = '#' + Math.random().toString(36).substring(3, 9)
     newEvent.id = id
     createNewEvent(newEvent)
