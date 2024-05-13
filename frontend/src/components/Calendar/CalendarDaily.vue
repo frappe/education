@@ -20,9 +20,18 @@
           <div class="border-r-[1px] relative calendar-column">
             <!-- Top Redundant Cell before time starts for giving the calendar some space -->
             <div
-              class="w-full border-b-[1px] border-gray-200"
-              :style="{ height: `${redundantCellHeight}px` }"
-            />
+              class="w-full border-b-[1px] border-gray-200 h-[50px] transition-all overflow-y-scroll flex flex-wrap gap-2"
+            >
+              <CalendarEvent
+                v-for="(calendarEvent, idx) in fullDayEvents[
+                  parseDate(currentDate)
+                ]"
+                class="cursor-pointer w-[20%] mb-1"
+                :event="{ ...calendarEvent, idx }"
+                :key="calendarEvent.id"
+                :date="currentDate"
+              />
+            </div>
             <!-- Day Grid -->
             <div
               class="flex relative"
@@ -36,15 +45,11 @@
               />
             </div>
             <CalendarEvent
-              v-for="(calendarEvent, idx) in currentMonthEvents[
-                parseDate(currentDate)
-              ]"
+              v-for="(calendarEvent, idx) in parsedData[parseDate(currentDate)]"
               class="mb-2 cursor-pointer absolute"
               :event="calendarEvent"
               :key="calendarEvent.id"
               :date="currentDate"
-              :style="setEventStyles(calendarEvent, idx)"
-              @mouseout="(e) => handleBlur(e)"
             />
             <!-- Current time style  -->
             <div
@@ -81,6 +86,7 @@ import {
   calculateMinutes,
   twentyFourHoursFormat,
   convertMinutesToHours,
+  findOverlappingEventsCount,
 } from './calendarUtils'
 
 const props = defineProps({
@@ -99,6 +105,30 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+})
+
+const parsedData = computed(() => {
+  let sortedArray = {}
+
+  for (let [key, value] of Object.entries(props.currentMonthEvents)) {
+    value = value.filter((event) => !event.isFullDay)
+    value.forEach((task) => {
+      task.startTime = calculateMinutes(task.from_time)
+      task.endTime = calculateMinutes(task.to_time)
+    })
+    let sortedEvents = value
+      .filter((event) => !event.isFullDay)
+      .sort((a, b) => a.startTime - b.startTime)
+
+    sortedArray[key] = findOverlappingEventsCount(sortedEvents)
+  }
+  return sortedArray
+})
+
+const fullDayEvents = computed(() => {
+  let fullDay = props.events.filter((event) => event.isFullDay)
+  let dateGroup = Object.groupBy(fullDay, (row) => row.date)
+  return dateGroup
 })
 
 let redundantCellHeight = props.config.redundantCellHeight

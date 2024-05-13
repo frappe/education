@@ -5,7 +5,8 @@
     ref="eventRef"
     :class="colorMap[calendarEvent?.color]?.background_color || 'bg-green-100'"
     :style="activeView !== 'Month' && setEventStyles"
-    @dblclick="toggle()"
+    @click="toggle()"
+    @dblclick.prevent="console.log('sdsdsd')"
     v-on="{ mousedown: config.isEditMode && handleRepositionMouseDown }"
   >
     <div
@@ -248,6 +249,7 @@ function handleResizeMouseDown(e) {
       Math.round(diffX / height_15_min) * height_15_min + 'px'
 
     eventRef.value.style.width = '100%'
+    updatedTime.to_time = newEventEndTime(eventRef.value.style.height)
     calendarEvent.value.to_time = newEventEndTime(eventRef.value.style.height)
   }
 
@@ -263,6 +265,7 @@ function handleResizeMouseDown(e) {
 }
 
 function handleRepositionMouseDown(e) {
+  e.preventDefault()
   if (activeView.value === 'Month') return
   let prevY = e.clientY
   const rect = eventRef.value.getBoundingClientRect()
@@ -276,7 +279,7 @@ function handleRepositionMouseDown(e) {
     isRepositioning.value = true
     if (!eventRef.value) return
     close()
-    eventRef.value.style.cursor = 'move'
+    eventRef.value.style.cursor = 'grabbing'
 
     // handle movement between days
     if (activeView.value === 'Week') {
@@ -296,7 +299,8 @@ function handleRepositionMouseDown(e) {
     }
   }
 
-  function mouseup() {
+  function mouseup(e) {
+    e.preventDefault()
     isRepositioning.value = false
     if (!eventRef.value) return
 

@@ -1,10 +1,10 @@
 <template>
   <div class="p-4 h-[90%]">
-    <div class="h-full min-h-[500px] min-w-[600px]">
+    <div class="h-full min-h-[500px] min-w-[600px] overflow-auto">
       <!-- Day List -->
       <div class="flex">
         <div class="w-16"></div>
-        <div class="grid grid-cols-7 w-full pb-2">
+        <div class="grid grid-cols-7 w-full mb-2">
           <span
             v-for="date in weeklyDates"
             class="text-center text-gray-600 text-sm"
@@ -23,7 +23,10 @@
         <p class="w-16 text-center">All Day</p>
       </div>
 
-      <div class="border-l-[1px] w-full overflow-x-visible flex" ref="gridRef">
+      <div
+        class="border-l-[1px] border-b-[1px] w-full overflow-scroll flex"
+        ref="gridRef"
+      >
         <!-- Time List form 0 - 24 -->
         <div class="grid grid-cols-1 h-full w-16">
           <span
@@ -34,7 +37,7 @@
         </div>
 
         <!-- Grid -->
-        <div class="grid grid-cols-7 w-full pb-2">
+        <div class="grid grid-cols-7 w-full">
           <div
             v-for="(date, index) in weeklyDates"
             class="border-r-[1px] relative calendar-column"
