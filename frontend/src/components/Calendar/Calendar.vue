@@ -102,7 +102,7 @@ events.value.forEach((event) => {
 })
 
 provide('eventActions', { createNewEvent, updateEventState, deleteEvent })
-
+// CRUD actions on an event
 function createNewEvent(event) {
   events.value.push(event)
   emit('createEvent', event)

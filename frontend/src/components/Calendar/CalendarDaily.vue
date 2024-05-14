@@ -82,7 +82,7 @@ import NewEventModal from './NewEventModal.vue'
 import {
   parseDate,
   parseDateWithComma,
-  calculateDiff,
+  groupBy,
   calculateMinutes,
   twentyFourHoursFormat,
   convertMinutesToHours,
@@ -127,7 +127,7 @@ const parsedData = computed(() => {
 
 const fullDayEvents = computed(() => {
   let fullDay = props.events.filter((event) => event.isFullDay)
-  let dateGroup = Object.groupBy(fullDay, (row) => row.date)
+  let dateGroup = groupBy(fullDay, (row) => row.date)
   return dateGroup
 })
 

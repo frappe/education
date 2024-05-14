@@ -41,7 +41,7 @@
           <!-- full day events -->
           <div v-for="(date, idx) in weeklyDates">
             <div
-              class="w-full border-b-[1px] border-r-[1px] border-gray-200 h-14 flex flex-col gap-1 transition-all"
+              class="w-full border-b-[1px] border-r-[1px] border-gray-200 flex flex-col gap-1 transition-all"
               :class="[idx === 0 && 'border-l-[1px] relative']"
               ref="allDayCells"
               :data-date-attr="date"
@@ -63,22 +63,15 @@
                   :date="date"
                 />
               </div>
-              <div v-else class="flex flex-col justify-between h-13">
+              <div v-else class="flex flex-col justify-between">
                 <!-- TODO:show more calendar event component -->
-                <CalendarEvent
+                <ShowMoreCalendarEvent
                   v-if="fullDayEvents[parseDate(date)]?.length > 0"
-                  :event="fullDayEvents[parseDate(date)]?.[0]"
-                  class="cursor-pointer w-[90%] mb-1"
-                  :key="fullDayEvents[parseDate(date)]?.[0]?.id"
+                  :event="fullDayEvents[parseDate(date)][0]"
                   :date="date"
+                  :totalEventsCount="fullDayEvents[parseDate(date)].length"
+                  @showMoreEvents="isCollapsed = !isCollapsed"
                 />
-                <span
-                  v-if="fullDayEvents[parseDate(date)]?.length > 1"
-                  class="text-gray-600 text-sm font-bold w-fit self-center hover:bg-gray-200 hover:cursor-pointer rounded-sm p-[1px]"
-                  @click="isCollapsed = !isCollapsed"
-                >
-                  +{{ fullDayEvents[parseDate(date)]?.length - 1 }} more
-                </span>
               </div>
             </div>
           </div>
@@ -141,8 +134,11 @@ import {
   twentyFourHoursFormat,
   findOverlappingEventsCount,
   parseDateWithDay,
+  parseDate,
+  groupBy,
 } from './calendarUtils'
 import Button from 'frappe-ui/src/components/Button.vue'
+import ShowMoreCalendarEvent from './ShowMoreCalendarEvent.vue'
 
 let props = defineProps({
   events: {
@@ -190,7 +186,7 @@ const setCurrentTime = computed(() => {
 })
 
 const parsedData = computed(() => {
-  let groupByDate = Object.groupBy(props.events, (row) => row.date)
+  let groupByDate = groupBy(props.events, (row) => row.date)
   let sortedArray = {}
 
   for (const [key, value] of Object.entries(groupByDate)) {
@@ -210,7 +206,7 @@ const parsedData = computed(() => {
 
 const fullDayEvents = computed(() => {
   let fullDay = props.events.filter((event) => event.isFullDay)
-  let dateGroup = Object.groupBy(fullDay, (row) => row.date)
+  let dateGroup = groupBy(fullDay, (row) => row.date)
   return dateGroup
 })
 const getCellHeight = (length) => 49 + 36 * (length - 1)
@@ -268,17 +264,6 @@ watch(
     setFullDayEventsHeight(fullDayEvents.value, newWeeklyDates)
   }
 )
-
-function parseDate(date) {
-  let dd = date.getDate()
-  let mm = date.getMonth() + 1
-  let yyyy = date.getFullYear()
-
-  if (dd < 10) dd = '0' + dd
-  if (mm < 10) mm = '0' + mm
-
-  return `${yyyy}-${mm}-${dd}`
-}
 
 const showEventModal = ref(false)
 const newEvent = reactive({
