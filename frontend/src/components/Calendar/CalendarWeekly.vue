@@ -38,26 +38,58 @@
 
         <!-- Grid -->
         <div class="grid grid-cols-7 w-full">
+          <!-- full day events -->
+          <div v-for="(date, idx) in weeklyDates">
+            <div
+              class="w-full border-b-[1px] border-r-[1px] border-gray-200 h-14 flex flex-col gap-1 transition-all"
+              :class="[idx === 0 && 'border-l-[1px] relative']"
+              ref="allDayCells"
+              :data-date-attr="date"
+            >
+              <Button
+                v-if="showCollapsable"
+                @click="isCollapsed = !isCollapsed"
+                class="absolute -left-[42px] bottom-[4px] font-bold cursor-pointer"
+                :icon="isCollapsed ? 'chevron-down' : 'chevron-up'"
+                variant="ghost"
+                size="lg"
+              />
+              <div class="w-full" v-if="!isCollapsed">
+                <CalendarEvent
+                  v-for="(calendarEvent, idx) in fullDayEvents[parseDate(date)]"
+                  class="cursor-pointer w-[90%] mb-1"
+                  :event="{ ...calendarEvent, idx }"
+                  :key="calendarEvent.id"
+                  :date="date"
+                />
+              </div>
+              <div v-else class="flex flex-col justify-between h-13">
+                <!-- TODO:show more calendar event component -->
+                <CalendarEvent
+                  v-if="fullDayEvents[parseDate(date)]?.length > 0"
+                  :event="fullDayEvents[parseDate(date)]?.[0]"
+                  class="cursor-pointer w-[90%] mb-1"
+                  :key="fullDayEvents[parseDate(date)]?.[0]?.id"
+                  :date="date"
+                />
+                <span
+                  v-if="fullDayEvents[parseDate(date)]?.length > 1"
+                  class="text-gray-600 text-sm font-bold w-fit self-center hover:bg-gray-200 hover:cursor-pointer rounded-sm p-[1px]"
+                  @click="isCollapsed = !isCollapsed"
+                >
+                  +{{ fullDayEvents[parseDate(date)]?.length - 1 }} more
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- time events -> not full day events -->
           <div
-            v-for="(date, index) in weeklyDates"
-            class="border-r-[1px] relative calendar-column"
+            v-for="(date, idx) in weeklyDates"
+            class="border-r-[1px] relative"
+            :class="idx === 0 && 'calendar-column'"
             :data-date-attr="date"
           >
-            <!-- Top Cell for Full Day Event -->
-            <div
-              class="w-full border-b-[1px] border-gray-200 h-[50px] transition-all"
-              ref="allDayCell"
-              @dblclick="console.log(date)"
-            >
-              <CalendarEvent
-                v-for="(calendarEvent, idx) in fullDayEvents[parseDate(date)]"
-                class="cursor-pointer w-[90%] mb-1"
-                :event="{ ...calendarEvent, idx }"
-                :key="calendarEvent.id"
-                :date="date"
-              />
-            </div>
-
             <!-- Time Grid -->
             <div
               class="flex relative cell cursor-pointer"
@@ -110,6 +142,7 @@ import {
   findOverlappingEventsCount,
   parseDateWithDay,
 } from './calendarUtils'
+import Button from 'frappe-ui/src/components/Button.vue'
 
 let props = defineProps({
   events: {
@@ -124,8 +157,21 @@ let props = defineProps({
     required: false,
   },
 })
+
 const gridRef = ref(null)
-const allDayCell = ref(null)
+const allDayCells = ref(null)
+const showCollapsable = ref(false)
+const isCollapsed = ref(false)
+
+watch(isCollapsed, (newVal) => {
+  if (newVal) {
+    allDayCells.value.forEach((cell) => {
+      cell.style.height = '56px'
+    })
+  } else {
+    setFullDayEventsHeight(fullDayEvents.value, props.weeklyDates)
+  }
+})
 
 onMounted(() => {
   let scrollTop = props.config.scrollToHour * 60 * minuteHeight
@@ -134,13 +180,12 @@ onMounted(() => {
 
 let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
-let redundantCellHeight = props.config.redundantCellHeight
 
 const setCurrentTime = computed(() => {
   let d = new Date()
   let hour = d.getHours()
   let minutes = d.getMinutes()
-  let top = (hour * 60 + minutes) * minuteHeight + redundantCellHeight + 'px'
+  let top = (hour * 60 + minutes) * minuteHeight + 'px'
   return { top }
 })
 
@@ -168,19 +213,59 @@ const fullDayEvents = computed(() => {
   let dateGroup = Object.groupBy(fullDay, (row) => row.date)
   return dateGroup
 })
+const getCellHeight = (length) => 49 + 36 * (length - 1)
+function getEventsInCurrentWeek(eventsObject, weeklyDates) {
+  let currentWeekEvents = {}
+  let weeklyFullDayEvents = Object.keys(eventsObject)
+  weeklyDates.forEach((date) => {
+    date = parseDate(date)
+
+    if (weeklyFullDayEvents.includes(date)) {
+      currentWeekEvents[date] = eventsObject[date]
+    }
+  })
+  return currentWeekEvents
+}
+
+function maxFullDayEventsInWeek(eventsObject) {
+  let lengthArray = []
+  Object.values(eventsObject).forEach((events) => {
+    lengthArray.push(events.length)
+  })
+  let maxEvents = Math.max(...lengthArray, 1)
+  return maxEvents
+}
+
+function setFullDayEventsHeight(eventsObject, weeklyDates) {
+  let currentWeekEvents = getEventsInCurrentWeek(eventsObject, weeklyDates)
+  let maxEvents = maxFullDayEventsInWeek(currentWeekEvents)
+  if (maxEvents > 3) {
+    showCollapsable.value = true
+  } else {
+    showCollapsable.value = false
+  }
+  let height = getCellHeight(maxEvents)
+  if (isCollapsed.value) return
+  allDayCells.value.forEach((cell) => {
+    cell.style.height = height + 'px'
+  })
+}
+
+onMounted(() => {
+  setFullDayEventsHeight(fullDayEvents.value, props.weeklyDates)
+})
 
 watch(
   () => fullDayEvents.value,
-  (newVal) => {
-    let lengthArray = []
-    Object.values(newVal).forEach((value) => {
-      lengthArray.push(value.length)
-    })
-    let maxLength = Math.max(...lengthArray)
-    let height = 49 + 36 * (maxLength - 1)
-    // allDayCell.value.forEach((cell) => {
-    //   cell.style.height = height + 'px'
-    // })
+  (newFullDayEvents) => {
+    setFullDayEventsHeight(newFullDayEvents, props.weeklyDates)
+  }
+)
+
+watch(
+  () => props.weeklyDates,
+  (newWeeklyDates) => {
+    setFullDayEventsHeight(fullDayEvents.value, newWeeklyDates)
   }
 )
 
@@ -220,10 +305,11 @@ function openNewEventModal(event, from_time) {
 </script>
 
 <style>
-.calendar-column:first-child > div {
+.calendar-column {
   border-left: 1px solid #e5e5e5;
 }
-.calendar-column:first-child > div::before {
+
+.calendar-column ::before {
   content: attr(data-time-attr);
   position: absolute;
   left: -45px;

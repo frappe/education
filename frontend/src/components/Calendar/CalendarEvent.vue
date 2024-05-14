@@ -156,19 +156,17 @@ const setEventStyles = computed(() => {
     }
   }
 
-  const redundantCellHeight = config.redundantCellHeight
   let diff = calculateDiff(
     calendarEvent.value.from_time,
     calendarEvent.value.to_time
   )
-  let height = diff * minuteHeight + 'px'
-  if (activeView.value === 'Month') {
-    height = 'auto'
+  let height =
+    activeView.value === 'Month' ? 'auto' : diff * minuteHeight + 'px'
+
+  let top = calculateMinutes(calendarEvent.value.from_time) * minuteHeight
+  if (activeView.value === 'Day') {
+    top += config.redundantCellHeight
   }
-  let top =
-    calculateMinutes(calendarEvent.value.from_time) * minuteHeight +
-    redundantCellHeight +
-    'px'
 
   let hallNumber = calendarEvent.value.hallNumber
   let width =
@@ -186,7 +184,7 @@ const setEventStyles = computed(() => {
 
   return {
     height,
-    top,
+    top: top + 'px',
     zIndex: zIndex,
     left,
     width,
@@ -320,7 +318,9 @@ function handleRepositionMouseDown(e) {
     if (!eventRef.value) return
 
     eventRef.value.style.cursor = 'pointer'
-
+    if (calendarEvent.value.isFullDay && activeView.value === 'Week') {
+      eventRef.value.style.width = '90%'
+    }
     if (calendarEvent.value.date !== updatedDate.value) {
       isEventUpdated.value = true
     }
@@ -356,6 +356,10 @@ function handleHorizontalMovement(clientX, rect) {
   )
   const leftPadding = currentDate.getDay()
   const rightPadding = 6 - currentDate.getDay()
+
+  if (props.event.isFullDay) {
+    eventRef.value.style.width = '100%'
+  }
 
   let eventWidth = eventRef.value.clientWidth
   let diff = Math.floor((clientX - rect.left) / eventWidth)

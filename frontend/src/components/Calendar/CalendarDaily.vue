@@ -136,23 +136,13 @@ let hourHeight = props.config.hourHeight
 let minuteHeight = hourHeight / 60
 let increaseZIndex = ref(false)
 
-let setCurrentTime = computed(() => {
+const setCurrentTime = computed(() => {
   let d = new Date()
   let hour = d.getHours()
   let minutes = d.getMinutes()
   let top = (hour * 60 + minutes) * minuteHeight + redundantCellHeight + 'px'
   return { top }
 })
-
-function setEventStyles(event, index) {
-  let diff = calculateDiff(event.from_time, event.to_time)
-  let height = diff * minuteHeight + 'px'
-  let top =
-    calculateMinutes(event.from_time) * minuteHeight +
-    redundantCellHeight +
-    'px'
-  return { height, top, zIndex: index }
-}
 
 const showEventModal = ref(false)
 const newEvent = reactive({
