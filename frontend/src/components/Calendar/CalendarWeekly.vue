@@ -64,7 +64,6 @@
                 />
               </div>
               <div v-else class="flex flex-col justify-between">
-                <!-- TODO:show more calendar event component -->
                 <ShowMoreCalendarEvent
                   v-if="fullDayEvents[parseDate(date)]?.length > 0"
                   :event="fullDayEvents[parseDate(date)][0]"

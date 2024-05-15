@@ -70,6 +70,7 @@ const props = defineProps({
   events: {
     type: Object,
     required: false,
+    default: [],
   },
   config: {
     type: Object,

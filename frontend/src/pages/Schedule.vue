@@ -4,14 +4,10 @@
       v-if="!scheduleResource.loading && scheduleResource.data"
       :events="events"
       :config="{
-        defaultMode: 'Week',
-        scrollToHour: 8,
-        eventIcons: eventIcons,
-        isEditMode: true,
+        defaultMode: 'Month',
+        disableModes: ['Week', 'Day'],
+        isEditMode: false,
       }"
-      @updateEvent="updateEvent"
-      @createEvent="createEvent"
-      @deleteEvent="deleteEvent"
     />
   </div>
 </template>
@@ -31,21 +27,6 @@ const eventIcons = {
 
 const programName = ref(getCurrentProgram()?.value?.program)
 const events = ref([])
-
-function createEvent(event) {
-  console.log('Event Created')
-  console.log(event)
-}
-
-function updateEvent(event) {
-  console.log('Event Updated')
-  console.log(event)
-}
-
-function deleteEvent(event) {
-  console.log('Event Deleted')
-  console.log(event)
-}
 
 const scheduleResource = createResource({
   url: 'education.education.api.get_course_schedule_for_student',
