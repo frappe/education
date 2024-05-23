@@ -9,6 +9,7 @@ from frappe import _
 from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate
+from frappe.utils.dateutils import get_dates_from_timegrain
 
 
 def get_course(program):
@@ -135,7 +136,7 @@ def make_attendance_records(
 	:param student: Student.
 	:param student_name: Student Name.
 	:param course_schedule: Course Schedule.
-	:param status: Status (Present/Absent)
+	:param status: Status (Present/Absent/Leave).
 	"""
 	student_attendance = frappe.get_doc(
 		{
@@ -620,10 +621,8 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 		},
 		order_by="schedule_date asc",
 	)
-
-	if frappe.db.exists("Student Attendance", {"course_schedule": "EDU-CSH-2024-00003"}):
-		pass
-
+	if not course_schedule_in_leave_period:
+		frappe.throw(_("No classes found in the leave period"))
 	for course_schedule in course_schedule_in_leave_period:
 		# check if attendance record does not exist for the student on the course schedule
 		if not frappe.db.exists(
@@ -633,7 +632,7 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 			make_attendance_records(
 				leave_data.get("student"),
 				leave_data.get("student_name"),
-				"Absent",
+				"Leave",
 				course_schedule.get("name"),
 				None,
 				course_schedule.get("schedule_date"),
@@ -642,15 +641,19 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 
 def apply_leave_based_on_student_group(leave_data, program_name):
 	student_groups = get_student_groups(leave_data.get("student"), program_name)
+	leave_dates = get_dates_from_timegrain(
+		leave_data.get("from_date"), leave_data.get("to_date")
+	)
 	for student_group in student_groups:
-		make_attendance_records(
-			leave_data.get("student"),
-			leave_data.get("student_name"),
-			"Absent",
-			None,
-			student_group.get("label"),
-			leave_data.get("from_date"),
-		)
+		for leave_date in leave_dates:
+			make_attendance_records(
+				leave_data.get("student"),
+				leave_data.get("student_name"),
+				"Leave",
+				None,
+				student_group.get("label"),
+				leave_date,
+			)
 
 
 @frappe.whitelist()
@@ -746,3 +749,13 @@ def get_school_abbr_logo():
 	)
 	logo = frappe.db.get_single_value("Education Settings", "school_college_logo")
 	return {"name": abbr, "logo": logo}
+
+
+@frappe.whitelist()
+def get_student_attendance(student, student_group):
+	print(student, student_group, "student,student_group")
+	return frappe.db.get_list(
+		"Student Attendance",
+		filters={"student": student, "student_group": student_group, "docstatus": 1},
+		fields=["date", "status", "name"],
+	)

@@ -55,7 +55,8 @@ class TestFeeSchedule(FrappeTestCase):
 		self.assertEqual(fee_schedule.grand_total, total_students * fee_schedule.total_amount)
 
 	def test_sales_invoice_creation_flow(self):
-		fee_schedule = create_fee_schedule(submit=1, due_date="2024-05-01")
+		due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
+		fee_schedule = create_fee_schedule(submit=1, due_date=due_date)
 		# sales_invoice_posting_date_fee_schedule set it as 1
 		self.assertEqual(fee_schedule.status, "Invoice Pending")
 		self.assertNotEqual(fee_schedule.status, "Order Pending")
@@ -74,7 +75,8 @@ class TestFeeSchedule(FrappeTestCase):
 	def test_sales_order_creation_flow(self):
 		# create_so from education settings set to 1
 		frappe.db.set_value("Education Settings", "Education Settings", "create_so", 1)
-		fee_schedule = create_fee_schedule(submit=1, due_date="2024-05-01")
+		due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
+		fee_schedule = create_fee_schedule(submit=1, due_date=due_date)
 
 		self.assertEqual(fee_schedule.status, "Order Pending")
 		self.assertNotEqual(fee_schedule.status, "Invoice Pending")

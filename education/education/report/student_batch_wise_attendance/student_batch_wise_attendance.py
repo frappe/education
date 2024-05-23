@@ -7,8 +7,9 @@ from erpnext.setup.doctype.holiday_list.holiday_list import is_holiday
 from frappe import _, msgprint
 from frappe.utils import formatdate
 
-from education.education.doctype.student_attendance.student_attendance import \
-    get_holiday_list
+from education.education.doctype.student_attendance.student_attendance import (
+	get_holiday_list,
+)
 
 
 def execute(filters=None):
@@ -32,9 +33,9 @@ def execute(filters=None):
 
 	data = []
 	for student_group in active_student_group:
-		row = [student_group.name]
 		present_students = 0
 		absent_students = 0
+		leave_students = 0
 		student_group_strength = get_student_group_strength(student_group.name)
 		student_attendance = get_student_attendance(student_group.name, filters.get("date"))
 		if student_attendance:
@@ -43,21 +44,57 @@ def execute(filters=None):
 					present_students = attendance.count
 				elif attendance.status == "Absent":
 					absent_students = attendance.count
+				elif attendance.status == "Leave":
+					leave_students = attendance.count
 
-		unmarked_students = student_group_strength - (present_students + absent_students)
-		row += [student_group_strength, present_students, absent_students, unmarked_students]
+		unmarked_students = student_group_strength - (
+			present_students + absent_students + leave_students
+		)
+		row = {
+			"student_group": student_group.name,
+			"student_group_strength": student_group_strength,
+			"present_students": present_students,
+			"absent_students": absent_students,
+			"leave_students": leave_students,
+			"unmarked_students": unmarked_students,
+		}
 		data.append(row)
-
 	return columns, data
 
 
 def get_columns(filters):
 	columns = [
-		_("Student Group") + ":Link/Student Group:250",
-		_("Student Group Strength") + "::170",
-		_("Present") + "::90",
-		_("Absent") + "::90",
-		_("Not Marked") + "::90",
+		{
+			"label": _("Student Group"),
+			"fieldname": "student_group",
+			"fieldtype": "Link",
+			"options": "Student Group",
+			"width": 250,
+		},
+		{
+			"label": _("Student Group Strength"),
+			"fieldname": "student_group_strength",
+			"fieldtype": "Int",
+			"width": 200,
+		},
+		{
+			"label": _("Present"),
+			"fieldname": "present_students",
+			"fieldtype": "Int",
+			"width": 90,
+		},
+		{
+			"label": _("Leave"),
+			"fieldname": "leave_students",
+			"fieldtype": "Int",
+			"width": 90,
+		},
+		{
+			"label": _("Absent"),
+			"fieldname": "absent_students",
+			"fieldtype": "Int",
+			"width": 90,
+		},
 	]
 	return columns
 

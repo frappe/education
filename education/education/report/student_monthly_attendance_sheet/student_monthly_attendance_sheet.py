@@ -29,11 +29,18 @@ def execute(filters=None):
 	data = []
 
 	for stud in students:
-		row = [stud.student, stud.student_name]
 		student_status = frappe.db.get_value("Student", stud.student, "enabled")
 		date = from_date
-		total_p = total_a = 0.0
-
+		total_present = total_absent = total_leave = 0.0
+		row = {"student": stud.student, "student_name": stud.student_name}
+		status_map = {
+			"Present": "P",
+			"Absent": "A",
+			"None": "",
+			"Inactive": "-",
+			"Holiday": "H",
+			"Leave": "L",
+		}
 		for day in range(total_days_in_month):
 			status = "None"
 
@@ -44,31 +51,70 @@ def execute(filters=None):
 			else:
 				status = "None"
 
-			status_map = {
-				"Present": "P",
-				"Absent": "A",
-				"None": "",
-				"Inactive": "-",
-				"Holiday": "H",
-			}
-			row.append(status_map[status])
-
 			if status == "Present":
-				total_p += 1
+				total_present += 1
 			elif status == "Absent":
-				total_a += 1
+				total_absent += 1
+			elif status == "Leave":
+				total_leave += 1
 			date = add_days(date, 1)
-
-		row += [total_p, total_a]
+			row[cstr(day + 1)] = status_map[status]
+		row = {
+			**row,
+			"Total Present": total_present,
+			"Total Leave": total_leave,
+			"Total Absent": total_absent,
+		}
 		data.append(row)
 	return columns, data
 
 
 def get_columns(days_in_month):
-	columns = [_("Student") + ":Link/Student:90", _("Student Name") + "::150"]
+	columns = [
+		{
+			"label": _("Student"),
+			"fieldname": "student",
+			"fieldtype": "Link",
+			"options": "Student ",
+			"width": 90,
+		},
+		{
+			"label": _("Student Name"),
+			"fieldname": "student_name",
+			"fieldtype": "Data",
+			"width": 150,
+		},
+	]
 	for day in range(days_in_month):
-		columns.append(cstr(day + 1) + "::20")
-	columns += [_("Total Present") + ":Int:95", _("Total Absent") + ":Int:90"]
+		columns.append(
+			{
+				"label": cstr(day + 1),
+				"fieldname": cstr(day + 1),
+				"fieldtype": "Data",
+				"width": 50,
+			}
+		)
+	columns += [
+		{
+			"label": _("Total Present"),
+			"fieldname": "Total Present",
+			"fieldtype": "Int",
+			"width": 95,
+		},
+		{
+			"label": _("Total Leave"),
+			"fieldname": "Total Leave",
+			"fieldtype": "Int",
+			"width": 90,
+		},
+		{
+			"label": _("Total Absent"),
+			"fieldname": "Total Absent",
+			"fieldtype": "Int",
+			"width": 90,
+		},
+	]
+
 	return columns
 
 
