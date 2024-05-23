@@ -41,7 +41,7 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		leave_application = create_leave_application()
 		attendance_record = frappe.db.exists(
 			"Student Attendance",
-			{"leave_application": leave_application.name, "status": "Absent"},
+			{"leave_application": leave_application.name, "status": "Leave"},
 		)
 		self.assertTrue(attendance_record)
 
@@ -58,7 +58,7 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		attendance = create_student_attendance()
 		create_leave_application()
 		self.assertEqual(
-			frappe.db.get_value("Student Attendance", attendance.name, "status"), "Absent"
+			frappe.db.get_value("Student Attendance", attendance.name, "status"), "Leave"
 		)
 
 	def test_attendance_record_cancellation(self):
