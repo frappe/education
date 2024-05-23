@@ -65,13 +65,14 @@
    "options": "Student Group"
   },
   {
+   "allow_on_submit": 1,
    "default": "Present",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Present\nAbsent",
+   "options": "Present\nAbsent\nLeave",
    "reqd": 1
   },
   {
@@ -114,7 +115,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-21 19:57:03.021191",
+ "modified": "2024-05-23 02:06:30.832729",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",

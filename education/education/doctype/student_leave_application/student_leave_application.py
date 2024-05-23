@@ -85,7 +85,7 @@ class StudentLeaveApplication(Document):
 				{"student": self.student, "date": date, "docstatus": ("!=", 2)},
 			)
 
-			status = "Present" if self.mark_as_present else "Absent"
+			status = "Present" if self.mark_as_present else "Leave"
 			if attendance:
 				# update existing attendance record
 				values = dict()
