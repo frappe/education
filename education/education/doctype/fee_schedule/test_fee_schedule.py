@@ -55,7 +55,6 @@ class TestFeeSchedule(FrappeTestCase):
 		self.assertEqual(fee_schedule.grand_total, total_students * fee_schedule.total_amount)
 
 	def test_sales_invoice_creation_flow(self):
-		# due_date = current date + 2 days
 		due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
 		fee_schedule = create_fee_schedule(submit=1, due_date=due_date)
 		# sales_invoice_posting_date_fee_schedule set it as 1

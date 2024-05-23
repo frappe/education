@@ -115,7 +115,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-23 02:06:30.832729",
+ "modified": "2024-05-23 17:14:36.280419",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",
@@ -151,6 +151,19 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "Present"
+  },
+  {
+   "color": "Orange",
+   "title": "Leave"
+  },
+  {
+   "color": "Red",
+   "title": "Absent"
+  }
+ ],
  "title_field": "student_name"
 }
