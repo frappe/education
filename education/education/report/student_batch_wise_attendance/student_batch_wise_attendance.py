@@ -59,7 +59,6 @@ def execute(filters=None):
 			"unmarked_students": unmarked_students,
 		}
 		data.append(row)
-	print(data)
 	return columns, data
 
 
