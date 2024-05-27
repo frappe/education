@@ -20,5 +20,9 @@ class TestStudent(FrappeTestCase):
 	def test_create_student_user(self):
 		self.assertTrue(bool(frappe.db.exists("User", "test@example.com")))
 
+	def test_create_customer_against_student(self):
+		student = frappe.get_doc("Student", {"student_email_id": "test@example.com"})
+		self.assertTrue(bool(student.customer))
+
 	def tearDown(self):
 		frappe.db.rollback()
