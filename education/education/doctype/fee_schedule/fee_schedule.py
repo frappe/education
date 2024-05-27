@@ -218,7 +218,6 @@ def get_customer_from_student(student_id):
 	student = frappe.get_doc("Student", student_id)
 	if not student.customer:
 		student.set_missing_customer_details()
-		student.create_customer()
 	return frappe.db.get_value("Student", student.name, "customer")
 
 
