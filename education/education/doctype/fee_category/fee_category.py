@@ -3,9 +3,14 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe import _, bold
+from erpnext.stock.doctype.item.item import Item
 
 
-class FeeCategory(Document):
+class FeeCategory(Item):
+	def validate(self):
+		super().validate_item_defaults()
+
 	def after_insert(self):
 		# create an item
 		item_name = create_item(self)
