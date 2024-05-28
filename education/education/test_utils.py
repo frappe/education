@@ -95,6 +95,7 @@ def create_fee_category(category_name=DEFAULT_FEES_CATEGORY):
 	fee_category = frappe.new_doc("Fee Category")
 	fee_category.category_name = category_name
 	fee_category.save()
+	return fee_category
 
 
 def create_program(name=DEFAULT_PROGRAM_NAME):
@@ -256,3 +257,10 @@ def create_grading_scale(grading_scale_name="_Test Grading Scale"):
 
 	grading_scale.save()
 	grading_scale.submit()
+
+
+def create_company(company_name):
+	company = frappe.get_doc(
+		{"doctype": "Company", "company_name": company_name, "default_currency": "INR"}
+	)
+	company.insert(ignore_if_duplicate=True)
