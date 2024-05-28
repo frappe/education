@@ -27,11 +27,7 @@ class TestFeeCategory(FrappeTestCase):
 		"""
 		When creating a Fee Category, if there are no item defaults, then get defaults from Item Group
 		"""
-		defaults = frappe.get_all(
-			"Company",
-			filters={"name": "_Test Company"},
-			fields=["default_income_account", "cost_center"],
-		)[0]
+		defaults = get_defaults()
 
 		item_group = frappe.get_doc("Item Group", "Fee Component")
 		item_group.append(
@@ -61,11 +57,8 @@ class TestFeeCategory(FrappeTestCase):
 		"""
 		When creating a Fee Category, if the defaults are set in Fee Category those should be saved in the Item Defaults aswell
 		"""
-		defaults = frappe.get_all(
-			"Company",
-			filters={"name": "_Test Company"},
-			fields=["default_income_account", "cost_center"],
-		)[0]
+		defaults = get_defaults()
+
 		fee_category_name = "Test Fee Category"
 		fee_category = create_fee_category(fee_category_name)
 		fee_category.append(
@@ -85,15 +78,36 @@ class TestFeeCategory(FrappeTestCase):
 		self.assertEqual(item_defaults.income_account, defaults.default_income_account)
 		self.assertEqual(item_defaults.selling_cost_center, defaults.cost_center)
 
-	def test_fee_component_default_update(self):
-		# test while updating, update defaults and in item also have same defaults
-		"""
-		After updating the fee component defaults, the item defaults should also be updated
-		"""
-		pass
-
 	def test_fee_component_duplicate_default(self):
 		"""
 		When setting defaults if there are 2 defaults for the same company, then throw an error
 		"""
-		pass
+		fee_component = frappe.get_doc("Fee Category", "Tuition Fee")
+		# get any income account
+		income_account = frappe.get_all("Account", fields=["name"], limit=1)[0]["name"]
+		defaults = get_defaults()
+		default_array = [
+			{
+				"company": "_Test Company",
+				"income_account": income_account,
+				"selling_cost_center": defaults.cost_center,
+			},
+			{
+				"company": "_Test Company",
+				"income_account": income_account,
+				"selling_cost_center": defaults.cost_center,
+			},
+		]
+		for default in default_array:
+			fee_component.append("item_defaults", default)
+		self.assertRaises(frappe.ValidationError, fee_component.save)
+
+
+def get_defaults(company_name="_Test Company"):
+	defaults = frappe.get_all(
+		"Company",
+		filters={"name": company_name},
+		fields=["default_income_account", "cost_center"],
+		limit=1,
+	)[0]
+	return defaults
