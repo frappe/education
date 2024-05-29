@@ -194,15 +194,15 @@ def create_student_group(
 
 
 def create_fee_schedule(
-	academic_year=DEFAULT_ACADEMIC_YEAR, due_date="2023-04-01", submit=False
+	academic_year=DEFAULT_ACADEMIC_YEAR, submit=False, fee_structure=None
 ):
-	fee_structure = frappe.db.get_value(
+	due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
+	fee_structure_name = fee_structure or frappe.db.get_value(
 		"Fee Structure", {"academic_year": academic_year}, "name"
 	)
-
 	fee_schedule = frappe.new_doc("Fee Schedule")
-	fee_schedule.fee_structure = fee_structure
-	fee_schedule = get_fee_structure(fee_schedule)
+	fee_schedule.fee_structure = fee_structure_name
+	fee_schedule = get_fee_structure(fee_structure_name)
 	fee_schedule.due_date = due_date
 
 	student_groups = frappe.db.get_list(
@@ -264,3 +264,13 @@ def create_company(company_name):
 		{"doctype": "Company", "company_name": company_name, "default_currency": "INR"}
 	)
 	company.insert(ignore_if_duplicate=True)
+
+
+def get_defaults(company_name="_Test Company"):
+	defaults = frappe.get_all(
+		"Company",
+		filters={"name": company_name},
+		fields=["default_income_account", "cost_center"],
+		limit=1,
+	)[0]
+	return defaults

@@ -16,21 +16,6 @@ class FeeStructure(Document):
 	def validate(self):
 		self.calculate_total()
 		self.validate_discount()
-		self.validate_fee_component()
-
-	def validate_fee_component(self):
-		for component in self.components:
-			fee_component = frappe.get_doc("Fee Category", component.fees_category)
-			company_defaults = []
-			for default in fee_component.item_defaults:
-				company_defaults.append(default.company)
-
-			if self.company not in company_defaults:
-				frappe.throw(
-					_(
-						"The company of the Fee Category {0} and the Fee Structure should be the same."
-					).format(frappe.bold(fee_component.name))
-				)
 
 	def calculate_total(self):
 		"""Calculates total amount."""

@@ -3,7 +3,11 @@
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from education.education.test_utils import create_fee_category, create_company
+from education.education.test_utils import (
+	create_fee_category,
+	create_company,
+	get_defaults,
+)
 
 
 class TestFeeCategory(FrappeTestCase):
@@ -101,13 +105,3 @@ class TestFeeCategory(FrappeTestCase):
 		for default in default_array:
 			fee_component.append("item_defaults", default)
 		self.assertRaises(frappe.ValidationError, fee_component.save)
-
-
-def get_defaults(company_name="_Test Company"):
-	defaults = frappe.get_all(
-		"Company",
-		filters={"name": company_name},
-		fields=["default_income_account", "cost_center"],
-		limit=1,
-	)[0]
-	return defaults

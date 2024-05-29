@@ -5,6 +5,9 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from education.education.doctype.fee_schedule.fee_schedule import generate_fees
 
+# get_defaults from test_utils
+from education.education.test_utils import get_defaults
+
 from education.education.test_utils import (
 	create_academic_year,
 	create_academic_term,
@@ -55,8 +58,7 @@ class TestFeeSchedule(FrappeTestCase):
 		self.assertEqual(fee_schedule.grand_total, total_students * fee_schedule.total_amount)
 
 	def test_sales_invoice_creation_flow(self):
-		due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
-		fee_schedule = create_fee_schedule(submit=1, due_date=due_date)
+		fee_schedule = create_fee_schedule(submit=1)
 		# sales_invoice_posting_date_fee_schedule set it as 1
 		self.assertEqual(fee_schedule.status, "Invoice Pending")
 		self.assertNotEqual(fee_schedule.status, "Order Pending")
@@ -64,19 +66,30 @@ class TestFeeSchedule(FrappeTestCase):
 		sales_invoices = frappe.get_all(
 			"Sales Invoice", filters={"fee_schedule": fee_schedule.name}
 		)
-		sales_order = frappe.get_all(
+		sales_orders = frappe.get_all(
 			"Sales Order", filters={"fee_schedule": fee_schedule.name}
 		)
+
+		#  Check if the income account and cost center are set correctly
+		items = frappe.db.get_all(
+			"Sales Invoice Item",
+			filters={"parent": sales_invoices[0].name},
+			fields=["item_code", "income_account", "cost_center"],
+		)
+		company_defaults = get_defaults()
+		for item in items:
+			self.assertEqual(item.income_account, company_defaults.get("default_income_account"))
+			self.assertEqual(item.cost_center, company_defaults.get("cost_center"))
+
 		self.assertEqual(len(sales_invoices), 1)
-		self.assertEqual(len(sales_order), 0)
+		self.assertEqual(len(sales_orders), 0)
 		fee_schedule_status = frappe.db.get_value("Fee Schedule", fee_schedule.name, "status")
 		self.assertEqual(fee_schedule_status, "Invoice Created")
 
 	def test_sales_order_creation_flow(self):
 		# create_so from education settings set to 1
 		frappe.db.set_value("Education Settings", "Education Settings", "create_so", 1)
-		due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
-		fee_schedule = create_fee_schedule(submit=1, due_date=due_date)
+		fee_schedule = create_fee_schedule(submit=1)
 
 		self.assertEqual(fee_schedule.status, "Order Pending")
 		self.assertNotEqual(fee_schedule.status, "Invoice Pending")
@@ -91,3 +104,44 @@ class TestFeeSchedule(FrappeTestCase):
 		self.assertEqual(len(sales_invoices), 0)
 		fee_schedule_status = frappe.db.get_value("Fee Schedule", fee_schedule.name, "status")
 		self.assertEqual(fee_schedule_status, "Order Created")
+
+	def test_sales_invoice_flow_with_custom_component_defaults(self):
+		"""
+		If defaults are set for fee components, then invoices items should have those defaults of income account and cost center.
+		"""
+		company_defaults = get_defaults()
+		income_account = frappe.get_all(
+			"Account", fields=["name"], filters={"is_group": 0}, limit=2
+		)[1]["name"]
+
+		fee_component = "Tuition Fee"
+		fee_category = create_fee_category(fee_component)
+		fee_category.append(
+			"item_defaults",
+			{
+				"company": "_Test Company",
+				"income_account": income_account,
+				"selling_cost_center": company_defaults.get("cost_center"),
+			},
+		)
+		fee_category.save()
+
+		fee_components = [{"fees_category": fee_component, "amount": 2000, "discount": 0}]
+		fee_structure = create_fee_structure(components=fee_components, submit=1)
+		fee_schedule = create_fee_schedule(submit=1, fee_structure=fee_structure.name)
+		self.assertEqual(fee_schedule.status, "Invoice Pending")
+
+		generate_fees(fee_schedule.name)
+		sales_invoice = frappe.get_all(
+			"Sales Invoice", filters={"fee_schedule": fee_schedule.name}
+		)
+
+		items = frappe.db.get_all(
+			"Sales Invoice Item",
+			filters={"parent": sales_invoice[0].name},
+			fields=["item_code", "income_account", "cost_center"],
+		)
+		for item in items:
+			# Invoice Item should have the income account and cost center set in the fee category
+			self.assertEqual(item.income_account, income_account)
+			self.assertEqual(item.cost_center, company_defaults.get("cost_center"))
