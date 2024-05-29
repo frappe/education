@@ -185,6 +185,7 @@ def create_sales_invoice(fee_schedule, student_id, create_sales_order=False):
 
 	for item in sales_invoice_doc.items:
 		item.qty = 1
+		item.cost_center = ""
 
 	sales_invoice_doc.save()
 	if frappe.db.get_single_value("Education Settings", "auto_submit_sales_invoice"):

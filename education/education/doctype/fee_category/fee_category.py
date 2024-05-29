@@ -3,8 +3,6 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe import _, bold
-from erpnext.stock.doctype.item.item import Item
 
 
 class FeeCategory(Document):

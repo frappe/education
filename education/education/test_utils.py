@@ -117,14 +117,14 @@ def create_fee_structure(
 	fee_structure.academic_year = academic_year or DEFAULT_ACADEMIC_YEAR
 	fee_structure.academic_term = academic_term or DEFAULT_ACADEMIC_TERM
 	fee_structure.program = program or DEFAULT_PROGRAM_NAME
-	for i in components:
+	for c in components:
 		fee_structure.append(
 			"components",
 			{
-				"fees_category": i.get("fees_category"),
-				"amount": i.get("amount"),
-				"discount": i.get("discount"),
-				"total": i.get("total"),
+				"fees_category": c.get("fees_category"),
+				"amount": c.get("amount"),
+				"discount": c.get("discount"),
+				"total": c.get("total"),
 			},
 		)
 	fee_structure.save()
