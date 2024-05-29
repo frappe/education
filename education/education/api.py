@@ -753,7 +753,6 @@ def get_school_abbr_logo():
 
 @frappe.whitelist()
 def get_student_attendance(student, student_group):
-	print(student, student_group, "student,student_group")
 	return frappe.db.get_list(
 		"Student Attendance",
 		filters={"student": student, "student_group": student_group, "docstatus": 1},

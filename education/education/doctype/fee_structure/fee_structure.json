@@ -110,6 +110,8 @@
    "label": "Accounts"
   },
   {
+   "fetch_from": "company.default_receivable_account",
+   "fetch_if_empty": 1,
    "fieldname": "receivable_account",
    "fieldtype": "Link",
    "label": "Receivable Account",
@@ -121,6 +123,8 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "company.cost_center",
+   "fetch_if_empty": 1,
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
@@ -159,7 +163,7 @@
    "link_fieldname": "fee_structure"
   }
  ],
- "modified": "2024-05-29 14:22:54.268892",
+ "modified": "2024-05-29 18:07:13.773830",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Structure",
