@@ -19,13 +19,19 @@ class TestFeeCategory(FrappeTestCase):
 		frappe.db.rollback()
 
 	def test_item_created(self):
+		"""
+		Test to check if the item master is created when a Fee Category is created.
+		"""
 		companies = frappe.db.get_all("Company", fields=["name"])
-		fee_category = frappe.get_doc("Fee Category", "Tuition Fee")
-		item = fee_category.get("item")
+		item = frappe.db.get_value(
+			"Fee Category", filters={"name": "Tuition Fee"}, fieldname="item"
+		)
 		self.assertTrue(frappe.db.exists("Item", item))
 
-		item = frappe.get_doc("Item", item)
-		self.assertEqual(item.item_group, "Fee Component")
+		item_group = frappe.db.get_value(
+			"Item", filters={"name": item}, fieldname="item_group"
+		)
+		self.assertEqual(item_group, "Fee Component")
 
 	def test_item_defaults_from_item_group(self):
 		"""
