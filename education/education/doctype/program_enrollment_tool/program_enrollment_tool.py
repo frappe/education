@@ -27,28 +27,43 @@ class ProgramEnrollmentTool(Document):
 		elif not self.academic_year:
 			frappe.throw(_("Mandatory field - Academic Year"))
 		else:
-			condition = "and academic_term=%(academic_term)s" if self.academic_term else " "
 			if self.get_students_from == "Student Applicant":
-				students = frappe.db.sql(
-					"""select name as student_applicant, title as student_name from `tabStudent Applicant`
-					where application_status="Approved" and program=%(program)s and academic_year=%(academic_year)s {0}""".format(
-						condition
-					),
-					self.as_dict(),
-					as_dict=1,
+				student_applicant = frappe.qb.DocType("Student Applicant")
+
+				students = (
+					frappe.qb.from_(student_applicant)
+					.select(
+						(student_applicant.name).as_("student_applicant"),
+						(student_applicant.title).as_("student_name"),
+					)
+					.where(student_applicant.application_status == "Approved")
+					.where(student_applicant.program == self.program)
+					.where(student_applicant.academic_year == self.academic_year)
 				)
+				if self.academic_term:
+					students = students.where(student_applicant.academic_term == self.academic_term)
+				students = students.run(as_dict=1)
+
 			elif self.get_students_from == "Program Enrollment":
-				condition2 = (
-					"and student_batch_name=%(student_batch)s" if self.student_batch else " "
+				program_enrollment = frappe.qb.DocType("Program Enrollment")
+				students = (
+					frappe.qb.from_(program_enrollment)
+					.select(
+						program_enrollment.student,
+						program_enrollment.student_name,
+						program_enrollment.student_batch_name,
+						program_enrollment.student_category,
+					)
+					.where(program_enrollment.program == self.program)
+					.where(program_enrollment.academic_year == self.academic_year)
 				)
-				students = frappe.db.sql(
-					"""select student, student_name, student_batch_name, student_category from `tabProgram Enrollment`
-					where program=%(program)s and academic_year=%(academic_year)s {0} {1} and docstatus != 2""".format(
-						condition, condition2
-					),
-					self.as_dict(),
-					as_dict=1,
-				)
+				if self.academic_term:
+					students = students.where(program_enrollment.academic_term == self.academic_term)
+				if self.student_batch:
+					students = students.where(
+						program_enrollment.student_batch_name == self.student_batch
+					)
+				students = students.run(as_dict=1)
 
 				student_list = [d.student for d in students]
 				if student_list:
