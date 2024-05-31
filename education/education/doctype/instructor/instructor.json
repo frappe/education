@@ -20,6 +20,8 @@
  ],
  "fields": [
   {
+   "fetch_from": "employee.employee_name",
+   "fetch_if_empty": 1,
    "fieldname": "instructor_name",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -90,7 +92,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2023-12-19 10:03:45.696155",
+ "modified": "2024-05-31 14:15:19.085273",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Instructor",

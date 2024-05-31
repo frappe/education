@@ -18,9 +18,6 @@ class ProgramEnrollment(Document):
 	def validate(self):
 		self.set_student_name()
 		self.validate_duplication()
-		self.validate_academic_year()
-		if self.academic_term:
-			self.validate_academic_term()
 
 		if not self.courses:
 			self.extend("courses", self.get_courses())
@@ -37,44 +34,6 @@ class ProgramEnrollment(Document):
 	def on_cancel(self):
 		self.delete_course_enrollments()
 		pass
-
-	def validate_academic_year(self):
-		start_date, end_date = frappe.db.get_value(
-			"Academic Year", self.academic_year, ["year_start_date", "year_end_date"]
-		)
-		if self.enrollment_date:
-			if start_date and getdate(self.enrollment_date) < getdate(start_date):
-				frappe.throw(
-					_(
-						"Enrollment Date cannot be before the Start Date of the Academic Year {0}"
-					).format(get_link_to_form("Academic Year", self.academic_year))
-				)
-
-			if end_date and getdate(self.enrollment_date) > getdate(end_date):
-				frappe.throw(
-					_("Enrollment Date cannot be after the End Date of the Academic Term {0}").format(
-						get_link_to_form("Academic Year", self.academic_year)
-					)
-				)
-
-	def validate_academic_term(self):
-		start_date, end_date = frappe.db.get_value(
-			"Academic Term", self.academic_term, ["term_start_date", "term_end_date"]
-		)
-		if self.enrollment_date:
-			if start_date and getdate(self.enrollment_date) < getdate(start_date):
-				frappe.throw(
-					_(
-						"Enrollment Date cannot be before the Start Date of the Academic Term {0}"
-					).format(get_link_to_form("Academic Term", self.academic_term))
-				)
-
-			if end_date and getdate(self.enrollment_date) > getdate(end_date):
-				frappe.throw(
-					_("Enrollment Date cannot be after the End Date of the Academic Term {0}").format(
-						get_link_to_form("Academic Term", self.academic_term)
-					)
-				)
 
 	def validate_duplication(self):
 		enrollment = frappe.db.exists(
