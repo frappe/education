@@ -15,3 +15,4 @@ education.patches.v15_0.sales_order_student_field
 education.patches.v15_0.fee_schedule_status_update #28-03-2024
 education.patches.v15_0.create_fee_component_item_group
 education.patches.v15_0.create_student_customer_group
+education.patches.v15_0.create_custom_permissions
