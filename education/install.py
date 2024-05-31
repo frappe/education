@@ -10,6 +10,7 @@ def after_install():
 	create_parent_assessment_group()
 	create_invoice_permissions()
 	create_custom_fields(get_custom_fields())
+	create_permissions(get_permissions())
 
 
 def setup_fixtures():
@@ -51,6 +52,40 @@ def create_invoice_permissions():
 	for p in ptype:
 		# update permissions
 		update_permission_property(doctype, role, permlevel, p, 1)
+
+
+def get_permissions():
+	return [
+		{
+			"doctype": "Sales Invoice",
+			"role": "Student",
+			"permlevel": 0,
+			"ptype": ["read", "write", "print"],
+		},
+		{
+			"doctype": "User",
+			"role": "Academics User",
+			"permlevel": 0,
+			"ptype": ["read", "write", "create"],
+		},
+		{
+			"doctype": "Customer",
+			"role": "Academics User",
+			"permlevel": 0,
+			"ptype": ["read", "write", "create"],
+		},
+	]
+
+
+def create_permissions(doctype_permissions):
+	for doctype_permission in doctype_permissions:
+		doctype = doctype_permission.get("doctype")
+		role = doctype_permission.get("role")
+		permlevel = doctype_permission.get("permlevel")
+		ptype = doctype_permission.get("ptype")
+		add_permission(doctype, role, permlevel)
+		for p in ptype:
+			update_permission_property(doctype, role, permlevel, p, 1)
 
 
 def get_custom_fields():
