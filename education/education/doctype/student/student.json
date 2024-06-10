@@ -112,6 +112,7 @@
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Student Email Address",
+   "reqd": 1,
    "unique": 1
   },
   {
@@ -350,7 +351,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2024-01-25 14:31:30.675199",
+ "modified": "2024-06-07 16:52:48.135292",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
