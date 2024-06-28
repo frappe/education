@@ -16,6 +16,7 @@ class FeeStructure(Document):
 	def validate(self):
 		self.calculate_total()
 		self.validate_discount()
+		self.validate_component_defaults()
 
 	def calculate_total(self):
 		"""Calculates total amount."""
@@ -29,6 +30,22 @@ class FeeStructure(Document):
 			if flt(component.discount) > 100:
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
+				)
+
+	def validate_component_defaults(self):
+		company = self.company
+		for fees_category in self.components:
+			fee_category = fees_category.fees_category
+			fee_category_default_income_account = frappe.db.get_value(
+				"Fee Category Default",
+				{"parent": fee_category, "company": company},
+				"income_account",
+			)
+			if not fee_category_default_income_account:
+				frappe.msgprint(
+					_("Accounting Defaults not set in row {0} for component {1} ").format(
+						frappe.bold(fees_category.idx), frappe.bold(fee_category)
+					)
 				)
 
 	def before_submit(self):

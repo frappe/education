@@ -131,6 +131,7 @@
    "options": "Cost Center"
   },
   {
+   "description": "Ledger Entries will be created against the company mentioned here.",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -163,7 +164,7 @@
    "link_fieldname": "fee_structure"
   }
  ],
- "modified": "2024-05-29 18:07:13.773830",
+ "modified": "2024-06-21 16:05:34.011284",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Structure",

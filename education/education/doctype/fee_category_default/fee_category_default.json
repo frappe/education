@@ -33,14 +33,14 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Default Income Account",
-   "link_filters": "[[\"Account\",\"company\",\"=\",\"eval: doc.company\"]]",
+   "link_filters": "[[\"Account\",\"company\",\"=\",\"eval: doc.company\"],[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"root_type\",\"=\",\"Income\"]]",
    "options": "Account"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-05-30 12:54:29.285807",
+ "modified": "2024-06-28 13:05:14.403852",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Category Default",
