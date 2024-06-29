@@ -185,7 +185,7 @@ def make_fee_schedule(
 				component.amount = component.total
 			else:
 				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
-				# com
+
 			amount_per_month += component.total
 		# amount_per_month will be the total amount for each Fee Structure
 		doc.total_amount = amount_per_month
