@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe import _
 
 
 class FeeCategory(Document):
@@ -42,6 +43,7 @@ class FeeCategory(Document):
 		)
 		if item_defaults:
 			update_item_defaults(self, item_defaults)
+			frappe.msgprint(_('Defaults fetched from "Fee Component" Item Group '), alert=True)
 
 
 def create_item(doc, use_name_field=True):
@@ -61,18 +63,61 @@ def create_item(doc, use_name_field=True):
 	return item.name
 
 
-def update_item(doc):
-	item = frappe.get_doc("Item", doc.name)
-	item.item_name = doc.name
-	item.description = doc.description
-	item.item_defaults = []
-	update_item_defaults(item, doc.item_defaults)
+def update_item(fee_category):
+	item = frappe.get_doc("Item", fee_category.name)
+	item.item_name = fee_category.name
+	item.description = fee_category.description
+
+	item_defaults = frappe.get_all(
+		"Item Default",
+		{"parent": fee_category.item},
+		["company", "selling_cost_center", "income_account"],
+	)
+	item_default_companies = [d.company for d in item_defaults]
+	fee_category_companies = [d.company for d in fee_category.item_defaults]
+	for fee_category_default in fee_category.item_defaults:
+		if fee_category_default.company not in item_default_companies:
+			add_item_defaults(item, fee_category_default)
+		else:
+			update_defaults(item, fee_category_default)
+
+	remove_item_defaults(item, fee_category_companies)
 	item.save()
 	return item.name
 
 
-def update_item_defaults(item, item_defaults):
-	for item_default in item_defaults:
+def add_item_defaults(item, fee_category_defaults):
+	item.append(
+		"item_defaults",
+		{
+			"company": fee_category_defaults.company,
+			"selling_cost_center": fee_category_defaults.selling_cost_center,
+			"income_account": fee_category_defaults.income_account,
+			"default_warehouse": "",
+		},
+	)
+
+
+def update_defaults(item, fee_category_default):
+	for d in item.item_defaults:
+		if d.company == fee_category_default.company:
+			d.selling_cost_center = fee_category_default.selling_cost_center
+			d.income_account = fee_category_default.income_account
+			break
+
+
+def remove_item_defaults(item, fee_category_companies):
+	items_to_remove = []
+	for d in item.item_defaults:
+		if d.company not in fee_category_companies:
+			items_to_remove.append(d.idx)
+
+	for idx in items_to_remove:
+		item.item_defaults.pop(idx - 1)
+
+
+def update_item_defaults(item, defaults):
+	for item_default in defaults:
 		item.append(
 			"item_defaults",
 			{

@@ -43,7 +43,7 @@ class FeeStructure(Document):
 			)
 			if not fee_category_default_income_account:
 				frappe.msgprint(
-					_("Accounting Defaults not set in row {0} for component {1} ").format(
+					_("Accounting Defaults are not set in row {0} for component {1} ").format(
 						frappe.bold(fees_category.idx), frappe.bold(fee_category)
 					)
 				)
