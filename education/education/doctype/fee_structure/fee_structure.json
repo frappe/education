@@ -21,7 +21,6 @@
   "total_amount",
   "accounts",
   "receivable_account",
-  "income_account",
   "column_break_16",
   "company",
   "amended_from",
@@ -112,6 +111,7 @@
   },
   {
    "fetch_from": "company.default_receivable_account",
+   "fetch_if_empty": 1,
    "fieldname": "receivable_account",
    "fieldtype": "Link",
    "label": "Receivable Account",
@@ -119,24 +119,19 @@
    "reqd": 1
   },
   {
-   "fetch_from": "company.default_income_account",
-   "fieldname": "income_account",
-   "fieldtype": "Link",
-   "label": "Income Account",
-   "options": "Account"
-  },
-  {
    "fieldname": "column_break_16",
    "fieldtype": "Column Break"
   },
   {
    "fetch_from": "company.cost_center",
+   "fetch_if_empty": 1,
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
    "options": "Cost Center"
   },
   {
+   "description": "Ledger Entries will be created against the company mentioned here.",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -169,7 +164,7 @@
    "link_fieldname": "fee_structure"
   }
  ],
- "modified": "2024-01-23 15:05:32.737437",
+ "modified": "2024-06-21 16:05:34.011284",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Structure",

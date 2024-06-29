@@ -10,7 +10,8 @@
  "field_order": [
   "category_name",
   "description",
-  "item"
+  "item",
+  "item_defaults"
  ],
  "fields": [
   {
@@ -39,11 +40,17 @@
    "label": "Item",
    "options": "Item",
    "read_only": 1
+  },
+  {
+   "fieldname": "item_defaults",
+   "fieldtype": "Table",
+   "label": "Accounting Defaults",
+   "options": "Fee Category Default"
   }
  ],
  "icon": "fa fa-flag",
  "links": [],
- "modified": "2024-01-07 14:03:30.856221",
+ "modified": "2024-05-28 12:32:35.849279",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Category",

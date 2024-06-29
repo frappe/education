@@ -1,0 +1,52 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-28 11:36:10.928607",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "income_account",
+  "selling_cost_center"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "selling_cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Cost Center",
+   "link_filters": "[[\"Cost Center\",\"is_group\",\"=\",0],[\"Cost Center\",\"company\",\"=\",\"eval: doc.company\"]]",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "income_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Income Account",
+   "link_filters": "[[\"Account\",\"company\",\"=\",\"eval: doc.company\"],[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"root_type\",\"=\",\"Income\"]]",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-06-28 13:05:14.403852",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Fee Category Default",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

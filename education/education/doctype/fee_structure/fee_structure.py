@@ -16,6 +16,7 @@ class FeeStructure(Document):
 	def validate(self):
 		self.calculate_total()
 		self.validate_discount()
+		self.validate_component_defaults()
 
 	def calculate_total(self):
 		"""Calculates total amount."""
@@ -29,6 +30,22 @@ class FeeStructure(Document):
 			if flt(component.discount) > 100:
 				frappe.throw(
 					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
+				)
+
+	def validate_component_defaults(self):
+		company = self.company
+		for fees_category in self.components:
+			fee_category = fees_category.fees_category
+			fee_category_default_income_account = frappe.db.get_value(
+				"Fee Category Default",
+				{"parent": fee_category, "company": company},
+				"income_account",
+			)
+			if not fee_category_default_income_account:
+				frappe.msgprint(
+					_("Accounting Defaults are not set in row {0} for component {1} ").format(
+						frappe.bold(fees_category.idx), frappe.bold(fee_category)
+					)
 				)
 
 	def before_submit(self):
@@ -163,8 +180,12 @@ def make_fee_schedule(
 
 		for component in doc.components:
 			component.total = per_component_amount.get(component.fees_category)
-			discount = flt(component.discount) / 100
-			component.amount = flt((component.total) / (1 - discount))
+
+			if component.discount == 100:
+				component.amount = component.total
+			else:
+				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
+
 			amount_per_month += component.total
 		# amount_per_month will be the total amount for each Fee Structure
 		doc.total_amount = amount_per_month

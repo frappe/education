@@ -76,7 +76,7 @@ const { getStudentInfo } = studentStore()
 const showProfileDialog = inject('showProfileDialog')
 
 const studentInfo = getStudentInfo().value
-console.log(studentInfo)
+
 const infoFormat = [
   {
     section: 'section 1',
