@@ -9,6 +9,7 @@ from frappe import _
 class FeeCategory(Document):
 	def validate(self):
 		self.update_defaults_from_item_group()
+		self.validate_duplicate_item_defaults()
 
 	def after_insert(self):
 		# create an item
@@ -44,6 +45,12 @@ class FeeCategory(Document):
 		if item_defaults:
 			update_item_defaults(self, item_defaults)
 			frappe.msgprint(_('Defaults fetched from "Fee Component" Item Group '), alert=True)
+
+	def validate_duplicate_item_defaults(self):
+		"""Validate duplicate item defaults"""
+		companies = [d.company for d in self.item_defaults]
+		if len(companies) != len(set(companies)):
+			frappe.throw(_("Cannot set multiple Item Defaults for a company."))
 
 
 def create_item(doc, use_name_field=True):
