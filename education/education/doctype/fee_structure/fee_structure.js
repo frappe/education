@@ -25,15 +25,6 @@ frappe.ui.form.on("Fee Structure", {
         },
       };
     });
-    frm.set_query("income_account", function (doc) {
-      return {
-        filters: {
-          account_type: "Income Account",
-          is_group: 0,
-          company: doc.company,
-        },
-      };
-    });
 
     erpnext.accounts.dimensions.setup_dimension_filters(frm, frm.doctype);
   },
