@@ -149,15 +149,19 @@ def get_amount_distribution_based_on_fee_plan(
 
 @frappe.whitelist()
 def make_fee_schedule(
-	source_name, dialog_values, per_component_amount, target_doc=None
+	source_name,
+	dialog_values,
+	per_component_amount,
+	total_amount,
+	target_doc=None,
 ):
 
 	dialog_values = json.loads(dialog_values)
 	per_component_amount = json.loads(per_component_amount)
 
 	student_groups = dialog_values.get("student_groups")
-	monthly_distribution = [
-		month.get("due_date") for month in dialog_values.get("distribution", [])
+	fee_plan_wise_distribution = [
+		fee_plan.get("due_date") for fee_plan in dialog_values.get("distribution", [])
 	]
 
 	for distribution in dialog_values.get("distribution", []):
@@ -179,7 +183,9 @@ def make_fee_schedule(
 		amount_per_month = 0
 
 		for component in doc.components:
-			component.total = per_component_amount.get(component.fees_category)
+			component_ratio = component.get("total") / flt(total_amount)
+			component_ratio = round((component_ratio * 100) / 100, 2)
+			component.total = flt(component_ratio * distribution.get("amount"))
 
 			if component.discount == 100:
 				component.amount = component.total
@@ -187,15 +193,16 @@ def make_fee_schedule(
 				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
 
 			amount_per_month += component.total
-		# amount_per_month will be the total amount for each Fee Structure
-		doc.total_amount = amount_per_month
+		# Each distribution will be a separate fee schedule
+		doc.total_amount = distribution.get("amount")
+
 		for group in student_groups:
 			fee_schedule_student_group = doc.append("student_groups", {})
 			fee_schedule_student_group.student_group = group.get("student_group")
 
 		doc.save()
 
-	return len(monthly_distribution)
+	return len(fee_plan_wise_distribution)
 	# return doc
 
 	# create fee schedule for

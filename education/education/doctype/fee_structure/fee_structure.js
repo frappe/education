@@ -75,7 +75,8 @@ frappe.ui.form.on("Fee Structure", {
       args: {
         source_name: frm.doc.name,
         dialog_values: frm.dialog.get_values(),
-        per_component_amount: frm.per_component_amount,
+        total_amount: frm.doc.total_amount,
+        per_component_amount: frm.doc.components,
       },
       freeze: true,
       callback: function (r) {
