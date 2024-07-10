@@ -75,12 +75,13 @@ frappe.ui.form.on("Fee Structure", {
       args: {
         source_name: frm.doc.name,
         dialog_values: frm.dialog.get_values(),
-        per_component_amount: frm.per_component_amount,
+        total_amount: frm.doc.total_amount,
+        per_component_amount: frm.doc.components,
       },
       freeze: true,
       callback: function (r) {
         if (r.message) {
-          frappe.msgprint(__("{0} Fee Schedule(s) Create", [r.message]));
+          frappe.msgprint(__("{0} Fee Schedule(s) created", [r.message]));
           frm.dialog.hide();
         }
       },
@@ -234,7 +235,7 @@ frappe.ui.form.on("Fee Component", {
   },
   discount: function (frm, cdt, cdn) {
     let d = locals[cdt][cdn];
-    if (d.discount < 100) {
+    if (d.discount <= 100) {
       d.total = d.amount - d.amount * (d.discount / 100);
     }
     refresh_field("components");
