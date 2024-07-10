@@ -95,7 +95,7 @@ class FeeSchedule(Document):
 	def validate_fee_components(self):
 		fee_schedule_components = [d.fees_category for d in self.components]
 
-		fee_structure_components = frappe.get_list(
+		fee_structure_components = frappe.get_all(
 			"Fee Component",
 			pluck="fees_category",
 			filters={"parent": self.fee_structure},
