@@ -144,8 +144,7 @@
    "fieldname": "components",
    "fieldtype": "Table",
    "label": "Components",
-   "options": "Fee Component",
-   "read_only": 1
+   "options": "Fee Component"
   },
   {
    "fieldname": "section_break_16",
@@ -282,7 +281,7 @@
    "link_fieldname": "fee_schedule"
   }
  ],
- "modified": "2024-05-29 13:48:34.950263",
+ "modified": "2024-07-10 00:17:14.407591",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",

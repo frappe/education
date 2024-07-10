@@ -9,9 +9,7 @@ from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cint, cstr, flt, money_in_words
 from frappe.utils.background_jobs import enqueue
-
-
-# TODO: on cancel delete all the fees / Sales Invoice created from this fee schedule
+from frappe.utils.csvutils import getlink
 
 
 class FeeSchedule(Document):
@@ -58,7 +56,16 @@ class FeeSchedule(Document):
 		return info
 
 	def validate(self):
+		self.calculate_total_amount()
 		self.calculate_total_and_program()
+		self.validate_fee_components()
+		self.validate_total_against_fee_strucuture()
+
+	def calculate_total_amount(self):
+		total = 0
+		for c in self.components:
+			total += c.total
+		self.total_amount = total
 
 	def calculate_total_and_program(self):
 		no_of_students = 0
@@ -84,6 +91,40 @@ class FeeSchedule(Document):
 				)
 		self.grand_total = no_of_students * self.total_amount
 		self.grand_total_in_words = money_in_words(self.grand_total)
+
+	def validate_fee_components(self):
+		fee_schedule_components = [d.fees_category for d in self.components]
+
+		fee_structure_components = frappe.get_list(
+			"Fee Component",
+			pluck="fees_category",
+			filters={"parent": self.fee_structure},
+		)
+
+		for component in fee_schedule_components:
+			if component not in fee_structure_components:
+				frappe.msgprint(
+					_("Fee Component {0} is not part of Fee Structure {1}").format(
+						component, frappe.bold(getlink("Fee Structure", self.fee_structure))
+					),
+					alert=True,
+				)
+
+	def validate_total_against_fee_strucuture(self):
+		fee_schedules_total = frappe.db.get_all(
+			"Fee Schedule",
+			filters={"fee_structure": self.fee_structure},
+			fields=["sum(total_amount) as total"],
+		)[0]["total"]
+		fee_structure_total = frappe.db.get_value(
+			"Fee Structure", self.fee_structure, "total_amount"
+		)
+
+		if fee_schedules_total > fee_structure_total:
+			frappe.msgprint(
+				_("Total amount of Fee Schedules exceeds the Total Amount of Fee Structure"),
+				alert=True,
+			)
 
 	@frappe.whitelist()
 	def create_fees(self):
@@ -223,6 +264,7 @@ def get_customer_from_student(student_id):
 
 
 def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
+	# add variables here for the posting date and all which is mentioned below and then use it in the table_map
 	table_map = {
 		"Fee Schedule": {
 			"doctype": doctype,
