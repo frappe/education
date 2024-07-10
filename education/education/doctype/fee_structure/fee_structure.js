@@ -81,7 +81,7 @@ frappe.ui.form.on("Fee Structure", {
       freeze: true,
       callback: function (r) {
         if (r.message) {
-          frappe.msgprint(__("{0} Fee Schedule(s) Create", [r.message]));
+          frappe.msgprint(__("{0} Fee Schedule(s) created", [r.message]));
           frm.dialog.hide();
         }
       },

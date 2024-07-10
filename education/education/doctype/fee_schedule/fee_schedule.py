@@ -111,13 +111,16 @@ class FeeSchedule(Document):
 				)
 
 	def validate_total_against_fee_strucuture(self):
-		fee_schedules_total = frappe.db.get_all(
-			"Fee Schedule",
-			filters={"fee_structure": self.fee_structure},
-			fields=["sum(total_amount) as total"],
-		)[0]["total"]
-		fee_structure_total = frappe.db.get_value(
-			"Fee Structure", self.fee_structure, "total_amount"
+		fee_schedules_total = (
+			frappe.db.get_all(
+				"Fee Schedule",
+				filters={"fee_structure": self.fee_structure},
+				fields=["sum(total_amount) as total"],
+			)[0]["total"]
+			or 0
+		)
+		fee_structure_total = (
+			frappe.db.get_value("Fee Structure", self.fee_structure, "total_amount") or 0
 		)
 
 		if fee_schedules_total > fee_structure_total:

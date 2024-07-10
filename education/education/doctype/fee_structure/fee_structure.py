@@ -75,30 +75,15 @@ def get_amount_distribution_based_on_fee_plan(
 	total_amount = flt(total_amount)
 	components = json.loads(components)
 
-	month_list = [
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
-	]
-
 	month_dict = {
-		"Monthly": {"month_list": month_list, "amount": 1 / 12},
+		"Monthly": {"month_list": get_future_dates("Monthly"), "amount": 1 / 12},
 		"Quarterly": {
-			"month_list": ["April", "July", "October", "January"],
+			"month_list": get_future_dates("Quarterly"),
 			"amount": 1 / 4,
 		},
-		"Semi-Annually": {"month_list": ["April", "October"], "amount": 1 / 2},
+		"Semi-Annually": {"month_list": get_future_dates("Semi-Annually"), "amount": 1 / 2},
 		"Term-Wise": {"month_list": [], "amount": 0},
-		"Annually": {"month_list": ["April"], "amount": 1},
+		"Annually": {"month_list": get_future_dates("Annually"), "amount": 1},
 	}
 
 	academic_terms = []
@@ -140,11 +125,34 @@ def get_amount_distribution_based_on_fee_plan(
 			)
 
 	else:
-		for month in month_list_and_amount.get("month_list"):
-			date = frappe.utils.data.get_first_day(month)
-			final_month_list.append({"month": month, "due_date": date, "amount": amount})
+		for date in month_list_and_amount.get("month_list"):
+			final_month_list.append({"due_date": date, "amount": amount})
 
 	return {"distribution": final_month_list, "per_component_amount": per_component_amount}
+
+
+def get_future_dates(fee_plan, start_date=None):
+	today = start_date or frappe.utils.nowdate()
+	gap_map = {
+		"Monthly": 1,
+		"Quarterly": 3,
+		"Semi-Annually": 6,
+		"Annually": 12,
+	}
+	frequency_map = {
+		"Monthly": 12,
+		"Quarterly": 4,
+		"Semi-Annually": 2,
+		"Annually": 1,
+	}
+	months = []
+	gap = gap_map.get(fee_plan)
+	frequency = frequency_map.get(fee_plan)
+
+	for i in range(1, frequency + 1):
+		months.append(frappe.utils.frappe.utils.add_months(today, gap * i))
+
+	return months
 
 
 @frappe.whitelist()
