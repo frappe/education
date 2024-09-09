@@ -153,7 +153,7 @@ const applyLeave = createResource({
     isAttendancePage.value = false
     attendanceResource.reload()
     createToast({
-      title: 'Attendance Applied Successful',
+      title: 'Leave Applied Successful',
       icon: 'check',
       iconClasses: 'text-green-600',
     })
