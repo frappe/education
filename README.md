@@ -164,7 +164,7 @@ You can self host the module by following [Frappe Bench Installation Instruction
 
 **container or docker deployment**
 
-You can deploy it in docker or docker swarm or any other container orchestration with custom container image following this [guide](https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md).
+You can deploy it in docker or docker swarm or any other container orchestration following [Frappe container image with custom apps Building Instruction](https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md).
 
 ## Contributions & Community
 
