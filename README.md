@@ -163,7 +163,8 @@ Frappe Education can be deployed in few clicks by using [Frappe Cloud](https://f
 You can self host the module by following [Frappe Bench Installation Instructions](https://github.com/frappe/bench#installation).
 
 **container or docker deployment**
-You can deploy it in docker or docker swarm or any other container orchestration with custom container image following this [guide] (https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md).
+
+You can deploy it in docker or docker swarm or any other container orchestration with custom container image following this [guide](https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md).
 
 ## Contributions & Community
 
