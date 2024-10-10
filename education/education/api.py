@@ -706,7 +706,7 @@ def get_student_invoices(student):
 
 
 def get_currency_symbol(currency):
-	return frappe.db.get_value("Currency", currency, "symbol")
+	return frappe.db.get_value("Currency", currency, "symbol") or currency
 
 
 def get_posting_date_from_payment_entry_against_sales_invoice(sales_invoice):
