@@ -675,6 +675,7 @@ def get_student_invoices(student):
 			"fee_schedule",
 			"outstanding_amount",
 			"currency",
+			"grand_total"
 		],
 		order_by="status desc",
 	)
@@ -687,9 +688,9 @@ def get_student_invoices(student):
 		)
 		symbol = get_currency_symbol(si.get("currency", "INR"))
 		student_program_invoice_status["amount"] = symbol + " " + str(si.outstanding_amount)
-		# TODO: get currency
 		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
+			student_program_invoice_status["amount"] = symbol + " " + str(si.grand_total)
 			student_program_invoice_status[
 				"payment_date"
 			] = get_posting_date_from_payment_entry_against_sales_invoice(si.name)
