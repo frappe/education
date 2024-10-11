@@ -664,7 +664,7 @@ def get_student_invoices(student):
 		"Sales Invoice",
 		filters={
 			"student": student,
-			"status": ["in", ["Paid", "Unpaid", "Overdue"]],
+			"status": ["in", ["Paid", "Unpaid", "Overdue","Partly Paid"]],
 			"docstatus": 1,
 		},
 		fields=[
@@ -673,7 +673,7 @@ def get_student_invoices(student):
 			"student",
 			"due_date",
 			"fee_schedule",
-			"grand_total",
+			"outstanding_amount",
 			"currency",
 		],
 		order_by="status desc",
@@ -686,7 +686,7 @@ def get_student_invoices(student):
 			si.fee_schedule
 		)
 		symbol = get_currency_symbol(si.get("currency", "INR"))
-		student_program_invoice_status["amount"] = symbol + " " + str(si.grand_total)
+		student_program_invoice_status["amount"] = symbol + " " + str(si.outstanding_amount)
 		# TODO: get currency
 		student_program_invoice_status["invoice"] = si.name
 		if si.status == "Paid":
