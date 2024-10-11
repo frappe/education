@@ -28,9 +28,7 @@
           <Badge
             v-if="column.key === 'status'"
             variant="subtle"
-            :theme="
-              row.status === 'Paid' ? (bg_color = 'green') : (bg_color = 'red')
-            "
+            :theme="badgeColor(row.status) || 'gray'"
             size="md"
             :label="item"
           />
@@ -43,10 +41,7 @@
           />
 
           <Button
-            v-if="
-              column.key === 'cta' &&
-              (row.status === 'Unpaid' || row.status === 'Overdue')
-            "
+            v-if="column.key === 'cta' && row.status !== 'Paid'"
             @click="openModal(row)"
             class="hover:bg-gray-900 hover:text-white flex flex-column items-center justify-center"
             icon-left="credit-card"
@@ -70,7 +65,7 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { reactive, ref } from 'vue'
 import {
   ListView,
   ListHeader,
@@ -79,10 +74,7 @@ import {
   ListRowItem,
   Badge,
   createResource,
-  Toast,
-  FeatherIcon,
 } from 'frappe-ui'
-import { reactive, ref } from 'vue'
 import FeesPaymentDialog from '@/components/FeesPaymentDialog.vue'
 import { studentStore } from '@/stores/student'
 import MissingData from '@/components/MissingData.vue'
@@ -175,5 +167,15 @@ const success = () => {
     icon: 'check',
     iconClasses: 'text-green-600',
   })
+}
+
+const badgeColor = (status) => {
+  const badgeColorMap = {
+    Paid: 'green',
+    Unpaid: 'red',
+    Overdue: 'red',
+    'Partly Paid': 'orange',
+  }
+  return badgeColorMap[status]
 }
 </script>

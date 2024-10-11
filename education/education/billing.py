@@ -10,7 +10,7 @@ from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_paymen
 
 def get_details(docname):
 	details = frappe.db.get_value(
-		"Sales Invoice", docname, ["name", "currency", "grand_total"], as_dict=1
+		"Sales Invoice", docname, ["name", "currency", "outstanding_amount"], as_dict=1
 	)
 	return details
 
@@ -51,11 +51,11 @@ def get_payment_options(doctype, docname, phone, currency=None):
 	validate_phone_number(phone_number=phone, throw=True)
 	details = get_details(docname)
 	client = get_client()
-	order = create_order(client, details.grand_total, details.currency)
+	order = create_order(client, details.outstanding_amount, details.currency)
 	options = {
 		"key_id": frappe.db.get_single_value("Education Settings", "razorpay_key"),
 		"name": frappe.db.get_single_value("Website Settings", "app_name"),
-		"description": _("Payment for {0} course").format(details["grand_total"]),
+		"description": _("Payment for {0} course").format(details["outstanding_amount"]),
 		"order_id": order["id"],
 		"amount": cint(order["amount"]) * 100,
 		"currency": order["currency"],
@@ -75,7 +75,7 @@ def create_razorpay_payment_record(args, status):
 	payment_record.signature = args.get("razorpay_signature", "")
 	payment_record.against_invoice = args.get("name", "")
 	payment_record.status = status
-	payment_record.amount = args.get("grand_total", "")
+	payment_record.amount = args.get("outstanding_amount", "")
 	if status == "Captured":
 		payment_record.student = args.get("id", "")
 		payment_record.mobile = args.get("mobile_number", "")
