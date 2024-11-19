@@ -175,4 +175,4 @@ You can self host the module by following [Frappe Bench Installation Instruction
 
 ## License
 
-GNU GPL V3. See [license.txt](https://github.com/frappe/agriculture/blob/develop/license.txt) for more information.
+gpl-3.0
