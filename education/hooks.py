@@ -9,9 +9,23 @@ app_description = "Education"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "hello@frappe.io"
-app_license = "GNU GPL V3"
+app_license = "gpl-3.0"
+
+# Apps
+# ------------------
 
 required_apps = ["erpnext"]
+
+# Each item in the list will be shown as an app in the apps page
+add_to_apps_screen = [
+	{
+		"name": "education",
+		"logo": "/assets/education/images/education_logo.svg",
+		"title": "Education",
+		"route": "/app/education",
+# 		"has_permission": "education.api.permission.has_app_permission"
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -120,6 +134,11 @@ domains = {
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+# Svg Icons
+# ------------------
+# include app icons in desk
+# app_include_icons = "education/public/icons.svg"
+
 # Home Pages
 # ----------
 
@@ -157,6 +176,22 @@ after_install = "education.install.after_install"
 
 # before_uninstall = "education.uninstall.before_uninstall"
 # after_uninstall = "education.uninstall.after_uninstall"
+
+# Integration Setup
+# ------------------
+# To set up dependencies/integrations with other apps
+# Name of the app being installed is passed as an argument
+
+# before_app_install = "education.utils.before_app_install"
+# after_app_install = "education.utils.after_app_install"
+
+# Integration Cleanup
+# -------------------
+# To clean up dependencies/integrations with other apps
+# Name of the app being uninstalled is passed as an argument
+
+# before_app_uninstall = "education.utils.before_app_uninstall"
+# after_app_uninstall = "education.utils.after_app_uninstall"
 
 # Desk Notifications
 # ------------------
@@ -242,6 +277,20 @@ before_tests = "education.education.test_utils.before_tests"
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
+# Ignore links to specified DocTypes when deleting documents
+# -----------------------------------------------------------
+
+# ignore_links_on_delete = ["Communication", "ToDo"]
+
+# Request Events
+# ----------------
+# before_request = ["education.utils.before_request"]
+# after_request = ["education.utils.after_request"]
+
+# Job Events
+# ----------
+# before_job = ["education.utils.before_job"]
+# after_job = ["education.utils.after_job"]
 
 # User Data Protection
 # --------------------
@@ -281,3 +330,11 @@ before_tests = "education.education.test_utils.before_tests"
 # Recommended only for DocTypes which have limited documents with untranslated names
 # For example: Role, Gender, etc.
 # translated_search_doctypes = []
+
+# Automatically update python controller files with type annotations for this app.
+# export_python_type_annotations = True
+
+# default_log_clearing_doctypes = {
+# 	"Logging DocType Name": 30  # days to retain logs
+# }
+
