@@ -104,6 +104,12 @@ global_search_doctypes = {
 }
 
 # fixed route to education setup
+hooks = {
+    "domains": ["education"],
+    "domains": {
+        "education": "education.education.setup"
+    }
+}
 domains = {
 	"Education": "education.education.setup"
 }
