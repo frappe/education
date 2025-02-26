@@ -759,3 +759,10 @@ def get_student_attendance(student, student_group):
 		filters={"student": student, "student_group": student_group, "docstatus": 1},
 		fields=["date", "status", "name"],
 	)
+
+@frappe.whitelist()
+def get_announcements():
+    announcements = frappe.get_all("Newsletter", 
+                                   filters={"published": 1}, 
+                                   fields=["subject", "content", "creation as announcement_date"])
+    return announcements
