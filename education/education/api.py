@@ -10,6 +10,7 @@ from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate
 from frappe.utils.dateutils import get_dates_from_timegrain
+from datetime import datetime
 
 
 def get_course(program):
@@ -762,7 +763,14 @@ def get_student_attendance(student, student_group):
 
 @frappe.whitelist()
 def get_announcements():
-    announcements = frappe.get_all("Newsletter", 
-                                   filters={"published": 1}, 
-                                   fields=["subject", "content", "creation as announcement_date"])
+    announcements = frappe.get_all(
+        "Newsletter",
+        filters={"published": 1},
+        fields=["subject", "creation","message"]
+    )
+
+    for announcement in announcements:
+        if "creation" in announcement:
+            announcement["creation"] = datetime.strftime(announcement["creation"], "%d-%m-%Y")
+
     return announcements
