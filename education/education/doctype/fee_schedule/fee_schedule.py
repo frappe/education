@@ -345,12 +345,28 @@ def get_total_students(
 	return len(total_students)
 
 
+#Fix for creating fees shedule with fee structure without amount variation
 @frappe.whitelist()
 def get_fee_structure(source_name, target_doc=None):
-	fee_request = get_mapped_doc(
-		"Fee Structure",
-		source_name,
-		{"Fee Structure": {"doctype": "Fee Schedule"}},
-		ignore_permissions=True,
-	)
-	return fee_request
+    fee_request = get_mapped_doc(
+        "Fee Structure",
+        source_name,
+        {
+            "Fee Structure": {"doctype": "Fee Schedule"},
+            "Fee Component": {
+                "doctype": "Fee Component",
+                "field_map": {
+                    "fees_category": "fees_category",
+                    "amount": "amount",
+                    "discount": "discount",
+                    "total": "total"
+                }
+            }
+        },
+        ignore_permissions=True,
+    )
+
+    # Debugging log
+    frappe.msgprint(f"Fetched Fee Structure: {fee_request.as_json()}")
+
+    return fee_request
