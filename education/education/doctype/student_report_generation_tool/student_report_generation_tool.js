@@ -10,6 +10,7 @@ frappe.ui.form.on('Student Report Generation Tool', {
         },
       }
     })
+    
   },
 
   refresh: function (frm) {
