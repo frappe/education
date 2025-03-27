@@ -90,13 +90,13 @@
   {
    "depends_on": "eval:doc.user_creation_skip==0 && doc.use_custom_password",
    "fieldname": "default_student_password",
-   "fieldtype": "Password",
+   "fieldtype": "Data",
    "label": "Default Student Password"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2025-03-06 22:46:40.102376",
+ "modified": "2025-03-27 20:48:17.593247",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
