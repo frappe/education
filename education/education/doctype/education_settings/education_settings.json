@@ -13,6 +13,8 @@
   "validate_course",
   "academic_term_reqd",
   "user_creation_skip",
+  "use_custom_password",
+  "default_student_password",
   "section_break_7",
   "instructor_created_by"
  ],
@@ -76,11 +78,25 @@
    "fieldname": "user_creation_skip",
    "fieldtype": "Check",
    "label": "Skip User creation for new Student"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.user_creation_skip==0",
+   "description": "Use a custom password instead of username@12345",
+   "fieldname": "use_custom_password",
+   "fieldtype": "Check",
+   "label": "Use Custom Password"
+  },
+  {
+   "depends_on": "eval:doc.user_creation_skip==0 && doc.use_custom_password",
+   "fieldname": "default_student_password",
+   "fieldtype": "Password",
+   "label": "Default Student Password"
   }
  ],
  "issingle": 1,
  "links": [],
- "modified": "2022-12-12 15:20:54.983137",
+ "modified": "2025-03-06 22:46:40.102376",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
@@ -115,7 +131,6 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
