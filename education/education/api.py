@@ -771,6 +771,6 @@ def get_announcements():
 
     for announcement in announcements:
         if "creation" in announcement:
-            announcement["creation"] = datetime.strftime(announcement["creation"], "%d-%m-%Y")
+            announcement["creation"] = datetime.strftime(announcement["creation"], "%m-%d-%Y")
 
     return announcements

@@ -1,70 +1,105 @@
 <template>
-  <div class="p-6 relative">
-    <h2 class="text-2xl font-bold mb-4">Announcements & Newsletters</h2>
-
-    <div
-      v-if="announcements.length"
-      class="grid grid-cols-1 sm:grid-cols-2 gap-6"
-      :class="{ 'opacity-30 pointer-events-none': showDialog }"
-    >
-      <div
-        v-for="announcement in announcements"
-        :key="announcement.subject"
-        class="p-4 bg-white shadow-md rounded-lg cursor-pointer hover:bg-gray-100 transition"
-        @click="openAnnouncement(announcement)"
+  <div class="">
+    <div v-if="tableData.rows.length > 0" class="px-5 py-4">
+      <ListView
+        :columns="tableData.columns"
+        :rows="tableData.rows"
+        :options="{
+          selectable: false,
+          showTooltip: false,
+          onRowClick: (row) => openAnnouncement(row),
+        }"
+        row-key="name"
       >
-        <h3 class="text-xl font-semibold">{{ announcement.subject }}</h3>
-        <p class="text-gray-600 mt-1">📅 {{ announcement.creation }}</p>
-      </div>
-    </div>
-
-    <div v-else class="text-gray-500">No announcements available.</div>
-
-    <div
-      v-if="showDialog"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40"
-      @click="showDialog = false"
-    ></div>
-
-    <div
-      v-if="showDialog"
-      class="fixed inset-0 flex items-center justify-center z-50"
-    >
-      <div class="bg-white w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-bold mb-4">{{ selectedAnnouncement.subject }}</h2>
-        <div class="ql-editor read-mode" v-html="selectedAnnouncement.message"></div>
-        <button
-          class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-          @click="showDialog = false"
+        <ListHeader>
+          <ListHeaderItem
+            v-for="column in tableData.columns"
+            :key="column.key"
+            :item="column"
+          />
+        </ListHeader>
+        <ListRow
+          v-for="row in tableData.rows"
+          :key="row.name"
+          :row="row"
+          v-slot="{ column, item }"
         >
-          Close
-        </button>
-      </div>
+          <ListRowItem :item="item" :align="column.align">
+            <template v-if="column.key === 'subject'">
+              <span class="font-normal">{{ item }}</span>
+            </template>
+            <template v-else-if="column.key === 'creation'">
+              <span class="text-gray-600">📅 {{ formatDate(item) }}</span>
+            </template>
+          </ListRowItem>
+        </ListRow>
+      </ListView>
     </div>
+
+    <div v-else>
+      <MissingData message="No announcements available" />
+    </div>
+
+    <Dialog
+      v-model="showDialog"
+      :options="{
+        title: selectedAnnouncement.subject,
+        size: '2xl',
+      }"
+    >
+      <template #body-content>
+        <div class="ql-editor read-mode" v-html="selectedAnnouncement.message"></div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { createResource } from 'frappe-ui'
+import { reactive, ref } from 'vue'
+import {
+  ListView,
+  ListHeader,
+  ListHeaderItem,
+  ListRow,
+  ListRowItem,
+  Dialog,
+  createResource,
+} from 'frappe-ui'
+import MissingData from '@/components/MissingData.vue'
 
-const announcements = ref([])
+const tableData = reactive({
+  rows: [],
+  columns: [
+    {
+      label: 'Subject',
+      key: 'subject',
+      width: 2,
+    },
+    {
+      label: 'Posting Date',
+      key: 'creation',
+      width: 1,
+    },
+  ],
+})
+
 const showDialog = ref(false)
 const selectedAnnouncement = ref({})
 
 const fetchAnnouncements = createResource({
   url: 'education.education.api.get_announcements',
   onSuccess: (data) => {
-    announcements.value = data
+    tableData.rows = data
   },
   onError: (err) => {
     console.error('Error fetching announcements:', err)
-  }
+  },
+  auto: true,
 })
 
-onMounted(() => {
-  fetchAnnouncements.reload()
-})
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString()
+}
 
 const openAnnouncement = (announcement) => {
   selectedAnnouncement.value = announcement
