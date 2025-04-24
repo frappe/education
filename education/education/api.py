@@ -761,16 +761,18 @@ def get_student_attendance(student, student_group):
 		fields=["date", "status", "name"],
 	)
 
+
 @frappe.whitelist()
 def get_announcements():
     announcements = frappe.get_all(
         "Newsletter",
         filters={"published": 1},
-        fields=["subject", "creation","message"]
+        fields=["subject", "creation", "message"]
     )
 
     for announcement in announcements:
         if "creation" in announcement:
-            announcement["creation"] = datetime.strftime(announcement["creation"], "%m-%d-%Y")
+            announcement["creation"] = frappe.utils.pretty_date(announcement["creation"])
 
     return announcements
+

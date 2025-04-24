@@ -29,7 +29,7 @@
               <span class="font-normal">{{ item }}</span>
             </template>
             <template v-else-if="column.key === 'creation'">
-              <span class="text-gray-600">📅 {{ formatDate(item) }}</span>
+              <span class="text-gray-600"> {{ item }}</span>
             </template>
           </ListRowItem>
         </ListRow>
@@ -96,10 +96,6 @@ const fetchAnnouncements = createResource({
   },
   auto: true,
 })
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString()
-}
 
 const openAnnouncement = (announcement) => {
   selectedAnnouncement.value = announcement
