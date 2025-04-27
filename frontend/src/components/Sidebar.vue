@@ -82,6 +82,12 @@ const links = [
     to: '/attendance',
     icon: UserCheck,
   },
+  {
+    label: 'Announcement',
+    to: '/announcements',
+    icon: UserCheck,
+  },
+  
   // {
   // 	// TODO: create School Diary Page with card like CRM and from ListView go to Resource Document of each Card
   // 	label: 'Notes',
