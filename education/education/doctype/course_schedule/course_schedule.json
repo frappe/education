@@ -19,6 +19,7 @@
      "section_break_6",
      "schedule_date",
      "room",
+     "room_number",
      "column_break_9",
      "from_time",
      "to_time",
@@ -130,10 +131,16 @@
       "label": "Class Schedule Color",
       "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple",
       "print_hide": 1
+     },
+     {
+      "fetch_from": "room.room_number",
+      "fieldname": "room_number",
+      "fieldtype": "Data",
+      "label": "Room number"
      }
     ],
     "links": [],
-    "modified": "2025-04-28 13:29:42.750386",
+    "modified": "2025-04-29 14:17:29.979906",
     "modified_by": "Administrator",
     "module": "Education",
     "name": "Course Schedule",
