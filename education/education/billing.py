@@ -114,7 +114,8 @@ def handle_payment_success(response, against_invoice, billing_details):
 	)
 
 	try:
-		pe = get_payment_entry("Sales Invoice", against_invoice, ignore_permissions=True)
+		frappe.flags.ignore_account_permission = True
+		pe = get_payment_entry("Sales Invoice", against_invoice)
 		pe.reference_no = response["razorpay_order_id"]
 		pe.reference_date = nowdate()
 		pe.posting_date = nowdate()
