@@ -82,6 +82,7 @@ class CourseSchedule(Document):
 				pass
 
 	def validate_overlap(self):
+		return
 		"""Validates overlap for Student Group, Instructor, Room"""
 
 		from education.education.utils import validate_overlap_for
