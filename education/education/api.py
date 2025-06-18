@@ -473,17 +473,25 @@ def get_current_enrollment(student, academic_year=None):
 	current_academic_year = academic_year or frappe.defaults.get_defaults().academic_year
 	if not current_academic_year:
 		frappe.throw(_("Please set default Academic Year in Education Settings"))
+
+	current_year_end_date = getdate(frappe.db.get_value("Academic Year", current_academic_year, "year_end_date"))
+
 	program_enrollment_list = frappe.db.sql(
 		"""
-		select
-			name as program_enrollment, student_name, program, student_batch_name as student_batch,
-			student_category, academic_term, academic_year
-		from
-			`tabProgram Enrollment`
-		where
-			student = %s and academic_year = %s
-		order by creation""",
-		(student, current_academic_year),
+		SELECT
+			pe.name AS program_enrollment, pe.student_name, pe.program, pe.student_batch_name AS student_batch,
+			pe.student_category, pe.academic_term, pe.academic_year,
+		FROM
+			`tabProgram Enrollment` pe
+		JOIN
+			`tabAcademic Year` ay ON pe.academic_year = ay.name
+		WHERE
+			pe.student = %s
+			AND ay.year_end_date <= %s
+		ORDER BY
+			pe.creation
+		""",
+		(student, current_year_end_date),
 		as_dict=1,
 	)
 
