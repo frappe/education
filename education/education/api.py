@@ -8,7 +8,7 @@ import frappe
 from frappe import _
 from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import cstr, flt, getdate
+from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
 
@@ -470,28 +470,25 @@ def update_email_group(doctype, name):
 
 @frappe.whitelist()
 def get_current_enrollment(student, academic_year=None):
-	current_academic_year = academic_year or frappe.defaults.get_defaults().academic_year
-	if not current_academic_year:
-		frappe.throw(_("Please set default Academic Year in Education Settings"))
-
-	current_year_end_date = getdate(frappe.db.get_value("Academic Year", current_academic_year, "year_end_date"))
+	# If academic_year is not passed, use today's date
+	compare_date = getdate(academic_year) if academic_year else getdate(today())
 
 	program_enrollment_list = frappe.db.sql(
 		"""
 		SELECT
 			pe.name AS program_enrollment, pe.student_name, pe.program, pe.student_batch_name AS student_batch,
-			pe.student_category, pe.academic_term, pe.academic_year,
+			pe.student_category, pe.academic_term, pe.academic_year
 		FROM
 			`tabProgram Enrollment` pe
 		JOIN
 			`tabAcademic Year` ay ON pe.academic_year = ay.name
 		WHERE
 			pe.student = %s
-			AND ay.year_end_date <= %s
+			AND ay.year_end_date >= %s
 		ORDER BY
 			pe.creation
 		""",
-		(student, current_year_end_date),
+		(student, compare_date),
 		as_dict=1,
 	)
 
