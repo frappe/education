@@ -103,10 +103,6 @@ global_search_doctypes = {
 	]
 }
 
-# fixed route to education setup
-domains = {
-	"Education": "education.education.setup"
-}
 # include js, css files in header of web form
 # webform_include_js = {"doctype": "public/js/doctype.js"}
 # webform_include_css = {"doctype": "public/css/doctype.css"}
