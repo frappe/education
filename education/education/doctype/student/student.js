@@ -20,6 +20,27 @@ frappe.ui.form.on('Student', {
 				frm.set_df_property('student_email_id', 'reqd', 1);
 			}
 		});
+
+        // Fetch the latest Student Exit date_of_leaving
+        if (frm.doc.name) {
+            frappe.call({
+                method: "frappe.client.get_value",
+                args: {
+                    doctype: "Student Exit",
+                    filters: {
+                        student: frm.doc.name
+                    },
+                    fieldname: "date_of_leaving"
+                },
+                callback: function(r) {
+                    if (r.message && r.message.date_of_leaving) {
+                        frm.set_value('date_of_exit', r.message.date_of_leaving);
+                    } else {
+                        frm.set_value('date_of_exit', null);
+                    }
+                }
+            });
+        }
 	}
 });
 

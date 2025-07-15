@@ -17,6 +17,7 @@
   "column_break_4",
   "naming_series",
   "joining_date",
+  "date_of_exit",
   "user",
   "student_applicant",
   "image",
@@ -281,11 +282,20 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_of_exit",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Exit Date",
+   "read_only": 1
   }
  ],
+ "grid_page_length": 50,
  "image_field": "image",
  "links": [],
- "modified": "2025-01-24 11:45:16.601875",
+ "modified": "2025-07-15 16:52:08.874225",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -319,6 +329,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",
