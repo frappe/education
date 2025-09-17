@@ -186,13 +186,13 @@ after_install = "education.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Payment Entry": {
+		"validate": "education.overrides.payment_entry.get_valid_reference_doctypes",
+		"on_submit": "education.overrides.payment_entry.set_outstanding_amount",
+		"on_cancel": "education.overrides.payment_entry.set_outstanding_amount",
+	}
+}
 
 # Scheduled Tasks
 # ---------------
