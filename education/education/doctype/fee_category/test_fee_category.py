@@ -111,3 +111,37 @@ class TestFeeCategory(FrappeTestCase):
 		for default in default_array:
 			fee_component.append("item_defaults", default)
 		self.assertRaises(frappe.ValidationError, fee_component.save)
+
+	def test_missing_company_default(self):
+		"""
+		Validation must fail if Fee Category Defaults are missing for an active company.
+		"""
+		# Create a second company for the test environment
+		create_company("Missing Test Co")
+
+		fee_category_name = "Test Fee Category Missing Company"
+		fee_category = create_fee_category(fee_category_name)
+		defaults = get_defaults()
+
+		# Set default for ONLY the primary company (_Test Company)
+		fee_category.append(
+			"item_defaults",
+			{
+				"company": "_Test Company",
+				"income_account": defaults.default_income_account,
+				"selling_cost_center": defaults.cost_center,
+			},
+		)
+
+		# Expect an error since "Missing Test Co" is not covered
+		with self.assertRaises(frappe.exceptions.ValidationError) as cm:
+			fee_category.save()
+
+		# Assert the error message is correct
+		self.assertIn(
+			"Please set Accounting Defaults for the following active companies",
+			str(cm.exception),
+		)
+
+		# Clean up the created company
+		frappe.delete_doc("Company", "Missing Test Co")
