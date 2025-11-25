@@ -1,9 +1,9 @@
 [project]
 name = "education"
 authors = [
-    { name = "Hybrowlabs Technologies", email = "sankara@hybrowlabs.com" },
+    { name = "Frappe Technologies Pvt. Ltd.", email = "hello@frappe.io" },
 ]
-description = "Education Application"
+description = "Education"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
@@ -14,6 +14,9 @@ dependencies = [
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "education"
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
