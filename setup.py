@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-with open("requirements.txt") as f:
+with open("pyproject.toml") as f:
 	install_requires = f.read().strip().split("\n")
 
 # get version from __version__ variable in education/__init__.py
