@@ -1,0 +1,103 @@
+[
+  {
+    "id": "1",
+    "code": "DAY_SCHOLAR",
+    "name": "Day Scholar",
+    "description": "Standard day scholar admission program",
+    "schoolFeeWaived": false,
+    "hostelFeeWaived": true,
+    "busFeeWaived": false,
+    "isActive": true
+  },
+  {
+    "id": "2",
+    "code": "RTE",
+    "name": "RTE (Right To Education)",
+    "description": "Government scheme providing free education to eligible students",
+    "schoolFeeWaived": true,
+    "hostelFeeWaived": false,
+    "busFeeWaived": false,
+    "isActive": true,
+    "specialRules": "Available for students below poverty line"
+  },
+  {
+    "id": "3",
+    "code": "MDY",
+    "name": "MDY (Scheme)",
+    "description": "Modified day scholar scheme for government-aided students",
+    "schoolFeeWaived": true,
+    "hostelFeeWaived": false,
+    "busFeeWaived": true,
+    "isActive": true,
+    "specialRules": "Limited seats available"
+  },
+  {
+    "id": "4",
+    "code": "JUY",
+    "name": "JUY (Scheme)",
+    "description": "Special youth scholarship scheme",
+    "schoolFeeWaived": true,
+    "hostelFeeWaived": false,
+    "busFeeWaived": false,
+    "isActive": true,
+    "specialRules": "For students pursuing technical education"
+  },
+  {
+    "id": "5",
+    "code": "SHRESHTA",
+    "name": "SHRESHTA (Merit)",
+    "description": "Merit-based scholarship for high-performing students",
+    "schoolFeeWaived": false,
+    "hostelFeeWaived": false,
+    "busFeeWaived": false,
+    "isActive": true,
+    "specialRules": "Minimum 80% marks required in previous class"
+  },
+  {
+    "id": "6",
+    "code": "ATAL",
+    "name": "ATAL (Skills Development)",
+    "description": "Atal scheme for skill development programs",
+    "schoolFeeWaived": true,
+    "hostelFeeWaived": false,
+    "busFeeWaived": false,
+    "isActive": true,
+    "specialRules": "Includes vocational training"
+  },
+  {
+    "id": "7",
+    "code": "STAFF_CHILDREN",
+    "name": "Staff Children",
+    "description": "Special scheme for children of school staff members",
+    "schoolFeeWaived": false,
+    "hostelFeeWaived": false,
+    "busFeeWaived": true,
+    "isActive": true,
+    "specialRules": "50% concession on school fees"
+  },
+  {
+    "id": "8",
+    "code": "HOSTEL_AC",
+    "name": "Hostel (AC)",
+    "description": "Air-conditioned hostel facility for residential students",
+    "schoolFeeWaived": false,
+    "hostelFeeWaived": false,
+    "busFeeWaived": true,
+    "isActive": true,
+    "hostelType": "AC",
+    "acSurcharge": 500,
+    "specialRules": "₹500 monthly AC surcharge"
+  },
+  {
+    "id": "9",
+    "code": "HOSTEL_NON_AC",
+    "name": "Hostel (Non-AC)",
+    "description": "Standard non-AC hostel facility for residential students",
+    "schoolFeeWaived": false,
+    "hostelFeeWaived": false,
+    "busFeeWaived": true,
+    "isActive": true,
+    "hostelType": "Non-AC",
+    "acSurcharge": 0
+  }
+]

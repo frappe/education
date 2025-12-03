@@ -1,0 +1,7 @@
+[
+  { "class": "1-2", "baseTuition": 35000, "transport": 15000, "hostel": 25000 },
+  { "class": "3-5", "baseTuition": 45000, "transport": 15000, "hostel": 25000 },
+  { "class": "6-8", "baseTuition": 55000, "transport": 18000, "hostel": 30000 },
+  { "class": "9-10", "baseTuition": 70000, "transport": 18000, "hostel": 30000 },
+  { "class": "11-12", "baseTuition": 85000, "transport": 20000, "hostel": 35000 }
+]

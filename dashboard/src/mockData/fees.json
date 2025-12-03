@@ -1,0 +1,62 @@
+[
+  {
+    "id": "FEE001",
+    "studentId": "STU001",
+    "studentName": "Aarav Sharma",
+    "class": "10-A",
+    "amount": 15000,
+    "paid": 15000,
+    "due": 0,
+    "status": "paid",
+    "dueDate": "2024-04-30",
+    "paidDate": "2024-04-15"
+  },
+  {
+    "id": "FEE002",
+    "studentId": "STU002",
+    "studentName": "Diya Patel",
+    "class": "10-A",
+    "amount": 15000,
+    "paid": 15000,
+    "due": 0,
+    "status": "paid",
+    "dueDate": "2024-04-30",
+    "paidDate": "2024-04-20"
+  },
+  {
+    "id": "FEE003",
+    "studentId": "STU003",
+    "studentName": "Rohan Kumar",
+    "class": "9-B",
+    "amount": 14000,
+    "paid": 7000,
+    "due": 7000,
+    "status": "pending",
+    "dueDate": "2024-05-15",
+    "paidDate": null
+  },
+  {
+    "id": "FEE004",
+    "studentId": "STU004",
+    "studentName": "Ananya Singh",
+    "class": "9-B",
+    "amount": 14000,
+    "paid": 0,
+    "due": 14000,
+    "status": "overdue",
+    "dueDate": "2024-03-31",
+    "paidDate": null
+  },
+  {
+    "id": "FEE005",
+    "studentId": "STU005",
+    "studentName": "Kabir Mehta",
+    "class": "8-C",
+    "amount": 13000,
+    "paid": 13000,
+    "due": 0,
+    "status": "paid",
+    "dueDate": "2024-04-30",
+    "paidDate": "2024-04-10"
+  }
+]

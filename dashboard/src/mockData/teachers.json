@@ -1,0 +1,62 @@
+[
+  {
+    "id": "TCH001",
+    "name": "Dr. Meera Reddy",
+    "subject": "Mathematics",
+    "qualification": "M.Sc., Ph.D.",
+    "email": "meera.reddy@sanskar.edu",
+    "phone": "+91 98765 12345",
+    "dateOfJoining": "2015-06-15",
+    "experience": "12 years",
+    "department": "Science",
+    "address": "101 Teachers Colony, Delhi"
+  },
+  {
+    "id": "TCH002",
+    "name": "Prof. Rajesh Gupta",
+    "subject": "Physics",
+    "qualification": "M.Sc., B.Ed.",
+    "email": "rajesh.gupta@sanskar.edu",
+    "phone": "+91 98765 12346",
+    "dateOfJoining": "2012-04-01",
+    "experience": "15 years",
+    "department": "Science",
+    "address": "102 Teachers Colony, Delhi"
+  },
+  {
+    "id": "TCH003",
+    "name": "Ms. Sneha Iyer",
+    "subject": "English",
+    "qualification": "M.A., B.Ed.",
+    "email": "sneha.iyer@sanskar.edu",
+    "phone": "+91 98765 12347",
+    "dateOfJoining": "2018-07-20",
+    "experience": "8 years",
+    "department": "Languages",
+    "address": "103 Teachers Colony, Delhi"
+  },
+  {
+    "id": "TCH004",
+    "name": "Mr. Karthik Nair",
+    "subject": "Computer Science",
+    "qualification": "B.Tech., M.C.A.",
+    "email": "karthik.nair@sanskar.edu",
+    "phone": "+91 98765 12348",
+    "dateOfJoining": "2019-08-01",
+    "experience": "6 years",
+    "department": "Technology",
+    "address": "104 Teachers Colony, Delhi"
+  },
+  {
+    "id": "TCH005",
+    "name": "Mrs. Lakshmi Desai",
+    "subject": "Chemistry",
+    "qualification": "M.Sc., B.Ed.",
+    "email": "lakshmi.desai@sanskar.edu",
+    "phone": "+91 98765 12349",
+    "dateOfJoining": "2016-05-10",
+    "experience": "10 years",
+    "department": "Science",
+    "address": "105 Teachers Colony, Delhi"
+  }
+]

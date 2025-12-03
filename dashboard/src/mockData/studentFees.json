@@ -1,0 +1,406 @@
+[
+  {
+    "id": "SF001",
+    "studentId": "STU001",
+    "studentName": "Aarav Sharma",
+    "class": "Class 10",
+    "section": "A",
+    "admissionNo": "ADM2023001",
+    "scheme": "Day Scholar",
+    "schemeCode": "DAY_SCHOLAR",
+    "feeBreakdown": {
+      "tuitionFee": 45000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 62000,
+    "discountBreakdown": [
+      {
+        "type": "Sibling Discount",
+        "amount": 1500
+      }
+    ],
+    "discounts": 1500,
+    "netFee": 60500,
+    "paidAmount": 60500,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF002",
+    "studentId": "STU002",
+    "studentName": "Diya Patel",
+    "class": "Class 10",
+    "section": "A",
+    "admissionNo": "ADM2023002",
+    "scheme": "Day Scholar",
+    "schemeCode": "DAY_SCHOLAR",
+    "feeBreakdown": {
+      "tuitionFee": 45000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 62000,
+    "discountBreakdown": [
+      {
+        "type": "Sibling Discount",
+        "amount": 1500
+      },
+      {
+        "type": "Merit Discount (90%+ marks)",
+        "amount": 3500
+      }
+    ],
+    "discounts": 5000,
+    "netFee": 57000,
+    "paidAmount": 57000,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF003",
+    "studentId": "STU003",
+    "studentName": "Rohan Kumar",
+    "class": "Class 9",
+    "section": "B",
+    "admissionNo": "ADM2023003",
+    "scheme": "Day Scholar",
+    "schemeCode": "DAY_SCHOLAR",
+    "feeBreakdown": {
+      "tuitionFee": 42000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 59000,
+    "discountBreakdown": [
+      {
+        "type": "Sibling Discount",
+        "amount": 1500
+      },
+      {
+        "type": "Special Discount",
+        "amount": 19500
+      }
+    ],
+    "discounts": 21000,
+    "netFee": 38000,
+    "paidAmount": 19000,
+    "dueAmount": 19000,
+    "status": "Pending",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF004",
+    "studentId": "STU004",
+    "studentName": "Ananya Singh",
+    "class": "Class 9",
+    "section": "B",
+    "admissionNo": "ADM2023004",
+    "scheme": "RTE",
+    "schemeCode": "RTE",
+    "feeBreakdown": {
+      "tuitionFee": 42000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 60000,
+      "messFee": 36000,
+      "cautionFee": 0
+    },
+    "totalFee": 155000,
+    "discountBreakdown": [
+      {
+        "type": "RTE Scheme - School fee waived",
+        "amount": 42000
+      },
+      {
+        "type": "RTE Scheme - Transport waived",
+        "amount": 12000
+      }
+    ],
+    "discounts": 54000,
+    "netFee": 101000,
+    "paidAmount": 0,
+    "dueAmount": 101000,
+    "status": "Overdue",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF005",
+    "studentId": "STU005",
+    "studentName": "Kabir Mehta",
+    "class": "Class 8",
+    "section": "C",
+    "admissionNo": "ADM2023005",
+    "scheme": "Day Scholar",
+    "schemeCode": "DAY_SCHOLAR",
+    "feeBreakdown": {
+      "tuitionFee": 38000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 55000,
+    "discountBreakdown": [
+      {
+        "type": "Sibling Discount",
+        "amount": 1500
+      },
+      {
+        "type": "Merit Discount (95%+ marks - 75%)",
+        "amount": 27000
+      }
+    ],
+    "discounts": 28500,
+    "netFee": 26500,
+    "paidAmount": 26500,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF006",
+    "studentId": "STU006",
+    "studentName": "Ishaan Reddy",
+    "class": "Class 11",
+    "section": "A",
+    "admissionNo": "ADM2023006",
+    "scheme": "JUY (Jawahar Utkarsh Yojana)",
+    "schemeCode": "JUY",
+    "feeBreakdown": {
+      "tuitionFee": 48000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 60000,
+      "messFee": 36000,
+      "cautionFee": 0
+    },
+    "totalFee": 161000,
+    "discountBreakdown": [
+      {
+        "type": "JUY Scheme - 100% fee waived",
+        "amount": 161000
+      }
+    ],
+    "discounts": 161000,
+    "netFee": 0,
+    "paidAmount": 0,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "SF007",
+    "studentId": "STU007",
+    "studentName": "Priya Verma",
+    "class": "Class 6",
+    "section": "A",
+    "admissionNo": "ADM2023007",
+    "scheme": "Staff & Teacher Children",
+    "schemeCode": "STAFF_CHILDREN",
+    "feeBreakdown": {
+      "tuitionFee": 35000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 52000,
+    "discountBreakdown": [
+      {
+        "type": "Staff Children - Younger of 2 (100% tuition)",
+        "amount": 35000
+      }
+    ],
+    "discounts": 35000,
+    "netFee": 17000,
+    "paidAmount": 17000,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25",
+    "staffChildrenNote": "Younger child - 100% discount on school fee"
+  },
+  {
+    "id": "SF008",
+    "studentId": "STU008",
+    "studentName": "Arjun Verma",
+    "class": "Class 9",
+    "section": "A",
+    "admissionNo": "ADM2023008",
+    "scheme": "Staff & Teacher Children",
+    "schemeCode": "STAFF_CHILDREN",
+    "feeBreakdown": {
+      "tuitionFee": 42000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 59000,
+    "discountBreakdown": [
+      {
+        "type": "Staff Children - Elder of 2 (50% tuition)",
+        "amount": 21000
+      }
+    ],
+    "discounts": 21000,
+    "netFee": 38000,
+    "paidAmount": 20000,
+    "dueAmount": 18000,
+    "status": "Pending",
+    "academicYear": "2024-25",
+    "staffChildrenNote": "Elder child - 50% discount on school fee"
+  },
+  {
+    "id": "SF009",
+    "studentId": "STU009",
+    "studentName": "Maya Joshi",
+    "class": "Class 12",
+    "section": "B",
+    "admissionNo": "ADM2023009",
+    "scheme": "Hostel (AC)",
+    "schemeCode": "HOSTEL_AC",
+    "feeBreakdown": {
+      "tuitionFee": 50000,
+      "transportFee": 0,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 66000,
+      "messFee": 36000,
+      "cautionFee": 2000
+    },
+    "totalFee": 159000,
+    "discountBreakdown": [],
+    "discounts": 0,
+    "netFee": 159000,
+    "paidAmount": 80000,
+    "dueAmount": 79000,
+    "status": "Pending",
+    "academicYear": "2024-25",
+    "hostelNote": "AC Hostel - ₹500/month surcharge included"
+  },
+  {
+    "id": "SF010",
+    "studentId": "STU010",
+    "studentName": "Sakshi Rao",
+    "class": "Class 4",
+    "section": "B",
+    "admissionNo": "ADM2023010",
+    "scheme": "Staff & Teacher Children",
+    "schemeCode": "STAFF_CHILDREN",
+    "feeBreakdown": {
+      "tuitionFee": 28000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 45000,
+    "discountBreakdown": [
+      {
+        "type": "Staff Children - Youngest of 3 (100% tuition)",
+        "amount": 28000
+      }
+    ],
+    "discounts": 28000,
+    "netFee": 17000,
+    "paidAmount": 17000,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25",
+    "staffChildrenNote": "Youngest of 3 children - 100% discount on school fee"
+  },
+  {
+    "id": "SF011",
+    "studentId": "STU011",
+    "studentName": "Ravi Rao",
+    "class": "Class 7",
+    "section": "A",
+    "admissionNo": "ADM2023011",
+    "scheme": "Staff & Teacher Children",
+    "schemeCode": "STAFF_CHILDREN",
+    "feeBreakdown": {
+      "tuitionFee": 35000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 52000,
+    "discountBreakdown": [
+      {
+        "type": "Staff Children - Middle of 3 (50% tuition)",
+        "amount": 17500
+      }
+    ],
+    "discounts": 17500,
+    "netFee": 34500,
+    "paidAmount": 34500,
+    "dueAmount": 0,
+    "status": "Paid",
+    "academicYear": "2024-25",
+    "staffChildrenNote": "Middle of 3 children - 50% discount on school fee"
+  },
+  {
+    "id": "SF012",
+    "studentId": "STU012",
+    "studentName": "Neha Gupta",
+    "class": "Class 5",
+    "section": "C",
+    "admissionNo": "ADM2023012",
+    "scheme": "MDY (Mhatari Dulhar Yojana)",
+    "schemeCode": "MDY",
+    "feeBreakdown": {
+      "tuitionFee": 30000,
+      "transportFee": 12000,
+      "libraryFee": 2000,
+      "sportsFee": 3000,
+      "hostelFee": 0,
+      "messFee": 0,
+      "cautionFee": 0
+    },
+    "totalFee": 47000,
+    "discountBreakdown": [
+      {
+        "type": "MDY Scheme - School fee waived",
+        "amount": 30000
+      },
+      {
+        "type": "Sibling Discount",
+        "amount": 1500
+      }
+    ],
+    "discounts": 31500,
+    "netFee": 15500,
+    "paidAmount": 8000,
+    "dueAmount": 7500,
+    "status": "Pending",
+    "academicYear": "2024-25"
+  }
+]

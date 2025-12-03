@@ -1,0 +1,152 @@
+[
+  {
+    "class": "Pre-KG",
+    "tuitionFee": 18000,
+    "transportFee": 10000,
+    "libraryFee": 1500,
+    "sportsFee": 2000,
+    "hostelFee": 30000,
+    "messFee": 25000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "LKG",
+    "tuitionFee": 20000,
+    "transportFee": 10000,
+    "libraryFee": 1500,
+    "sportsFee": 2000,
+    "hostelFee": 30000,
+    "messFee": 25000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "UKG",
+    "tuitionFee": 22000,
+    "transportFee": 10000,
+    "libraryFee": 1500,
+    "sportsFee": 2000,
+    "hostelFee": 30000,
+    "messFee": 25000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "1st",
+    "tuitionFee": 25000,
+    "transportFee": 11000,
+    "libraryFee": 1500,
+    "sportsFee": 2500,
+    "hostelFee": 32000,
+    "messFee": 27000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "2nd",
+    "tuitionFee": 25000,
+    "transportFee": 11000,
+    "libraryFee": 1500,
+    "sportsFee": 2500,
+    "hostelFee": 32000,
+    "messFee": 27000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "3rd",
+    "tuitionFee": 28000,
+    "transportFee": 11000,
+    "libraryFee": 1500,
+    "sportsFee": 2500,
+    "hostelFee": 33000,
+    "messFee": 28000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "4th",
+    "tuitionFee": 28000,
+    "transportFee": 11000,
+    "libraryFee": 1500,
+    "sportsFee": 2500,
+    "hostelFee": 33000,
+    "messFee": 28000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "5th",
+    "tuitionFee": 30000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 35000,
+    "messFee": 29000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "6th",
+    "tuitionFee": 42000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 36000,
+    "messFee": 30000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "7th",
+    "tuitionFee": 43000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 36000,
+    "messFee": 30000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "8th",
+    "tuitionFee": 44000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 36000,
+    "messFee": 30000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "9th",
+    "tuitionFee": 45000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 36000,
+    "messFee": 30000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "10th",
+    "tuitionFee": 46000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 36000,
+    "messFee": 30000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "11th",
+    "tuitionFee": 48000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 38000,
+    "messFee": 32000,
+    "cautionFee": 2000
+  },
+  {
+    "class": "12th",
+    "tuitionFee": 50000,
+    "transportFee": 12000,
+    "libraryFee": 2000,
+    "sportsFee": 3000,
+    "hostelFee": 38000,
+    "messFee": 32000,
+    "cautionFee": 2000
+  }
+]

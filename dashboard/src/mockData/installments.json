@@ -1,0 +1,177 @@
+[
+  {
+    "id": "INST001",
+    "studentId": "STU003",
+    "studentName": "Rohan Kumar",
+    "class": "Class 9",
+    "admissionNo": "ADM2023003",
+    "totalFee": 38000,
+    "installmentPlan": "2 Installments",
+    "installments": [
+      {
+        "installmentNo": 1,
+        "amount": 19000,
+        "dueDate": "2024-04-30",
+        "paidAmount": 19000,
+        "paidDate": "2024-04-10",
+        "status": "Paid",
+        "receiptNo": "RCP/2024/003"
+      },
+      {
+        "installmentNo": 2,
+        "amount": 19000,
+        "dueDate": "2024-08-31",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Pending",
+        "receiptNo": null
+      }
+    ],
+    "customRequest": false,
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "INST002",
+    "studentId": "STU008",
+    "studentName": "Arjun Verma",
+    "class": "Class 9",
+    "admissionNo": "ADM2023008",
+    "totalFee": 38000,
+    "installmentPlan": "2 Installments",
+    "installments": [
+      {
+        "installmentNo": 1,
+        "amount": 20000,
+        "dueDate": "2024-04-30",
+        "paidAmount": 20000,
+        "paidDate": "2024-04-18",
+        "status": "Paid",
+        "receiptNo": "RCP/2024/006"
+      },
+      {
+        "installmentNo": 2,
+        "amount": 18000,
+        "dueDate": "2024-08-31",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Pending",
+        "receiptNo": null
+      }
+    ],
+    "customRequest": false,
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "INST003",
+    "studentId": "STU009",
+    "studentName": "Maya Joshi",
+    "class": "Class 12",
+    "admissionNo": "ADM2023009",
+    "totalFee": 159000,
+    "installmentPlan": "4 Installments (Custom)",
+    "installments": [
+      {
+        "installmentNo": 1,
+        "amount": 40000,
+        "dueDate": "2024-04-30",
+        "paidAmount": 40000,
+        "paidDate": "2024-04-05",
+        "status": "Paid",
+        "receiptNo": "RCP/2024/007"
+      },
+      {
+        "installmentNo": 2,
+        "amount": 40000,
+        "dueDate": "2024-07-31",
+        "paidAmount": 40000,
+        "paidDate": "2024-04-05",
+        "status": "Paid",
+        "receiptNo": "HST/2024/002"
+      },
+      {
+        "installmentNo": 3,
+        "amount": 40000,
+        "dueDate": "2024-10-31",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Pending",
+        "receiptNo": null
+      },
+      {
+        "installmentNo": 4,
+        "amount": 39000,
+        "dueDate": "2025-01-31",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Pending",
+        "receiptNo": null
+      }
+    ],
+    "customRequest": true,
+    "customRequestNote": "Parent requested 4 installments due to financial constraints",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "INST004",
+    "studentId": "STU012",
+    "studentName": "Neha Gupta",
+    "class": "Class 5",
+    "admissionNo": "ADM2023012",
+    "totalFee": 15500,
+    "installmentPlan": "3 Installments (Custom)",
+    "installments": [
+      {
+        "installmentNo": 1,
+        "amount": 5500,
+        "dueDate": "2024-04-30",
+        "paidAmount": 5500,
+        "paidDate": "2024-04-08",
+        "status": "Paid",
+        "receiptNo": "RCP/2024/009"
+      },
+      {
+        "installmentNo": 2,
+        "amount": 5000,
+        "dueDate": "2024-08-31",
+        "paidAmount": 2500,
+        "paidDate": "2024-08-15",
+        "status": "Partial",
+        "receiptNo": null
+      },
+      {
+        "installmentNo": 3,
+        "amount": 5000,
+        "dueDate": "2024-12-31",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Pending",
+        "receiptNo": null
+      }
+    ],
+    "customRequest": true,
+    "customRequestNote": "Parent requested 3 installments - approved by admin",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "INST005",
+    "studentId": "STU004",
+    "studentName": "Ananya Singh",
+    "class": "Class 9",
+    "admissionNo": "ADM2023004",
+    "totalFee": 101000,
+    "installmentPlan": "Annual (Single Payment)",
+    "installments": [
+      {
+        "installmentNo": 1,
+        "amount": 101000,
+        "dueDate": "2024-04-30",
+        "paidAmount": 0,
+        "paidDate": null,
+        "status": "Overdue",
+        "receiptNo": null
+      }
+    ],
+    "customRequest": false,
+    "academicYear": "2024-25"
+  }
+]

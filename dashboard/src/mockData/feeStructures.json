@@ -1,0 +1,158 @@
+[
+  {
+    "id": "FH001",
+    "feeHead": "Tuition Fee",
+    "class": "Pre-KG",
+    "amount": 18000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH002",
+    "feeHead": "Tuition Fee",
+    "class": "LKG",
+    "amount": 20000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH003",
+    "feeHead": "Tuition Fee",
+    "class": "UKG",
+    "amount": 22000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH004",
+    "feeHead": "Tuition Fee",
+    "class": "Class 1",
+    "amount": 25000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH005",
+    "feeHead": "Tuition Fee",
+    "class": "Class 2",
+    "amount": 25000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH006",
+    "feeHead": "Tuition Fee",
+    "class": "Class 3",
+    "amount": 28000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH007",
+    "feeHead": "Tuition Fee",
+    "class": "Class 4",
+    "amount": 28000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH008",
+    "feeHead": "Tuition Fee",
+    "class": "Class 5",
+    "amount": 30000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH009",
+    "feeHead": "Tuition Fee",
+    "class": "Class 6",
+    "amount": 35000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH010",
+    "feeHead": "Tuition Fee",
+    "class": "Class 7",
+    "amount": 35000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH011",
+    "feeHead": "Tuition Fee",
+    "class": "Class 8",
+    "amount": 38000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH012",
+    "feeHead": "Tuition Fee",
+    "class": "Class 9",
+    "amount": 42000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH013",
+    "feeHead": "Tuition Fee",
+    "class": "Class 10",
+    "amount": 45000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH014",
+    "feeHead": "Tuition Fee",
+    "class": "Class 11",
+    "amount": 48000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH015",
+    "feeHead": "Tuition Fee",
+    "class": "Class 12",
+    "amount": 50000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH016",
+    "feeHead": "Transport Fee",
+    "class": "All Classes",
+    "amount": 12000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH017",
+    "feeHead": "Library Fee",
+    "class": "All Classes",
+    "amount": 2000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH018",
+    "feeHead": "Sports Fee",
+    "class": "All Classes",
+    "amount": 3000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH019",
+    "feeHead": "Hostel Fee (Non-AC)",
+    "class": "All Classes",
+    "amount": 60000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH020",
+    "feeHead": "Hostel Fee (AC Surcharge)",
+    "class": "All Classes",
+    "amount": 6000,
+    "frequency": "Annual",
+    "description": "₹500 per month x 12 months"
+  },
+  {
+    "id": "FH021",
+    "feeHead": "Mess Fee",
+    "class": "All Classes",
+    "amount": 36000,
+    "frequency": "Annual"
+  },
+  {
+    "id": "FH022",
+    "feeHead": "Caution Fee (Refundable)",
+    "class": "All Classes",
+    "amount": 2000,
+    "frequency": "One-time",
+    "description": "Refundable on leaving school"
+  }
+]

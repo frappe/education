@@ -1,0 +1,570 @@
+[
+  {
+    "id": "REC001",
+    "receiptNo": "RCP/2024/001",
+    "receiptDate": "2024-04-15",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU001",
+    "studentName": "Aarav Sharma",
+    "class": "Class 10",
+    "section": "A",
+    "admissionNo": "ADM2023001",
+    "fatherName": "Rajesh Sharma",
+    "paymentMode": "UPI",
+    "transactionId": "UPI2024041512345",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee",
+        "amount": 45000
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 62000,
+    "discounts": [
+      {
+        "discountType": "Sibling Discount",
+        "amount": 1500
+      }
+    ],
+    "totalDiscount": 1500,
+    "netAmount": 60500,
+    "amountPaid": 60500,
+    "balanceDue": 0,
+    "remarks": "Full payment for academic year 2024-25",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC002",
+    "receiptNo": "RCP/2024/002",
+    "receiptDate": "2024-04-20",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU002",
+    "studentName": "Diya Patel",
+    "class": "Class 10",
+    "section": "A",
+    "admissionNo": "ADM2023002",
+    "fatherName": "Amit Patel",
+    "paymentMode": "Cash",
+    "transactionId": null,
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee",
+        "amount": 45000
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 62000,
+    "discounts": [
+      {
+        "discountType": "Special Discount (Approved by Sharma Sir)",
+        "amount": 5000
+      }
+    ],
+    "totalDiscount": 5000,
+    "netAmount": 57000,
+    "amountPaid": 57000,
+    "balanceDue": 0,
+    "remarks": "Full payment with special discount",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC003",
+    "receiptNo": "RCP/2024/003",
+    "receiptDate": "2024-04-10",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU003",
+    "studentName": "Rohan Kumar",
+    "class": "Class 9",
+    "section": "B",
+    "admissionNo": "ADM2023003",
+    "fatherName": "Suresh Kumar",
+    "paymentMode": "Cheque",
+    "transactionId": "CHQ123456",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee",
+        "amount": 42000
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 59000,
+    "discounts": [
+      {
+        "discountType": "Merit Discount (92% in previous year)",
+        "amount": 21000
+      }
+    ],
+    "totalDiscount": 21000,
+    "netAmount": 38000,
+    "amountPaid": 19000,
+    "balanceDue": 19000,
+    "remarks": "Partial payment - 1st installment of 2",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC004",
+    "receiptNo": "RCP/2024/004",
+    "receiptDate": "2024-04-10",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU005",
+    "studentName": "Kabir Mehta",
+    "class": "Class 8",
+    "section": "C",
+    "admissionNo": "ADM2023005",
+    "fatherName": "Vikram Mehta",
+    "paymentMode": "Bank Transfer",
+    "transactionId": "NEFT20240410987654",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee",
+        "amount": 38000
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 55000,
+    "discounts": [
+      {
+        "discountType": "Merit Discount (96% in previous year)",
+        "amount": 28500
+      }
+    ],
+    "totalDiscount": 28500,
+    "netAmount": 26500,
+    "amountPaid": 26500,
+    "balanceDue": 0,
+    "remarks": "Full payment with 75% merit discount",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC005",
+    "receiptNo": "RCP/2024/005",
+    "receiptDate": "2024-04-12",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU007",
+    "studentName": "Priya Verma",
+    "class": "Class 6",
+    "section": "A",
+    "admissionNo": "ADM2023007",
+    "fatherName": "Ramesh Verma (Teacher)",
+    "paymentMode": "UPI",
+    "transactionId": "UPI2024041298765",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee (Waived - Staff Child Younger)",
+        "amount": 0
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 52000,
+    "discounts": [
+      {
+        "discountType": "Staff Children (Younger - 2 children total) - 100%",
+        "amount": 35000
+      }
+    ],
+    "totalDiscount": 35000,
+    "netAmount": 17000,
+    "amountPaid": 17000,
+    "balanceDue": 0,
+    "remarks": "Teacher's younger child (2 children) - School fee 100% waived, Transport/Library/Sports payable",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC006",
+    "receiptNo": "RCP/2024/006",
+    "receiptDate": "2024-04-18",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU008",
+    "studentName": "Arjun Verma",
+    "class": "Class 9",
+    "section": "A",
+    "admissionNo": "ADM2023008",
+    "fatherName": "Ramesh Verma (Teacher)",
+    "paymentMode": "Cash",
+    "transactionId": null,
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee (50% Staff Discount)",
+        "amount": 21000
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 59000,
+    "discounts": [
+      {
+        "discountType": "Staff Children (Elder - 2 children total) - 50%",
+        "amount": 21000
+      }
+    ],
+    "totalDiscount": 21000,
+    "netAmount": 38000,
+    "amountPaid": 20000,
+    "balanceDue": 18000,
+    "remarks": "Partial payment - Teacher's elder child (2 children) - 50% discount on school fee",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC007",
+    "receiptNo": "RCP/2024/007",
+    "receiptDate": "2024-04-05",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU009",
+    "studentName": "Maya Joshi",
+    "class": "Class 12",
+    "section": "B",
+    "admissionNo": "ADM2023009",
+    "fatherName": "Prakash Joshi",
+    "paymentMode": "Cheque",
+    "transactionId": "CHQ789012",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee",
+        "amount": 50000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      },
+      {
+        "feeHead": "Caution Fee (Refundable)",
+        "amount": 2000
+      }
+    ],
+    "totalAmount": 57000,
+    "discounts": [],
+    "totalDiscount": 0,
+    "netAmount": 57000,
+    "amountPaid": 50000,
+    "balanceDue": 7000,
+    "remarks": "Partial payment - School fee portion only",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC008",
+    "receiptNo": "HST/2024/001",
+    "receiptDate": "2024-04-05",
+    "receiptHeader": "Shri Sai Nath Educational Academy Pvt. Ltd.",
+    "studentId": "STU009",
+    "studentName": "Maya Joshi",
+    "class": "Class 12",
+    "section": "B",
+    "admissionNo": "ADM2023009",
+    "fatherName": "Prakash Joshi",
+    "paymentMode": "Cheque",
+    "transactionId": "CHQ789013",
+    "lineItems": [
+      {
+        "feeHead": "Hostel Fee (Non-AC Base)",
+        "amount": 60000
+      },
+      {
+        "feeHead": "AC Surcharge (₹500 x 12 months)",
+        "amount": 6000
+      },
+      {
+        "feeHead": "Mess Fee",
+        "amount": 36000
+      }
+    ],
+    "totalAmount": 102000,
+    "discounts": [],
+    "totalDiscount": 0,
+    "netAmount": 102000,
+    "amountPaid": 30000,
+    "balanceDue": 72000,
+    "remarks": "Partial payment - Hostel fee (AC) - Installment 1 of 4",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC009",
+    "receiptNo": "RCP/2024/008",
+    "receiptDate": "2024-04-22",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU010",
+    "studentName": "Sakshi Rao",
+    "class": "Class 4",
+    "section": "B",
+    "admissionNo": "ADM2023010",
+    "fatherName": "Sunil Rao (Staff)",
+    "paymentMode": "UPI",
+    "transactionId": "UPI2024042265432",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee (Waived - Staff Child Youngest)",
+        "amount": 0
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 45000,
+    "discounts": [
+      {
+        "discountType": "Staff Children (Youngest - 3 children total) - 100%",
+        "amount": 28000
+      }
+    ],
+    "totalDiscount": 28000,
+    "netAmount": 17000,
+    "amountPaid": 17000,
+    "balanceDue": 0,
+    "remarks": "Staff's youngest of 3 children - School fee 100% waived",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC010",
+    "receiptNo": "RCP/2024/009",
+    "receiptDate": "2024-04-25",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU011",
+    "studentName": "Ravi Rao",
+    "class": "Class 7",
+    "section": "A",
+    "admissionNo": "ADM2023011",
+    "fatherName": "Sunil Rao (Staff)",
+    "paymentMode": "Bank Transfer",
+    "transactionId": "IMPS20240425111222",
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee (50% Staff Discount)",
+        "amount": 17500
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 52000,
+    "discounts": [
+      {
+        "discountType": "Staff Children (Middle - 3 children total) - 50%",
+        "amount": 17500
+      }
+    ],
+    "totalDiscount": 17500,
+    "netAmount": 34500,
+    "amountPaid": 34500,
+    "balanceDue": 0,
+    "remarks": "Staff's middle of 3 children - 50% discount on school fee",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC011",
+    "receiptNo": "HST/2024/003",
+    "receiptDate": "2024-04-07",
+    "receiptHeader": "Shri Sai Nath Educational Academy Pvt. Ltd.",
+    "studentId": "STU004",
+    "studentName": "Ananya Singh",
+    "class": "Class 9",
+    "section": "B",
+    "admissionNo": "ADM2023004",
+    "fatherName": "Vijay Singh",
+    "paymentMode": "UPI",
+    "transactionId": "UPI2024040712345",
+    "lineItems": [
+      {
+        "feeHead": "Hostel Fee (Non-AC) - RTE Student",
+        "amount": 60000
+      },
+      {
+        "feeHead": "Mess Fee",
+        "amount": 36000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 101000,
+    "discounts": [],
+    "totalDiscount": 0,
+    "netAmount": 101000,
+    "amountPaid": 0,
+    "balanceDue": 101000,
+    "remarks": "RTE Student - School fee waived, Hostel/Mess fees applicable - Payment overdue",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC012",
+    "receiptNo": "RCP/2024/010",
+    "receiptDate": "2024-04-08",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU012",
+    "studentName": "Neha Gupta",
+    "class": "Class 5",
+    "section": "C",
+    "admissionNo": "ADM2023012",
+    "fatherName": "Manoj Gupta",
+    "paymentMode": "Cash",
+    "transactionId": null,
+    "lineItems": [
+      {
+        "feeHead": "Tuition Fee (Waived - MDY Scheme)",
+        "amount": 0
+      },
+      {
+        "feeHead": "Transport Fee",
+        "amount": 12000
+      },
+      {
+        "feeHead": "Library Fee",
+        "amount": 2000
+      },
+      {
+        "feeHead": "Sports Fee",
+        "amount": 3000
+      }
+    ],
+    "totalAmount": 47000,
+    "discounts": [
+      {
+        "discountType": "MDY Scheme - School fee waived",
+        "amount": 30000
+      },
+      {
+        "discountType": "Sibling Discount",
+        "amount": 1500
+      }
+    ],
+    "totalDiscount": 31500,
+    "netAmount": 15500,
+    "amountPaid": 8000,
+    "balanceDue": 7500,
+    "remarks": "MDY Student - Partial payment (1st installment of 3)",
+    "collectedBy": "Accountant",
+    "academicYear": "2024-25"
+  },
+  {
+    "id": "REC013",
+    "receiptNo": "REF/2024/001",
+    "receiptDate": "2024-03-31",
+    "receiptHeader": "Sanskar Public School",
+    "studentId": "STU015",
+    "studentName": "Rahul Jain",
+    "class": "Class 12",
+    "section": "A",
+    "admissionNo": "ADM2022015",
+    "fatherName": "Vinay Jain",
+    "paymentMode": "Bank Transfer",
+    "transactionId": "NEFT20240331456789",
+    "lineItems": [
+      {
+        "feeHead": "Caution Fee Refund",
+        "amount": 2000
+      }
+    ],
+    "totalAmount": 0,
+    "discounts": [],
+    "totalDiscount": 0,
+    "netAmount": 0,
+    "amountPaid": -2000,
+    "balanceDue": 0,
+    "remarks": "Caution fee refund on leaving school after completing Class 12",
+    "collectedBy": "Accountant",
+    "academicYear": "2023-24",
+    "refundType": "Caution Fee",
+    "leavingDate": "2024-03-31"
+  }
+]
