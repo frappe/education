@@ -22,6 +22,7 @@ import {
   PieChart,
   Inbox,
 } from "lucide-react";
+import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -180,12 +181,25 @@ const menuItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { hasPermission, user } = useApp();
+  const [openSection, setOpenSection] = React.useState<string | null>(null);
 
   // Show all items if no user (allows testing without backend) or filter by permission
   const visibleItems = !user ? menuItems : menuItems.filter((item) => {
     if (!item.permission) return true;
     return hasPermission(item.permission);
   });
+
+  // Set initial open section based on current route
+  React.useEffect(() => {
+    const activeItem = visibleItems.find((item) => 
+      item.subItems?.some(subItem => 
+        location.pathname === subItem.url || location.pathname.startsWith(subItem.url + '/')
+      )
+    );
+    if (activeItem && !openSection) {
+      setOpenSection(activeItem.title);
+    }
+  }, [location.pathname, visibleItems, openSection]);
 
   return (
     <Sidebar>
@@ -207,19 +221,19 @@ export function AppSidebar() {
             <SidebarMenu>
               {visibleItems.map((item) => {
                 if (item.subItems) {
-                  // Check if any subItem matches the current path
-                  const isActiveSection = item.subItems.some(subItem => 
-                    location.pathname === subItem.url || location.pathname.startsWith(subItem.url + '/')
-                  );
+                  const isOpen = openSection === item.title;
                   
                   return (
-                    <Collapsible key={item.title} asChild defaultOpen={isActiveSection}>
-                      <SidebarMenuItem>
+                    <SidebarMenuItem key={item.title}>
+                      <Collapsible 
+                        open={isOpen}
+                        onOpenChange={(open) => setOpenSection(open ? item.title : null)}
+                      >
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton data-testid={`link-${item.title.toLowerCase()}`}>
                             <item.icon className="w-4 h-4" />
                             <span>{item.title}</span>
-                            <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                            <ChevronDown className="ml-auto h-4 w-4 transition-transform data-[state=open]:rotate-180" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
@@ -240,8 +254,8 @@ export function AppSidebar() {
                             ))}
                           </SidebarMenuSub>
                         </CollapsibleContent>
-                      </SidebarMenuItem>
-                    </Collapsible>
+                      </Collapsible>
+                    </SidebarMenuItem>
                   );
                 }
 

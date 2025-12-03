@@ -20,9 +20,9 @@ export function AppRoutes() {
           }
         />
         
-        {/* Protected Dashboard Routes */}
+        {/* Protected Routes with Dashboard Layout */}
         <Route
-          path="/dashboard/*"
+          path="/*"
           element={
             <ProtectedRoute>
               <DashboardLayout>
@@ -31,12 +31,6 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
-        {/* Root redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
-        {/* 404 - Catch-all */}
-        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
