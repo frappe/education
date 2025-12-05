@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAdmissionData } from "@/context/AdmissionDataContext";
 import { useState } from "react";
 import { PieChart, Pie, BarChart as RechartBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
+import { PageHeader } from "@/components/common/PageHeader";
 
 const COLORS = ["#0A2A52", "#F4C015", "#10b981", "#ef4444", "#f97316", "#8b5cf6"];
 
@@ -170,16 +171,10 @@ export default function AdmissionReports() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Reports" }
       ]} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold" data-testid="text-page-title">
-            Admission Reports
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            View and download admission reports and analytics
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Admission Reports"
+        description="View and download admission reports and analytics"
+      />
 
       <Tabs defaultValue="workflow" className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-7 bg-[#7880872e] h-auto">

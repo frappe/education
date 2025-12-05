@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,8 +21,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl">
         <div>
           <h1 className="text-3xl font-semibold" data-testid="text-settings-title">
             Settings
@@ -197,6 +195,5 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
   );
 }

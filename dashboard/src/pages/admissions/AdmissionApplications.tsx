@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle, XCircle, Clock, Upload, X, Download, ChevronUp, ChevronDown, ChevronsUpDown, Zap } from "lucide-react";
+import { Plus, Search, CheckCircle, XCircle, Clock, Upload, X, Download, ChevronUp, ChevronDown, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -33,7 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type Application } from "@shared/schema";
+import { type Admission } from "@shared/schema";
 import { useApp } from "@/context/AppContext";
 import { useAdmissionData } from "@/context/AdmissionDataContext";
 import { useToast } from "@/hooks/use-toast";
@@ -50,8 +51,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function AdmissionApplications() {
   const { hasPermission } = useApp();
-  const { admissions, addAdmission, updateAdmission, registrations, enquiries } = useAdmissionData();
-  const { toast } = useToast();
+  const { admissions, registrations } = useAdmissionData();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -189,35 +189,31 @@ export default function AdmissionApplications() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Applications" }
       ]} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">
-            Admission Applications
-          </h1>
-          <p className="text-muted-foreground">
-            Manage admission applications and documents
-          </p>
-        </div>
-        {canManage && (
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Link href="/admissions/applications/new">
-              <Button data-testid="button-create-application" className="w-full">
-                <Plus className="h-4 w-4" />
-                New Application
+      <PageHeader
+        title="Admission Applications"
+        description="Manage admission applications and documents"
+        customActions={
+          canManage ? (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Link to="/admissions/applications/new">
+                <Button data-testid="button-create-application" className="w-full">
+                  <Plus className="h-4 w-4" />
+                  New Application
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                data-testid="button-create-from-paid-registration" 
+                className="w-full"
+                onClick={() => setIsPaidRegistrationDialogOpen(true)}
+              >
+                <Zap className="h-4 w-4" />
+                Create from Paid Registration
               </Button>
-            </Link>
-            <Button 
-              variant="outline" 
-              data-testid="button-create-from-paid-registration" 
-              className="w-full"
-              onClick={() => setIsPaidRegistrationDialogOpen(true)}
-            >
-              <Zap className="h-4 w-4" />
-              Create from Paid Registration
-            </Button>
-          </div>
-        )}
-      </div>
+            </div>
+          ) : undefined
+        }
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         <Card>
@@ -672,7 +668,7 @@ function AdmissionDialog({ open, onOpenChange }: AdmissionDialogProps) {
     }
   };
 
-  const onSubmit = (data: Omit<Admission, "id" | "applicationNo" | "createdBy">) => {
+  const onSubmit = (data: any) => {
     try {
       const newAdmission: Admission = {
         ...data,
@@ -1234,7 +1230,7 @@ interface AdmissionViewDialogProps {
 }
 
 function AdmissionViewDialog({ admission, open, onOpenChange }: AdmissionViewDialogProps) {
-  const documentsList = Object.entries(admission.documents).filter(([_, value]) => value?.uploaded);
+  const documentsList = admission.documents ? Object.entries(admission.documents).filter(([_, value]: [string, any]) => value?.uploaded) : [];
   const documentsSubmitted = documentsList.length;
   const totalDocuments = 10;
 
@@ -1288,7 +1284,7 @@ function AdmissionViewDialog({ admission, open, onOpenChange }: AdmissionViewDia
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
                 <div className="mt-1">
-                  <Badge variant={admission.finalStatus === "Admitted" ? "default" : "secondary"}>
+                  <Badge variant={admission.finalStatus === "ADMITTED" ? "default" : "secondary"}>
                     {admission.finalStatus}
                   </Badge>
                 </div>

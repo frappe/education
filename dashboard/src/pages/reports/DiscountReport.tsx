@@ -85,14 +85,10 @@ export default function DiscountReport() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Discount Report
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Detailed breakdown of all discounts provided to students
-        </p>
-      </div>
+      <PageHeader
+        title="Discount Report"
+        description="Detailed breakdown of all discounts provided to students"
+      />
 
       {/* Statistics */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">

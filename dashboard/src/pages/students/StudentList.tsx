@@ -3,20 +3,17 @@ import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye } from "lucide-react";
 import studentsData from "@/mockData/students.json";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { DataTableColumn } from "@/components/common/DataTable";
+import { TableCard } from "@/components/common/TableCard";
 
 export default function StudentList() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredStudents = studentsData.filter(
     (student) =>
@@ -25,9 +22,53 @@ export default function StudentList() {
       student.class.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const columns: DataTableColumn<typeof studentsData[0]>[] = [
+    {
+      key: "id",
+      label: "Student ID",
+      cellClassName: "font-medium",
+    },
+    {
+      key: "name",
+      label: "Name",
+    },
+    {
+      key: "class",
+      label: "Class",
+      render: (value) => <Badge variant="secondary">{value}</Badge>,
+    },
+    {
+      key: "rollNo",
+      label: "Roll No",
+    },
+    {
+      key: "phone",
+      label: "Contact",
+      cellClassName: "text-muted-foreground",
+    },
+    {
+      key: "attendance",
+      label: "Attendance",
+      render: (value) => (
+        <Badge variant={value >= 90 ? "default" : "secondary"}>
+          {value}%
+        </Badge>
+      ),
+    },
+  ];
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        <Breadcrumb items={[
+          { label: "Students" }
+        ]} />
+        
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold" data-testid="text-students-title">
@@ -56,55 +97,43 @@ export default function StudentList() {
           </div>
         </div>
 
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Roll No</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Attendance</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id} data-testid={`row-student-${student.id}`}>
-                  <TableCell className="font-medium">{student.id}</TableCell>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{student.class}</Badge>
-                  </TableCell>
-                  <TableCell>{student.rollNo}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {student.phone}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={student.attendance >= 90 ? "default" : "secondary"}
-                    >
-                      {student.attendance}%
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Link href={`/students/${student.id}`}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        data-testid={`button-view-${student.id}`}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <TableCard
+          table={{
+            data: paginatedStudents,
+            columns: columns,
+            getRowKey: (row) => row.id,
+            actionsColumn: {
+              label: "Actions",
+              headerClassName: "text-right",
+              cellClassName: "text-right",
+              render: (student) => (
+                <Link to={`/students/${student.id}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid={`button-view-${student.id}`}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                </Link>
+              ),
+            },
+            hoverable: true,
+            emptyMessage: "No students found",
+            pagination: {
+              currentPage,
+              pageSize,
+              totalItems: filteredStudents.length,
+              onPageChange: setCurrentPage,
+              onPageSizeChange: (size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              },
+              pageSizeOptions: [10, 25, 50, 100],
+            },
+          }}
+        />
       </div>
     </DashboardLayout>
   );

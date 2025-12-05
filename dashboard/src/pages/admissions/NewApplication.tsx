@@ -22,7 +22,6 @@ import {
   FileText,
   Upload,
   CheckCircle2,
-  Circle,
   Loader2,
   Info,
   Home as HomeIcon,
@@ -33,12 +32,10 @@ import {
   AlertCircle,
   Search,
   X,
-  Percent,
   Gift,
   Calendar,
   CreditCard,
   Receipt,
-  Wallet,
   Clock,
 } from "lucide-react";
 import { format, addMonths } from "date-fns";
@@ -52,9 +49,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { FormStepper } from "@/components/FormStepper";
+import { PageHeader } from "@/components/common/PageHeader";
 import { type Enquiry } from "@shared/schema";
 import { useAdmissionData } from "@/context/AdmissionDataContext";
 import feeSchemes from "@/mockData/feeSchemes.json";
@@ -138,7 +136,6 @@ export default function NewApplication() {
   const { registrations, enquiries } = useAdmissionData();
   const [enquiryId, setEnquiryId] = useState<string | null>(null);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
-  const [isDocumentsOpen, setIsDocumentsOpen] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 9;
   const [hasSiblingInSchool, setHasSiblingInSchool] = useState(false);
@@ -362,19 +359,9 @@ export default function NewApplication() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
         
-        // Enhanced feedback with application details
-        const studentName = data.studentName || "Student";
-        const className = data.classAdmissionFor || "Class";
-        const admissionType = data.admissionType || "General";
-        const applicationDate = new Date().toLocaleDateString('en-IN', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric' 
-        });
-        
         toast({
           title: "Application Submitted Successfully! 🎉",
-          description: `Your application for admission to ${className} (${admissionType}) has been received. Application ID: APP-${Date.now()}. You will receive updates via WhatsApp at the registered number.`,
+          description: `Your application for admission to ${data.classAdmissionFor || "Class"} (${data.admissionType || "General"}) has been received. Application ID: APP-${Date.now()}. You will receive updates via WhatsApp at the registered number.`,
           duration: 5000,
         });
         
@@ -464,12 +451,10 @@ export default function NewApplication() {
         { label: "New Application" }
       ]} />
       
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">New Admission Application</h1>
-          <p className="text-muted-foreground">Complete application form for admission</p>
-        </div>
-      </div>
+      <PageHeader
+        title="New Admission Application"
+        description="Complete application form for admission"
+      />
 
       {enquiry && (
         <Card className="border-primary/20 bg-primary/5">
@@ -479,7 +464,7 @@ export default function NewApplication() {
               <CardTitle className="text-base">Auto-filled from Enquiry</CardTitle>
             </div>
             <CardDescription>
-              Data pre-filled from Enquiry #{enquiry.id} • {enquiry.studentName} • {new Date(enquiry.createdAt).toLocaleDateString()}
+              Data pre-filled from Enquiry #{enquiry.id} • {enquiry.studentName} • {enquiry.createdAt ? new Date(enquiry.createdAt).toLocaleDateString() : 'N/A'}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -2515,8 +2500,6 @@ export default function NewApplication() {
                       const aoDiscountReason = form.getValues("aoDiscountReason");
                       const installmentPlanType = form.getValues("installmentPlanType") || "full";
                       const customInstallmentMonths = form.getValues("customInstallmentMonths") || 3;
-                      const paymentMode = form.getValues("paymentMode");
-                      const paymentReference = form.getValues("paymentReference");
                       
                       // Map admission type to scheme code
                       const schemeCodeMap: Record<string, string> = {

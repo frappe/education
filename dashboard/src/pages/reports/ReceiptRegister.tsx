@@ -71,14 +71,10 @@ export default function ReceiptRegister() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Receipt Register
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Complete record of all payment receipts issued
-        </p>
-      </div>
+      <PageHeader
+        title="Receipt Register"
+        description="Complete record of all payment receipts issued"
+      />
 
       {/* Statistics */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">

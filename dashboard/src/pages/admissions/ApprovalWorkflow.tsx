@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAdmissionData } from "@/context/AdmissionDataContext";
-import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/common/PageHeader";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +48,6 @@ const DOCUMENT_TYPES = [
 ];
 
 export default function ApprovalWorkflow() {
-  const { user } = useApp();
   const { applications, verifyDocuments, approveByAO, approveByAdmin, assignHouseAndClass } = useAdmissionData();
   const { toast } = useToast();
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
@@ -800,10 +799,10 @@ export default function ApprovalWorkflow() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Approve Application" }
       ]} />
-      <div>
-        <h1 className="text-3xl font-bold">Approve Application</h1>
-        <p className="text-muted-foreground">Manage admissions through verification and approval stages</p>
-      </div>
+      <PageHeader
+        title="Approve Application"
+        description="Manage admissions through verification and approval stages"
+      />
 
       <Tabs defaultValue="verification" className="space-y-4">
         <TabsList>

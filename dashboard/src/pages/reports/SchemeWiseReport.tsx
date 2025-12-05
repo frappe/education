@@ -71,14 +71,10 @@ export default function SchemeWiseReport() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Scheme-wise Student Report
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Student distribution and fees breakdown by scheme
-        </p>
-      </div>
+      <PageHeader
+        title="Scheme-wise Student Report"
+        description="Student distribution and fees breakdown by scheme"
+      />
 
       {/* Statistics */}
       <div className="grid gap-4 md:grid-cols-4">

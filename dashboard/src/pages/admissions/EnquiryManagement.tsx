@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Search, Filter, Phone, Mail, UserCheck, UserX, Loader2, Eye, Edit, MoreVertical, ArrowRight, FileText, Download, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { Plus, Search, Phone, Loader2, Eye, Edit, MoreVertical, ArrowRight, FileText, Download, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,13 +44,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Enquiry, InsertEnquiry, insertEnquirySchema, Registration } from "@shared/schema";
+import { Enquiry, insertEnquirySchema, Registration } from "@shared/schema";
 import { useApp } from "@/context/AppContext";
 import { useAdmissionData } from "@/context/AdmissionDataContext";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
 import {
   Form,
   FormControl,
@@ -209,11 +207,10 @@ export default function EnquiryManagement() {
       id: registrationId,
       registrationNo,
       enquiryId: enquiry.id,
-      date: new Date().toISOString().split("T")[0],
       studentName: enquiry.studentName,
-      fatherName: enquiry.fatherName,
+      fatherName: enquiry.studentName,
       motherName: enquiry.motherName,
-      mobileNo: enquiry.primaryContactNumber,
+      primaryContactNumber: enquiry.primaryContactNumber,
       classAdmissionFor: enquiry.classAdmissionFor,
       registrationFee: 500,
       paymentStatus: "Pending",
@@ -243,26 +240,22 @@ export default function EnquiryManagement() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Enquiries" }
       ]} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">
-            Enquiry Management
-          </h1>
-          <p className="text-muted-foreground">
-            Track and manage admission enquiries
-          </p>
-        </div>
-        {canManage && (
-          <Button
-            onClick={() => navigate("/admissions/enquiries/new")}
-            data-testid="button-create-enquiry"
-            className="w-full sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            New Enquiry
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title="Enquiry Management"
+        description="Track and manage admission enquiries"
+        customActions={
+          canManage ? (
+            <Button
+              onClick={() => navigate("/admissions/enquiries/new")}
+              data-testid="button-create-enquiry"
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              New Enquiry
+            </Button>
+          ) : undefined
+        }
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         <Card>
@@ -616,9 +609,12 @@ function EnquiryDialog({ open, onOpenChange, mode, enquiry }: EnquiryDialogProps
   const [siblingLookupId, setSiblingLookupId] = useState("");
   const [isLookingUpSibling, setIsLookingUpSibling] = useState(false);
 
-  const form = useForm<InsertEnquiry>({
+  const form = useForm({
     resolver: zodResolver(insertEnquirySchema),
-    defaultValues: enquiry || {
+    defaultValues: enquiry ? {
+      ...enquiry,
+      gender: enquiry.gender as "Male" | "Female" | "Other",
+    } : {
       date: new Date().toISOString().split("T")[0],
       studentName: "",
       dateOfBirth: "",
@@ -670,7 +666,6 @@ function EnquiryDialog({ open, onOpenChange, mode, enquiry }: EnquiryDialogProps
   const hasSibling = form.watch("hasSibling");
   const admissionStatus = form.watch("admissionStatus");
   const hasMedicalCondition = form.watch("hasMedicalCondition");
-  const primaryContact = form.watch("primaryContact");
   const fatherPhone = form.watch("fatherPhone");
   const motherPhone = form.watch("motherPhone");
 
@@ -719,14 +714,15 @@ function EnquiryDialog({ open, onOpenChange, mode, enquiry }: EnquiryDialogProps
     }
   };
 
-  const onSubmit = (data: InsertEnquiry) => {
+  const onSubmit = (data: any) => {
     setIsLoading(true);
     try {
       if (mode === "create") {
         const newEnquiry: Enquiry = {
           id: `ENQ${Date.now()}`,
           ...data,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
+          createdBy: "System",
         };
         addEnquiry(newEnquiry);
         toast({

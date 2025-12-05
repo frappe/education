@@ -11,21 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Download, Coins } from "lucide-react";
 import { format } from "date-fns";
 import cautionFeesData from "@/mockData/cautionFees.json";
+import { DataTableColumn } from "@/components/common/DataTable";
+import { TableCard } from "@/components/common/TableCard";
+import { PageHeader } from "@/components/common/PageHeader";
 
 export default function CautionFeeLedger() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredData = useMemo(() => {
     return cautionFeesData.filter((caution: any) => {
@@ -36,6 +33,13 @@ export default function CautionFeeLedger() {
       return matchesSearch && matchesStatus;
     });
   }, [searchQuery, statusFilter]);
+
+  const paginatedData = useMemo(() => {
+    return filteredData.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredData, currentPage, pageSize]);
 
   const statistics = useMemo(() => {
     return {
@@ -74,16 +78,67 @@ export default function CautionFeeLedger() {
     a.click();
   };
 
+  const columns: DataTableColumn<typeof cautionFeesData[0]>[] = [
+    {
+      key: "studentName",
+      label: "Student Name",
+      cellClassName: "font-medium",
+    },
+    {
+      key: "admissionNo",
+      label: "Admission No",
+    },
+    {
+      key: "class",
+      label: "Class",
+    },
+    {
+      key: "cautionFeeAmount",
+      label: "Deposit Amount",
+      headerClassName: "text-right",
+      cellClassName: "text-right font-semibold",
+      render: (value) => `₹${value.toLocaleString("en-IN")}`,
+    },
+    {
+      key: "collectedDate",
+      label: "Collection Date",
+      render: (value) => format(new Date(value), "dd MMM yyyy"),
+    },
+    {
+      key: "paymentMode",
+      label: "Payment Mode",
+      render: (value) => <Badge variant="outline">{value}</Badge>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (value) => (
+        <Badge variant={value === "Held" ? "secondary" : "default"}>
+          {value}
+        </Badge>
+      ),
+    },
+    {
+      key: "cautionFeeAmount",
+      label: "Balance",
+      headerClassName: "text-right",
+      cellClassName: "text-right font-bold",
+      render: (value, row: any) => (
+        row.status === "Held" ? (
+          <span className="text-blue-600">₹{value.toLocaleString("en-IN")}</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )
+      ),
+    },
+  ];
+
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Caution Fee Ledger
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Complete ledger of caution fee deposits, refunds, and balances
-        </p>
-      </div>
+      <PageHeader
+        title="Caution Fee Ledger"
+        description="Complete ledger of caution fee deposits, refunds, and balances"
+      />
 
       {/* Statistics */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
@@ -176,71 +231,28 @@ export default function CautionFeeLedger() {
       </Card>
 
       {/* Caution Fee Ledger Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="w-4 h-4" />
-            Caution Fee Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student Name</TableHead>
-                  <TableHead>Admission No</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead className="text-right">Deposit Amount</TableHead>
-                  <TableHead>Collection Date</TableHead>
-                  <TableHead>Payment Mode</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.map((caution: any) => (
-                  <TableRow key={caution.id}>
-                    <TableCell className="font-medium" data-testid={`cell-name-${caution.id}`}>
-                      {caution.studentName}
-                    </TableCell>
-                    <TableCell data-testid={`cell-admission-${caution.id}`}>
-                      {caution.admissionNo}
-                    </TableCell>
-                    <TableCell>{caution.class}</TableCell>
-                    <TableCell className="text-right font-semibold" data-testid={`cell-amount-${caution.id}`}>
-                      ₹{caution.cautionFeeAmount.toLocaleString("en-IN")}
-                    </TableCell>
-                    <TableCell data-testid={`cell-date-${caution.id}`}>
-                      {format(new Date(caution.collectedDate), "dd MMM yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" data-testid={`cell-mode-${caution.id}`}>
-                        {caution.paymentMode}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={caution.status === "Held" ? "secondary" : "default"}
-                        data-testid={`cell-status-${caution.id}`}
-                      >
-                        {caution.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-bold" data-testid={`cell-balance-${caution.id}`}>
-                      {caution.status === "Held" ? (
-                        <span className="text-blue-600">₹{caution.cautionFeeAmount.toLocaleString("en-IN")}</span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <TableCard
+        title="Caution Fee Details"
+        icon={Coins}
+        table={{
+          data: paginatedData,
+          columns: columns,
+          getRowKey: (row: any) => row.id,
+          hoverable: true,
+          emptyMessage: "No caution fee records found",
+          pagination: {
+            currentPage,
+            pageSize,
+            totalItems: filteredData.length,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+            pageSizeOptions: [10, 25, 50, 100],
+          },
+        }}
+      />
     </div>
   );
 }

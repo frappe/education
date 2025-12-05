@@ -22,9 +22,11 @@ import {
 } from "@/components/ui/table";
 import { Search, Plus, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import studentFeesData from "@/mockData/studentFees.json";
 import feePaymentsData from "@/mockData/feePayments.json";
 import { format } from "date-fns";
+import { PageHeader } from "@/components/common/PageHeader";
 
 interface StudentFee {
   id: string;
@@ -169,14 +171,15 @@ export default function FeeCollection() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Fee Collection
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Collect fees, process payments, and track payment history
-        </p>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fee Management", href: "/fees" },
+        { label: "Collect Payment" }
+      ]} />
+      
+      <PageHeader
+        title="Fee Collection"
+        description="Collect fees, process payments, and track payment history"
+      />
 
       {/* Statistics Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">

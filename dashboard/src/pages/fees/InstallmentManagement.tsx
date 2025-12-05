@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/table";
 import { Search, Calendar, Plus, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { format, addMonths } from "date-fns";
 import studentFeesData from "@/mockData/studentFees.json";
+import { PageHeader } from "@/components/common/PageHeader";
 
 interface StudentFee {
   id: string;
@@ -161,14 +163,15 @@ export default function InstallmentManagement() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Installment Management
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Generate and manage payment installment schedules
-        </p>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fee Management", href: "/fees" },
+        { label: "Installments" }
+      ]} />
+      
+      <PageHeader
+        title="Installment Management"
+        description="Generate and manage payment installment schedules"
+      />
 
       {/* Statistics Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">

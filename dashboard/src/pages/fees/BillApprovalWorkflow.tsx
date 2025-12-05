@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -35,7 +38,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Search, Check, X, Eye } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import departmentBillsData from "@/mockData/departmentBills.json";
 
@@ -168,15 +170,16 @@ export default function BillApprovalWorkflow() {
   };
 
   return (
-    <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Bill Approval Workflow
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Review and approve departmental expense bills
-        </p>
-      </div>
+    <div className="p-6 space-y-6">
+      <Breadcrumb items={[
+        { label: "Fees", href: "/fees" },
+        { label: "Bill Approval" }
+      ]} />
+      
+      <PageHeader
+        title="Bill Approval Workflow"
+        description="Review and approve departmental expense bills"
+      />
 
       {/* Statistics Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">

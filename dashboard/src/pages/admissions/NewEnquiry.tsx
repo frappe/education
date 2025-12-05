@@ -28,6 +28,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { FormStepper } from "@/components/FormStepper";
+import { PageHeader } from "@/components/common/PageHeader";
 
 // State to City mappings
 const STATE_CITY_MAP: Record<string, string[]> = {
@@ -280,12 +281,10 @@ export default function NewEnquiry() {
         { label: "New Enquiry" }
       ]} />
       
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">New Admission Enquiry</h1>
-          <p className="text-muted-foreground">Quick form to record admission interest</p>
-        </div>
-      </div>
+      <PageHeader
+        title="New Admission Enquiry"
+        description="Quick form to record admission interest"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Card className="shadow-lg border-primary/10">

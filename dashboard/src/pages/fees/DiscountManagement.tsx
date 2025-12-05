@@ -28,6 +28,7 @@ import {
 import { Users, Percent, Gift, IndianRupee, Plus, Edit } from "lucide-react";
 import discountsData from "@/mockData/discounts.json";
 import { useToast } from "@/hooks/use-toast";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 // Temporary feature flag to hide Add/Edit discount actions while aligning processes
 const SHOW_DISCOUNT_ACTIONS = false;
@@ -235,25 +236,26 @@ export default function DiscountManagement() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-            Discount Management
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage fee discounts and view applied discounts
-          </p>
-        </div>
-        {SHOW_DISCOUNT_ACTIONS && (
-          <Button 
-            data-testid="button-add-discount"
-            onClick={() => setIsAddDialogOpen(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Discount
-          </Button>
-        )}
-      </div>
+      <Breadcrumb items={[
+        { label: "Fees", href: "/fees" },
+        { label: "Discounts" }
+      ]} />
+      
+      <PageHeader
+        title="Discount Management"
+        description="Manage fee discounts and view applied discounts"
+        customActions={
+          SHOW_DISCOUNT_ACTIONS ? (
+            <Button 
+              data-testid="button-add-discount"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Discount
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Add Discount Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

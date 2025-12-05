@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calculator, RotateCcw } from "lucide-react";
 import { calculateStudentFee, getSchemes } from "@/utils/feeCalculator";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 export default function FeeCalculatorTool() {
   const [classNumber, setClassNumber] = useState("Class 10");
@@ -53,14 +55,15 @@ export default function FeeCalculatorTool() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Fee Calculator Tool
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Calculate student fees based on scheme, class, and applicable discounts
-        </p>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fee Management", href: "/fees" },
+        { label: "Fee Calculator" }
+      ]} />
+      
+      <PageHeader
+        title="Fee Calculator"
+        description="Calculate student fees based on scheme, class, and applicable discounts"
+      />
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Input Panel */}

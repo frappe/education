@@ -20,6 +20,8 @@ import {
 import { Edit, FileText, IndianRupee, Check, X } from "lucide-react";
 import feeStructureData from "@/mockData/feeStructure.json";
 import { useToast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 type FeeStructure = {
   class: string;
@@ -155,24 +157,21 @@ export default function FeeStructure() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-            Fee Structure Configuration
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Class-wise fee amounts for Academic Year 2024-25
-          </p>
-        </div>
-        <Button 
-          className="w-full sm:w-auto" 
-          data-testid="button-update-structure"
-          onClick={handleOpenEditDialog}
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Update Structure
-        </Button>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fees", href: "/fees" },
+        { label: "Fee Structure" }
+      ]} />
+      
+      <PageHeader
+        title="Fee Structure Configuration"
+        description="Class-wise fee amounts for Academic Year 2024-25"
+        action={{
+          label: "Update Structure",
+          icon: Edit,
+          onClick: handleOpenEditDialog,
+          testId: "button-update-structure"
+        }}
+      />
 
       {/* Bulk Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

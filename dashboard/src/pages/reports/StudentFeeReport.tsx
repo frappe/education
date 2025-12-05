@@ -76,14 +76,10 @@ export default function StudentFeeReport() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Student Fee Report
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Comprehensive view of all student fees, payments, and status
-        </p>
-      </div>
+      <PageHeader
+        title="Student Fee Report"
+        description="Comprehensive view of all student fees, payments, and status"
+      />
 
       {/* Statistics */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">

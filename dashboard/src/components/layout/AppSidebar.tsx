@@ -2,7 +2,6 @@ import {
   LayoutDashboard, 
   Users, 
   GraduationCap, 
-  ClipboardCheck, 
   FileText, 
   IndianRupee, 
   Settings,
@@ -21,6 +20,7 @@ import {
   CheckCircle2,
   PieChart,
   Inbox,
+  Database,
 } from "lucide-react";
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -39,7 +39,6 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { AlertCircle, Coins } from "lucide-react";
 import { APP_NAME } from "@/utils/constants";
 import { useApp } from "@/context/AppContext";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -121,12 +120,12 @@ const menuItems = [
       {
         title: "Collect Payment",
         url: "/fees/collection",
-        icon: FileText,
+        icon: Receipt,
       },
       {
         title: "View Receipts",
         url: "/fees/receipts",
-        icon: Receipt,
+        icon: FileText,
       },
       {
         title: "Installments",
@@ -149,24 +148,51 @@ const menuItems = [
         icon: Calculator,
       },
       {
+        title: "Reports",
+        url: "/fees/reports",
+        icon: PieChart,
+      },
+    ],
+  },
+  {
+    title: "Masters",
+    icon: Database,
+    permission: "canManageMasters" as const,
+    subItems: [
+      {
+        title: "All Masters",
+        url: "/masters",
+        icon: Database,
+      },
+      {
+        title: "Academic Year",
+        url: "/masters/academic/academic-year",
+        icon: Calendar,
+      },
+      {
+        title: "Class Master",
+        url: "/masters/academic/classes",
+        icon: GraduationCap,
+      },
+      {
+        title: "Section Master",
+        url: "/masters/academic/sections",
+        icon: Inbox,
+      },
+      {
         title: "Fee Schemes",
-        url: "/fees/schemes",
+        url: "/masters/fee/schemes",
         icon: Award,
       },
       {
         title: "Fee Structure",
-        url: "/fees/structure",
+        url: "/masters/fee/structure",
         icon: Table,
       },
       {
         title: "Discounts",
-        url: "/fees/discounts",
+        url: "/masters/fee/discounts",
         icon: Percent,
-      },
-      {
-        title: "Reports",
-        url: "/fees/reports",
-        icon: PieChart,
       },
     ],
   },
@@ -196,10 +222,10 @@ export function AppSidebar() {
         location.pathname === subItem.url || location.pathname.startsWith(subItem.url + '/')
       )
     );
-    if (activeItem && !openSection) {
+    if (activeItem) {
       setOpenSection(activeItem.title);
     }
-  }, [location.pathname, visibleItems, openSection]);
+  }, [location.pathname, visibleItems]);
 
   return (
     <Sidebar>

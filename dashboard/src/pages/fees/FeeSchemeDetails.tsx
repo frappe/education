@@ -23,8 +23,10 @@ import {
   AlertCircle,
   Filter
 } from "lucide-react";
-import feeSchemesData from "@/mockData/feeSchemes.json";
+import feeSchemesData from "@/mockData/feeSchemeTypes.json";
 import studentFeesData from "@/mockData/studentFees.json";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface FeeScheme {
   id: string;
@@ -63,7 +65,7 @@ export default function FeeSchemeDetails() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   const schemeCode = params?.schemeCode || '';
-  const scheme = feeSchemesData.find((s: FeeScheme) => s.code === schemeCode);
+  const scheme = (feeSchemesData as FeeScheme[]).find((s) => s.code === schemeCode);
 
   // Calculate global statistics (always from all students) and filter students for table
   const { globalStats, filteredStudents, availableClasses } = useMemo(() => {
@@ -157,30 +159,26 @@ export default function FeeSchemeDetails() {
           Back to Fee Schemes
         </Button>
         
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Fees</span>
-          <span>/</span>
-          <span>Schemes</span>
-          <span>/</span>
-          <span className="text-foreground font-medium">{scheme.name}</span>
-        </div>
+        <Breadcrumb items={[
+          { label: "Fees", href: "/fees" },
+          { label: "Schemes", href: "/fees/schemes" },
+          { label: scheme.name }
+        ]} />
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-              {scheme.name}
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              {scheme.description}
-            </p>
-          </div>
-          <Badge
-            variant={scheme.isActive ? "default" : "secondary"}
-            className="w-fit"
-            data-testid="badge-scheme-status"
-          >
-            {scheme.isActive ? 'Active' : 'Inactive'}
-          </Badge>
+          <PageHeader
+            title={scheme.name}
+            description={scheme.description}
+            customActions={
+              <Badge
+                variant={scheme.isActive ? "default" : "secondary"}
+                className="w-fit"
+                data-testid="badge-scheme-status"
+              >
+                {scheme.isActive ? 'Active' : 'Inactive'}
+              </Badge>
+            }
+          />
         </div>
       </div>
 

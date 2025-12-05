@@ -1,15 +1,6 @@
 import { useState } from "react";
-import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -21,10 +12,15 @@ import {
 import { Search, Download, Receipt } from "lucide-react";
 import feesData from "@/mockData/fees.json";
 import { formatCurrency, formatDate } from "@/utils/helpers";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { DataTableColumn } from "@/components/common/DataTable";
+import { TableCard } from "@/components/common/TableCard";
 
 export default function FeeManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredFees = feesData.filter((fee) => {
     const matchesSearch =
@@ -34,6 +30,11 @@ export default function FeeManagement() {
       statusFilter === "all" || fee.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const paginatedFees = filteredFees.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -48,10 +49,64 @@ export default function FeeManagement() {
     }
   };
 
+  const columns: DataTableColumn<typeof feesData[0]>[] = [
+    {
+      key: "id",
+      label: "Fee ID",
+      cellClassName: "font-medium",
+    },
+    {
+      key: "studentName",
+      label: "Student Name",
+    },
+    {
+      key: "class",
+      label: "Class",
+      render: (value) => <Badge variant="secondary">{value}</Badge>,
+    },
+    {
+      key: "amount",
+      label: "Total Amount",
+      render: (value) => formatCurrency(value),
+    },
+    {
+      key: "paid",
+      label: "Paid",
+      render: (value) => <span className="text-chart-3">{formatCurrency(value)}</span>,
+    },
+    {
+      key: "due",
+      label: "Due",
+      render: (value) => (
+        <span className={value > 0 ? "text-destructive" : ""}>
+          {formatCurrency(value)}
+        </span>
+      ),
+    },
+    {
+      key: "dueDate",
+      label: "Due Date",
+      render: (value) => <span className="text-muted-foreground">{formatDate(value)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (value) => (
+        <Badge variant={getStatusVariant(value)}>
+          {value.charAt(0).toUpperCase() + value.slice(1)}
+        </Badge>
+      ),
+    },
+  ];
+
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      <Breadcrumb items={[
+        { label: "Fees", href: "/fees" },
+        { label: "Management" }
+      ]} />
+      
+      <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold" data-testid="text-fees-title">
               Fee Management
@@ -90,60 +145,41 @@ export default function FeeManagement() {
           </Select>
         </div>
 
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fee ID</TableHead>
-                <TableHead>Student Name</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Paid</TableHead>
-                <TableHead>Due</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredFees.map((fee) => (
-                <TableRow key={fee.id} data-testid={`row-fee-${fee.id}`}>
-                  <TableCell className="font-medium">{fee.id}</TableCell>
-                  <TableCell>{fee.studentName}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{fee.class}</Badge>
-                  </TableCell>
-                  <TableCell>{formatCurrency(fee.amount)}</TableCell>
-                  <TableCell className="text-chart-3">
-                    {formatCurrency(fee.paid)}
-                  </TableCell>
-                  <TableCell className={fee.due > 0 ? "text-destructive" : ""}>
-                    {formatCurrency(fee.due)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(fee.dueDate)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(fee.status)}>
-                      {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      data-testid={`button-receipt-${fee.id}`}
-                    >
-                      <Receipt className="w-4 h-4 mr-1" />
-                      Receipt
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    </DashboardLayout>
+        <TableCard
+          table={{
+            data: paginatedFees,
+            columns: columns,
+            getRowKey: (row) => row.id,
+            actionsColumn: {
+              label: "Actions",
+              headerClassName: "text-right",
+              cellClassName: "text-right",
+              render: (fee) => (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid={`button-receipt-${fee.id}`}
+                >
+                  <Receipt className="w-4 h-4 mr-1" />
+                  Receipt
+                </Button>
+              ),
+            },
+            hoverable: true,
+            emptyMessage: "No fee records found",
+            pagination: {
+              currentPage,
+              pageSize,
+              totalItems: filteredFees.length,
+              onPageChange: setCurrentPage,
+              onPageSizeChange: (size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              },
+              pageSizeOptions: [10, 25, 50, 100],
+            },
+          }}
+        />
+    </div>
   );
 }

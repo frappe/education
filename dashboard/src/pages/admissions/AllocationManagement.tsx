@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, Home, Users, ChevronDown, ChevronUp, GraduationCap, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -164,31 +165,27 @@ export default function AllocationManagement() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Allocations" }
       ]} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">
-            Section & House Allocation
-          </h1>
-          <p className="text-muted-foreground">
-            Manage section and house assignments for admitted students
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {pendingAllocation > 0 && (
-            <Badge variant="default" className="text-base px-3 py-1">
-              {pendingAllocation} Pending Allocation
-            </Badge>
-          )}
-          {canManage && (
-            <Link href="/admissions/approvals">
-              <Button variant="outline" data-testid="button-approve-application">
-                <CheckCircle className="h-4 w-4" />
-                Approve Application
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Section & House Allocation"
+        description="Manage section and house assignments for admitted students"
+        customActions={
+          <div className="flex gap-2">
+            {pendingAllocation > 0 && (
+              <Badge variant="default" className="text-base px-3 py-1">
+                {pendingAllocation} Pending Allocation
+              </Badge>
+            )}
+            {canManage && (
+              <Link to="/admissions/approvals">
+                <Button variant="outline" data-testid="button-approve-application">
+                  <CheckCircle className="h-4 w-4" />
+                  Approve Application
+                </Button>
+              </Link>
+            )}
+          </div>
+        }
+      />
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Class-wise Distribution</h2>

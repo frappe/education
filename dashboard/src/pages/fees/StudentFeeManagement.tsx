@@ -31,7 +31,9 @@ import { Label } from "@/components/ui/label";
 import { Search, ChevronRight, Calculator, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import studentFeesData from "@/mockData/studentFees.json";
+import { PageHeader } from "@/components/common/PageHeader";
 
 interface StudentFee {
   id: string;
@@ -176,14 +178,15 @@ export default function StudentFeeManagement() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Student Fee Management
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Manage student fees, assign schemes, and view calculated fee amounts
-        </p>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fee Management", href: "/fees" },
+        { label: "Student Fees" }
+      ]} />
+      
+      <PageHeader
+        title="Student Fee Management"
+        description="Manage student fees, assign schemes, and view calculated fee amounts"
+      />
 
       {/* Statistics Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">

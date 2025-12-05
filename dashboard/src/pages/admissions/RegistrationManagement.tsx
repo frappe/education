@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Search, DollarSign, CheckCircle, Clock, Download, ChevronUp, ChevronDown, ChevronsUpDown, MoreVertical, Eye, CreditCard, Loader2, FileText } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -236,37 +237,33 @@ export default function RegistrationManagement() {
         { label: "Admissions", href: "/admissions/enquiries" },
         { label: "Registrations" }
       ]} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">
-            Registration Management
-          </h1>
-          <p className="text-muted-foreground">
-            Track registration payments and status
-          </p>
-        </div>
-        {canManage && (
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              onClick={() => setIsCreateDialogOpen(true)}
-              data-testid="button-create-registration"
-              className="w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              New Registration
-            </Button>
-            <Button
-              onClick={() => setIsPendingEnquiriesDialogOpen(true)}
-              variant="outline"
-              data-testid="button-pending-enquiries"
-              className="w-full sm:w-auto"
-            >
-              <FileText className="h-4 w-4" />
-              View Pending Enquiries
-            </Button>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title="Registration Management"
+        description="Track registration payments and status"
+        customActions={
+          canManage ? (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                onClick={() => setIsCreateDialogOpen(true)}
+                data-testid="button-create-registration"
+                className="w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                New Registration
+              </Button>
+              <Button
+                onClick={() => setIsPendingEnquiriesDialogOpen(true)}
+                variant="outline"
+                data-testid="button-pending-enquiries"
+                className="w-full sm:w-auto"
+              >
+                <FileText className="h-4 w-4" />
+                View Pending Enquiries
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         <Card>

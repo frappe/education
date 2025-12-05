@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import studentFeesData from "@/mockData/studentFees.json";
 import feePaymentsData from "@/mockData/feePayments.json";
 import { format } from "date-fns";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 export default function FeeDashboard() {
   const navigate = useNavigate();
@@ -58,31 +60,31 @@ export default function FeeDashboard() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">Fee Management Dashboard</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Academic Year 2024-25</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            className="w-full sm:w-auto" 
-            onClick={() => navigate("/fees/collection")}
-            data-testid="button-collect-fee"
-          >
-            <IndianRupee className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Collect Fee</span>
-            <span className="sm:hidden">Collect</span>
-          </Button>
-          <Button 
-            className="w-full sm:w-auto" 
-            onClick={() => navigate("/fees/reports")}
-            data-testid="button-generate-report"
-          >
-            Generate Report
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Fee Management Dashboard"
+        description="Academic Year 2024-25"
+        customActions={
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto" 
+              onClick={() => navigate("/fees/collection")}
+              data-testid="button-collect-fee"
+            >
+              <IndianRupee className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Collect Fee</span>
+              <span className="sm:hidden">Collect</span>
+            </Button>
+            <Button 
+              className="w-full sm:w-auto" 
+              onClick={() => navigate("/fees/reports")}
+              data-testid="button-generate-report"
+            >
+              Generate Report
+            </Button>
+          </div>
+        }
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (

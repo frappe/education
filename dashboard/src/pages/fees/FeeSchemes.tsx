@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import feeSchemesData from "@/mockData/feeSchemeTypes.json";
+import { PageHeader } from "@/components/common/PageHeader";
 
 interface FeeScheme {
   id: string;
@@ -209,23 +210,16 @@ export default function FeeSchemes() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-            Fee Schemes
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage all fee schemes and their configurations
-          </p>
-        </div>
-        <Button 
-          onClick={handleAddScheme}
-          data-testid="button-add-scheme"
-        >
-          <Award className="w-4 h-4 mr-2" />
-          Add New Scheme
-        </Button>
-      </div>
+      <PageHeader
+        title="Fee Schemes"
+        description="Manage all fee schemes and their configurations"
+        action={{
+          label: "Add New Scheme",
+          icon: Award,
+          onClick: handleAddScheme,
+          testId: "button-add-scheme"
+        }}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {schemes.map((scheme) => (

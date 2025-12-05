@@ -6,9 +6,23 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "basic_details_section",
   "academic_year_name",
   "year_start_date",
   "year_end_date",
+  "column_break_1",
+  "status",
+  "lock_status",
+  "roll_over_rules_section",
+  "promote_students",
+  "reset_fee_structure",
+  "reset_house",
+  "reset_section",
+  "promotion_rules_section",
+  "promotion_based_on",
+  "passing_rule",
+  "allow_grace_rules",
+  "minimum_attendance_required_",
   "connections_tab"
  ],
  "fields": [
@@ -40,6 +54,89 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "basic_details_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Details"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "label": "Status",
+   "options": "Active\nIn-active"
+  },
+  {
+   "fieldname": "roll_over_rules_section",
+   "fieldtype": "Section Break",
+   "label": "Roll Over Rules"
+  },
+  {
+   "default": "0",
+   "fieldname": "promote_students",
+   "fieldtype": "Check",
+   "label": "Promote All Students"
+  },
+  {
+   "default": "0",
+   "fieldname": "reset_fee_structure",
+   "fieldtype": "Check",
+   "label": "Reset Fee Structure Yearly"
+  },
+  {
+   "default": "0",
+   "fieldname": "reset_house",
+   "fieldtype": "Check",
+   "label": "Reset House Allocation"
+  },
+  {
+   "default": "0",
+   "depends_on": "                                                                                                                                                                                    ",
+   "fieldname": "reset_section",
+   "fieldtype": "Check",
+   "label": "Reset Section Allocation"
+  },
+  {
+   "fieldname": "promotion_rules_section",
+   "fieldtype": "Section Break",
+   "label": "Promotion Rules"
+  },
+  {
+   "fieldname": "promotion_based_on",
+   "fieldtype": "Select",
+   "label": "Promotion Based On",
+   "options": "Auto Promote All\nAcademic Year Based"
+  },
+  {
+   "fieldname": "passing_rule",
+   "fieldtype": "Select",
+   "label": "Passing Rule ",
+   "options": "Final Exam Only\nTerm + Exam weighted only"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_grace_rules",
+   "fieldtype": "Check",
+   "label": "Allow grace rules"
+  },
+  {
+   "fieldname": "minimum_attendance_required_",
+   "fieldtype": "Float",
+   "label": "Minimum Attendance Required (%)"
+  },
+  {
+   "default": "Unlocked",
+   "fieldname": "lock_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Lock Status",
+   "options": "Unlocked\nLocked"
   }
  ],
  "links": [
@@ -94,7 +191,7 @@
    "link_fieldname": "academic_year"
   }
  ],
- "modified": "2024-01-25 11:14:11.648233",
+ "modified": "2025-12-05 13:22:17.212982",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",
@@ -115,6 +212,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

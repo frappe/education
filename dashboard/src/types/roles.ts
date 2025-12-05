@@ -20,6 +20,7 @@ export interface RolePermissions {
   canManageTeachers: boolean;
   canViewReports: boolean;
   canManageSettings: boolean;
+  canManageMasters: boolean;
 }
 
 export const rolePermissions: Record<UserRole, RolePermissions> = {
@@ -33,6 +34,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: true,
     canViewReports: true,
     canManageSettings: true,
+    canManageMasters: true,
   },
   [ROLES.ADMISSION_OFFICER]: {
     canViewDashboard: true,
@@ -44,6 +46,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: true,
     canManageSettings: false,
+    canManageMasters: false,
   },
   [ROLES.ACCOUNTANT]: {
     canViewDashboard: true,
@@ -55,6 +58,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: true,
     canManageSettings: false,
+    canManageMasters: false,
   },
   [ROLES.EXAM_COORDINATOR]: {
     canViewDashboard: true,
@@ -66,6 +70,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: true,
     canManageSettings: false,
+    canManageMasters: false,
   },
   [ROLES.HOSTEL_WARDEN]: {
     canViewDashboard: true,
@@ -77,6 +82,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: true,
     canManageSettings: false,
+    canManageMasters: false,
   },
   [ROLES.TEACHER]: {
     canViewDashboard: true,
@@ -88,6 +94,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: false,
     canManageSettings: false,
+    canManageMasters: false,
   },
   [ROLES.PARENT]: {
     canViewDashboard: true,
@@ -99,6 +106,7 @@ export const rolePermissions: Record<UserRole, RolePermissions> = {
     canManageTeachers: false,
     canViewReports: false,
     canManageSettings: false,
+    canManageMasters: false,
   },
 };
 

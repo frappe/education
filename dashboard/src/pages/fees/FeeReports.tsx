@@ -25,6 +25,8 @@ import { format } from "date-fns";
 import studentFeesData from "@/mockData/studentFees.json";
 import feePaymentsData from "@/mockData/feePayments.json";
 import cautionFeesData from "@/mockData/cautionFees.json";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 export default function FeeReports() {
   const classes = ["Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"];
@@ -352,14 +354,15 @@ export default function FeeReports() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Fee Reports
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Access all fee-related reports and analytics in one place
-        </p>
-      </div>
+      <Breadcrumb items={[
+        { label: "Fee Management", href: "/fees" },
+        { label: "Reports" }
+      ]} />
+      
+      <PageHeader
+        title="Fee Reports"
+        description="Access all fee-related reports and analytics in one place"
+      />
 
       <Tabs defaultValue="student-fee" className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6" data-testid="tabs-reports">

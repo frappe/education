@@ -15,6 +15,8 @@ import { ReceiptComponent } from "@/components/fees/ReceiptComponent";
 import { Search, Printer, Download, X } from "lucide-react";
 import studentFeesData from "@/mockData/studentFees.json";
 import feePaymentsData from "@/mockData/feePayments.json";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface StudentFee {
   id: string;
@@ -68,7 +70,7 @@ export default function ReceiptView() {
   const students = studentFeesData as StudentFee[];
   
   // Extract receiptNo from URL params
-  const urlReceiptNo = location.split('/').pop();
+  const urlReceiptNo = location.pathname.split('/').pop();
   
   useEffect(() => {
     if (urlReceiptNo && urlReceiptNo !== 'receipts') {
@@ -108,15 +110,16 @@ export default function ReceiptView() {
   };
 
   return (
-    <div className="p-3 sm:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-serif font-semibold text-foreground" data-testid="text-page-title">
-          Receipt View
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Search and view payment receipts
-        </p>
-      </div>
+    <div className="p-6 space-y-6">
+      <Breadcrumb items={[
+        { label: "Fees", href: "/fees" },
+        { label: "Receipts" }
+      ]} />
+      
+      <PageHeader
+        title="Receipt View"
+        description="Search and view payment receipts"
+      />
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Receipt Search */}

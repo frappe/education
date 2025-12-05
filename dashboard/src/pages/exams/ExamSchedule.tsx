@@ -2,17 +2,11 @@ import { useState } from "react";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Calendar, Clock } from "lucide-react";
 import { formatDate } from "@/utils/helpers";
+import { DataTableColumn } from "@/components/common/DataTable";
+import { TableCard } from "@/components/common/TableCard";
 
 const examSchedule = [
   {
@@ -69,11 +63,63 @@ const examSchedule = [
 
 export default function ExamSchedule() {
   const [selectedClass, setSelectedClass] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredExams =
     selectedClass === "all"
       ? examSchedule
       : examSchedule.filter((exam) => exam.class === selectedClass);
+
+  const paginatedExams = filteredExams.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const columns: DataTableColumn<typeof examSchedule[0]>[] = [
+    {
+      key: "subject",
+      label: "Subject",
+      cellClassName: "font-medium",
+    },
+    {
+      key: "class",
+      label: "Class",
+      render: (value) => <Badge variant="secondary">{value}</Badge>,
+    },
+    {
+      key: "date",
+      label: "Date",
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          {formatDate(value)}
+        </div>
+      ),
+    },
+    {
+      key: "time",
+      label: "Time",
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-muted-foreground" />
+          {value}
+        </div>
+      ),
+    },
+    {
+      key: "room",
+      label: "Room",
+    },
+    {
+      key: "duration",
+      label: "Duration",
+    },
+    {
+      key: "maxMarks",
+      label: "Max Marks",
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -130,46 +176,26 @@ export default function ExamSchedule() {
           </Card>
         </div>
 
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Subject</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Room</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Max Marks</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredExams.map((exam) => (
-                <TableRow key={exam.id} data-testid={`row-exam-${exam.id}`}>
-                  <TableCell className="font-medium">{exam.subject}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{exam.class}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      {formatDate(exam.date)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      {exam.time}
-                    </div>
-                  </TableCell>
-                  <TableCell>{exam.room}</TableCell>
-                  <TableCell>{exam.duration}</TableCell>
-                  <TableCell>{exam.maxMarks}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <TableCard
+          table={{
+            data: paginatedExams,
+            columns: columns,
+            getRowKey: (row) => row.id,
+            hoverable: true,
+            emptyMessage: "No exams scheduled",
+            pagination: {
+              currentPage,
+              pageSize,
+              totalItems: filteredExams.length,
+              onPageChange: setCurrentPage,
+              onPageSizeChange: (size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              },
+              pageSizeOptions: [5, 10, 20, 50],
+            },
+          }}
+        />
       </div>
     </DashboardLayout>
   );
