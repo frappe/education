@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { 
   Calendar, 
@@ -12,6 +12,7 @@ import {
   Settings2,
   Archive
 } from "lucide-react";
+import { useFrappeGetDocList, useFrappeCreateDoc, useFrappeUpdateDoc } from "frappe-react-sdk";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,10 +45,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useBreadcrumbs } from "@/hooks/useBreadcrumbs";
 import { PageHeader } from "@/components/common/PageHeader";
 import { TableCard } from "@/components/common/TableCard";
 import { DataTableColumn } from "@/components/common/DataTable";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { StatsCard } from "@/components/common/StatsCard";
 
 interface AcademicYear {
   id: string;
@@ -163,8 +166,67 @@ const mockAcademicYears: AcademicYear[] = [
 
 export default function AcademicYearMaster() {
   const { toast } = useToast();
+  const breadcrumbs = useBreadcrumbs();
   
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>(mockAcademicYears);
+  // Frappe SDK hooks
+  const { data: frappeData, isLoading, error, mutate } = useFrappeGetDocList("Academic Year", {
+    fields: [
+      "name",
+      "academic_year_name",
+      "year_start_date",
+      "year_end_date",
+      "status",
+      "lock_status",
+      "promote_students",
+      "reset_fee_structure",
+      "reset_house",
+      "reset_section",
+      "promotion_based_on",
+      "passing_rule",
+      "allow_grace_rules",
+      "minimum_attendance_required_",
+      "creation",
+      "modified",
+      "owner"
+    ],
+    orderBy: {
+      field: "year_start_date",
+      order: "desc"
+    }
+  });
+
+  const { createDoc } = useFrappeCreateDoc();
+  const { updateDoc } = useFrappeUpdateDoc();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Frappe Data:', frappeData);
+    console.log('Is Loading:', isLoading);
+    console.log('Error:', error);
+  }, [frappeData, isLoading, error]);
+
+  // Transform Frappe data to match interface
+  const academicYears: AcademicYear[] = (frappeData || []).map((doc: any) => ({
+    id: doc.name,
+    name: doc.academic_year_name || doc.name,
+    startDate: doc.year_start_date,
+    endDate: doc.year_end_date,
+    status: doc.status || "Inactive",
+    promoteStudents: doc.promote_students === 1,
+    resetFeeStructure: doc.reset_fee_structure === 1,
+    resetAllocations: doc.reset_section === 1 || doc.reset_house === 1,
+    promotionBasis: doc.promotion_based_on === "Auto Promote All" ? "auto_promote" : "performance_based",
+    passingRuleSource: doc.passing_rule === "Final Exam Only" ? "final_exam_only" : "term_exam_weighted",
+    graceRuleApply: doc.allow_grace_rules === 1,
+    minAttendanceRequired: doc.minimum_attendance_required_ || null,
+    isLocked: doc.lock_status === "Locked",
+    lockedAt: null,
+    lockedBy: null,
+    createdAt: doc.creation,
+    createdBy: doc.owner,
+    updatedAt: doc.modified
+  }));
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
   const [formData, setFormData] = useState<AcademicYearFormData>(initialFormData);
@@ -222,19 +284,29 @@ export default function AcademicYearMaster() {
     setActivateConfirmOpen(true);
   };
 
-  const handleConfirmActivate = () => {
+  const handleConfirmActivate = async () => {
     if (!yearToActivate) return;
 
-    const updatedYears = academicYears.map(y => ({
-      ...y,
-      status: y.id === yearToActivate.id ? "Active" : "Inactive",
-    }));
-    
-    setAcademicYears(updatedYears);
-    toast({
-      title: "Academic Year Activated",
-      description: `${yearToActivate.name} is now the active academic year. All other years have been deactivated.`,
-    });
+    try {
+      // Update the year to Active
+      await updateDoc("Academic Year", yearToActivate.id, {
+        status: "Active"
+      });
+
+      // Refresh the list
+      await mutate();
+
+      toast({
+        title: "Academic Year Activated",
+        description: `${yearToActivate.name} is now the active academic year. All other years have been deactivated.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to activate academic year",
+        variant: "destructive",
+      });
+    }
     
     setActivateConfirmOpen(false);
     setYearToActivate(null);
@@ -253,26 +325,33 @@ export default function AcademicYearMaster() {
     setLockConfirmOpen(true);
   };
 
-  const handleConfirmLock = () => {
+  const handleConfirmLock = async () => {
     if (!yearToLock) return;
 
-    const updatedYears = academicYears.map(y =>
-      y.id === yearToLock.id
-        ? { ...y, isLocked: true, lockedAt: format(new Date(), "yyyy-MM-dd"), lockedBy: "admin" }
-        : y
-    );
-    
-    setAcademicYears(updatedYears);
-    toast({
-      title: "Academic Year Locked",
-      description: `${yearToLock.name} has been locked. No further changes can be made to this year.`,
-    });
+    try {
+      await updateDoc("Academic Year", yearToLock.id, {
+        lock_status: "Locked"
+      });
+
+      await mutate();
+
+      toast({
+        title: "Academic Year Locked",
+        description: `${yearToLock.name} has been locked. No further changes can be made to this year.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to lock academic year",
+        variant: "destructive",
+      });
+    }
     
     setLockConfirmOpen(false);
     setYearToLock(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.startDate || !formData.endDate) {
       toast({
         title: "Validation Error",
@@ -315,69 +394,49 @@ export default function AcademicYearMaster() {
       return;
     }
 
-    if (editingYear) {
-      const updatedYears = academicYears.map(y =>
-        y.id === editingYear.id
-          ? { 
-              ...y, 
-              name: formData.name,
-              startDate: formData.startDate,
-              endDate: formData.endDate,
-              status: formData.status,
-              promoteStudents: formData.promoteStudents,
-              resetFeeStructure: formData.resetFeeStructure,
-              resetAllocations: formData.resetAllocations,
-              promotionBasis: formData.promotionBasis,
-              passingRuleSource: formData.passingRuleSource,
-              graceRuleApply: formData.graceRuleApply,
-              minAttendanceRequired: formData.minAttendanceRequired ? parseInt(formData.minAttendanceRequired) : null,
-              updatedAt: format(new Date(), "yyyy-MM-dd") 
-            }
-          : y
-      );
-      setAcademicYears(updatedYears);
-      toast({
-        title: "Success",
-        description: `Academic year "${formData.name}" has been updated.`,
-      });
-    } else {
-      const newYear: AcademicYear = {
-        id: Date.now().toString(),
-        name: formData.name,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
+    try {
+      const docData = {
+        academic_year_name: formData.name,
+        year_start_date: formData.startDate,
+        year_end_date: formData.endDate,
         status: formData.status,
-        promoteStudents: formData.promoteStudents,
-        resetFeeStructure: formData.resetFeeStructure,
-        resetAllocations: formData.resetAllocations,
-        promotionBasis: formData.promotionBasis,
-        passingRuleSource: formData.passingRuleSource,
-        graceRuleApply: formData.graceRuleApply,
-        minAttendanceRequired: formData.minAttendanceRequired ? parseInt(formData.minAttendanceRequired) : null,
-        isLocked: false,
-        lockedAt: null,
-        lockedBy: null,
-        createdAt: new Date(),
-        createdBy: "admin",
-        updatedAt: null,
+        promote_students: formData.promoteStudents ? 1 : 0,
+        reset_fee_structure: formData.resetFeeStructure ? 1 : 0,
+        reset_section: formData.resetAllocations ? 1 : 0,
+        reset_house: formData.resetAllocations ? 1 : 0,
+        promotion_based_on: formData.promotionBasis === "auto_promote" ? "Auto Promote All" : "Academic Year Based",
+        passing_rule: formData.passingRuleSource === "final_exam_only" ? "Final Exam Only" : "Term + Exam weighted only",
+        allow_grace_rules: formData.graceRuleApply ? 1 : 0,
+        minimum_attendance_required_: formData.minAttendanceRequired ? parseFloat(formData.minAttendanceRequired) : null,
       };
 
-      if (formData.status === "Active") {
-        const updatedYears = academicYears.map(y => ({ ...y, status: "Inactive" }));
-        setAcademicYears([newYear, ...updatedYears]);
+      if (editingYear) {
+        await updateDoc("Academic Year", editingYear.id, docData);
+        toast({
+          title: "Success",
+          description: `Academic year "${formData.name}" has been updated.`,
+        });
       } else {
-        setAcademicYears([newYear, ...academicYears]);
+        await createDoc("Academic Year", docData);
+        toast({
+          title: "Success",
+          description: `Academic year "${formData.name}" has been created.`,
+        });
       }
-      
+
+      // Refresh the list
+      await mutate();
+
+      setDialogOpen(false);
+      setEditingYear(null);
+      setFormData(initialFormData);
+    } catch (error: any) {
       toast({
-        title: "Success",
-        description: `Academic year "${formData.name}" has been created.`,
+        title: "Error",
+        description: error.message || "Failed to save academic year",
+        variant: "destructive",
       });
     }
-
-    setDialogOpen(false);
-    setEditingYear(null);
-    setFormData(initialFormData);
   };
 
   const formatDate = (dateStr: string) => {
@@ -499,13 +558,23 @@ export default function AcademicYearMaster() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6">
-      <Breadcrumb items={[
-        { label: "Masters", href: "/masters" },
-        { label: "Academic" },
-        { label: "Academic Year" }
-      ]} />
+      <Breadcrumb items={breadcrumbs} />
       
-      <div className="space-y-4">
+      {isLoading && (
+        <div className="flex items-center justify-center p-8">
+          <div className="text-muted-foreground">Loading academic years...</div>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center justify-center p-8">
+          <div className="text-destructive">Error loading academic years: {error.message}</div>
+        </div>
+      )}
+
+      {!isLoading && !error && (
+        <>
+          <div className="space-y-4">
         <PageHeader
           title="Academic Year Master"
           description="Manage academic years and roll-over settings"
@@ -519,58 +588,36 @@ export default function AcademicYearMaster() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-primary" />
-              Current Active Year
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-active-year">
-              {activeYear?.name || "Not Set"}
-            </div>
-            {activeYear && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {formatDate(activeYear.startDate)} - {formatDate(activeYear.endDate)}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Current Active Year"
+          value={activeYear?.name || "Not Set"}
+          description={
+            activeYear
+              ? `${formatDate(activeYear.startDate)} - ${formatDate(activeYear.endDate)}`
+              : undefined
+          }
+          icon={CalendarDays}
+          iconColor="text-primary"
+          testId="text-active-year"
+        />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Settings2 className="w-4 h-4 text-blue-600" />
-              Total Years
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-total-years">
-              {academicYears.length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Academic years configured
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Years"
+          value={academicYears.length}
+          description="Academic years configured"
+          icon={Settings2}
+          iconColor="text-blue-600"
+          testId="text-total-years"
+        />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Archive className="w-4 h-4 text-amber-600" />
-              Locked Years
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-locked-years">
-              {academicYears.filter(y => y.isLocked).length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Archived and locked
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Locked Years"
+          value={academicYears.filter(y => y.isLocked).length}
+          description="Archived and locked"
+          icon={Archive}
+          iconColor="text-amber-600"
+          testId="text-locked-years"
+        />
       </div>
 
       <TableCard
@@ -901,6 +948,8 @@ export default function AcademicYearMaster() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+        </>
+      )}
     </div>
   );
 }

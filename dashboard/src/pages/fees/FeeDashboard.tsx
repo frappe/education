@@ -8,9 +8,12 @@ import feePaymentsData from "@/mockData/feePayments.json";
 import { format } from "date-fns";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { StatsCard } from "@/components/common/StatsCard";
+import { useBreadcrumbs } from "@/hooks/useBreadcrumbs";
 
 export default function FeeDashboard() {
   const navigate = useNavigate();
+  const breadcrumbs = useBreadcrumbs();
   
   const totalCollected = studentFeesData.reduce((sum, student) => sum + student.paidAmount, 0);
   const totalPending = studentFeesData.reduce((sum, student) => sum + student.dueAmount, 0);
@@ -27,39 +30,10 @@ export default function FeeDashboard() {
     .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())
     .slice(0, 5);
 
-  const stats = [
-    {
-      title: "Total Collection (2024-25)",
-      value: `₹${totalCollected.toLocaleString('en-IN')}`,
-      icon: IndianRupee,
-      trend: "+12% from last month",
-      color: "text-green-600"
-    },
-    {
-      title: "Pending Dues",
-      value: `₹${totalPending.toLocaleString('en-IN')}`,
-      icon: TrendingUp,
-      trend: `${studentFeesData.filter(s => s.status === "Pending").length} students`,
-      color: "text-orange-600"
-    },
-    {
-      title: "Today's Collection",
-      value: `₹${todayCollection.toLocaleString('en-IN')}`,
-      icon: Receipt,
-      trend: `${todayPayments.length} payments`,
-      color: "text-blue-600"
-    },
-    {
-      title: "Overdue Fees",
-      value: `₹${defaulters.reduce((sum, s) => sum + s.dueAmount, 0).toLocaleString('en-IN')}`,
-      icon: AlertTriangle,
-      trend: `${defaulters.length} students`,
-      color: "text-red-600"
-    }
-  ];
-
   return (
     <div className="p-3 sm:p-6 space-y-6">
+      <Breadcrumb items={breadcrumbs} />
+      
       <PageHeader
         title="Fee Management Dashboard"
         description="Academic Year 2024-25"
@@ -87,18 +61,41 @@ export default function FeeDashboard() {
       />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index} data-testid={`card-stat-${index}`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className={`w-4 h-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-semibold" data-testid={`text-stat-value-${index}`}>{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatsCard
+          title="Total Collection (2024-25)"
+          value={`₹${totalCollected.toLocaleString('en-IN')}`}
+          description="+12% from last month"
+          icon={IndianRupee}
+          iconColor="text-green-600"
+          testId="text-stat-value-0"
+        />
+        
+        <StatsCard
+          title="Pending Dues"
+          value={`₹${totalPending.toLocaleString('en-IN')}`}
+          description={`${studentFeesData.filter(s => s.status === "Pending").length} students`}
+          icon={TrendingUp}
+          iconColor="text-orange-600"
+          testId="text-stat-value-1"
+        />
+        
+        <StatsCard
+          title="Today's Collection"
+          value={`₹${todayCollection.toLocaleString('en-IN')}`}
+          description={`${todayPayments.length} payments`}
+          icon={Receipt}
+          iconColor="text-blue-600"
+          testId="text-stat-value-2"
+        />
+        
+        <StatsCard
+          title="Overdue Fees"
+          value={`₹${defaulters.reduce((sum, s) => sum + s.dueAmount, 0).toLocaleString('en-IN')}`}
+          description={`${defaulters.length} students`}
+          icon={AlertTriangle}
+          iconColor="text-red-600"
+          testId="text-stat-value-3"
+        />
       </div>
 
       {defaulters.length > 0 && (
