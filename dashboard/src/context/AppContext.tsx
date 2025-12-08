@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { useAuth } from "@/providers/AuthProvider";
 import { UserRole, hasPermission, RolePermissions } from "@/types/roles";
 import type { User } from "@shared/schema";
 
@@ -19,63 +18,36 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const { user: authUser, isLoading: authLoading, logout: frappeLogout } = useAuth();
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  // Fetch current user from session on app load
-  // Only return null for 401, throw for other errors to preserve auth state during outages
-  const { data, isLoading, isError, refetch } = useQuery<{ user: User } | null>({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-      });
+  // Map Frappe user to app User type
+  const user: User | null = authUser ? {
+    id: authUser.name || "",
+    username: authUser.name || "",
+    name: authUser.full_name || authUser.name || "",
+    email: authUser.email || "",
+    role: "Admin" as UserRole, // Must match ROLES.ADMIN = "Admin"
+  } : null;
 
-      // Return null only for 401 (genuinely not authenticated)
-      if (res.status === 401) {
-        return null;
-      }
-
-      // Throw for other errors to preserve cached user during server issues
-      if (!res.ok) {
-        throw new Error(`${res.status}: ${res.statusText}`);
-      }
-
-      return await res.json();
-    },
-  });
-
-  // Update user state from successful query data only
-  useEffect(() => {
-    // Only update on successful queries (not during errors)
-    if (!isError) {
-      if (data?.user) {
-        setUser(data.user);
-      } else if (data === null) {
-        // Successful query returned null (401 - not authenticated)
-        setUser(null);
-      }
-    }
-  }, [data, isError]);
-
-  const retryAuth = () => {
-    refetch();
+  const setUser = (newUser: User | null) => {
+    // This is a no-op since user is managed by AuthProvider
+    // Kept for API compatibility
+    console.log("setUser called but user is managed by AuthProvider:", newUser);
   };
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setUser(null);
-      // Invalidate auth query to clear cached data
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      await frappeLogout();
+      console.log("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const retryAuth = () => {
+    // Reload the page to retry authentication
+    window.location.reload();
   };
 
   const toggleTheme = () => {
@@ -95,8 +67,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user, 
       setUser, 
       logout,
-      isLoading,
-      isAuthError: isError,
+      isLoading: authLoading,
+      isAuthError: false, // AuthProvider handles errors internally
       retryAuth,
       theme, 
       toggleTheme, 

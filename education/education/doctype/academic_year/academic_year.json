@@ -191,7 +191,7 @@
    "link_fieldname": "academic_year"
   }
  ],
- "modified": "2025-12-05 13:22:17.212982",
+ "modified": "2025-12-08 10:07:18.577003",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",
@@ -207,6 +207,18 @@
    "read": 1,
    "report": 1,
    "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
    "share": 1,
    "write": 1
   }

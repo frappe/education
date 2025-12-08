@@ -21,11 +21,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
-  // Allow access without authentication for development (when backend isn't running)
-  // In production, you should remove this or add proper environment checks
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   // Check role-based access if roles are specified
   if (allowedRoles && allowedRoles.length > 0 && user?.roles) {

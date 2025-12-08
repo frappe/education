@@ -1,50 +1,46 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/providers/AuthProvider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { APP_NAME } from "@/utils/constants";
-import type { User } from "@shared/schema";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useApp();
+  const { login } = useAuth();
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
-      const data = await response.json();
-      return data as { user: User };
-    },
-    onSuccess: (data) => {
-      setUser(data.user);
-      // Invalidate auth query to ensure fresh state across all components
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      await login(username, password);
+      
       toast({
         title: "Welcome back!",
-        description: `Logged in as ${data.user.name}`,
+        description: `Logged in as ${username}`,
       });
-      navigate("/dashboard");
-    },
-    onError: (error: Error) => {
+      
+      // Give the auth state time to update, then navigate
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+        // Force a page reload to ensure auth state is fresh
+        window.location.href = "/dashboard";
+      }, 100);
+    } catch (error: any) {
+      setIsLoading(false);
       toast({
         title: "Login failed",
         description: error.message || "Invalid username or password",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginMutation.mutate({ username, password });
+    }
   };
 
   return (
@@ -97,7 +93,7 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  disabled={loginMutation.isPending}
+                  disabled={isLoading}
                   className="h-11"
                   data-testid="input-username"
                 />
@@ -120,7 +116,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={loginMutation.isPending}
+                  disabled={isLoading}
                   className="h-11"
                   data-testid="input-password"
                 />
@@ -130,17 +126,17 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full h-11"
-              disabled={loginMutation.isPending}
+              disabled={isLoading}
               data-testid="button-login"
             >
-              {loginMutation.isPending ? "Signing in..." : "Sign In"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
             <div className="rounded-md p-4 bg-[#0f304817]">
-              <p className="text-sm font-medium mb-2">Test Credentials:</p>
+              <p className="text-sm font-medium mb-2">Frappe Credentials:</p>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p>Admin: admin / admin123</p>
-                <p>Admission: admission / admission123</p>
+                <p>Use your Frappe login credentials</p>
+                <p>Default: Administrator / your admin password</p>
               </div>
             </div>
           </form>

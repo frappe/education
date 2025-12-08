@@ -17,18 +17,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch additional user details
+  // Fetch additional user details (optional - will work without it)
   const { data: userData } = useFrappeGetCall<{ message: User }>(
     "education.education.api.get_user_info",
     undefined,
-    currentUser ? undefined : null
+    currentUser ? undefined : null,
+    {
+      // Don't block on this call
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
   );
 
   useEffect(() => {
-    if (currentUser && userData?.message) {
-      setUser(userData.message);
+    console.log('Auth State:', { currentUser, authLoading, hasUserData: !!userData });
+    
+    // Set loading state
+    if (authLoading) {
+      setIsLoading(true);
+      return;
+    }
+
+    // If we have currentUser from Frappe
+    if (currentUser) {
+      // Use additional user data if available, otherwise use basic Frappe user info
+      if (userData?.message) {
+        console.log('Setting user from API:', userData.message);
+        setUser(userData.message);
+      } else {
+        // Create basic user object from Frappe's currentUser
+        console.log('Setting basic user from currentUser:', currentUser);
+        setUser({
+          name: currentUser,
+          email: currentUser,
+          roles: [],
+        } as User);
+      }
       setIsLoading(false);
-    } else if (!authLoading && !currentUser) {
+    } else {
+      // No user logged in
+      console.log('No user logged in');
       setUser(null);
       setIsLoading(false);
     }
