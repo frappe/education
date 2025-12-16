@@ -158,6 +158,29 @@ The script will set up a production-ready instance of Frappe Education with all 
 1. Now open the URL `http://education.test:8000/education` in your browser, you should see the app running
 1. To access student portal, open the URL `http://education.test:8000/student-portal` in your browser, you should see the student portal running.
 
+### Docker
+
+You need Docker, docker-compose and git setup on your machine. Refer [Docker documentation](https://docs.docker.com/). After that, follow below steps:
+
+**Step 1**: Setup folder and download the required files
+
+    mkdir frappe-education
+    cd frappe-education
+
+    # Download the docker-compose file
+    wget -O docker-compose.yml https://raw.githubusercontent.com/frappe/education/develop/docker/docker-compose.yml
+
+    # Download the setup script
+    wget -O init.sh https://raw.githubusercontent.com/frappe/education/develop/docker/init.sh
+
+**Step 2**: Run the container and daemonize it
+
+    docker compose up -d
+
+**Step 3**: The site [http://education.localhost:8000/](http://education.localhost:8000) should now be available. The default credentials are:
+
+-   Username: Administrator
+-   Password: admin
 
 ## Learn and connect
 
