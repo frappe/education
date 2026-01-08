@@ -98,7 +98,7 @@ frappe.ui.form.on('Program Enrollment Course', {
 				if (val.course) course_list.push(val.course);
 			});
 			return { filters: [['Course', 'name', 'not in', course_list],
-				['Course', 'name', 'in', frm.program_courses.map((e) => e.course)]] };
+				['Course', 'name', 'in', frm.courses.map((e) => e.course)]] };
 		};
 	}
 });
