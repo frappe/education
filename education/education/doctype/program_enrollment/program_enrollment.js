@@ -93,11 +93,18 @@ frappe.ui.form.on('Program Enrollment Course', {
 	courses_add: function(frm){
 		frm.fields_dict['courses'].grid.get_field('course').get_query = function(doc) {
 			var course_list = [];
-			if(!doc.__islocal) course_list.push(doc.name);
-			$.each(doc.courses || [], function(_idx, val) {
-				if (val.course) course_list.push(val.course);
-			});
+
+			$.each(frm.doc.courses || [], function(_idx, val) {
+				if (val.course) {
+					course_list.push(val.course);
+				}
+			});			
+
 			let program_courses = (frm.program_courses || []).map(e => e.course);
+
+			if (!program_courses.length) {
+				return { filters: [['Course', 'name', '=', '__none__']] };
+			}			
 			return { filters: [['Course', 'name', 'not in', course_list],
 				['Course', 'name', 'in', program_courses]] };
 		};
