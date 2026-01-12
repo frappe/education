@@ -117,6 +117,8 @@ frappe.ui.form.on("Fees", {
 					"dn": frm.doc.name,
 					"party_type": "Student",
 					"party": frm.doc.student,
+					"party_name": frm.doc.student_name,
+					"party_account_currency": frm.doc.currency,
 					"recipient_id": frm.doc.contact_email
 				},
 				callback: function(r) {
@@ -136,10 +138,6 @@ frappe.ui.form.on("Fees", {
 				"dt": frm.doc.doctype,
 				"dn": frm.doc.name,
 				"party_type": "Student",
-				"party": frm.doc.student,
-				"party_name": frm.doc.student_name,
-				"party_account_currency": frm.doc.currency,
-				"recipient_id": frm.doc.contact_email,
 				"payment_type": "Receive"
 			},
 			callback: function(r) {
