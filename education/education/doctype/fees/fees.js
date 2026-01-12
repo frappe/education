@@ -136,7 +136,11 @@ frappe.ui.form.on("Fees", {
 				"dt": frm.doc.doctype,
 				"dn": frm.doc.name,
 				"party_type": "Student",
-				"payment_type": "Receive",
+				"party": frm.doc.student,
+				"party_name": frm.doc.student_name,
+				"party_account_currency": frm.doc.currency,
+				"recipient_id": frm.doc.contact_email,
+				"payment_type": "Receive"
 			},
 			callback: function(r) {
 				var doc = frappe.model.sync(r.message);
