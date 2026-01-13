@@ -83,6 +83,9 @@ frappe.ui.form.on('Program Enrollment', {
 				if (r.message) {
 					frm.program_courses = r.message
 					frm.set_value('courses', r.message);
+					(frm.doc.courses || []).forEach(row => {
+						frappe.model.trigger('course', row.doctype, row.name);
+					});					
 				}
 			}
 		})
