@@ -28,17 +28,6 @@ frappe.ui.form.on('Program Enrollment', {
 			}
 		};
 
-		if (frm.doc.program) {
-			frm.set_query('course', 'courses', function() {
-				return {
-					query: 'education.education.doctype.program_enrollment.program_enrollment.get_program_courses',
-					filters: {
-						'program': frm.doc.program
-					}
-				}
-			});
-		}
-
 		frm.set_query('student', function() {
 			return{
 				query: 'education.education.doctype.program_enrollment.program_enrollment.get_students',
