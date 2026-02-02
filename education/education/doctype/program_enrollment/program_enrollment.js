@@ -50,6 +50,12 @@ frappe.ui.form.on('Program Enrollment', {
     // });
   },
 
+  refresh: function(frm) {
+    if (!frm.program_courses?.length && frm.doc.program) {
+      frm.events.set_program_courses(frm);
+    }
+  },
+
   program: function (frm) {
     frm.events.get_courses(frm)
     if (frm.doc.program) {
@@ -83,8 +89,22 @@ frappe.ui.form.on('Program Enrollment', {
         if (r.message) {
           frm.program_courses = r.message
           frm.set_value('courses', r.message)
+          frm.refresh_field('courses')
         }
       },
+    })
+  },
+
+  set_program_courses:function(frm) {
+    frm.program_courses = [];
+    frappe.call({
+      method: 'get_courses',
+      doc: frm.doc,
+      callback: function(r) {
+        if (r.message) {
+          frm.program_courses = r.message
+        }
+      }
     })
   },
 })
@@ -95,15 +115,17 @@ frappe.ui.form.on('Program Enrollment Course', {
       doc
     ) {
       var course_list = []
-      if (!doc.__islocal) course_list.push(doc.name)
-      $.each(doc.courses, function (_idx, val) {
+      $.each(frm.doc.courses || [], function (_idx, val) {
         if (val.course) course_list.push(val.course)
       })
-      return {
-        filters: [
-          ['Course', 'name', 'not in', course_list],
-          ['Course', 'name', 'in', frm.program_courses.map((e) => e.course)],
-        ],
+
+      let program_courses = (frm.program_courses || []).map(e => e.course)
+
+      if (!program_courses.length) {
+				return { filters: [['Course', 'name', 'not in', course_list]] };
+      } else {
+				return { filters: [['Course', 'name', 'not in', course_list],
+					['Course', 'name', 'in', program_courses]] }
       }
     }
   },
