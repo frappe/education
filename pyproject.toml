@@ -1,0 +1,16 @@
+[project]
+name = "education"
+authors = [
+    { name = "Frappe Technologies Pvt Ltd", email = "hello@frappe.io" }
+]
+description = "Education module for Frappe"
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0-dev,<=17.0.0-dev"
