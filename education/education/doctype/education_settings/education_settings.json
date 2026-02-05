@@ -178,7 +178,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2024-03-27 15:05:41.058873",
+ "modified": "2026-02-04 12:15:05.069346",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",
@@ -203,16 +203,10 @@
    "role": "Education Manager",
    "share": 1,
    "write": 1
-  },
-  {
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "Guest",
-   "share": 1
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
