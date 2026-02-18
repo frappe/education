@@ -51,7 +51,7 @@ def enroll_student(source_name):
 	student_applicant = frappe.db.get_value(
 		"Student Applicant",
 		source_name,
-		["student_category", "program", "academic_year"],
+		["student_category", "program", "academic_year", "academic_term"],
 		as_dict=True,
 	)
 	program_enrollment = frappe.new_doc("Program Enrollment")
@@ -60,6 +60,7 @@ def enroll_student(source_name):
 	program_enrollment.student_name = student.student_name
 	program_enrollment.program = student_applicant.program
 	program_enrollment.academic_year = student_applicant.academic_year
+	program_enrollment.academic_term = student_applicant.academic_term
 	program_enrollment.save()
 
 	frappe.publish_realtime(
