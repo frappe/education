@@ -20,7 +20,7 @@ def setup_fixtures():
 		# Item Group Records
 		{"doctype": "Item Group", "item_group_name": "Fee Component"},
 		# Customer Group Records
-		{"doctype": "Customer Group", "customer_group_name": "Student"},
+		{"doctype": "Customer Group", "customer_group_name": "Student", "parent_customer_group": "All Customer Groups"},
 	]
 	make_records(records)
 
