@@ -51,7 +51,8 @@
    "in_list_view": 1,
    "label": "Fee Structure",
    "options": "Fee Structure",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "due_date",
@@ -60,11 +61,14 @@
    "reqd": 1
   },
   {
+   "default": "EDU/FSH/.YYYY./",
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Naming Series",
    "no_copy": 1,
-   "options": "EDU-FSH-.YYYY.-"
+   "options": "EDU/FSH/.YYYY./",
+   "read_only": 1
   },
   {
    "fieldname": "status",
@@ -94,27 +98,31 @@
    "fieldtype": "Link",
    "label": "Student Category",
    "options": "Student Category",
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
    "options": "Program",
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
    "options": "Academic Year",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
-   "options": "Academic Term"
+   "options": "Academic Term",
+   "search_index": 1
   },
   {
    "fieldname": "section_break_10",
@@ -281,7 +289,7 @@
    "link_fieldname": "fee_schedule"
   }
  ],
- "modified": "2024-07-10 00:17:14.407591",
+ "modified": "2026-03-08 23:13:47.512787",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
@@ -330,6 +338,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [

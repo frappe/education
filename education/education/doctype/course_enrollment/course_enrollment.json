@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:EDU-CE-{YYYY}-{#####}",
+ "autoname": "EDU/CE/.YYYY./.#####",
  "beta": 1,
  "creation": "2018-10-15 15:35:39.375161",
  "doctype": "DocType",
@@ -70,7 +70,7 @@
   }
  ],
  "links": [],
- "modified": "2023-02-06 12:24:04.816603",
+ "modified": "2026-03-08 23:11:45.066466",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -100,6 +100,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

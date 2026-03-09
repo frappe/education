@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "EDU-ASP-.YYYY.-.#####",
+ "autoname": "EDU/ASP/.YYYY./.#####",
  "creation": "2015-11-12 16:34:34.658092",
  "doctype": "DocType",
  "document_type": "Setup",
@@ -87,21 +87,24 @@
    "fieldtype": "Link",
    "in_global_search": 1,
    "label": "Program",
-   "options": "Program"
+   "options": "Program",
+   "search_index": 1
   },
   {
    "fetch_from": "student_group.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "search_index": 1
   },
   {
    "fetch_from": "student_group.academic_term",
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
-   "options": "Academic Term"
+   "options": "Academic Term",
+   "search_index": 1
   },
   {
    "fieldname": "section_break_5",
@@ -198,10 +201,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-23 15:55:35.076251",
+ "modified": "2026-03-08 23:09:46.594489",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Plan",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -220,8 +224,9 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "assessment_name"
 }

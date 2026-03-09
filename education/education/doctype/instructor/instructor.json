@@ -40,10 +40,13 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "EDU/INS/.YYYY./",
    "fieldname": "naming_series",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Naming Series",
-   "options": "EDU-INS-.YYYY.-",
+   "options": "EDU/INS/.YYYY./",
+   "read_only": 1,
    "set_only_once": 1
   },
   {
@@ -92,7 +95,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2024-05-31 14:15:19.085273",
+ "modified": "2026-03-08 23:17:17.429044",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Instructor",
@@ -131,6 +134,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

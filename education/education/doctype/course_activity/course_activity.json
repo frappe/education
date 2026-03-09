@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:EDU-CA-{YYYY}-{#####}",
+ "autoname": "EDU/CA/.YYYY./.#####",
  "beta": 1,
  "creation": "2018-10-01 17:35:54.391413",
  "doctype": "DocType",
@@ -71,7 +71,7 @@
   }
  ],
  "links": [],
- "modified": "2023-02-06 12:23:47.047301",
+ "modified": "2026-03-08 23:11:10.526832",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Activity",
@@ -101,6 +101,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
