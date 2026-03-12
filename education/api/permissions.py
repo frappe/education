@@ -7,8 +7,8 @@ def has_app_permission():
 		return True
 
 	roles = frappe.get_roles()
-	helpdesk_roles = ["Education Manager"]
-	if any(role in roles for role in helpdesk_roles):
+	education_roles = ["Education Manager"]
+	if any(role in roles for role in education_roles):
 		return True
 
 	return False
