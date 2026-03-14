@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd frontend && yarn build",
+  "outputDirectory": "education/public/frontend"
+}
