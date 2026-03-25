@@ -105,7 +105,8 @@ class FeeSchedule(Document):
 			if component not in fee_structure_components:
 				frappe.msgprint(
 					_("Fee Component {0} is not part of Fee Structure {1}").format(
-						component, frappe.bold(getlink("Fee Structure", self.fee_structure))
+						component,
+						frappe.bold(getlink("Fee Structure", self.fee_structure)),
 					),
 					alert=True,
 				)
@@ -115,7 +116,7 @@ class FeeSchedule(Document):
 			frappe.db.get_all(
 				"Fee Schedule",
 				filters={"fee_structure": self.fee_structure},
-				fields=["sum(total_amount) as total"],
+				fields=[{"SUM": "total_amount", "as": "total"}],
 			)[0]["total"]
 			or 0
 		)
@@ -277,9 +278,9 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 			},
 		},
 		"Fee Component": {
-			"doctype": "Sales Invoice Item"
-			if doctype == "Sales Invoice"
-			else "Sales Order Item",
+			"doctype": (
+				"Sales Invoice Item" if doctype == "Sales Invoice" else "Sales Order Item"
+			),
 			"field_map": {
 				# Fee Component Field : Child doctype Field
 				"item": "item_code",
