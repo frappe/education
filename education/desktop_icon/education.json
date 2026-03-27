@@ -1,0 +1,21 @@
+{
+ "app": "education",
+ "bg_color": "gray",
+ "creation": "2026-03-24 17:21:10.011412",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon_type": "App",
+ "idx": 0,
+ "label": "Education",
+ "link_to": "Education",
+ "link_type": "Workspace Sidebar",
+ "logo_url": "/assets/education/edu-logo.svg",
+ "modified": "2026-03-24 17:21:10.011412",
+ "modified_by": "Administrator",
+ "name": "Education",
+ "owner": "Administrator",
+ "restrict_removal": 0,
+ "roles": [],
+ "standard": 1
+}
