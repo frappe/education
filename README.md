@@ -204,12 +204,6 @@ be available. The default credentials are:
 - Username: Administrator
 - Password: admin
 
-## Learn and connect
-
-- [Telegram Public Group](https://t.me/frappe_education)
-- [Discuss Forum](https://discuss.frappe.io/c/erpnext/schools-college-education/40)
-- [Documentation](https://docs.frappe.io/education)
-
 ## Compatibility matrix
 
 | Education Branch | Compatible Frappe Framework Version |
@@ -218,6 +212,12 @@ be available. The default credentials are:
 | version-15.2     | version-15                          |
 | version-16       | version-16                          |
 | develop          | develop branch                      |
+
+## Learn and connect
+
+- [Telegram Public Group](https://t.me/frappe_education)
+- [Discuss Forum](https://discuss.frappe.io/c/erpnext/schools-college-education/40)
+- [Documentation](https://docs.frappe.io/education) |
 
 <br>
 <br>
