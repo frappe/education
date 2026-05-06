@@ -5,7 +5,8 @@ import re
 import frappe
 from frappe.model.document import Document
 
-from ...utils import (validate_isbn10,validate_isbn13)
+from ...utils import validate_isbn10, validate_isbn13
+
 
 class LibraryMedia(Document):
 	def after_insert(self):
@@ -15,18 +16,18 @@ class LibraryMedia(Document):
 			from ...utils import create_media_copies
 
 			create_media_copies(self.name, count=count)
-        
+
 		if self.publisher:
-			frappe.get_doc({
-				"doctype": "Publisher Media Link",
-				"parent": self.publisher,
-				"parenttype": "Publisher",
-				"parentfield": "published_media",
-				"media": self.name,
-				"role": "Primary"
-			}).insert(ignore_permissions=True)
-
-
+			frappe.get_doc(
+				{
+					"doctype": "Publisher Media Link",
+					"parent": self.publisher,
+					"parenttype": "Publisher",
+					"parentfield": "published_media",
+					"media": self.name,
+					"role": "Primary",
+				}
+			).insert(ignore_permissions=True)
 
 	def validate(self):
 		if self.isbn:
@@ -34,13 +35,14 @@ class LibraryMedia(Document):
 
 			if not is_valid_isbn(self.isbn):
 				frappe.throw("Invalid ISBN number")
-			
+
 			if frappe.db.exists("Library Media", {"isbn": self.isbn}):
 				frappe.throw("Book with this ISBN already exists")
 
+
 def is_valid_isbn(isbn):
-    if len(isbn) == 10:
-        return validate_isbn10(isbn)
-    elif len(isbn) == 13:
-        return validate_isbn13(isbn)
-    return False
+	if len(isbn) == 10:
+		return validate_isbn10(isbn)
+	elif len(isbn) == 13:
+		return validate_isbn13(isbn)
+	return False

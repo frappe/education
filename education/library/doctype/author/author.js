@@ -1,54 +1,51 @@
 frappe.ui.form.on('Author', {
-    refresh(frm) {
-        load_books(frm);
-    }
-});
+  refresh(frm) {
+    load_books(frm)
+  },
+})
 
 function load_books(frm) {
+  if (!frm.doc.name || frm.is_new()) return
 
-    if (!frm.doc.name || frm.is_new()) return;
+  frappe.call({
+    method: 'frappe.client.get_list',
+    args: {
+      doctype: 'Library Media',
+      fields: ['name', 'title'],
+      limit_page_length: 100,
+    },
+    callback: function (r) {
+      let media_list = r.message || []
 
-    frappe.call({
-        method: "frappe.client.get_list",
-        args: {
-            doctype: "Library Media",
-            fields: ["name", "title"],
-            limit_page_length: 100
-        },
-        callback: function(r) {
+      let results = []
 
-            let media_list = r.message || [];
+      let promises = media_list.map((m) => {
+        return frappe.db.get_doc('Library Media', m.name)
+      })
 
-            let results = [];
+      Promise.all(promises).then((docs) => {
+        docs.forEach((doc) => {
+          ;(doc.authors || []).forEach((a) => {
+            if (a.author === frm.doc.name) {
+              results.push({
+                parent: doc.name,
+                title: doc.title,
+                role: a.role,
+              })
+            }
+          })
+        })
 
-            let promises = media_list.map(m => {
-                return frappe.db.get_doc("Library Media", m.name);
-            });
+        if (!results.length) {
+          frm
+            .get_field('books_written')
+            .$wrapper.html(
+              `<p style="color: grey;">No media found for this author</p>`
+            )
+          return
+        }
 
-            Promise.all(promises).then(docs => {
-
-                docs.forEach(doc => {
-
-                    (doc.authors || []).forEach(a => {
-
-                        if (a.author === frm.doc.name) {
-                            results.push({
-                                parent: doc.name,
-                                title: doc.title,
-                                role: a.role
-                            });
-                        }
-                    });
-                });
-
-                if (!results.length) {
-                    frm.get_field('books_written').$wrapper.html(
-                        `<p style="color: grey;">No media found for this author</p>`
-                    );
-                    return;
-                }
-
-                let html = `
+        let html = `
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -57,10 +54,10 @@ function load_books(frm) {
                             </tr>
                         </thead>
                         <tbody>
-                `;
+                `
 
-                results.forEach(row => {
-                    html += `
+        results.forEach((row) => {
+          html += `
                         <tr>
                             <td>
                                 <a href="/app/library-media/${row.parent}">
@@ -69,13 +66,13 @@ function load_books(frm) {
                             </td>
                             <td>${row.role || '—'}</td>
                         </tr>
-                    `;
-                });
+                    `
+        })
 
-                html += `</tbody></table>`;
+        html += `</tbody></table>`
 
-                frm.get_field('books_written').$wrapper.html(html);
-            });
-        }
-    });
+        frm.get_field('books_written').$wrapper.html(html)
+      })
+    },
+  })
 }
