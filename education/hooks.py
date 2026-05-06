@@ -29,7 +29,7 @@ add_to_apps_screen = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/education/css/education.css"
 # app_include_js = "/assets/education/js/education.js"
-app_include_js = "education.bundle.js"
+app_include_js = ["education.bundle.js", "/assets/education/js/html5-qrcode.min.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/education/css/education.css"

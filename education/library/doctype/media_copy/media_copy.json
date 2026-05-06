@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "LIB-COPY-.YYYY.-.####",
+ "creation": "2026-05-04 17:32:24.046743",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "media",
+  "media_title",
+  "publisher",
+  "format",
+  "column_break_ruea",
+  "authors_display",
+  "status",
+  "edition_number",
+  "location_information_section",
+  "library_branch",
+  "column_break_hhft",
+  "shelf_location",
+  "current_holder_section",
+  "member_card",
+  "member",
+  "holder_name",
+  "column_break_iikd",
+  "issue_date",
+  "due_date",
+  "acquisition_details_section",
+  "purchase_date",
+  "cost_price",
+  "column_break_hzxn",
+  "supplier",
+  "invoice_reference",
+  "section_break_jnbm",
+  "notes",
+  "section_break_mjei",
+  "condition",
+  "column_break_swnq",
+  "barcode"
+ ],
+ "fields": [
+  {
+   "fieldname": "media",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Media",
+   "options": "Library Media",
+   "reqd": 1
+  },
+  {
+   "default": "Available",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Available\nIssued\nReserved\nLost\nDamaged\nUnder Repair"
+  },
+  {
+   "fieldname": "location_information_section",
+   "fieldtype": "Section Break",
+   "label": "Location Information"
+  },
+  {
+   "fieldname": "library_branch",
+   "fieldtype": "Data",
+   "label": "Library Branch"
+  },
+  {
+   "fieldname": "column_break_hhft",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shelf_location",
+   "fieldtype": "Data",
+   "label": "Shelf Location"
+  },
+  {
+   "fieldname": "column_break_ruea",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_holder_section",
+   "fieldtype": "Section Break",
+   "label": "Current Holder"
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date"
+  },
+  {
+   "fieldname": "column_break_iikd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "acquisition_details_section",
+   "fieldtype": "Section Break",
+   "label": "Acquisition Details"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date"
+  },
+  {
+   "fieldname": "cost_price",
+   "fieldtype": "Currency",
+   "label": "Cost Price"
+  },
+  {
+   "fieldname": "column_break_hzxn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "invoice_reference",
+   "fieldtype": "Link",
+   "label": "Invoice Reference",
+   "options": "Purchase Invoice"
+  },
+  {
+   "fieldname": "section_break_mjei",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "label": "Condition",
+   "options": "New\nGood\nFair\nPoor"
+  },
+  {
+   "fieldname": "column_break_swnq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Data",
+   "label": "Barcode",
+   "unique": 1
+  },
+  {
+   "fieldname": "member_card",
+   "fieldtype": "Link",
+   "label": "Member Card",
+   "options": "Member Card"
+  },
+  {
+   "fetch_from": "member_card.library_member",
+   "fieldname": "member",
+   "fieldtype": "Link",
+   "label": "Member",
+   "options": "Library Member"
+  },
+  {
+   "fetch_from": "member.full_name",
+   "fieldname": "holder_name",
+   "fieldtype": "Data",
+   "label": "Holder Name"
+  },
+  {
+   "fetch_from": "media.publisher",
+   "fieldname": "publisher",
+   "fieldtype": "Link",
+   "label": "Publisher",
+   "options": "Publisher"
+  },
+  {
+   "fieldname": "edition_number",
+   "fieldtype": "Data",
+   "label": "Edition Number"
+  },
+  {
+   "fieldname": "section_break_jnbm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "format",
+   "fieldtype": "Select",
+   "label": "Format",
+   "options": "Hardcover\nPaperback\nPDF\nAudio"
+  },
+  {
+   "fetch_from": "author.name1",
+   "fieldname": "authors_display",
+   "fieldtype": "HTML",
+   "label": "Authors Display"
+  },
+  {
+   "fetch_from": "media.title",
+   "fieldname": "media_title",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Media Title"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-05 23:34:21.962705",
+ "modified_by": "Administrator",
+ "module": "Library",
+ "name": "Media Copy",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "media"
+}

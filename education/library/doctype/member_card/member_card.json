@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "LIB-CARD-.YYYY.-.####",
+ "creation": "2026-05-05 14:38:19.008352",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "library_member",
+  "barcode",
+  "column_break_icho",
+  "qr_code",
+  "card_lifecycle_section",
+  "issue_date",
+  "status",
+  "column_break_kydf",
+  "expiry_date",
+  "replacement_tracking_section",
+  "replaced_card",
+  "section_break_zkfd",
+  "qr_image",
+  "barcode_image"
+ ],
+ "fields": [
+  {
+   "fieldname": "library_member",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Library Member",
+   "options": "Library Member",
+   "reqd": 1
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Attach",
+   "label": "Barcode"
+  },
+  {
+   "fieldname": "column_break_icho",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "card_lifecycle_section",
+   "fieldtype": "Section Break",
+   "label": "Card Lifecycle"
+  },
+  {
+   "default": "Today",
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date"
+  },
+  {
+   "fieldname": "column_break_kydf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nLost\nDisabled\nExpired"
+  },
+  {
+   "fieldname": "replacement_tracking_section",
+   "fieldtype": "Section Break",
+   "label": "Replacement Tracking"
+  },
+  {
+   "fieldname": "replaced_card",
+   "fieldtype": "Link",
+   "label": "Replaced Card",
+   "options": "Member Card"
+  },
+  {
+   "fieldname": "section_break_zkfd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "qr_image",
+   "fieldtype": "Image",
+   "label": "QR Image",
+   "options": "qr_code"
+  },
+  {
+   "fieldname": "barcode_image",
+   "fieldtype": "Image",
+   "label": "Barcode Image ",
+   "options": "barcode"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach",
+   "label": "QR Code"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-05 18:00:31.167575",
+ "modified_by": "Administrator",
+ "module": "Library",
+ "name": "Member Card",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

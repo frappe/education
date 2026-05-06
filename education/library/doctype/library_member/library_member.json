@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "LB-MEM-.YYYY.-.#####",
+ "creation": "2026-05-05 12:19:36.208809",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_info_section",
+  "full_name",
+  "membership_type",
+  "reference_doctype",
+  "column_break_ioqz",
+  "reference_name",
+  "external_member_name",
+  "membership_details_section",
+  "join_date",
+  "expiry_date",
+  "column_break_vwly",
+  "status",
+  "borrowing_rules_section",
+  "max_books_allowed",
+  "fine_rate_per_day",
+  "column_break_bzey",
+  "loan_period_days",
+  "system_fields_section",
+  "total_issued",
+  "column_break_jzup",
+  "outstanding_fines"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_info_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Info"
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ioqz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "membership_details_section",
+   "fieldtype": "Section Break",
+   "label": "Membership Details"
+  },
+  {
+   "fieldname": "membership_type",
+   "fieldtype": "Select",
+   "label": "Membership Type",
+   "options": "Student\nStaff\nExternal"
+  },
+  {
+   "fieldname": "column_break_vwly",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nSuspended\nExpired"
+  },
+  {
+   "fieldname": "join_date",
+   "fieldtype": "Date",
+   "label": "Join Date",
+   "options": "Today"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date"
+  },
+  {
+   "fieldname": "borrowing_rules_section",
+   "fieldtype": "Section Break",
+   "label": "Borrowing Rules"
+  },
+  {
+   "fieldname": "max_books_allowed",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Max Books Allowed",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "fine_rate_per_day",
+   "fieldtype": "Currency",
+   "label": "Fine Rate (per day)"
+  },
+  {
+   "fieldname": "column_break_bzey",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "loan_period_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Loan Period (Days)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "system_fields_section",
+   "fieldtype": "Section Break",
+   "label": "System Fields"
+  },
+  {
+   "fieldname": "total_issued",
+   "fieldtype": "Int",
+   "label": "Total Books Issued",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_jzup",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_fines",
+   "fieldtype": "Currency",
+   "label": "Outstanding Fines",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "external_member_name",
+   "fieldtype": "Data",
+   "label": "External Member Name"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-05 19:33:47.788805",
+ "modified_by": "Administrator",
+ "module": "Library",
+ "name": "Library Member",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "full_name"
+}
