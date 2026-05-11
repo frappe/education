@@ -87,3 +87,17 @@ let get_programs_without_course = function (course) {
     args: { course: course },
   })
 }
+
+frappe.ui.form.on('Course Subject', {
+  subjects_add: function (frm) {
+    frm.fields_dict['subjects'].grid.get_field('subject').get_query = function (
+      doc
+    ) {
+      var subjects_list = []
+      $.each(doc.subjects, function (idx, val) {
+        if (val.subject) subjects_list.push(val.subject)
+      })
+      return { filters: [['Subject', 'name', 'not in', subjects_list]] }
+    }
+  },
+})

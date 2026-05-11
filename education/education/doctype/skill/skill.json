@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:skill_name",
  "creation": "2026-05-08 14:02:06.832988",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -16,7 +17,8 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Skill Name",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "default": "0",
@@ -39,10 +41,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-08 14:19:30.681994",
+ "modified": "2026-05-11 19:08:44.634237",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Skill",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

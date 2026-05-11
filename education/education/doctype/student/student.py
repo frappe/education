@@ -72,13 +72,13 @@ class Student(Document):
 		"""Create a website user for student creation if not already exists"""
 		if not frappe.db.get_single_value(
 			"Education Settings", "user_creation_skip"
-		) and not frappe.db.exists("User", self.student_email_id):
+		) and not frappe.db.exists("User", self.email_address):
 			student_user = frappe.get_doc(
 				{
 					"doctype": "User",
 					"first_name": self.first_name,
 					"last_name": self.last_name,
-					"email": self.student_email_id,
+					"email": self.email_address,
 					"gender": self.gender,
 					"send_welcome_email": 1,
 					"user_type": "Website User",
@@ -107,7 +107,10 @@ class Student(Document):
 		"""Updates Student Applicant status to Admitted"""
 		if self.student_applicant:
 			frappe.db.set_value(
-				"Student Applicant", self.student_applicant, "application_status", "Admitted"
+				"Student Applicant",
+				self.student_applicant,
+				"application_status",
+				"Admitted",
 			)
 
 	# End of Validate Functions
@@ -137,13 +140,16 @@ class Student(Document):
 
 		frappe.db.set_value("Student", self.name, "customer", customer.name)
 		frappe.msgprint(
-			_("Customer {0} created and linked to Student").format(customer.name), alert=True
+			_("Customer {0} created and linked to Student").format(customer.name),
+			alert=True,
 		)
 
 	def get_all_course_enrollments(self):
 		"""Returns a list of course enrollments linked with the current student"""
 		course_enrollments = frappe.get_all(
-			"Course Enrollment", filters={"student": self.name}, fields=["course", "name"]
+			"Course Enrollment",
+			filters={"student": self.name},
+			fields=["course", "name"],
 		)
 		if not course_enrollments:
 			return None
@@ -178,7 +184,11 @@ class Student(Document):
 						content.name, content.doctype, course_enrollment_name
 					)
 					progress.append(
-						{"content": content.name, "content_type": content.doctype, "is_complete": status}
+						{
+							"content": content.name,
+							"content_type": content.doctype,
+							"is_complete": status,
+						}
 					)
 				elif content.doctype == "Quiz":
 					status, score, result, time_taken = check_quiz_completion(
@@ -209,7 +219,8 @@ class Student(Document):
 			enrollment.save(ignore_permissions=True)
 		except frappe.exceptions.ValidationError:
 			enrollment_name = frappe.get_list(
-				"Program Enrollment", filters={"student": self.name, "Program": program_name}
+				"Program Enrollment",
+				filters={"student": self.name, "Program": program_name},
 			)[0].name
 			return frappe.get_doc("Program Enrollment", enrollment_name)
 		else:

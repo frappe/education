@@ -8,19 +8,24 @@
  "engine": "InnoDB",
  "field_order": [
   "course_name",
+  "program",
   "course_abbreviation",
   "evaluation_type",
   "course_credit",
-  "minimum_unit_load",
+  "subject_selection",
   "hero_image",
+  "column_break_jlqj",
+  "area_of_study",
+  "area_of_specialization",
+  "minimum_unit_load",
+  "registration_fee",
+  "registration_fee_item",
   "column_break_tflc",
   "company",
   "department",
   "maximum_unit_load",
-  "column_break_jlqj",
-  "program",
-  "area_of_study",
-  "area_of_specialization",
+  "course_change_fee",
+  "course_change_fee_item",
   "section_break_byod",
   "short_description",
   "full_description",
@@ -129,7 +134,8 @@
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
-   "options": "Program"
+   "options": "Program",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_byod",
@@ -180,12 +186,51 @@
    "fieldname": "subjects",
    "fieldtype": "Table",
    "label": "Subjects",
-   "options": "Course Subject Item"
+   "options": "Course Subject"
+  },
+  {
+   "depends_on": "eval:doc.course_change_fee===1;",
+   "fieldname": "course_change_fee_item",
+   "fieldtype": "Link",
+   "label": "Course Change Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "mandatory_depends_on": "eval:doc.course_change_fee===1;",
+   "options": "Item"
+  },
+  {
+   "depends_on": "eval:doc.registration_fee===1;",
+   "fieldname": "registration_fee_item",
+   "fieldtype": "Link",
+   "label": "Registration Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "mandatory_depends_on": "eval:doc.registration_fee===1;",
+   "options": "Item"
+  },
+  {
+   "default": "0",
+   "description": "Check if course change fee is required",
+   "fieldname": "course_change_fee",
+   "fieldtype": "Check",
+   "label": "Course Change Fee?"
+  },
+  {
+   "default": "0",
+   "description": "Check if registration fee is required",
+   "fieldname": "registration_fee",
+   "fieldtype": "Check",
+   "label": "Registration Fee?"
+  },
+  {
+   "default": "Regular",
+   "fieldname": "subject_selection",
+   "fieldtype": "Select",
+   "label": "Subject Selection",
+   "options": "Regular\nCredit Based\nSubject Based"
   }
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2026-05-08 10:33:00.446895",
+ "modified": "2026-05-11 18:22:18.403542",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

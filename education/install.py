@@ -7,6 +7,7 @@ from frappe.permissions import add_permission, update_permission_property
 def after_install():
 	setup_fixtures()
 	create_student_role()
+	create_faculty_role()
 	create_parent_assessment_group()
 	create_invoice_permissions()
 	create_custom_fields(get_custom_fields())
@@ -16,7 +17,11 @@ def after_install():
 def setup_fixtures():
 	records = [
 		# Party Type Records
-		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
+		{
+			"doctype": "Party Type",
+			"party_type": "Student",
+			"account_type": "Receivable",
+		},
 		# Item Group Records
 		{"doctype": "Item Group", "item_group_name": "Fee Component"},
 		# Customer Group Records
@@ -39,6 +44,11 @@ def create_parent_assessment_group():
 def create_student_role():
 	if not frappe.db.exists("Role", "Student"):
 		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 0}).save()
+
+
+def create_faculty_role():
+	if not frappe.db.exists("Role", "Faculty"):
+		frappe.get_doc({"doctype": "Role", "role_name": "Faculty", "desk_access": 0}).save()
 
 
 def create_invoice_permissions():

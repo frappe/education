@@ -14,14 +14,15 @@
   "first_name",
   "middle_name",
   "last_name",
+  "student_applicant",
   "column_break_4",
   "naming_series",
   "joining_date",
   "user",
-  "student_applicant",
+  "student_email_id",
   "image",
   "section_break_7",
-  "student_email_id",
+  "email_address",
   "date_of_birth",
   "blood_group",
   "column_break_3",
@@ -55,6 +56,7 @@
   "exit",
   "date_of_leaving",
   "leaving_certificate_number",
+  "alumni",
   "column_break_31",
   "reason_for_leaving",
   "student_name",
@@ -116,7 +118,6 @@
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Student Email Address",
-   "reqd": 1,
    "unique": 1
   },
   {
@@ -336,6 +337,20 @@
    "fieldtype": "Table",
    "label": "Self Assessed Skills",
    "options": "Self Assessed Skill"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Email Address",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "alumni",
+   "fieldtype": "Check",
+   "label": "Alumni?"
   }
  ],
  "image_field": "image",
@@ -376,7 +391,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2026-05-08 14:40:33.058369",
+ "modified": "2026-05-11 18:58:10.793799",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

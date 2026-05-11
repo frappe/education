@@ -9,14 +9,16 @@
  "field_order": [
   "program_name",
   "program_level",
+  "minimum_unit_load",
   "area_of_study",
   "hero_image",
   "column_break_3",
   "program_abbreviation",
-  "department",
+  "maximum_unit_load",
+  "required_thesis",
   "column_break_pzsx",
   "company",
-  "required_thesis",
+  "department",
   "section_break_nuty",
   "short_description",
   "full_description",
@@ -107,12 +109,23 @@
   {
    "fieldname": "short_description",
    "fieldtype": "Small Text",
-   "label": "Short Description"
+   "label": "Short Description",
+   "reqd": 1
   },
   {
    "fieldname": "full_description",
    "fieldtype": "Text Editor",
    "label": "Full Description"
+  },
+  {
+   "fieldname": "minimum_unit_load",
+   "fieldtype": "Float",
+   "label": "Minimum Unit Load"
+  },
+  {
+   "fieldname": "maximum_unit_load",
+   "fieldtype": "Float",
+   "label": "Maximum Unit Load"
   }
  ],
  "image_field": "hero_image",
@@ -158,7 +171,7 @@
    "link_fieldname": "program"
   }
  ],
- "modified": "2026-05-08 08:55:45.695214",
+ "modified": "2026-05-11 16:25:31.053845",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",
