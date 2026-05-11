@@ -8,12 +8,26 @@
  "engine": "InnoDB",
  "field_order": [
   "course_name",
-  "department",
+  "course_abbreviation",
+  "evaluation_type",
+  "course_credit",
+  "minimum_unit_load",
   "hero_image",
   "column_break_tflc",
-  "description",
+  "company",
+  "department",
+  "maximum_unit_load",
+  "column_break_jlqj",
+  "program",
+  "area_of_study",
+  "area_of_specialization",
+  "section_break_byod",
+  "short_description",
+  "full_description",
   "section_break_6",
   "topics",
+  "subjects_tab",
+  "subjects",
   "assessment_tab",
   "assessment",
   "default_grading_scale",
@@ -70,11 +84,6 @@
    "options": "Course Assessment Criteria"
   },
   {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
    "fieldname": "column_break_tflc",
    "fieldtype": "Column Break"
   },
@@ -88,11 +97,95 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "course_abbreviation",
+   "fieldtype": "Data",
+   "label": "Course Abbreviation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evaluation_type",
+   "fieldtype": "Select",
+   "label": "Evaluation Type",
+   "options": "Normal\nGPA\nCWA\nCCE",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "program.area_of_study",
+   "fieldname": "area_of_study",
+   "fieldtype": "Link",
+   "label": "Area of Study",
+   "options": "Area of Study"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
+  },
+  {
+   "fieldname": "section_break_byod",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "short_description",
+   "fieldtype": "Small Text",
+   "label": "Short Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "full_description",
+   "fieldtype": "Text Editor",
+   "label": "Full Description"
+  },
+  {
+   "fieldname": "column_break_jlqj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "area_of_specialization",
+   "fieldtype": "Link",
+   "label": "Area of Specialization",
+   "options": "Area of Specialization"
+  },
+  {
+   "fieldname": "minimum_unit_load",
+   "fieldtype": "Float",
+   "label": "Minimum Unit Load"
+  },
+  {
+   "fieldname": "course_credit",
+   "fieldtype": "Float",
+   "label": "Course Credit"
+  },
+  {
+   "fieldname": "maximum_unit_load",
+   "fieldtype": "Float",
+   "label": "Maximum Unit Load"
+  },
+  {
+   "fieldname": "subjects_tab",
+   "fieldtype": "Tab Break",
+   "label": "Subjects"
+  },
+  {
+   "fieldname": "subjects",
+   "fieldtype": "Table",
+   "label": "Subjects",
+   "options": "Course Subject Item"
   }
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2023-12-19 10:03:17.393260",
+ "modified": "2026-05-08 10:33:00.446895",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",
@@ -148,6 +241,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "search_fields": "course_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

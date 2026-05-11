@@ -42,6 +42,10 @@
   "guardians",
   "section_break_20",
   "siblings",
+  "skills_tab",
+  "technical_skills",
+  "section_break_isip",
+  "self_assessed_skills",
   "customer_details_tab",
   "customer_details_section",
   "customer",
@@ -311,6 +315,27 @@
   {
    "fieldname": "column_break_rgpi",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "skills_tab",
+   "fieldtype": "Tab Break",
+   "label": "Skills"
+  },
+  {
+   "fieldname": "technical_skills",
+   "fieldtype": "Table",
+   "label": "Technical Skills",
+   "options": "Technical Skill"
+  },
+  {
+   "fieldname": "section_break_isip",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "self_assessed_skills",
+   "fieldtype": "Table",
+   "label": "Self Assessed Skills",
+   "options": "Self Assessed Skill"
   }
  ],
  "image_field": "image",
@@ -351,7 +376,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2024-06-07 16:52:48.135292",
+ "modified": "2026-05-08 14:40:33.058369",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -385,6 +410,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

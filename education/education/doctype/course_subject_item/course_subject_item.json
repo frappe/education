@@ -1,0 +1,118 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-08 10:17:37.826888",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "subject",
+  "type",
+  "subject_type",
+  "course",
+  "abbreviation",
+  "column_break_bjdm",
+  "credit_hours",
+  "credit",
+  "attempted_units",
+  "company",
+  "department"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Subject",
+   "options": "Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Abbreviation",
+   "options": "Name"
+  },
+  {
+   "fetch_from": "subject.type",
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Theory\nPractical\nBoth\nOther"
+  },
+  {
+   "fetch_from": "subject.subject_type",
+   "fieldname": "subject_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Subject Type",
+   "options": "Compulsory\nElective"
+  },
+  {
+   "fetch_from": "subject.credit_hours",
+   "fieldname": "credit_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit Hours"
+  },
+  {
+   "fetch_from": "subject.course",
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Course",
+   "options": "Course"
+  },
+  {
+   "fetch_from": "subject.credit",
+   "fieldname": "credit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit"
+  },
+  {
+   "fetch_from": "subject.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fetch_from": "subject.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "default": "1",
+   "fieldname": "attempted_units",
+   "fieldtype": "Select",
+   "label": "Attempted Units",
+   "options": "0.25\n0.50\n0.75\n1"
+  },
+  {
+   "fieldname": "column_break_bjdm",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-08 10:33:14.753043",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Course Subject Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

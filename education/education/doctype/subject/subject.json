@@ -1,0 +1,141 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:subject_name",
+ "creation": "2026-05-08 10:02:52.867480",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "subject_name",
+  "abbreviation",
+  "type",
+  "subject_type",
+  "course",
+  "column_break_pljb",
+  "credit_hours",
+  "credit",
+  "attempted_units",
+  "column_break_vwbb",
+  "company",
+  "department",
+  "use_default_course_template"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subject Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Type",
+   "options": "Theory\nPractical\nBoth\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subject Type",
+   "options": "Compulsory\nElective",
+   "reqd": 1
+  },
+  {
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Abbreviation",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "use_default_course_template",
+   "fieldtype": "Check",
+   "label": "Use Default Course Template"
+  },
+  {
+   "fieldname": "credit_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit Hours"
+  },
+  {
+   "fieldname": "credit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit"
+  },
+  {
+   "default": "1",
+   "fieldname": "attempted_units",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Attempted Units",
+   "options": "0.25\n0.50\n0.75\n1"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "column_break_pljb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_vwbb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "label": "Course",
+   "options": "Course",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-08 10:31:42.147369",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Subject",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
