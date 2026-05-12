@@ -54,13 +54,13 @@
    "fieldname": "facilities",
    "fieldtype": "Table",
    "label": "Facilities",
-   "options": "Class Room Item"
+   "options": "Class Room Facility"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-08 22:07:00.311433",
+ "modified": "2026-05-12 17:04:41.392444",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Class Room",

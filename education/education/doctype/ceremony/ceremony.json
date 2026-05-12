@@ -14,7 +14,15 @@
   "max_guests_per_student",
   "create_event",
   "section_break_nto6",
-  "amended_from"
+  "amended_from",
+  "programs_tab",
+  "programs",
+  "student_documents_tab",
+  "student_documents",
+  "guest_documents_tab",
+  "guest_documents",
+  "notes_tab",
+  "notes"
  ],
  "fields": [
   {
@@ -74,14 +82,60 @@
   {
    "fieldname": "max_guests_per_student",
    "fieldtype": "Int",
-   "label": "Max Guests per Student"
+   "label": "Max Guests per Student",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "programs_tab",
+   "fieldtype": "Tab Break",
+   "label": "Programs"
+  },
+  {
+   "fieldname": "programs",
+   "fieldtype": "Table",
+   "label": "Programs",
+   "options": "Ceremony Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_documents_tab",
+   "fieldtype": "Tab Break",
+   "label": "Student Documents"
+  },
+  {
+   "fieldname": "student_documents",
+   "fieldtype": "Table",
+   "label": "Student Documents",
+   "options": "Ceremony Document Item"
+  },
+  {
+   "fieldname": "guest_documents_tab",
+   "fieldtype": "Tab Break",
+   "label": "Guest Documents"
+  },
+  {
+   "fieldname": "guest_documents",
+   "fieldtype": "Table",
+   "label": "Guest Documents",
+   "options": "Ceremony Document Item"
+  },
+  {
+   "fieldname": "notes_tab",
+   "fieldtype": "Tab Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Long Text",
+   "label": "Notes"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-08 20:53:43.953374",
+ "modified": "2026-05-12 16:31:58.225063",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Ceremony",

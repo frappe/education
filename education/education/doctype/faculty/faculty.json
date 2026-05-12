@@ -87,7 +87,8 @@
    "fieldname": "allowed_departments",
    "fieldtype": "Table MultiSelect",
    "label": "Allowed Departments",
-   "options": "Allowed Department"
+   "options": "Allowed Department",
+   "reqd": 1
   },
   {
    "fieldname": "user_id",
@@ -206,7 +207,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-11 20:50:17.103942",
+ "modified": "2026-05-12 12:15:27.321161",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Faculty",

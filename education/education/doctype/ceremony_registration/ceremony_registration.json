@@ -9,7 +9,7 @@
   "ceremony",
   "student",
   "registration_date",
-  "total_guests",
+  "allowed_guests",
   "column_break_vpej",
   "program",
   "email",
@@ -64,24 +64,19 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Registration Date",
-   "reqd": 1
+   "read_only": 1
   },
   {
-   "fetch_from": "student.student_email_id",
+   "fetch_from": "student.email_address",
    "fieldname": "email",
    "fieldtype": "Data",
    "label": "Email"
   },
   {
+   "fetch_from": "student.student_mobile_number",
    "fieldname": "mobile",
    "fieldtype": "Data",
    "label": "Mobile"
-  },
-  {
-   "fieldname": "total_guests",
-   "fieldtype": "Int",
-   "label": "Total Guests",
-   "read_only": 1
   },
   {
    "fieldname": "column_break_vpej",
@@ -96,13 +91,20 @@
    "fieldtype": "Table",
    "label": "Guests",
    "options": "Ceremony Guest Item"
+  },
+  {
+   "fetch_from": "ceremony.max_guests_per_student",
+   "fieldname": "allowed_guests",
+   "fieldtype": "Int",
+   "label": "Number of Allowed Guests",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-08 21:08:47.215991",
+ "modified": "2026-05-12 16:53:32.547764",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Ceremony Registration",

@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ClassRoomItem(Document):
+class CeremonyDocument(Document):
 	pass
