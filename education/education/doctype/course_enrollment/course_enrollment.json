@@ -70,11 +70,11 @@
   }
  ],
  "links": [],
- "modified": "2023-02-06 12:24:04.816603",
+ "modified": "2026-05-18 18:16:31.658879",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
- "naming_rule": "Expression",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
@@ -100,6 +100,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

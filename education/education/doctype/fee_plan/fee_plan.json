@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "autoname": "FP-.YYYY.-.####",
+ "creation": "2026-05-18 12:49:27.062109",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student",
+  "fee_term",
+  "column_break_zqnf",
+  "company",
+  "fee_term_type",
+  "section_break_kyvt",
+  "fee_plan_details",
+  "section_break_ddni",
+  "total_amount",
+  "column_break_xsoz",
+  "outstanding_amount",
+  "column_break_grie",
+  "paid_amount",
+  "section_break_iu9a",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_iu9a",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fee Plan",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student",
+   "options": "Student",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fee_term",
+   "fieldtype": "Link",
+   "label": "Fee Term",
+   "options": "Fee Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zqnf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.fee_term_type===\"Fixed Fees of Days\" || doc.fee_term_type===\"Fixed Fees of Dates\" || doc.fee_term_type===\"Duration Based Fees\";",
+   "fieldname": "section_break_kyvt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "fee_plan_details",
+   "fieldtype": "Table",
+   "label": "Fee Plan Details",
+   "options": "Fee Plan Detail"
+  },
+  {
+   "fetch_from": "fee_term.term_type",
+   "fieldname": "fee_term_type",
+   "fieldtype": "Select",
+   "label": "Fee Term Type",
+   "options": "Fixed Fees of Days\nFixed Fees of Dates\nDuration Based Fees\nSession Based Fees\nFaculty Session Based Fees",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ddni",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_xsoz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_grie",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-05-18 19:45:26.890279",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Fee Plan",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

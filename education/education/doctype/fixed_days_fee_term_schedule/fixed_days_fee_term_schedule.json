@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-14 12:59:23.634271",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "due_days",
+  "percent_of_total",
+  "reminder_days",
+  "reminder_direction"
+ ],
+ "fields": [
+  {
+   "fieldname": "due_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Due Days",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "percent_of_total",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Percent of Total",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "reminder_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Reminder Days",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reminder_direction",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Reminder Direction",
+   "options": "Before\nAfter",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-18 11:24:44.183874",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Fixed Days Fee Term Schedule",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

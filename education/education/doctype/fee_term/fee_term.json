@@ -1,0 +1,215 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:fee_term_name",
+ "creation": "2026-05-13 14:45:29.979782",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "fee_term_name",
+  "term_type",
+  "description",
+  "column_break_vywd",
+  "company",
+  "posting_date",
+  "section_break_wfnw",
+  "fee_components",
+  "payment_terms_section",
+  "fixed_days_payment_terms",
+  "fixed_dates_payment_terms",
+  "duration_settings_section",
+  "bill_every",
+  "fees_start_date",
+  "column_break_smoh",
+  "invoice_cycles",
+  "totals_section",
+  "total_amount",
+  "accounts_section",
+  "receivable_account",
+  "accounting_dimensions_section",
+  "cost_center",
+  "section_break_l0lu",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_l0lu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fee Term",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "fee_term_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Fee Term Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "term_type",
+   "fieldtype": "Select",
+   "label": "Term Type",
+   "options": "Fixed Fees of Days\nFixed Fees of Dates\nDuration Based Fees\nSession Based Fees\nFaculty Session Based Fees",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_break_wfnw",
+   "fieldtype": "Section Break",
+   "label": "Fee components"
+  },
+  {
+   "fieldname": "fee_components",
+   "fieldtype": "Table",
+   "label": "Fee Components",
+   "options": "Fee Component"
+  },
+  {
+   "fieldname": "column_break_vywd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.term_type===\"Fixed Fees of Days\" || doc.term_type===\"Fixed Fees of Dates\";",
+   "fieldname": "payment_terms_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Terms"
+  },
+  {
+   "depends_on": "eval:doc.term_type===\"Duration Based Fees\";",
+   "fieldname": "duration_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Duration Settings"
+  },
+  {
+   "fieldname": "bill_every",
+   "fieldtype": "Select",
+   "label": "Bill Every",
+   "mandatory_depends_on": "eval:doc.term_type===\"Duration Based Fees\";",
+   "options": "\nDay\nWeek\nMonth\nYear"
+  },
+  {
+   "fieldname": "fees_start_date",
+   "fieldtype": "Date",
+   "label": "Fees Start Date"
+  },
+  {
+   "fieldname": "column_break_smoh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice_cycles",
+   "fieldtype": "Int",
+   "label": "Invoice Cycles",
+   "mandatory_depends_on": "eval:doc.term_type===\"Duration Based Fees\";",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Accounts"
+  },
+  {
+   "fieldname": "receivable_account",
+   "fieldtype": "Link",
+   "label": "Receivable Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "accounting_dimensions_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting Dimensions"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.term_type===\"Fixed Fees of Days\";",
+   "fieldname": "fixed_days_payment_terms",
+   "fieldtype": "Table",
+   "label": "Payment Terms",
+   "mandatory_depends_on": "eval:doc.term_type===\"Fixed Fees of Days\";",
+   "options": "Fixed Days Fee Term Schedule"
+  },
+  {
+   "depends_on": "eval:doc.term_type===\"Fixed Fees of Dates\";",
+   "fieldname": "fixed_dates_payment_terms",
+   "fieldtype": "Table",
+   "label": "Payment Terms",
+   "mandatory_depends_on": "eval:doc.term_type===\"Fixed Fees of Dates\";",
+   "options": "Fixed Dates Fee Term Schedule"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-05-18 14:58:10.548014",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Fee Term",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
