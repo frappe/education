@@ -22,6 +22,9 @@
   "image",
   "section_break_7",
   "student_email_id",
+  "school",
+  "reference_number",
+  "program",
   "date_of_birth",
   "blood_group",
   "column_break_3",
@@ -114,6 +117,23 @@
    "label": "Student Email Address",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "reference_number",
+   "fieldtype": "Data",
+   "label": "Reference Number"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
   },
   {
    "fieldname": "student_mobile_number",
