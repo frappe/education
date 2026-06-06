@@ -10,6 +10,7 @@ class FeeCategory(Document):
 	def validate(self):
 		self.update_defaults_from_item_group()
 		self.validate_duplicate_item_defaults()
+		self.validate_all_companies_covered()
 
 	def after_insert(self):
 		# create an item
@@ -52,6 +53,30 @@ class FeeCategory(Document):
 		if len(companies) != len(set(companies)):
 			frappe.throw(_("Cannot set multiple Item Defaults for a company."))
 
+	def validate_all_companies_covered(self):
+		"""Validate that Item Defaults are set for all active, mandatory companies."""
+
+		# 1. Get all active companies (not group companies)
+		active_companies = frappe.db.get_list("Company", filters={"is_group": 0}, pluck="name")
+
+		# 2. Get companies covered in the Fee Category's Item Defaults table
+		covered_companies = [d.company for d in self.item_defaults]
+
+		# If the defaults table is empty, skip the check (defaults will be fetched from Item Group later)
+		if not self.item_defaults:
+			return
+
+		# Find missing companies
+		missing_companies = list(set(active_companies) - set(covered_companies))
+
+		if missing_companies:
+			frappe.throw(
+				_("Please set Accounting Defaults for the following active companies: {0}").format(
+					", ".join(missing_companies)
+				),
+				title=_("Missing Company Defaults")
+			)
+
 
 def create_item(doc, use_name_field=True):
 	name_field = doc.name if use_name_field else doc.fees_category
@@ -82,6 +107,7 @@ def update_item(fee_category):
 	)
 	item_default_companies = [d.company for d in item_defaults]
 	fee_category_companies = [d.company for d in fee_category.item_defaults]
+
 	for fee_category_default in fee_category.item_defaults:
 		if fee_category_default.company not in item_default_companies:
 			add_item_defaults(item, fee_category_default)
