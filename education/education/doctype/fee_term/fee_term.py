@@ -31,6 +31,16 @@ class FeeTerm(Document):
 			if self.bill_every == "":
 				frappe.throw("Bill Every field is required for Duration Based Fees term type")
 
+	def before_save(self):
+		total_amount = 0
+		for component in self.fee_components:
+			if flt(component.amount) <= 0:
+				frappe.throw("Amount must be greater than zero for all fee components")
+
+			total_amount += flt(component.amount)
+
+		self.total_amount = total_amount
+
 	def validate_percentage(self, table_field):
 		total_percentage = sum(flt(term.percent_of_total) for term in self.get(table_field))
 		if total_percentage != 100:

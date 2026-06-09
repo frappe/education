@@ -20,6 +20,26 @@ frappe.ui.form.on('Fee Plan', {
         },
       }
     })
+
+    // if (
+    //   !frm.doc.__islocal &&
+    //   frm.doc.__onload &&
+    //   frm.doc.__onload.dashboard_info
+    // ) {
+    //   var info = frm.doc.__onload.dashboard_info
+    //   frm.dashboard.add_indicator(
+    //     __('Total Collected: {0}', [
+    //       format_currency(info.total_paid, info.currency),
+    //     ]),
+    //     'blue',
+    //   )
+    //   frm.dashboard.add_indicator(
+    //     __('Total Outstanding: {0}', [
+    //       format_currency(info.total_unpaid, info.currency),
+    //     ]),
+    //     info.total_unpaid ? 'orange' : 'green',
+    //   )
+    // }
   },
 
   fee_term(frm) {

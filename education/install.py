@@ -128,6 +128,13 @@ def get_custom_fields():
 				"options": "Fee Schedule",
 				"insert_after": "column_break_ejcc",
 			},
+			{
+				"fieldname": "fee_plan",
+				"fieldtype": "Link",
+				"label": "Fee Plan",
+				"options": "Fee Plan",
+				"insert_after": "fee_schedule",
+			},
 		],
 		"Sales Order": [
 			{
