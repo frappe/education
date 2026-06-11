@@ -13,6 +13,14 @@ frappe.ui.form.on('Course', {
         },
       }
     })
+
+    frm.set_query('fee_term', function () {
+      return {
+        filters: {
+          docstatus: 1,
+        },
+      }
+    })
   },
 
   add_course_to_programs: function (frm) {

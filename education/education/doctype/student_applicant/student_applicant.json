@@ -10,14 +10,19 @@
   "first_name",
   "middle_name",
   "last_name",
+  "admission_register",
+  "course",
+  "is_already_a_student",
+  "student",
   "column_break_8",
   "naming_series",
   "application_date",
   "application_status",
-  "program",
+  "admission_based_on",
+  "registration_fee_item",
+  "registration_fee",
   "section_break_xuzu",
-  "student_email_id",
-  "student_admission",
+  "email_address",
   "student_category",
   "image",
   "column_break_lvby",
@@ -70,21 +75,11 @@
    "label": "Last Name"
   },
   {
-   "fieldname": "program",
-   "fieldtype": "Link",
-   "in_filter": 1,
-   "in_global_search": 1,
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Program",
-   "options": "Program",
-   "reqd": 1
-  },
-  {
    "default": "0",
    "fieldname": "paid",
    "fieldtype": "Check",
-   "label": "Paid"
+   "label": "Paid",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_8",
@@ -100,9 +95,12 @@
   },
   {
    "allow_on_submit": 1,
+   "default": "Applied",
    "fieldname": "application_status",
    "fieldtype": "Select",
    "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Application Status",
    "no_copy": 1,
    "options": "Applied\nApproved\nRejected\nAdmitted",
@@ -115,6 +113,7 @@
    "label": "Application Date"
   },
   {
+   "fetch_from": "admission_register.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
@@ -125,13 +124,8 @@
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
-   "options": "Academic Term"
-  },
-  {
-   "fieldname": "student_admission",
-   "fieldtype": "Link",
-   "label": "Student Admission",
-   "options": "Student Admission"
+   "options": "Academic Term",
+   "reqd": 1
   },
   {
    "fieldname": "image",
@@ -163,13 +157,6 @@
   {
    "fieldname": "column_break_12",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "student_email_id",
-   "fieldtype": "Data",
-   "label": "Student Email Address",
-   "options": "Email",
-   "unique": 1
   },
   {
    "fieldname": "student_mobile_number",
@@ -289,12 +276,76 @@
    "fieldtype": "Link",
    "label": "Country",
    "options": "Country"
+  },
+  {
+   "fieldname": "admission_register",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Admission Register",
+   "options": "Admission Register",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "admission_register.admission_based_on",
+   "fieldname": "admission_based_on",
+   "fieldtype": "Select",
+   "label": "Admission Based on",
+   "options": "\nProgram\nCourse",
+   "read_only": 1
+  },
+  {
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "label": "Course",
+   "mandatory_depends_on": "eval:doc.admission_based_on===\"Program\";",
+   "options": "Course",
+   "read_only_depends_on": "eval:doc.admission_based_on===\"Course\";"
+  },
+  {
+   "description": "Mandatory if a user will be created for the student upon admission",
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "label": "Email Address",
+   "options": "Email",
+   "unique": 1
+  },
+  {
+   "fetch_from": "admission_register.registration_fee_item",
+   "fieldname": "registration_fee_item",
+   "fieldtype": "Link",
+   "label": "Registration Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "options": "Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_already_a_student",
+   "fieldtype": "Check",
+   "label": "Is already a Student"
+  },
+  {
+   "depends_on": "eval:doc.is_already_a_student || doc.application_status===\"Approved\";",
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "mandatory_depends_on": "is_already_a_student",
+   "options": "Student",
+   "read_only_depends_on": "eval:doc.application_status===\"Approved\";"
+  },
+  {
+   "default": "0",
+   "fieldname": "registration_fee",
+   "fieldtype": "Check",
+   "label": "Registration Fee",
+   "read_only": 1
   }
  ],
- "filters": [],
  "image_field": "image",
  "links": [],
- "modified": "2023-12-06 16:27:13.360469",
+ "modified": "2026-06-11 20:22:30.528140",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
@@ -315,6 +366,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

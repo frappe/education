@@ -11,6 +11,7 @@
   "program",
   "course_abbreviation",
   "evaluation_type",
+  "fee_term",
   "course_credit",
   "subject_selection",
   "hero_image",
@@ -18,14 +19,16 @@
   "area_of_study",
   "area_of_specialization",
   "minimum_unit_load",
-  "registration_fee",
   "registration_fee_item",
+  "registration_fee_amount",
+  "registration_fee",
   "column_break_tflc",
   "company",
   "department",
   "maximum_unit_load",
-  "course_change_fee",
   "course_change_fee_item",
+  "course_change_fee_amount",
+  "course_change_fee",
   "section_break_byod",
   "short_description",
   "full_description",
@@ -189,21 +192,21 @@
    "options": "Course Subject"
   },
   {
-   "depends_on": "eval:doc.course_change_fee===1;",
+   "depends_on": "course_change_fee",
    "fieldname": "course_change_fee_item",
    "fieldtype": "Link",
    "label": "Course Change Fee Item",
    "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
-   "mandatory_depends_on": "eval:doc.course_change_fee===1;",
+   "mandatory_depends_on": "course_change_fee",
    "options": "Item"
   },
   {
-   "depends_on": "eval:doc.registration_fee===1;",
+   "depends_on": "registration_fee",
    "fieldname": "registration_fee_item",
    "fieldtype": "Link",
    "label": "Registration Fee Item",
    "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
-   "mandatory_depends_on": "eval:doc.registration_fee===1;",
+   "mandatory_depends_on": "registration_fee",
    "options": "Item"
   },
   {
@@ -226,11 +229,31 @@
    "fieldtype": "Select",
    "label": "Subject Selection",
    "options": "Regular\nCredit Based\nSubject Based"
+  },
+  {
+   "fieldname": "fee_term",
+   "fieldtype": "Link",
+   "label": "Fee Term",
+   "options": "Fee Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "registration_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Registration Fee Amount",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "depends_on": "course_change_fee",
+   "fieldname": "course_change_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Course Change Fee Amount",
+   "options": "Company:company:default_currency"
   }
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2026-05-11 18:22:18.403542",
+ "modified": "2026-06-11 11:12:11.018420",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

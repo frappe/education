@@ -1,0 +1,198 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2026-06-09 20:09:23.370590",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "start_date",
+  "max_number_of_admissions",
+  "minimum_age",
+  "column_break_tsxg",
+  "admission_based_on",
+  "end_date",
+  "course",
+  "program",
+  "column_break_mmuc",
+  "company",
+  "registration_fee_item",
+  "registration_fee_amount",
+  "course_fee_amount",
+  "registration_fee",
+  "section_break_qoyw",
+  "courses",
+  "section_break_bnar",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_bnar",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Admission Register",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "admission_based_on",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Admission Based on",
+   "options": "\nCourse\nProgram",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "max_number_of_admissions",
+   "fieldtype": "Int",
+   "label": "Max Number of Admissions",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "minimum_age",
+   "fieldtype": "Int",
+   "label": "Minimum Age (Years)",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.admission_based_on===\"Course\"",
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "label": "Course",
+   "mandatory_depends_on": "eval:doc.admission_based_on===\"Course\"",
+   "options": "Course"
+  },
+  {
+   "fieldname": "column_break_tsxg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "registration_fee",
+   "fieldtype": "Check",
+   "label": "Registration Fee"
+  },
+  {
+   "fieldname": "section_break_qoyw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:doc.admission_based_on===\"Program\";",
+   "fieldname": "courses",
+   "fieldtype": "Table",
+   "label": "Courses",
+   "mandatory_depends_on": "eval:doc.admission_based_on===\"Program\";",
+   "options": "Admission Register Course"
+  },
+  {
+   "depends_on": "eval:doc.admission_based_on===\"Program\"",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "mandatory_depends_on": "eval:doc.admission_based_on===\"Program\"",
+   "options": "Program"
+  },
+  {
+   "depends_on": "registration_fee",
+   "fieldname": "registration_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Registration Fee Amount",
+   "mandatory_depends_on": "registration_fee",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "column_break_mmuc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "registration_fee",
+   "fieldname": "registration_fee_item",
+   "fieldtype": "Link",
+   "label": "Registration Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "mandatory_depends_on": "registration_fee",
+   "options": "Item"
+  },
+  {
+   "depends_on": "eval:doc.admission_based_on===\"Course\";",
+   "fieldname": "course_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Course Fee Amount",
+   "mandatory_depends_on": "eval:doc.admission_based_on===\"Course\";",
+   "options": "Company:company:default_currency"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-06-11 20:12:37.891740",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Admission Register",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
