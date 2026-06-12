@@ -2,7 +2,28 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Admission Register', {
-  refresh(frm) {},
+  refresh(frm) {
+    if (frm.doc.company) {
+      frm.set_query('course', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+          },
+        }
+      })
+    }
+  },
+  company: function (frm) {
+    if (frm.doc.company) {
+      frm.set_query('course', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+          },
+        }
+      })
+    }
+  },
   course: function (frm) {
     if (frm.doc.course) {
       frm.call('get_course_details', { course: frm.doc }).then((r) => {
@@ -37,6 +58,7 @@ frappe.ui.form.on('Admission Register', {
         return {
           filters: {
             program: frm.doc.program,
+            company: frm.doc.company,
           },
         }
       })

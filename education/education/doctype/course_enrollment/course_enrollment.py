@@ -12,7 +12,23 @@ from frappe.utils import get_link_to_form
 
 class CourseEnrollment(Document):
 	def validate(self):
+		self.validate_admission_register()
 		self.validate_duplication()
+
+	def validate_admission_register(self):
+		if (
+			frappe.db.get_value("Admission Register", self.admission_register, "docstatus") != 1
+		):
+			frappe.throw(
+				_("Admission Register {0} must be submitted.").format(self.admission_register)
+			)
+
+		if self.course not in get_register_courses(self.admission_register):
+			frappe.throw(
+				_("Course {0} is not offered in Admission Register {1}.").format(
+					self.course, self.admission_register
+				)
+			)
 
 	def get_progress(self, student):
 		"""
@@ -37,7 +53,6 @@ class CourseEnrollment(Document):
 			{
 				"student": self.student,
 				"course": self.course,
-				"program_enrollment": self.program_enrollment,
 				"name": ("!=", self.name),
 			},
 		)
@@ -101,6 +116,38 @@ class CourseEnrollment(Document):
 
 			activity.insert(ignore_permissions=True)
 			return activity.name
+
+
+def get_register_courses(admission_register):
+	"""Return the courses offered in the given Admission Register."""
+	admission_based_on, course = frappe.db.get_value(
+		"Admission Register", admission_register, ["admission_based_on", "course"]
+	)
+
+	if admission_based_on == "Course":
+		return [course] if course else []
+
+	return frappe.get_all(
+		"Admission Register Course",
+		filters={"parenttype": "Admission Register", "parent": admission_register},
+		pluck="course",
+	)
+
+
+@frappe.whitelist()
+def get_allowed_courses(admission_register, student=None):
+	"""Return register courses the student is not yet enrolled in."""
+	courses = get_register_courses(admission_register)
+
+	if student and courses:
+		enrolled = frappe.get_all(
+			"Course Enrollment",
+			filters={"student": student, "course": ("in", courses)},
+			pluck="course",
+		)
+		courses = [course for course in courses if course not in enrolled]
+
+	return courses
 
 
 def check_activity_exists(enrollment, content_type, content):

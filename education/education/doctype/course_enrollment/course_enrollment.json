@@ -7,7 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "program_enrollment",
+  "admission_register",
   "program",
   "enrollment_date",
   "column_break_uisg",
@@ -17,10 +17,10 @@
  ],
  "fields": [
   {
-   "fieldname": "program_enrollment",
+   "fieldname": "admission_register",
    "fieldtype": "Link",
-   "label": "Program Enrollment",
-   "options": "Program Enrollment",
+   "label": "Admission Register",
+   "options": "Admission Register",
    "reqd": 1,
    "set_only_once": 1
   },
@@ -62,7 +62,7 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "fetch_from": "program_enrollment.program",
+   "fetch_from": "admission_register.program",
    "fieldname": "program",
    "fieldtype": "Data",
    "label": "Program",
@@ -70,7 +70,7 @@
   }
  ],
  "links": [],
- "modified": "2026-05-18 18:16:31.658879",
+ "modified": "2026-06-12 09:10:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",

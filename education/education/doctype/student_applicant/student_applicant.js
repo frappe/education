@@ -15,6 +15,7 @@ frappe.ui.form.on('Student Applicant', {
       return {
         filters: {
           docstatus: 1,
+          company: frm.doc.company,
         },
       }
     })
@@ -33,6 +34,29 @@ frappe.ui.form.on('Student Applicant', {
     frm.trigger('fetch_register_courses')
     frm.trigger('toggle_email_mandatory')
     frm.trigger('setup_actions')
+  },
+
+  company: function (frm) {
+    if (frm.doc.company) {
+      frm.set_query('admission_register', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+            docstatus: 1,
+          },
+        }
+      })
+    }
+
+    frm.set_value('admission_register', null)
+  },
+
+  course: function (frm) {
+    if (frm.doc.course) {
+      frm.call('get_course_fee_amount').then((r) => {
+        frm.set_value('course_fee_amount', r.message)
+      })
+    }
   },
 
   setup_actions: function (frm) {
@@ -61,18 +85,28 @@ frappe.ui.form.on('Student Applicant', {
       )
     }
 
-    if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
+    if (
+      (status === 'Approved' && frm.doc.admission_based_on === 'Course') ||
+      (status === 'Approved' && frm.doc.admission_based_on === 'Program')
+    ) {
       frm
-        .add_custom_button(__('Enroll in Program'), function () {
-          frm.call('enroll_in_program').then((r) => {
+        .add_custom_button(__('Enroll'), function () {
+          frm.call('enroll_in_program_and_course').then((r) => {
             if (r.message) {
               frappe.msgprint(
-                __(
-                  'Program Enrollment {0} created and student enrolled in course.',
-                  [
-                    `<a href="/app/program-enrollment/${r.message}">${r.message}</a>`,
-                  ]
-                )
+                frm.doc.admission_based_on === 'Course'
+                  ? __(
+                      'Course Enrollment {0} created and student enrolled in course.',
+                      [
+                        `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
+                      ]
+                    )
+                  : __(
+                      'Program Enrollment {0} created and student enrolled in course.',
+                      [
+                        `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
+                      ]
+                    )
               )
             }
             frm.reload_doc()
@@ -80,28 +114,48 @@ frappe.ui.form.on('Student Applicant', {
         })
         .addClass('btn-primary')
     }
+
+    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
+    //   frm
+    //     .add_custom_button(__('Enroll in Program'), function () {
+    //       frm.call('enroll_in_program').then((r) => {
+    //         if (r.message) {
+    //           frappe.msgprint(
+    //             __(
+    //               'Program Enrollment {0} created and student enrolled in course.',
+    //               [
+    //                 `<a href="/app/program-enrollment/${r.message}">${r.message}</a>`,
+    //               ],
+    //             ),
+    //           )
+    //         }
+    //         frm.reload_doc()
+    //       })
+    //     })
+    //     .addClass('btn-primary')
+    // }
 
     // NOTE: SEPARATE ENROLLMENT FOR COURSE AND PROGRAM
 
-    if (status === 'Approved' && frm.doc.admission_based_on === 'Course') {
-      frm
-        .add_custom_button(__('Enroll in Program'), function () {
-          frm.call('enroll_in_program').then((r) => {
-            if (r.message) {
-              frappe.msgprint(
-                __(
-                  'Program Enrollment {0} created and student enrolled in course.',
-                  [
-                    `<a href="/app/program-enrollment/${r.message}">${r.message}</a>`,
-                  ]
-                )
-              )
-            }
-            frm.reload_doc()
-          })
-        })
-        .addClass('btn-primary')
-    }
+    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
+    //   frm
+    //     .add_custom_button(__('Enroll'), function () {
+    //       frm.call('enroll_in_program_and_course').then((r) => {
+    //         if (r.message) {
+    //           frappe.msgprint(
+    //             __(
+    //               'Program Enrollment {0} created and student enrolled in course.',
+    //               [
+    //                 `<a href="/app/-enrollment/${r.message}">${r.message}</a>`,
+    //               ],
+    //             ),
+    //           )
+    //         }
+    //         frm.reload_doc()
+    //       })
+    //     })
+    //     .addClass('btn-primary')
+    // }
   },
 
   admission_register: function (frm) {
@@ -118,6 +172,7 @@ frappe.ui.form.on('Student Applicant', {
       frm.set_value('academic_year', details.academic_year)
       frm.set_value('registration_fee', details.registration_fee)
       frm.set_value('registration_fee_item', details.registration_fee_item)
+      frm.set_value('registration_fee_amount', details.registration_fee_amount)
 
       if (details.admission_based_on === 'Course') {
         frm.set_value('course', details.course)
@@ -139,6 +194,13 @@ frappe.ui.form.on('Student Applicant', {
             (row) => row.course
           )
         })
+    }
+  },
+
+  is_already_a_student: function (frm) {
+    if (!frm.doc.is_already_a_student) {
+      frm.set_value('student', '')
+      frm.refresh_field('student')
     }
   },
 

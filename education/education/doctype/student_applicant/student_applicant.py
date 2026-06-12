@@ -41,6 +41,12 @@ class StudentApplicant(Document):
 		self.validate_email_address()
 		self.validate_admission_register()
 
+		if self.course_fee_amount and self.course_fee_amount <= 0:
+			frappe.throw(_("Course Fee Amount must be greater than 0."))
+
+		if not self.fee_term:
+			frappe.throw(_("Fee Term is required."))
+
 	def set_title(self):
 		self.title = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
@@ -96,11 +102,12 @@ class StudentApplicant(Document):
 	def get_register_courses(self):
 		return frappe.get_all(
 			"Admission Register Course",
-			filters={"parenttype": "Admission Register", "parent": self.admission_register},
+			filters={
+				"parenttype": "Admission Register",
+				"parent": self.admission_register,
+			},
 			pluck="course",
 		)
-
-		# NOTE: Review this method
 
 	@frappe.whitelist()
 	def get_admission_register_details(self):
@@ -116,8 +123,23 @@ class StudentApplicant(Document):
 			"program": register.program,
 			"registration_fee_item": register.registration_fee_item,
 			"registration_fee": register.registration_fee,
+			"registration_fee_amount": register.registration_fee_amount,
 			"courses": [row.course for row in register.courses],
 		}
+
+	@frappe.whitelist()
+	def get_course_fee_amount(self):
+		if self.admission_based_on == "Course":
+			return frappe.db.get_value(
+				"Admission Register", self.admission_register, "course_fee_amount"
+			)
+
+		if self.admission_based_on == "Program":
+			return frappe.db.get_value(
+				"Admission Register Course",
+				{"parent": self.admission_register, "course": self.course},
+				"course_fee_amount",
+			)
 
 	@frappe.whitelist()
 	def approve(self):
@@ -136,9 +158,11 @@ class StudentApplicant(Document):
 		self.db_set("application_status", "Approved")
 
 		frappe.msgprint(
-			_("Student {0} has been updated.").format(student.name)
-			if self.is_already_a_student
-			else _("Student {0} has been created.").format(student.name),
+			(
+				_("Student {0} has been updated.").format(student.name)
+				if self.is_already_a_student
+				else _("Student {0} has been created.").format(student.name)
+			),
 			alert=True,
 		)
 		return student.name
@@ -170,47 +194,79 @@ class StudentApplicant(Document):
 		return student
 
 	@frappe.whitelist()
-	def enroll_in_program(self):
-		"""Enroll the approved student in the program of the Admission Register.
+	def enroll_in_program_and_course(self):
+		"""Enroll the approved student.
 
-		Submitting the Program Enrollment also enrolls the student in the
-		selected course (Course Enrollment is created on submit).
+		Program-based admission: enroll the student in the register's program
+		and in the selected course. Course-based admission: enroll the student
+		in the course only.
 		"""
 		if self.application_status != "Approved":
 			frappe.throw(_("Only approved applications can be enrolled."))
 
-		if self.admission_based_on != "Program":
-			frappe.throw(
-				_("Enrollment in a program is only applicable when admission is based on Program.")
-			)
-
 		if not self.student:
 			frappe.throw(_("No Student is linked to this application. Please approve it first."))
 
+		if self.admission_based_on == "Program":
+			program_enrollment = self.get_or_create_program_enrollment()
+			enrollment_name = self.create_course_enrollment().name
+		else:
+			enrollment_name = self.create_course_enrollment().name
+
+		self.db_set("application_status", "Admitted")
+
+		return enrollment_name
+
+	def get_or_create_program_enrollment(self):
+		"""Return the student's submitted Program Enrollment, creating it if needed."""
 		program = frappe.db.get_value(
 			"Admission Register", self.admission_register, "program"
 		)
 
-		program_enrollment = frappe.get_doc(
+		existing = frappe.db.exists(
+			"Program Enrollment",
 			{
-				"doctype": "Program Enrollment",
 				"student": self.student,
-				"student_category": self.student_category,
 				"program": program,
-				"academic_year": self.academic_year,
-				"academic_term": self.academic_term,
+				"intake_year": self.academic_year,
+				"docstatus": ("<", 2),
+			},
+		)
+		if existing:
+			program_enrollment = frappe.get_doc("Program Enrollment", existing)
+		else:
+			program_enrollment = frappe.get_doc(
+				{
+					"doctype": "Program Enrollment",
+					"student": self.student,
+					"student_category": self.student_category,
+					"program": program,
+					"intake_year": self.academic_year,
+					"academic_term": self.academic_term,
+					"enrollment_date": today(),
+				}
+			).insert(ignore_permissions=True)
+
+		if program_enrollment.docstatus == 0:
+			program_enrollment.submit()
+
+		return program_enrollment
+
+	def create_course_enrollment(self):
+		if not self.course:
+			frappe.throw(_("Please select a Course to enroll the student in."))
+
+		course_enrollment = frappe.get_doc(
+			{
+				"doctype": "Course Enrollment",
+				"student": self.student,
+				"course": self.course,
+				"admission_register": self.admission_register,
 				"enrollment_date": today(),
 			}
 		)
-		if self.course:
-			program_enrollment.append("courses", {"course": self.course})
-
-		program_enrollment.insert(ignore_permissions=True)
-		program_enrollment.submit()
-
-		self.db_set("application_status", "Admitted")
-
-		return program_enrollment.name
+		course_enrollment.insert(ignore_permissions=True)
+		return course_enrollment
 
 	def on_payment_authorized(self, *args, **kwargs):
 		self.db_set("paid", 1)

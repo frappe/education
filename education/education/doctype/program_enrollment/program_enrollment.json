@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_bulk_edit": 1,
  "allow_import": 1,
  "autoname": "EDU-ENR-.YYYY.-.#####",
  "creation": "2015-12-02 12:58:32.916080",
@@ -12,8 +13,7 @@
   "enrollment_date",
   "column_break_4",
   "program",
-  "academic_year",
-  "academic_term",
+  "intake_year",
   "image",
   "section_break_vsaj",
   "student_category",
@@ -21,8 +21,6 @@
   "column_break_ebuo",
   "school_house",
   "boarding_student",
-  "enrolled_courses",
-  "courses",
   "fees_tab",
   "section_break_7",
   "fees",
@@ -74,21 +72,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "academic_year",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Academic Year",
-   "options": "Academic Year",
-   "reqd": 1
-  },
-  {
-   "fieldname": "academic_term",
-   "fieldtype": "Link",
-   "label": "Academic Term",
-   "options": "Academic Term"
-  },
-  {
    "default": "Today",
    "fieldname": "enrollment_date",
    "fieldtype": "Date",
@@ -101,18 +84,6 @@
    "fieldname": "boarding_student",
    "fieldtype": "Check",
    "label": "Boarding Student"
-  },
-  {
-   "fieldname": "enrolled_courses",
-   "fieldtype": "Section Break",
-   "label": "Enrolled courses"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "courses",
-   "fieldtype": "Table",
-   "label": "Courses",
-   "options": "Program Enrollment Course"
   },
   {
    "fieldname": "section_break_7",
@@ -164,22 +135,25 @@
    "fieldtype": "Link",
    "label": "School House",
    "options": "School House"
+  },
+  {
+   "fieldname": "intake_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Intake Year",
+   "options": "Academic Year",
+   "reqd": 1
   }
  ],
  "image_field": "image",
  "is_submittable": 1,
- "links": [
-  {
-   "group": "Enrollment",
-   "link_doctype": "Course Enrollment",
-   "link_fieldname": "program_enrollment"
-  }
- ],
- "modified": "2024-01-30 15:41:31.016037",
+ "links": [],
+ "modified": "2026-06-12 12:50:39.608016",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -207,6 +181,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

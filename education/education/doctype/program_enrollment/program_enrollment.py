@@ -7,7 +7,7 @@ from frappe import _, msgprint
 from frappe.desk.reportview import get_match_cond
 from frappe.model.document import Document
 from frappe.query_builder.functions import Min
-from frappe.utils import comma_and, get_link_to_form, getdate
+from frappe.utils import comma_and
 from education.education.doctype.fee_schedule.fee_schedule import (
 	create_sales_invoice,
 	create_sales_order,
@@ -19,8 +19,8 @@ class ProgramEnrollment(Document):
 		self.set_student_name()
 		self.validate_duplication()
 
-		if not self.courses:
-			self.extend("courses", self.get_courses())
+		# if not self.courses:
+		# 	self.extend("courses", self.get_courses())
 
 	def set_student_name(self):
 		if not self.student_name:
@@ -28,12 +28,8 @@ class ProgramEnrollment(Document):
 
 	def on_submit(self):
 		self.update_student_joining_date()
-		self.make_fee_records()
-		self.create_course_enrollments()
-
-	def on_cancel(self):
-		self.delete_course_enrollments()
-		pass
+		# self.make_fee_records()
+		# self.create_course_enrollments()
 
 	def validate_duplication(self):
 		enrollment = frappe.db.exists(
@@ -41,8 +37,8 @@ class ProgramEnrollment(Document):
 			{
 				"student": self.student,
 				"program": self.program,
-				"academic_year": self.academic_year,
-				"academic_term": self.academic_term,
+				"intake_year": self.intake_year,
+				# "academic_term": self.academic_term,
 				"docstatus": ("<", 2),
 				"name": ("!=", self.name),
 			},
@@ -92,32 +88,6 @@ class ProgramEnrollment(Document):
 			(self.program),
 			as_dict=1,
 		)
-
-	def create_course_enrollments(self):
-		for course in self.courses:
-			filters = {
-				"student": self.student,
-				"course": course.course,
-				"program_enrollment": self.name,
-			}
-			if not frappe.db.exists("Course Enrollment", filters):
-				filters.update(
-					{"doctype": "Course Enrollment", "enrollment_date": self.enrollment_date}
-				)
-				frappe.get_doc(filters).save()
-
-	def get_all_course_enrollments(self):
-		course_enrollment_names = frappe.get_list(
-			"Course Enrollment", filters={"program_enrollment": self.name}
-		)
-		return [
-			frappe.get_doc("Course Enrollment", course_enrollment.name)
-			for course_enrollment in course_enrollment_names
-		]
-
-	def delete_course_enrollments(self):
-		for course_enrollment in self.get_all_course_enrollments():
-			frappe.delete_doc("Course Enrollment", course_enrollment.name)
 
 
 @frappe.whitelist()
