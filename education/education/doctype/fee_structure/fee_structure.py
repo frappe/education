@@ -155,65 +155,127 @@ def get_future_dates(fee_plan, start_date=None):
 	return months
 
 
-@frappe.whitelist()
-def make_fee_schedule(
-	source_name,
-	dialog_values,
-	per_component_amount,
-	total_amount,
-	target_doc=None,
-):
+# @frappe.whitelist()
+# def make_fee_schedule(
+# 	source_name,
+# 	dialog_values,
+# 	per_component_amount,
+# 	total_amount,
+# 	target_doc=None,
+# ):
 
-	dialog_values = json.loads(dialog_values)
-	per_component_amount = json.loads(per_component_amount)
+# 	dialog_values = json.loads(dialog_values)
+# 	per_component_amount = json.loads(per_component_amount)
 
-	student_groups = dialog_values.get("student_groups")
-	fee_plan_wise_distribution = [
-		fee_plan.get("due_date") for fee_plan in dialog_values.get("distribution", [])
-	]
+# 	student_groups = dialog_values.get("student_groups")
+# 	fee_plan_wise_distribution = [
+# 		fee_plan.get("due_date") for fee_plan in dialog_values.get("distribution", [])
+# 	]
 
-	for distribution in dialog_values.get("distribution", []):
-		validate_due_date(distribution.get("due_date"), distribution.get("idx"))
+# 	for distribution in dialog_values.get("distribution", []):
+# 		validate_due_date(distribution.get("due_date"), distribution.get("idx"))
 
-		doc = get_mapped_doc(
-			"Fee Structure",
-			source_name,
-			{
-				"Fee Structure": {
-					"doctype": "Fee Schedule",
-				},
-				"Fee Component": {"doctype": "Fee Component"},
-			},
-		)
-		doc.due_date = distribution.get("due_date")
-		if distribution.get("term"):
-			doc.academic_term = distribution.get("term")
-		amount_per_month = 0
+# 		doc = get_mapped_doc(
+# 			"Fee Structure",
+# 			source_name,
+# 			{
+# 				"Fee Structure": {
+# 					"doctype": "Fee Schedule",
+# 				},
+# 				"Fee Component": {"doctype": "Fee Component"},
+# 			},
+# 		)
+# 		doc.due_date = distribution.get("due_date")
+# 		if distribution.get("term"):
+# 			doc.academic_term = distribution.get("term")
+# 		amount_per_month = 0
 
-		for component in doc.components:
-			component_ratio = component.get("total") / flt(total_amount)
-			component_ratio = round((component_ratio * 100) / 100, 2)
-			component.total = flt(component_ratio * distribution.get("amount"))
+# 		for component in doc.components:
+# 			component_ratio = component.get("total") / flt(total_amount)
+# 			component_ratio = round((component_ratio * 100) / 100, 2)
+# 			component.total = flt(component_ratio * distribution.get("amount"))
 
-			if component.discount == 100:
-				component.amount = component.total
-			else:
-				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
+# 			if component.discount == 100:
+# 				component.amount = component.total
+# 			else:
+# 				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
 
-			amount_per_month += component.total
-		# Each distribution will be a separate fee schedule
-		doc.total_amount = distribution.get("amount")
+# 			amount_per_month += component.total
+# 		# Each distribution will be a separate fee schedule
+# 		doc.total_amount = distribution.get("amount")
 
-		for group in student_groups:
-			fee_schedule_student_group = doc.append("student_groups", {})
-			fee_schedule_student_group.student_group = group.get("student_group")
+# 		for group in student_groups:
+# 			fee_schedule_student_group = doc.append("student_groups", {})
+# 			fee_schedule_student_group.student_group = group.get("student_group")
 
-		doc.save()
+# 		doc.save()
 
-	return len(fee_plan_wise_distribution)
-	# return doc
+# 	return len(fee_plan_wise_distribution)
+# 	# return doc
 
 	# create fee schedule for
+
+
+#Fix for creating fees shedule with fee structure without amount variation
+@frappe.whitelist()
+def make_fee_schedule(
+    source_name,
+    dialog_values,
+    per_component_amount,
+    total_amount,
+    target_doc=None,
+):
+    dialog_values = json.loads(dialog_values)
+    
+    # Ensure per_component_amount is properly formatted as a dictionary
+    if isinstance(per_component_amount, str):
+        per_component_amount = json.loads(per_component_amount)  # Convert JSON string to list
+    if isinstance(per_component_amount, list):  # Convert list to dictionary
+        per_component_amount = {comp["fees_category"]: comp["total"] for comp in per_component_amount}
+
+    student_groups = dialog_values.get("student_groups", [])
+    fee_plan_wise_distribution = [fee_plan.get("due_date") for fee_plan in dialog_values.get("distribution", [])]
+
+    for distribution in dialog_values.get("distribution", []):
+        validate_due_date(distribution.get("due_date"), distribution.get("idx"))
+
+        doc = get_mapped_doc(
+            "Fee Structure",
+            source_name,
+            {
+                "Fee Structure": {"doctype": "Fee Schedule"},
+                "Fee Component": {
+                    "doctype": "Fee Component",
+                    "field_map": {
+                        "fees_category": "fees_category",
+                        "amount": "amount",
+                        "discount": "discount",
+                        "total": "total"
+                    }
+                }
+            },
+        )
+        doc.due_date = distribution.get("due_date")
+        if distribution.get("term"):
+            doc.academic_term = distribution.get("term")
+
+        for component in doc.components:
+            component.total = per_component_amount.get(component.fees_category, component.total)
+
+            if not component.discount:
+                component.discount = 0
+
+            component.amount = flt((component.total) / flt(100 - component.discount)) * 100
+
+        doc.total_amount = distribution.get("amount")
+
+        for group in student_groups:
+            fee_schedule_student_group = doc.append("student_groups", {})
+            fee_schedule_student_group.student_group = group.get("student_group")
+
+        doc.save()
+
+    return len(fee_plan_wise_distribution)
 
 
 def validate_due_date(due_date, idx):
