@@ -27,7 +27,6 @@ frappe.ui.form.on('Program Enrollment', {
         }
       }
 
-
     // frm.set_query('student', function() {
     // 	return{
     // 		query: 'education.education.doctype.program_enrollment.program_enrollment.get_students',
@@ -39,9 +38,9 @@ frappe.ui.form.on('Program Enrollment', {
     // });
   },
 
-  refresh: function(frm) {
+  refresh: function (frm) {
     if (!frm.program_courses?.length && frm.doc.program) {
-      frm.events.set_program_courses(frm);
+      frm.events.set_program_courses(frm)
     }
   },
 
@@ -84,16 +83,16 @@ frappe.ui.form.on('Program Enrollment', {
     })
   },
 
-  set_program_courses:function(frm) {
-    frm.program_courses = [];
+  set_program_courses: function (frm) {
+    frm.program_courses = []
     frappe.call({
       method: 'get_courses',
       doc: frm.doc,
-      callback: function(r) {
+      callback: function (r) {
         if (r.message) {
           frm.program_courses = r.message
         }
-      }
+      },
     })
   },
 })
@@ -108,13 +107,17 @@ frappe.ui.form.on('Program Enrollment Course', {
         if (val.course) course_list.push(val.course)
       })
 
-      let program_courses = (frm.program_courses || []).map(e => e.course)
+      let program_courses = (frm.program_courses || []).map((e) => e.course)
 
       if (!program_courses.length) {
-				return { filters: [['Course', 'name', 'not in', course_list]] };
+        return { filters: [['Course', 'name', 'not in', course_list]] }
       } else {
-				return { filters: [['Course', 'name', 'not in', course_list],
-					['Course', 'name', 'in', program_courses]] }
+        return {
+          filters: [
+            ['Course', 'name', 'not in', course_list],
+            ['Course', 'name', 'in', program_courses],
+          ],
+        }
       }
     }
   },

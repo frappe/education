@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:author_name",
+ "creation": "2026-04-29 15:28:02.536442",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "author_name",
+  "address",
+  "section_break_sxtg",
+  "books_written_html",
+  "books_written"
+ ],
+ "fields": [
+  {
+   "fieldname": "address",
+   "fieldtype": "Link",
+   "label": "Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "section_break_sxtg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "author_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Author Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "books_written_html",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "books_written",
+   "fieldtype": "HTML",
+   "label": "Books Written"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-05 20:42:00.125082",
+ "modified_by": "Administrator",
+ "module": "Library",
+ "name": "Author",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "author_name"
+}
