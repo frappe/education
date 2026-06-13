@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class FixedDatesFeeTermSchedule(Document):
+class FeeTermSchedule(Document):
 	pass

@@ -3,32 +3,47 @@
 
 frappe.ui.form.on('Fee Term', {
   refresh(frm) {
-    set_receiable_account_query(frm)
-
-    if (frm.doc.term_type === 'Session Based') {
-      frm.set_intro('Billing will be generated based on attendance')
-    }
-    if (frm.doc.term_type === 'Faculty Session Based') {
-      frm.set_intro(
-        'Billing will be generated based on attendance and faculty assigned to the session'
-      )
-    }
+    set_receivable_account_query(frm)
+    frm.trigger('term_type')
   },
+
   company(frm) {
-    set_receiable_account_query(frm)
+    set_receivable_account_query(frm)
   },
 
-  validate(frm) {
-    if (frm.doc.term_type === 'Fixed Fees of Dates') {
-      frm.clear_table('fixed_days_payment_terms')
-    }
-    if (frm.doc.term_type === 'Fixed Fees of Days') {
-      frm.clear_table('fixed_dates_payment_terms')
-    }
+  term_type(frm) {
+    set_payment_terms_columns(frm)
+    set_intro(frm)
   },
 })
 
-function set_receiable_account_query(frm) {
+function set_payment_terms_columns(frm) {
+  const grid = frm.fields_dict['payment_terms'].grid
+  const is_days = frm.doc.term_type === 'Fixed Fees of Days'
+  const is_dates = frm.doc.term_type === 'Fixed Fees of Dates'
+
+  grid.update_docfield_property('due_days', 'reqd', is_days ? 1 : 0)
+  grid.update_docfield_property('due_date', 'reqd', is_dates ? 1 : 0)
+  grid.set_column_disp('due_days', is_days)
+  grid.set_column_disp('due_date', is_dates)
+  grid.set_column_disp_in_list_view('due_days', is_days)
+  grid.set_column_disp_in_list_view('due_date', is_dates)
+  grid.refresh()
+}
+
+function set_intro(frm) {
+  if (frm.doc.term_type === 'Session Based Fees') {
+    frm.set_intro('Billing will be generated based on attendance')
+  } else if (frm.doc.term_type === 'Faculty Session Based Fees') {
+    frm.set_intro(
+      'Billing will be generated based on attendance and faculty assigned to the session'
+    )
+  } else {
+    frm.set_intro('')
+  }
+}
+
+function set_receivable_account_query(frm) {
   frm.set_query('receivable_account', function () {
     return {
       filters: {
@@ -38,43 +53,4 @@ function set_receiable_account_query(frm) {
       },
     }
   })
-}
-
-frappe.ui.form.on('Fee Component', {
-  amount(frm, cdt, cdn) {
-    let row = locals[cdt][cdn]
-    if (row.discount > 0) {
-      let discount_amount = (flt(row.amount) * flt(row.discount)) / 100
-      let total = flt(row.amount) - discount_amount
-      frappe.model.set_value(cdt, cdn, 'total', total)
-    } else {
-      frappe.model.set_value(cdt, cdn, 'total', row.amount)
-    }
-  },
-  fee_components_add(frm) {
-    calculate_total_amount(frm)
-  },
-  fee_components_remove(frm) {
-    calculate_total_amount(frm)
-  },
-  discount(frm, cdt, cdn) {
-    let row = locals[cdt][cdn]
-    if (row.amount > 0) {
-      let discount_amount = (flt(row.amount) * flt(row.discount)) / 100
-      let total = flt(row.amount) - discount_amount
-      frappe.model.set_value(cdt, cdn, 'total', total)
-    }
-  },
-
-  total(frm, cdt, cdn) {
-    calculate_total_amount(frm)
-  },
-})
-
-function calculate_total_amount(frm) {
-  let total_amount = 0
-  frm.doc.fee_components.forEach((component) => {
-    total_amount += flt(component.total)
-  })
-  frm.set_value('total_amount', total_amount)
 }
