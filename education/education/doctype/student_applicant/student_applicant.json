@@ -27,7 +27,7 @@
   "registration_fee",
   "section_break_xuzu",
   "email_address",
-  "student_category",
+  "student_batch",
   "image",
   "column_break_lvby",
   "academic_year",
@@ -247,12 +247,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "student_category",
-   "fieldtype": "Link",
-   "label": "Student Category",
-   "options": "Student Category"
-  },
-  {
    "fieldname": "section_break_xuzu",
    "fieldtype": "Section Break"
   },
@@ -376,11 +370,18 @@
    "label": "Fee Term",
    "options": "Fee Term",
    "reqd": 1
+  },
+  {
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "label": "Student Batch",
+   "options": "Student Batch Name",
+   "reqd": 1
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-06-12 16:28:33.867357",
+ "modified": "2026-06-15 19:17:15.538385",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",

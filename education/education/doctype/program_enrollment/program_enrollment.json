@@ -12,6 +12,7 @@
   "student_name",
   "enrollment_date",
   "column_break_4",
+  "company",
   "program",
   "intake_year",
   "image",
@@ -144,12 +145,19 @@
    "label": "Intake Year",
    "options": "Academic Year",
    "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "image_field": "image",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-12 12:50:39.608016",
+ "modified": "2026-06-15 19:45:54.264270",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program Enrollment",

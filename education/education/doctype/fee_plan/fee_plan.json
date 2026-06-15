@@ -13,8 +13,11 @@
   "section_break_kyvt",
   "fee_plan_details",
   "section_break_ddni",
-  "total_amount",
+  "total_before_discount",
+  "discount",
+  "discount_amount",
   "column_break_xsoz",
+  "total_amount",
   "outstanding_amount",
   "column_break_grie",
   "paid_amount",
@@ -91,10 +94,29 @@
    "fieldtype": "Section Break"
   },
   {
+   "fieldname": "total_before_discount",
+   "fieldtype": "Currency",
+   "label": "Total Before Discount",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "fee_term.discount",
+   "fieldname": "discount",
+   "fieldtype": "Percent",
+   "label": "Discount (%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount Amount",
+   "read_only": 1
+  },
+  {
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Total Amount",
+   "label": "Total Payable",
    "read_only": 1
   },
   {

@@ -47,6 +47,9 @@ class StudentApplicant(Document):
 		if not self.fee_term:
 			frappe.throw(_("Fee Term is required."))
 
+		if self.student_batch:
+			frappe.throw(_("Student Batch is required."))
+
 	def set_title(self):
 		self.title = " ".join(
 			filter(None, [self.first_name, self.middle_name, self.last_name])
@@ -207,11 +210,15 @@ class StudentApplicant(Document):
 		if not self.student:
 			frappe.throw(_("No Student is linked to this application. Please approve it first."))
 
-		if self.admission_based_on == "Program":
-			program_enrollment = self.get_or_create_program_enrollment()
+		try:
+			if self.admission_based_on == "Program":
+				self.get_or_create_program_enrollment()
+
 			enrollment_name = self.create_course_enrollment().name
-		else:
-			enrollment_name = self.create_course_enrollment().name
+		except Exception:
+			frappe.db.rollback()
+			frappe.log_error(frappe.get_traceback(), _("Student Applicant Enrollment Failed"))
+			raise
 
 		self.db_set("application_status", "Admitted")
 
@@ -263,9 +270,13 @@ class StudentApplicant(Document):
 				"course": self.course,
 				"admission_register": self.admission_register,
 				"enrollment_date": today(),
+				"fee_term": self.fee_term,
+				"student_applicant": self.name,
+				"student_batch": self.student_batch,
 			}
 		)
 		course_enrollment.insert(ignore_permissions=True)
+		course_enrollment.submit()
 		return course_enrollment
 
 	def on_payment_authorized(self, *args, **kwargs):

@@ -20,6 +20,15 @@ frappe.ui.form.on('Student Applicant', {
       }
     })
 
+    frm.set_query('fee_term', function () {
+      return {
+        filters: {
+          docstatus: 1,
+          company: frm.doc.company,
+        },
+      }
+    })
+
     frm.set_query('course', function () {
       if (frm.doc.admission_based_on === 'Program') {
         return {
@@ -29,6 +38,14 @@ frappe.ui.form.on('Student Applicant', {
         }
       }
       return {}
+    })
+
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+        },
+      }
     })
 
     frm.trigger('fetch_register_courses')
@@ -49,6 +66,7 @@ frappe.ui.form.on('Student Applicant', {
     }
 
     frm.set_value('admission_register', null)
+    frm.set_value('fee_term', null)
   },
 
   course: function (frm) {
@@ -57,10 +75,23 @@ frappe.ui.form.on('Student Applicant', {
         frm.set_value('course_fee_amount', r.message)
       })
     }
+
+    frm.set_value('student_batch', null)
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+        },
+      }
+    })
   },
 
   setup_actions: function (frm) {
     if (frm.is_new()) return
+
+    if (['Admitted', 'Approved'].includes(frm.doc.application_status)) {
+      frm.disable_form()
+    }
 
     const status = frm.doc.application_status
 

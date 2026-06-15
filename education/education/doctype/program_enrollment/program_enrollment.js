@@ -44,6 +44,19 @@ frappe.ui.form.on('Program Enrollment', {
     // }
   },
 
+  company: function (frm) {
+    frm.set_value('program', null)
+    if (frm.doc.company) {
+      frm.set_query('program', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+          },
+        }
+      })
+    }
+  },
+
   program: function (frm) {
     // frm.events.get_courses(frm)
     // if (frm.doc.program) {

@@ -10,10 +10,16 @@
   "admission_register",
   "program",
   "enrollment_date",
+  "fee_term",
+  "fee_plan",
+  "student_batch",
   "column_break_uisg",
+  "company",
   "course",
   "student",
-  "student_name"
+  "student_name",
+  "student_applicant",
+  "amended_from"
  ],
  "fields": [
   {
@@ -21,8 +27,7 @@
    "fieldtype": "Link",
    "label": "Admission Register",
    "options": "Admission Register",
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "student",
@@ -30,8 +35,7 @@
    "in_standard_filter": 1,
    "label": "Student",
    "options": "Student",
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "course",
@@ -39,15 +43,13 @@
    "in_list_view": 1,
    "label": "Course",
    "options": "Course",
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "enrollment_date",
    "fieldtype": "Date",
    "label": "Enrollment Date",
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fetch_from": "student.student_name",
@@ -67,10 +69,57 @@
    "fieldtype": "Data",
    "label": "Program",
    "read_only": 1
+  },
+  {
+   "fieldname": "fee_term",
+   "fieldtype": "Link",
+   "label": "Fee Term",
+   "options": "Fee Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fee_plan",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Fee Plan",
+   "options": "Fee Plan",
+   "read_only": 1
+  },
+  {
+   "fieldname": "student_applicant",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Student Applicant",
+   "options": "Student Applicant",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Course Enrollment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "label": "Student Batch",
+   "options": "Student Batch Name"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
+ "is_submittable": 1,
  "links": [],
- "modified": "2026-06-12 09:10:00.000000",
+ "modified": "2026-06-15 19:41:17.190704",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -99,7 +148,6 @@
    "share": 1
   }
  ],
- "quick_entry": 1,
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",

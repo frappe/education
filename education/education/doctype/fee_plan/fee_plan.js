@@ -41,37 +41,4 @@ frappe.ui.form.on('Fee Plan', {
     //   )
     // }
   },
-
-  fee_term(frm) {
-    if (frm.doc.fee_term) {
-      frm.clear_table('fee_plan_details')
-
-      frappe.call({
-        method:
-          'education.education.doctype.fee_plan.fee_plan.get_fee_plan_details',
-        args: {
-          fee_plan: frm.doc.fee_term,
-        },
-        callback: function (r) {
-          if (r.message) {
-            console.log(r.message)
-            frm.clear_table('fee_plan_details')
-            r.message.forEach(function (item) {
-              let child = frm.add_child('fee_plan_details')
-              child.date = item.date
-              child.amount = item.amount
-              //   child.percent_of_total = item.percent_of_total
-              //   child.term_type = item.term_type
-              //   child.fee_term_detail = item.name
-            })
-            frm.refresh_field('fee_plan_details')
-          } else {
-            frappe.throw('No details found for the selected Fee Term.')
-          }
-        },
-        freeze: true,
-        freeze_message: __('Fetching Fee Term Details...'),
-      })
-    }
-  },
 })

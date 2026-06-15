@@ -22,6 +22,19 @@ frappe.ui.form.on('Course Enrollment', {
     frm.trigger('fetch_allowed_courses')
   },
 
+  company: function (frm) {
+    frm.set_value('admission_register', null)
+    if (frm.doc.company) {
+      frm.set_query('admission_register', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+          },
+        }
+      })
+    }
+  },
+
   admission_register: function (frm) {
     frm.set_value('course', null)
     frm.trigger('fetch_allowed_courses')
