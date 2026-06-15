@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "autoname": "field:location_identifier",
+ "creation": "2026-06-15 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "location_identifier",
+  "location_name",
+  "postcode",
+  "state_identifier",
+  "suburb",
+  "country_identifier"
+ ],
+ "fields": [
+  {
+   "fieldname": "location_identifier",
+   "fieldtype": "Data",
+   "label": "Delivery Location Identifier",
+   "length": 10,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "location_name",
+   "fieldtype": "Data",
+   "label": "Delivery Location Name",
+   "length": 100,
+   "reqd": 1
+  },
+  {
+   "fieldname": "postcode",
+   "fieldtype": "Data",
+   "label": "Postcode",
+   "length": 4
+  },
+  {
+   "fieldname": "state_identifier",
+   "fieldtype": "Data",
+   "label": "State Identifier",
+   "length": 2
+  },
+  {
+   "fieldname": "suburb",
+   "fieldtype": "Data",
+   "label": "Address — Suburb/Locality/Town",
+   "length": 50
+  },
+  {
+   "fieldname": "country_identifier",
+   "fieldtype": "Data",
+   "label": "Country Identifier",
+   "length": 4
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-15 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "AVETMISS Export",
+ "name": "Training Delivery Location",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

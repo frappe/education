@@ -1,0 +1,18 @@
+[project]
+name = "avetmiss_export"
+authors = [
+    { name = "AVETMISS prototype", email = "peeledspuds@duck.com" },
+]
+description = "AVETMISS 8.0 NAT-file export for Frappe Education (companion app)"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0-dev"
+education = ">=0.0.1"

@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2026-06-15 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "achievement_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "achievement_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Prior Educational Achievement Identifier",
+   "length": 3,
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-15 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "AVETMISS Export",
+ "name": "Student Prior Achievement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

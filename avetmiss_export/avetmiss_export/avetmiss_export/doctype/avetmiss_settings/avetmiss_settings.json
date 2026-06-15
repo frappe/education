@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "creation": "2026-06-15 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rto_identifier",
+  "rto_name",
+  "default_delivery_location"
+ ],
+ "fields": [
+  {
+   "fieldname": "rto_identifier",
+   "fieldtype": "Data",
+   "label": "Training Organisation Identifier",
+   "length": 10,
+   "reqd": 1
+  },
+  {
+   "fieldname": "rto_name",
+   "fieldtype": "Data",
+   "label": "Training Organisation Name",
+   "length": 100,
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_delivery_location",
+   "fieldtype": "Link",
+   "label": "Default Delivery Location",
+   "options": "Training Delivery Location"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-15 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "AVETMISS Export",
+ "name": "AVETMISS Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

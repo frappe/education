@@ -7,6 +7,13 @@ education/docs/current
 dist/
 __pycache__/
 node_modules
+.claude/
+# Third-party NCVER copyrighted material (specs, AVS rules, sample NAT files) —
+# supply locally to run the golden-file tests; not redistributed in this repo.
+/reference/
+/tests/fixtures/
+# Generated NAT export output
+avetmiss_export/out/
 education/public/frontend
 education/www/education.html
 education/www/student-portal.html
