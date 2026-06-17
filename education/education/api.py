@@ -89,7 +89,11 @@ def check_attendance_records_exist(course_schedule=None, student_group=None, dat
 
 @frappe.whitelist()
 def mark_attendance(
-	students_present, students_absent, course_schedule=None, student_group=None, date=None
+	students_present,
+	students_absent,
+	course_schedule=None,
+	student_group=None,
+	date=None,
 ):
 	"""Creates Multiple Attendance Records.
 
@@ -117,12 +121,22 @@ def mark_attendance(
 
 	for d in present:
 		make_attendance_records(
-			d["student"], d["student_name"], "Present", course_schedule, student_group, date
+			d["student"],
+			d["student_name"],
+			"Present",
+			course_schedule,
+			student_group,
+			date,
 		)
 
 	for d in absent:
 		make_attendance_records(
-			d["student"], d["student_name"], "Absent", course_schedule, student_group, date
+			d["student"],
+			d["student_name"],
+			"Absent",
+			course_schedule,
+			student_group,
+			date,
 		)
 
 	frappe.db.commit()
@@ -160,7 +174,6 @@ def make_attendance_records(
 	student_attendance.submit()
 
 
-@frappe.whitelist()
 def get_student_guardians(student):
 	"""Returns List of Guardians of a Student.
 
@@ -178,6 +191,9 @@ def get_student_group_students(student_group, include_inactive=0):
 
 	:param student_group: Student Group.
 	"""
+	if not frappe.has_permission("Student Group", "read", student_group):
+		raise frappe.PermissionError("You are not authorized to access this student group")
+
 	if include_inactive:
 		students = frappe.get_all(
 			"Student Group Student",
@@ -298,6 +314,9 @@ def get_assessment_criteria(course):
 
 @frappe.whitelist()
 def get_assessment_students(assessment_plan, student_group):
+	if not frappe.has_permission("Assessment Result Tool", "read"):
+		raise frappe.PermissionError("Not Authorized")
+
 	student_list = get_student_group_students(student_group)
 	for i, student in enumerate(student_list):
 		result = get_result(student.student, assessment_plan)
@@ -306,7 +325,10 @@ def get_assessment_students(assessment_plan, student_group):
 			for d in result.details:
 				student_result.update({d.assessment_criteria: [cstr(d.score), d.grade]})
 			student_result.update(
-				{"total_score": [cstr(result.total_score), result.grade], "comment": result.comment}
+				{
+					"total_score": [cstr(result.total_score), result.grade],
+					"comment": result.comment,
+				}
 			)
 			student.update(
 				{
@@ -334,7 +356,6 @@ def get_assessment_details(assessment_plan):
 	)
 
 
-@frappe.whitelist()
 def get_result(student, assessment_plan):
 	"""Returns Submitted Result of given student for specified Assessment Plan
 
@@ -541,7 +562,8 @@ def get_student_info():
 
 @frappe.whitelist()
 def get_student_programs(student):
-	# student = 'EDU-STU-2023-00043'
+	check_permission(student, "programs")
+
 	programs = frappe.db.get_list(
 		"Program Enrollment",
 		fields=["program", "name"],
@@ -664,6 +686,8 @@ def apply_leave_based_on_student_group(leave_data, program_name):
 
 @frappe.whitelist()
 def get_student_invoices(student):
+	check_permission(student, "invoices")
+
 	student_sales_invoices = []
 
 	sales_invoice_list = frappe.db.get_list(
@@ -760,8 +784,26 @@ def get_school_abbr_logo():
 
 @frappe.whitelist()
 def get_student_attendance(student, student_group):
+	check_permission(student, "attendance")
+
 	return frappe.db.get_list(
 		"Student Attendance",
-		filters={"student": student, "student_group": student_group, "docstatus": 1},
+		filters={
+			"student": student,
+			"student_group": student_group,
+			"docstatus": 1,
+		},
 		fields=["date", "status", "name"],
 	)
+
+
+def check_permission(student, resource_type):
+	user = frappe.session.user
+	if user == "Administrator":
+		return
+
+	student_user = frappe.db.get_value("Student", student, "user")
+	if student_user != user:
+		raise frappe.PermissionError(
+			f"You are not authorized to access this student's {resource_type}"
+		)
