@@ -262,7 +262,9 @@ def create_sales_order(fee_schedule, student_id):
 def get_customer_from_student(student_id):
 	student = frappe.get_doc("Student", student_id)
 	if not student.customer:
-		student.set_missing_customer_details()
+		# A Customer is required for the accounting flow, so create it on-demand
+		# even if automatic Customer creation is skipped in Education Settings.
+		student.set_missing_customer_details(force=True)
 	return frappe.db.get_value("Student", student.name, "customer")
 
 
