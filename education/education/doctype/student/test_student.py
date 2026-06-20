@@ -25,5 +25,14 @@ class TestStudent(FrappeTestCase):
 		self.assertTrue(bool(student.customer))
 		self.assertEqual(student.customer_group, "Student")
 
+	def test_skip_customer_creation_for_student(self):
+		frappe.db.set_single_value("Education Settings", "customer_creation_skip", 1)
+		try:
+			student = create_student(student_email_id="skip-customer@example.com")
+			student.reload()
+			self.assertFalse(bool(student.customer))
+		finally:
+			frappe.db.set_single_value("Education Settings", "customer_creation_skip", 0)
+
 	def tearDown(self):
 		frappe.db.rollback()
