@@ -28,11 +28,21 @@ class Student(Document):
 		# This prevents from polluting users data
 		self.set_missing_customer_details()
 
-	def set_missing_customer_details(self):
-		self.set_customer_group()
+	def set_missing_customer_details(self, force=False):
+		"""Keep the linked Customer in sync, creating one if needed.
+
+		Automatic Customer creation can be disabled via the "Skip Customer creation
+		for new Student" toggle in Education Settings for non-fee-based implementations.
+		Pass ``force=True`` (e.g. from the Fee Schedule flow) to create the Customer
+		on-demand even when the toggle is enabled, since accounting features require it.
+		"""
 		if self.customer:
+			self.set_customer_group()
 			self.update_linked_customer()
-		else:
+		elif force or not frappe.db.get_single_value(
+			"Education Settings", "customer_creation_skip"
+		):
+			self.set_customer_group()
 			self.create_customer()
 
 	def set_customer_group(self):
