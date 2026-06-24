@@ -916,7 +916,7 @@ def check_permission(student, resource_type):
 		return
 
 	raise frappe.PermissionError(
-		_(f"You are not authorized to access this student's {resource_type}")
+		_("You are not authorized to access this student's {0}".format(resource_type))
 	)
 
 
