@@ -7,7 +7,7 @@
         {{ currentRoute }}
       </h3>
     </div>
-    <div class="flex flex-row gap-2">
+    <div v-if="isStudent" class="flex flex-row gap-2">
       <Button
         v-if="currentRoute === 'Attendance'"
         variant="solid"
@@ -22,9 +22,11 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { leaveStore } from '@/stores/leave'
+import { portalStore } from '@/stores/portal'
 
 const router = useRouter()
 const currentRoute = computed(() => router.currentRoute.value.name)
 
 const { setIsAttendancePage } = leaveStore()
+const { isStudent } = portalStore()
 </script>
