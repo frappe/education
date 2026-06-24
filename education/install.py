@@ -16,7 +16,11 @@ def after_install():
 def setup_fixtures():
 	records = [
 		# Party Type Records
-		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
+		{
+			"doctype": "Party Type",
+			"party_type": "Student",
+			"account_type": "Receivable",
+		},
 		# Item Group Records
 		{"doctype": "Item Group", "item_group_name": "Fee Component"},
 		# Customer Group Records
@@ -39,6 +43,11 @@ def create_parent_assessment_group():
 def create_student_role():
 	if not frappe.db.exists("Role", "Student"):
 		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 0}).save()
+
+
+def create_guardian_role():
+	if not frappe.db.exists("Role", "Guardian"):
+		frappe.get_doc({"doctype": "Role", "role_name": "Guardian", "desk_access": 0}).save()
 
 
 def create_invoice_permissions():

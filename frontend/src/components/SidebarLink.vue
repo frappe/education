@@ -33,6 +33,7 @@
 import { Tooltip } from 'frappe-ui'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { portalStore } from '@/stores/portal'
 
 const router = useRouter()
 const props = defineProps({
@@ -51,9 +52,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isRedirect: {
+    type: Boolean,
+    default: false,
+  },
 })
 
+const { clearActiveStudent } = portalStore()
+
 function handleClick() {
+  if (props.isRedirect) {
+    clearActiveStudent()
+  }
   router.push(props.to)
 }
 

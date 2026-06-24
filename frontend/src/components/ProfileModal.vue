@@ -15,14 +15,14 @@
             <Avatar
               size="3xl"
               class="h-12 w-12"
-              :label="studentInfo.student_name"
-              :image="studentInfo.image || null"
+              :label="profileInfo.full_name"
+              :image="profileInfo.image || null"
             />
             <div class="flex flex-col ml-2 gap-1">
               <p class="text-lg font-semibold">
-                {{ studentInfo.student_name }}
+                {{ profileInfo.full_name }}
               </p>
-              <p class="text-gray-600">{{ studentInfo.student_email_id }}</p>
+              <p class="text-gray-600">{{ profileInfo.email_id }}</p>
             </div>
           </div>
           <div>
@@ -71,11 +71,56 @@
 import { Dialog, Avatar, FeatherIcon } from 'frappe-ui'
 import { inject } from 'vue'
 import { studentStore } from '@/stores/student'
+import { portalStore } from '@/stores/portal'
 const { getStudentInfo } = studentStore()
+const { isStudent, getGuardianInfo } = portalStore()
 
 const showProfileDialog = inject('showProfileDialog')
 
 const studentInfo = getStudentInfo().value
+const guardianInfo = getGuardianInfo().value
+let profileInfo = {}
+
+function standardizeProfileInfo(info) {
+  if (isStudent) {
+    return {
+      full_name: info.student_name,
+      image: info.image,
+      email_id: info.student_email_id,
+      mobile_number: info.student_mobile_number,
+      joining_date: info.joining_date,
+      date_of_birth: info.date_of_birth,
+      blood_group: info.blood_group,
+      gender: info.gender,
+      nationality: info.nationality,
+      address_line_1: info.address_line_1,
+      address_line_2: info.address_line_2,
+      city: info.city,
+      pincode: info.pincode,
+      state: info.state,
+      country: info.country,
+    }
+  }
+
+  return {
+    full_name: guardianInfo.guardian_name,
+    image: guardianInfo.image,
+    email_id: guardianInfo.email_address,
+    mobile_number: guardianInfo.mobile_number,
+    occupation: guardianInfo.occupation,
+    date_of_birth: guardianInfo.date_of_birth,
+    address_line_1: guardianInfo.work_address,
+    blood_group: guardianInfo.blood_group,
+    gender: guardianInfo.gender,
+    nationality: guardianInfo.nationality,
+  }
+}
+
+if (isStudent) {
+  profileInfo = standardizeProfileInfo(studentInfo)
+} else {
+  profileInfo = standardizeProfileInfo(guardianInfo)
+}
 
 const infoFormat = [
   {
@@ -83,25 +128,25 @@ const infoFormat = [
     fields: [
       {
         label: 'Mobile Number',
-        value: studentInfo.student_mobile_number,
+        value: profileInfo.mobile_number,
       },
       {
         label: 'Joining Date',
-        value: studentInfo.joining_date,
+        value: profileInfo.joining_date,
       },
       {
         label: 'Date of Birth',
-        value: studentInfo.date_of_birth,
+        value: profileInfo.date_of_birth,
       },
       {
         label: 'Address',
         value: [
-          studentInfo?.address_line_1,
-          studentInfo?.address_line_2,
-          studentInfo?.city,
-          studentInfo?.pincode,
-          studentInfo?.state,
-          studentInfo?.country,
+          profileInfo?.address_line_1,
+          profileInfo?.address_line_2,
+          profileInfo?.city,
+          profileInfo?.pincode,
+          profileInfo?.state,
+          profileInfo?.country,
         ]
           .map((item) => item?.trim())
           .filter(Boolean)
@@ -114,17 +159,24 @@ const infoFormat = [
     fields: [
       {
         label: 'Blood Group',
-        value: studentInfo.blood_group,
+        value: profileInfo.blood_group,
       },
       {
         label: 'Gender',
-        value: studentInfo.gender,
+        value: profileInfo.gender,
       },
       {
         label: 'Nationality',
-        value: studentInfo.nationality,
+        value: profileInfo.nationality,
       },
     ],
   },
 ]
+
+if (!isStudent) {
+  infoFormat[0].fields.splice(1, 1, {
+    label: 'Occupation',
+    value: profileInfo.occupation,
+  })
+}
 </script>

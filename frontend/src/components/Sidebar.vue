@@ -11,13 +11,26 @@
           !educationSettings.loading && educationSettings.data
         "
       />
-      <div class="flex flex-col overflow-y-auto">
+      <div
+        v-if="isStudent || activeStudentId"
+        class="flex flex-col overflow-y-auto"
+      >
         <SidebarLink
           :label="link.label"
           :to="link.to"
           v-for="link in links"
           :isCollapsed="isSidebarCollapsed"
           :icon="link.icon"
+          class="mx-2 my-0.5"
+        />
+
+        <SidebarLink
+          v-show="isGuardian"
+          :label="'View Students'"
+          :to="'/students'"
+          :isCollapsed="isSidebarCollapsed"
+          :icon="Users"
+          :isRedirect="true"
           class="mx-2 my-0.5"
         />
       </div>
@@ -41,6 +54,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia'
 import { useStorage } from '@vueuse/core'
 import SidebarLink from '@/components/SidebarLink.vue'
 import {
@@ -51,10 +65,13 @@ import {
   UserCheck,
   ArrowLeftToLine,
   BookOpen,
+  Users,
 } from 'lucide-vue-next'
 
 import UserDropdown from './UserDropdown.vue'
 import { createResource } from 'frappe-ui'
+import { portalStore } from '@/stores/portal'
+import Button from 'frappe-ui/src/components/Button.vue'
 
 const links = [
   // {
@@ -102,4 +119,7 @@ const educationSettings = createResource({
   url: 'education.education.api.get_school_abbr_logo',
   auto: true,
 })
+
+const store = portalStore()
+const { isStudent, isGuardian, activeStudentId } = storeToRefs(store)
 </script>
