@@ -141,7 +141,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-06-24 14:16:01.316050",
+ "modified": "2026-06-25 13:21:48.245244",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Guardian",
@@ -158,6 +158,15 @@
    "role": "Academics User",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guardian",
+   "share": 1
   }
  ],
  "quick_entry": 1,
