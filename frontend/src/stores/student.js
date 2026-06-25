@@ -1,36 +1,63 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { createResource } from 'frappe-ui'
+import { portalStore } from '@/stores/portal'
 
 export const studentStore = defineStore('education-student', () => {
   const studentInfo = ref({})
   const currentProgram = ref({})
   const studentGroups = ref([])
 
-  const student = createResource({
+  const portal = portalStore()
+
+  function setInfo(info) {
+    if (!info) {
+      studentInfo.value = {}
+      currentProgram.value = {}
+      studentGroups.value = []
+      return
+    }
+    currentProgram.value = info.current_program || {}
+    studentGroups.value = info.student_groups || []
+    const rest = { ...info }
+    delete rest.current_program
+    delete rest.student_groups
+    studentInfo.value = rest
+  }
+
+  // Logged-in student viewing their own record.
+  const selfStudent = createResource({
     url: 'education.education.api.get_student_info',
-    onSuccess(info) {
-      if (!info) {
-        window.location.href = '/app'
-      }
-      currentProgram.value = info.current_program
-      // remove current_program from info
-      delete info.current_program
-      studentGroups.value = info.student_groups
-      delete info.student_groups
-      studentInfo.value = info
-    },
-    onError(err) {
-      console.error(err)
-    },
+    onSuccess: setInfo,
+    onError: (err) => console.warn(err),
   })
 
-  // const s = createDocumentResource({
-  // 	doctype:"Student",
-  // 	whitelist: {
-  // 		'get_student_info': get_student_info
-  // 	}
-  // })
+  // Guardian viewing the currently selected student
+  const guardianStudent = createResource({
+    url: 'education.education.api.get_student_context',
+    makeParams() {
+      return { student: portal.activeStudentId }
+    },
+    onSuccess: setInfo,
+    onError: (err) => console.warn(err),
+  })
+
+  async function loadStudent() {
+    if (portal.isGuardian) {
+      if (!portal.activeStudentId) {
+        setInfo(null)
+        return
+      }
+      return guardianStudent.reload()
+    }
+    if (portal.isStudent) {
+      return selfStudent.reload()
+    }
+  }
+
+  // Backwards-compatible interface: the router and session store call
+  // student.reload() to (re)load the active student's context.
+  const student = { reload: loadStudent, fetch: loadStudent }
 
   function getStudentInfo() {
     return studentInfo
@@ -38,7 +65,6 @@ export const studentStore = defineStore('education-student', () => {
   function getCurrentProgram() {
     return currentProgram
   }
-
   function getStudentGroups() {
     return studentGroups
   }
@@ -48,6 +74,7 @@ export const studentStore = defineStore('education-student', () => {
     studentInfo,
     currentProgram,
     studentGroups,
+    loadStudent,
     getStudentInfo,
     getCurrentProgram,
     getStudentGroups,

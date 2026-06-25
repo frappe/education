@@ -115,7 +115,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-05 17:10:47.758164",
+ "modified": "2026-06-25 13:29:15.742415",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",
@@ -143,6 +143,15 @@
    "read": 1,
    "report": 1,
    "role": "Student",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guardian",
    "share": 1
   }
  ],

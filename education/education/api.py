@@ -89,7 +89,11 @@ def check_attendance_records_exist(course_schedule=None, student_group=None, dat
 
 @frappe.whitelist()
 def mark_attendance(
-	students_present, students_absent, course_schedule=None, student_group=None, date=None
+	students_present,
+	students_absent,
+	course_schedule=None,
+	student_group=None,
+	date=None,
 ):
 	"""Creates Multiple Attendance Records.
 
@@ -117,12 +121,22 @@ def mark_attendance(
 
 	for d in present:
 		make_attendance_records(
-			d["student"], d["student_name"], "Present", course_schedule, student_group, date
+			d["student"],
+			d["student_name"],
+			"Present",
+			course_schedule,
+			student_group,
+			date,
 		)
 
 	for d in absent:
 		make_attendance_records(
-			d["student"], d["student_name"], "Absent", course_schedule, student_group, date
+			d["student"],
+			d["student_name"],
+			"Absent",
+			course_schedule,
+			student_group,
+			date,
 		)
 
 	frappe.db.commit()
@@ -160,7 +174,6 @@ def make_attendance_records(
 	student_attendance.submit()
 
 
-@frappe.whitelist()
 def get_student_guardians(student):
 	"""Returns List of Guardians of a Student.
 
@@ -178,6 +191,9 @@ def get_student_group_students(student_group, include_inactive=0):
 
 	:param student_group: Student Group.
 	"""
+	if not frappe.has_permission("Student Group", "read", student_group):
+		raise frappe.PermissionError(_("You are not authorized to access this student group"))
+
 	if include_inactive:
 		students = frappe.get_all(
 			"Student Group Student",
@@ -298,6 +314,9 @@ def get_assessment_criteria(course):
 
 @frappe.whitelist()
 def get_assessment_students(assessment_plan, student_group):
+	if not frappe.has_permission("Assessment Result", "read"):
+		raise frappe.PermissionError("Not Authorized")
+
 	student_list = get_student_group_students(student_group)
 	for i, student in enumerate(student_list):
 		result = get_result(student.student, assessment_plan)
@@ -306,7 +325,10 @@ def get_assessment_students(assessment_plan, student_group):
 			for d in result.details:
 				student_result.update({d.assessment_criteria: [cstr(d.score), d.grade]})
 			student_result.update(
-				{"total_score": [cstr(result.total_score), result.grade], "comment": result.comment}
+				{
+					"total_score": [cstr(result.total_score), result.grade],
+					"comment": result.comment,
+				}
 			)
 			student.update(
 				{
@@ -334,7 +356,6 @@ def get_assessment_details(assessment_plan):
 	)
 
 
-@frappe.whitelist()
 def get_result(student, assessment_plan):
 	"""Returns Submitted Result of given student for specified Assessment Plan
 
@@ -509,7 +530,7 @@ def get_instructors(student_group):
 @frappe.whitelist()
 def get_user_info():
 	if frappe.session.user == "Guest":
-		frappe.throw("Authentication failed", exc=frappe.AuthenticationError)
+		frappe.throw(_("Authentication failed"), exc=frappe.AuthenticationError)
 
 	current_user = frappe.db.get_list(
 		"User",
@@ -521,15 +542,49 @@ def get_user_info():
 
 
 @frappe.whitelist()
+def get_user_role():
+	if frappe.session.user == "Guest":
+		frappe.throw(_("Authentication failed"), exc=frappe.AuthenticationError)
+
+	roles = frappe.get_roles()
+
+	if "Guardian" in roles:
+		return "Guardian"
+
+	if "Student" in roles:
+		return "Student"
+
+	return None
+
+
+@frappe.whitelist()
 def get_student_info():
 	email = frappe.session.user
 	if email == "Administrator":
 		return
-	student_info = frappe.db.get_list(
-		"Student",
-		fields=["*"],
-		filters={"user": email},
-	)[0]
+
+	student = frappe.db.get_value("Student", {"user": email}, "name")
+	if not student:
+		return None
+
+	return get_student_context(student)
+
+
+@frappe.whitelist()
+def get_student_context(student):
+	"""Returns the full portal context for a single student.
+
+	Same shape as get_student_info (student record + current_program +
+	student_groups) but for an explicit student, authorized for the student
+	themselves or a linked guardian.
+
+	:param student: Student.
+	"""
+	check_permission(student, "profile")
+
+	student_info = frappe.db.get_value("Student", student, "*", as_dict=True)
+	if not student_info:
+		return None
 
 	current_program = get_current_enrollment(student_info.name)
 	if current_program:
@@ -540,8 +595,80 @@ def get_student_info():
 
 
 @frappe.whitelist()
+def get_guardian_info():
+	"""Returns the Guardian record for the logged-in guardian user."""
+	guardian = get_guardian_for_user()
+	if not guardian:
+		return None
+
+	return frappe.db.get_value(
+		"Guardian",
+		guardian,
+		[
+			"name",
+			"guardian_name",
+			"email_address",
+			"mobile_number",
+			"image",
+			"date_of_birth",
+			"nationality",
+			"gender",
+			"blood_group",
+			"work_address",
+			"occupation",
+		],
+		as_dict=True,
+	)
+
+
+@frappe.whitelist()
+def get_guardian_students():
+	"""Returns the students (wards) linked to the logged-in guardian user."""
+	guardian = get_guardian_for_user()
+	if not guardian:
+		return []
+
+	student_guardian = frappe.qb.DocType("Student Guardian")
+	student = frappe.qb.DocType("Student")
+
+	return (
+		frappe.qb.from_(student_guardian)
+		.inner_join(student)
+		.on(student.name == student_guardian.parent)
+		.select(
+			student_guardian.parent.as_("student"),
+			student.student_name,
+			student.image,
+			student_guardian.relation,
+		)
+		.where(student_guardian.guardian == guardian)
+		.where(student_guardian.parenttype == "Student")
+		.run(as_dict=1)
+	)
+
+
+@frappe.whitelist()
+def get_portal_context():
+	"""Returns role-aware bootstrap data for the portal SPA.
+
+	For a Student: {role, student}. For a Guardian: {role, guardian, students}.
+	"""
+	role = get_user_role()
+	context = {"role": role}
+
+	if role == "Guardian":
+		context["guardian"] = get_guardian_info()
+		context["students"] = get_guardian_students()
+	elif role == "Student":
+		context["student"] = get_student_info()
+
+	return context
+
+
+@frappe.whitelist()
 def get_student_programs(student):
-	# student = 'EDU-STU-2023-00043'
+	check_permission(student, "programs")
+
 	programs = frappe.db.get_list(
 		"Program Enrollment",
 		fields=["program", "name"],
@@ -600,6 +727,7 @@ def get_course_schedule_for_student(program_name, student_groups):
 		filters={"program": program_name, "student_group": ["in", student_groups]},
 		order_by="schedule_date asc",
 	)
+
 	return schedule
 
 
@@ -664,6 +792,8 @@ def apply_leave_based_on_student_group(leave_data, program_name):
 
 @frappe.whitelist()
 def get_student_invoices(student):
+	check_permission(student, "invoices")
+
 	student_sales_invoices = []
 
 	sales_invoice_list = frappe.db.get_list(
@@ -760,8 +890,65 @@ def get_school_abbr_logo():
 
 @frappe.whitelist()
 def get_student_attendance(student, student_group):
+	check_permission(student, "attendance")
+
 	return frappe.db.get_list(
 		"Student Attendance",
-		filters={"student": student, "student_group": student_group, "docstatus": 1},
+		filters={
+			"student": student,
+			"student_group": student_group,
+			"docstatus": 1,
+		},
 		fields=["date", "status", "name"],
+	)
+
+
+def check_permission(student, resource_type):
+	user = frappe.session.user
+	if user == "Administrator":
+		return
+
+	student_user = frappe.db.get_value("Student", student, "user")
+	if student_user == user:
+		return
+
+	if is_guardian_of(student, user):
+		return
+
+	raise frappe.PermissionError(
+		_("You are not authorized to access this student's {0}".format(resource_type))
+	)
+
+
+def get_guardian_for_user(user=None):
+	"""Returns the Guardian linked to the given user (defaults to session user).
+
+	Matches on the Guardian `user` link first, then falls back to
+	`email_address` for guardians invited before a User was linked.
+	"""
+	user = user or frappe.session.user
+	if not user or user in ("Guest", "Administrator"):
+		return None
+
+	guardian = frappe.db.get_value("Guardian", {"user": user}, "name")
+	if not guardian:
+		guardian = frappe.db.get_value("Guardian", {"email_address": user}, "name")
+	return guardian
+
+
+def is_guardian_of(student, user=None):
+	"""Returns True if the user is a guardian of the given student."""
+	guardian = get_guardian_for_user(user)
+	if not guardian:
+		return False
+
+	return bool(
+		frappe.db.exists(
+			"Student Guardian",
+			{
+				"parent": student,
+				"parenttype": "Student",
+				"guardian": guardian,
+			},
+		)
 	)

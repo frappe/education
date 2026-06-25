@@ -39,6 +39,7 @@ class Guardian(Document):
 
 @frappe.whitelist()
 def invite_guardian(guardian):
+	frappe.has_permission("Guardian", "write", throw=True)
 	guardian_doc = frappe.get_doc("Guardian", guardian)
 	if not guardian_doc.email_address:
 		frappe.throw(_("Please set Email Address"))
@@ -58,6 +59,8 @@ def invite_guardian(guardian):
 					"user_type": "Website User",
 					"send_welcome_email": 1,
 				}
-			).insert(ignore_permissions=True)
+			)
+			user.add_roles("Guardian")
+			user.save(ignore_permissions=True)
 			frappe.msgprint(_("User {0} created").format(getlink("User", user.name)))
 			return user.name
