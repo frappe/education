@@ -63,6 +63,9 @@ class FeeSchedule(Document):
 		self.validate_due_date()
 
 	def validate_due_date(self):
+		if not self.posting_date and not self.due_date:
+			frappe.throw(_("Posting Date and Due Date are required"))
+
 		if self.due_date < self.posting_date:
 			frappe.throw(_("Due Date cannot be before posting date"))
 
@@ -329,27 +332,29 @@ def get_students(
 	program=None,
 ):
 	conditions = ""
-	if student_category:
-		conditions = " and pe.student_category={}".format(frappe.db.escape(student_category))
-	if program:
-		conditions += " and pe.program={}".format(frappe.db.escape(program))
+	values = [academic_year, student_group]
 
+	if student_category:
+		conditions = " and pe.student_category=%s"
+		values.append(student_category)
+	if program:
+		conditions += " and pe.program=%s"
+		values.append(program)
 	if academic_term:
-		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
-	students = frappe.db.sql(
-		"""
+		conditions += " and pe.academic_term=%s"
+		values.append(academic_term)
+	query = """
         select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment, sgs.parent
         from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
         where
             pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
             and sgs.parent = %s and sgs.active = 1
-            {conditions}
-        """.format(
-			conditions=conditions
-		),
-		(academic_year, student_group),
-		as_dict=1,
-	)
+        """
+
+	query += conditions
+
+	students = frappe.db.sql(query, tuple(values), as_dict=1)
+
 	return students
 
 
@@ -361,6 +366,10 @@ def get_total_students(
 	student_category=None,
 	program=None,
 ):
+	required_roles = {"Academics User", "Accounts User", "Accounts Manager"}
+	if not required_roles.intersection(frappe.get_roles()):
+		frappe.throw(_("You are not authorized to access this resource"))
+
 	total_students = get_students(
 		student_group, academic_year, academic_term, student_category, program
 	)
