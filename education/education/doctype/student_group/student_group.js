@@ -108,6 +108,10 @@ frappe.ui.form.on('Student Group', {
       frm.set_df_property('course', 'reqd', 0)
     }
   },
+  group_based_on: function (frm) {
+    frm.clear_table('students')
+    frm.refresh_fields('students')
+  },
 
   get_students: function (frm) {
     if (

@@ -50,6 +50,7 @@ frappe.ui.form.on('Fee Schedule', {
           program: frm.doc.program,
           academic_term: frm.doc.academic_term,
           academic_year: frm.doc.academic_year,
+          group_based_on: ['!=', 'Activity'],
           disabled: 0,
         },
       }
@@ -157,6 +158,7 @@ frappe.ui.form.on('Fee Schedule Student Group', {
           academic_year: frm.doc.academic_year,
           academic_term: frm.doc.academic_term,
           student_category: frm.doc.student_category,
+          program: frm.doc.program,
         },
         callback: function (r) {
           if (r.message) {
