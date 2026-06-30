@@ -60,6 +60,14 @@ class FeeSchedule(Document):
 		self.calculate_total_and_program()
 		self.validate_fee_components()
 		self.validate_total_against_fee_strucuture()
+		self.validate_due_date()
+
+	def validate_due_date(self):
+		if not self.posting_date and not self.due_date:
+			frappe.throw(_("Posting Date and Due Date are required"))
+
+		if self.due_date < self.posting_date:
+			frappe.throw(_("Due Date cannot be before posting date"))
 
 	def calculate_total_amount(self):
 		total = 0
@@ -76,6 +84,7 @@ class FeeSchedule(Document):
 				self.academic_year,
 				self.academic_term,
 				self.student_category,
+				self.program,
 			)
 			no_of_students += cint(d.total_students)
 
@@ -84,7 +93,7 @@ class FeeSchedule(Document):
 				"Student Group", d.student_group, "program"
 			)
 			if self.program and student_group_program and self.program != student_group_program:
-				frappe.msgprint(
+				frappe.throw(
 					_("Program in the Fee Structure and Student Group {0} are different.").format(
 						d.student_group
 					)
@@ -105,7 +114,8 @@ class FeeSchedule(Document):
 			if component not in fee_structure_components:
 				frappe.msgprint(
 					_("Fee Component {0} is not part of Fee Structure {1}").format(
-						component, frappe.bold(getlink("Fee Structure", self.fee_structure))
+						component,
+						frappe.bold(getlink("Fee Structure", self.fee_structure)),
 					),
 					alert=True,
 				)
@@ -171,7 +181,11 @@ def generate_fees(fee_schedule):
 
 	for d in doc.student_groups:
 		students = get_students(
-			d.student_group, doc.academic_year, doc.academic_term, doc.student_category
+			d.student_group,
+			doc.academic_year,
+			doc.academic_term,
+			doc.student_category,
+			doc.program,
 		)
 		for student in students:
 			try:
@@ -277,9 +291,9 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 			},
 		},
 		"Fee Component": {
-			"doctype": "Sales Invoice Item"
-			if doctype == "Sales Invoice"
-			else "Sales Order Item",
+			"doctype": (
+				"Sales Invoice Item" if doctype == "Sales Invoice" else "Sales Order Item"
+			),
 			"field_map": {
 				# Fee Component Field : Child doctype Field
 				"item": "item_code",
@@ -311,36 +325,53 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 
 #  gives program name for multiple enrollments in a calendar year
 def get_students(
-	student_group, academic_year, academic_term=None, student_category=None
+	student_group,
+	academic_year,
+	academic_term=None,
+	student_category=None,
+	program=None,
 ):
 	conditions = ""
+	values = [academic_year, student_group]
+
 	if student_category:
-		conditions = " and pe.student_category={}".format(frappe.db.escape(student_category))
+		conditions = " and pe.student_category=%s"
+		values.append(student_category)
+	if program:
+		conditions += " and pe.program=%s"
+		values.append(program)
 	if academic_term:
-		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
-	students = frappe.db.sql(
-		"""
-        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
+		conditions += " and pe.academic_term=%s"
+		values.append(academic_term)
+	query = """
+        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment, sgs.parent
         from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
         where
             pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
             and sgs.parent = %s and sgs.active = 1
-            {conditions}
-        """.format(
-			conditions=conditions
-		),
-		(academic_year, student_group),
-		as_dict=1,
-	)
+        """
+
+	query += conditions
+
+	students = frappe.db.sql(query, tuple(values), as_dict=1)
+
 	return students
 
 
 @frappe.whitelist()
 def get_total_students(
-	student_group, academic_year, academic_term=None, student_category=None
+	student_group,
+	academic_year,
+	academic_term=None,
+	student_category=None,
+	program=None,
 ):
+	required_roles = {"Academics User", "Accounts User", "Accounts Manager"}
+	if not required_roles.intersection(frappe.get_roles()):
+		frappe.throw(_("You are not authorized to access this resource"))
+
 	total_students = get_students(
-		student_group, academic_year, academic_term, student_category
+		student_group, academic_year, academic_term, student_category, program
 	)
 	return len(total_students)
 
