@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import {
   ListView,
   ListHeader,
@@ -77,16 +77,18 @@ import {
 } from 'frappe-ui'
 import FeesPaymentDialog from '@/components/FeesPaymentDialog.vue'
 import { studentStore } from '@/stores/student'
+import { storeToRefs } from 'pinia'
 import MissingData from '@/components/MissingData.vue'
 import { createToast } from '@/utils'
 
-const { getStudentInfo } = studentStore()
-let studentInfo = getStudentInfo().value
+const { studentInfo } = storeToRefs(studentStore())
 
 const feesResource = createResource({
   url: 'education.education.api.get_student_invoices',
-  params: {
-    student: studentInfo.name,
+  makeParams() {
+    return {
+      student: studentInfo.value?.name,
+    }
   },
   onSuccess: (response) => {
     printFormat = response?.print_format
@@ -103,8 +105,19 @@ const feesResource = createResource({
     })
     tableData.rows = invoices
   },
-  auto: true,
 })
+
+watch(
+  () => studentInfo.value?.name,
+  (student) => {
+    if (student) {
+      feesResource.reload()
+    } else {
+      tableData.rows = []
+    }
+  },
+  { immediate: true }
+)
 
 const tableData = reactive({
   rows: [],

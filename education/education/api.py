@@ -12,6 +12,36 @@ from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
 
+PORTAL_STUDENT_FIELDS = [
+	"name",
+	"student_name",
+	"student_email_id",
+	"student_mobile_number",
+	"image",
+	"gender",
+	"blood_group",
+	"nationality",
+	"date_of_birth",
+	"joining_date",
+	"address_line_1",
+	"address_line_2",
+	"city",
+	"state",
+	"pincode",
+	"country",
+]
+
+PROGRAM_ENROLLMENT_FIELDS = [
+	"name as program_enrollment",
+	"program",
+	"student_name",
+	"student_batch_name as student_batch",
+	"student_category",
+	"academic_term",
+	"academic_year",
+]
+
+
 def get_course(program):
 	"""Return list of courses for a particular program
 	:param program: Program
@@ -557,6 +587,95 @@ def get_user_role():
 	return None
 
 
+def _resolve_portal_student(student=None):
+	if student:
+		return student
+
+	user = frappe.session.user
+	if user in ("Guest", "Administrator"):
+		return None
+
+	return frappe.db.get_value("Student", {"user": user}, "name")
+
+
+def _get_submitted_program_enrollments(student):
+	return frappe.db.get_list(
+		"Program Enrollment",
+		filters={"student": student, "docstatus": 1},
+		fields=PROGRAM_ENROLLMENT_FIELDS,
+		order_by="creation desc",
+	)
+
+
+def _resolve_default_program(student, programs):
+	if not programs:
+		return None
+
+	program_names = {row["program"] for row in programs}
+	active_enrollment = get_current_enrollment(student)
+	if active_enrollment and active_enrollment.get("program") in program_names:
+		return active_enrollment["program"]
+
+	return programs[0]["program"]
+
+
+def _get_program_enrollment(student, program):
+	enrollments = frappe.db.get_list(
+		"Program Enrollment",
+		filters={"student": student, "program": program, "docstatus": 1},
+		fields=PROGRAM_ENROLLMENT_FIELDS,
+		order_by="creation desc",
+		limit=1,
+	)
+	return enrollments[0] if enrollments else None
+
+
+@frappe.whitelist()
+def get_portal_student_profile(student=None):
+	"""Portal bootstrap: student profile and all submitted program enrollments."""
+	student = _resolve_portal_student(student)
+	if not student:
+		return None
+
+	check_permission(student, "profile")
+
+	student_info = frappe.db.get_value(
+		"Student", student, PORTAL_STUDENT_FIELDS, as_dict=True
+	)
+	if not student_info:
+		return None
+
+	programs = _get_submitted_program_enrollments(student)
+	return {
+		"student": student_info,
+		"programs": programs,
+		"suggested_program": _resolve_default_program(student, programs),
+	}
+
+
+@frappe.whitelist()
+def get_portal_program_context(student=None, program=None):
+	"""Portal context for the selected program: enrollment + student groups."""
+	student = _resolve_portal_student(student)
+	if not student:
+		return None
+
+	if not program:
+		frappe.throw(_("Program is required"))
+
+	check_permission(student, "profile")
+
+	enrollment = _get_program_enrollment(student, program)
+	if not enrollment:
+		frappe.throw(_("Program enrollment not found"))
+
+	return {
+		"program": program,
+		"enrollment": enrollment,
+		"student_groups": get_student_groups(student, program),
+	}
+
+
 @frappe.whitelist()
 def get_student_info():
 	email = frappe.session.user
@@ -571,26 +690,28 @@ def get_student_info():
 
 
 @frappe.whitelist()
-def get_student_context(student):
-	"""Returns the full portal context for a single student.
+def get_student_context(student, program=None):
+	"""Returns portal context for a student (legacy shape).
 
-	Same shape as get_student_info (student record + current_program +
-	student_groups) but for an explicit student, authorized for the student
-	themselves or a linked guardian.
+	Used where a single payload is expected. Prefer get_portal_student_profile
+	and get_portal_program_context for the portal SPA.
 
 	:param student: Student.
+	:param program: Optional Program to scope enrollment and student groups.
 	"""
-	check_permission(student, "profile")
-
-	student_info = frappe.db.get_value("Student", student, "*", as_dict=True)
-	if not student_info:
+	profile = get_portal_student_profile(student)
+	if not profile:
 		return None
 
-	current_program = get_current_enrollment(student_info.name)
-	if current_program:
-		student_groups = get_student_groups(student_info.name, current_program.program)
-		student_info["student_groups"] = student_groups
-		student_info["current_program"] = current_program
+	selected_program = program or profile.get("suggested_program")
+	student_info = profile["student"]
+	student_info["programs"] = profile["programs"]
+
+	if selected_program:
+		program_context = get_portal_program_context(student, selected_program)
+		student_info["current_program"] = program_context["enrollment"]
+		student_info["student_groups"] = program_context["student_groups"]
+
 	return student_info
 
 
@@ -659,9 +780,6 @@ def get_portal_context():
 	if role == "Guardian":
 		context["guardian"] = get_guardian_info()
 		context["students"] = get_guardian_students()
-	elif role == "Student":
-		context["student"] = get_student_info()
-
 	return context
 
 
