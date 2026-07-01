@@ -815,12 +815,12 @@ def apply_leave(leave_data, program_name):
 		"Education Settings", "attendance_based_on_course_schedule"
 	)
 	if attendance_based_on_course_schedule:
-		apply_leave_based_on_course_schedule(leave_data, program_name)
+		create_student_leave_application_based_on_course_schedule(leave_data, program_name)
 	else:
-		apply_leave_based_on_student_group(leave_data, program_name)
+		create_student_leave_application_based_on_student_group(leave_data, program_name)
 
 
-def apply_leave_based_on_course_schedule(leave_data, program_name):
+def create_student_leave_application_based_on_course_schedule(leave_data, program_name):
 	course_schedule_in_leave_period = frappe.db.get_list(
 		"Course Schedule",
 		fields=["name", "schedule_date"],
@@ -835,37 +835,32 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 	)
 	if not course_schedule_in_leave_period:
 		frappe.throw(_("No classes found in the leave period"))
-	for course_schedule in course_schedule_in_leave_period:
-		# check if attendance record does not exist for the student on the course schedule
-		if not frappe.db.exists(
-			"Student Attendance",
-			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
-		):
-			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
-				"Leave",
-				course_schedule.get("name"),
-				None,
-				course_schedule.get("schedule_date"),
-			)
 
-
-def apply_leave_based_on_student_group(leave_data, program_name):
-	student_groups = get_student_groups(leave_data.get("student"), program_name)
-	leave_dates = get_dates_from_timegrain(
-		leave_data.get("from_date"), leave_data.get("to_date")
+	student_leave_application = frappe.new_doc("Student Leave Application")
+	student_leave_application.student = leave_data.get("student")
+	student_leave_application.student_name = leave_data.get("student_name")
+	student_leave_application.attendance_based_on = "Course Schedule"
+	student_leave_application.course_schedule = course_schedule_in_leave_period[0].get(
+		"name"
 	)
-	for student_group in student_groups:
-		for leave_date in leave_dates:
-			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
-				"Leave",
-				None,
-				student_group.get("label"),
-				leave_date,
-			)
+	student_leave_application.from_date = leave_data.get("from_date")
+	student_leave_application.to_date = leave_data.get("to_date")
+	student_leave_application.reason = leave_data.get("reason")
+	student_leave_application.save()
+
+
+def create_student_leave_application_based_on_student_group(leave_data, program_name):
+	student_groups = get_student_groups(leave_data.get("student"), program_name)
+
+	student_leave_application = frappe.new_doc("Student Leave Application")
+	student_leave_application.student = leave_data.get("student")
+	student_leave_application.student_name = leave_data.get("student_name")
+	student_leave_application.attendance_based_on = "Student Group"
+	student_leave_application.student_group = student_groups[0].get("label")
+	student_leave_application.from_date = leave_data.get("from_date")
+	student_leave_application.to_date = leave_data.get("to_date")
+	student_leave_application.reason = leave_data.get("reason")
+	student_leave_application.save()
 
 
 @frappe.whitelist()
