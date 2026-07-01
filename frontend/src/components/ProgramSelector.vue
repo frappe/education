@@ -11,7 +11,7 @@
       </Button>
     </template>
   </Dropdown>
-  <span v-else-if="activeProgram" class="text-sm font-medium text-gray-700">
+  <span v-else-if="activeProgram" class="text-m font-medium text-gray-700">
     {{ activeProgram }}
   </span>
 </template>
