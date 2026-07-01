@@ -34,7 +34,7 @@
           </p>
           <div>
             <p class="truncate text-sm text-gray-500">
-              relation: {{ s.relation }}
+              relation: {{ s.relation || 'Not Specified' }}
             </p>
           </div>
         </div>

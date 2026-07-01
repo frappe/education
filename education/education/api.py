@@ -11,7 +11,6 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
-
 PORTAL_STUDENT_FIELDS = [
 	"name",
 	"student_name",
@@ -221,7 +220,7 @@ def get_student_group_students(student_group, include_inactive=0):
 
 	:param student_group: Student Group.
 	"""
-	if not frappe.has_permission("Student Group", "read", student_group):
+	if not frappe.has_permission("Student Group", "read"):
 		raise frappe.PermissionError(_("You are not authorized to access this student group"))
 
 	if include_inactive:
@@ -631,7 +630,7 @@ def _get_program_enrollment(student, program):
 
 
 @frappe.whitelist()
-def get_portal_student_profile(student=None):
+def get_student_profile(student=None):
 	"""Portal bootstrap: student profile and all submitted program enrollments."""
 	student = _resolve_portal_student(student)
 	if not student:
@@ -654,7 +653,7 @@ def get_portal_student_profile(student=None):
 
 
 @frappe.whitelist()
-def get_portal_program_context(student=None, program=None):
+def get_program_context(student=None, program=None):
 	"""Portal context for the selected program: enrollment + student groups."""
 	student = _resolve_portal_student(student)
 	if not student:
@@ -674,45 +673,6 @@ def get_portal_program_context(student=None, program=None):
 		"enrollment": enrollment,
 		"student_groups": get_student_groups(student, program),
 	}
-
-
-@frappe.whitelist()
-def get_student_info():
-	email = frappe.session.user
-	if email == "Administrator":
-		return
-
-	student = frappe.db.get_value("Student", {"user": email}, "name")
-	if not student:
-		return None
-
-	return get_student_context(student)
-
-
-@frappe.whitelist()
-def get_student_context(student, program=None):
-	"""Returns portal context for a student (legacy shape).
-
-	Used where a single payload is expected. Prefer get_portal_student_profile
-	and get_portal_program_context for the portal SPA.
-
-	:param student: Student.
-	:param program: Optional Program to scope enrollment and student groups.
-	"""
-	profile = get_portal_student_profile(student)
-	if not profile:
-		return None
-
-	selected_program = program or profile.get("suggested_program")
-	student_info = profile["student"]
-	student_info["programs"] = profile["programs"]
-
-	if selected_program:
-		program_context = get_portal_program_context(student, selected_program)
-		student_info["current_program"] = program_context["enrollment"]
-		student_info["student_groups"] = program_context["student_groups"]
-
-	return student_info
 
 
 @frappe.whitelist()

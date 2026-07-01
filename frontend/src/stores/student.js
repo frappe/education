@@ -94,13 +94,13 @@ export const studentStore = defineStore('education-student', () => {
   }
 
   const studentProfile = createResource({
-    url: 'education.education.api.get_portal_student_profile',
+    url: 'education.education.api.get_student_profile',
     makeParams: studentParams,
     onError: (err) => console.warn(err),
   })
 
   const programContext = createResource({
-    url: 'education.education.api.get_portal_program_context',
+    url: 'education.education.api.get_program_context',
     makeParams() {
       return {
         ...studentParams(),
