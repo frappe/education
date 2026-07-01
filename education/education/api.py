@@ -11,6 +11,35 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
+PORTAL_STUDENT_FIELDS = [
+	"name",
+	"student_name",
+	"student_email_id",
+	"student_mobile_number",
+	"image",
+	"gender",
+	"blood_group",
+	"nationality",
+	"date_of_birth",
+	"joining_date",
+	"address_line_1",
+	"address_line_2",
+	"city",
+	"state",
+	"pincode",
+	"country",
+]
+
+PROGRAM_ENROLLMENT_FIELDS = [
+	"name as program_enrollment",
+	"program",
+	"student_name",
+	"student_batch_name as student_batch",
+	"student_category",
+	"academic_term",
+	"academic_year",
+]
+
 
 def get_course(program):
 	"""Return list of courses for a particular program
@@ -557,41 +586,93 @@ def get_user_role():
 	return None
 
 
-@frappe.whitelist()
-def get_student_info():
-	email = frappe.session.user
-	if email == "Administrator":
-		return
+def _resolve_portal_student(student=None):
+	if student:
+		return student
 
-	student = frappe.db.get_value("Student", {"user": email}, "name")
+	user = frappe.session.user
+	if user in ("Guest", "Administrator"):
+		return None
+
+	return frappe.db.get_value("Student", {"user": user}, "name")
+
+
+def _get_submitted_program_enrollments(student):
+	return frappe.db.get_list(
+		"Program Enrollment",
+		filters={"student": student, "docstatus": 1},
+		fields=PROGRAM_ENROLLMENT_FIELDS,
+		order_by="creation desc",
+	)
+
+
+def _resolve_default_program(student, programs):
+	if not programs:
+		return None
+
+	program_names = {row["program"] for row in programs}
+	active_enrollment = get_current_enrollment(student)
+	if active_enrollment and active_enrollment.get("program") in program_names:
+		return active_enrollment["program"]
+
+	return programs[0]["program"]
+
+
+def _get_program_enrollment(student, program):
+	enrollments = frappe.db.get_list(
+		"Program Enrollment",
+		filters={"student": student, "program": program, "docstatus": 1},
+		fields=PROGRAM_ENROLLMENT_FIELDS,
+		order_by="creation desc",
+		limit=1,
+	)
+	return enrollments[0] if enrollments else None
+
+
+@frappe.whitelist()
+def get_student_profile(student=None):
+	"""Portal bootstrap: student profile and all submitted program enrollments."""
+	student = _resolve_portal_student(student)
 	if not student:
 		return None
 
-	return get_student_context(student)
-
-
-@frappe.whitelist()
-def get_student_context(student):
-	"""Returns the full portal context for a single student.
-
-	Same shape as get_student_info (student record + current_program +
-	student_groups) but for an explicit student, authorized for the student
-	themselves or a linked guardian.
-
-	:param student: Student.
-	"""
 	check_permission(student, "profile")
 
-	student_info = frappe.db.get_value("Student", student, "*", as_dict=True)
+	student_info = frappe.db.get_value(
+		"Student", student, PORTAL_STUDENT_FIELDS, as_dict=True
+	)
 	if not student_info:
 		return None
 
-	current_program = get_current_enrollment(student_info.name)
-	if current_program:
-		student_groups = get_student_groups(student_info.name, current_program.program)
-		student_info["student_groups"] = student_groups
-		student_info["current_program"] = current_program
-	return student_info
+	programs = _get_submitted_program_enrollments(student)
+	return {
+		"student": student_info,
+		"programs": programs,
+		"suggested_program": _resolve_default_program(student, programs),
+	}
+
+
+@frappe.whitelist()
+def get_program_context(student=None, program=None):
+	"""Portal context for the selected program: enrollment + student groups."""
+	student = _resolve_portal_student(student)
+	if not student:
+		return None
+
+	if not program:
+		frappe.throw(_("Program is required"))
+
+	check_permission(student, "profile")
+
+	enrollment = _get_program_enrollment(student, program)
+	if not enrollment:
+		frappe.throw(_("Program enrollment not found"))
+
+	return {
+		"program": program,
+		"enrollment": enrollment,
+		"student_groups": get_student_groups(student, program),
+	}
 
 
 @frappe.whitelist()
@@ -659,9 +740,6 @@ def get_portal_context():
 	if role == "Guardian":
 		context["guardian"] = get_guardian_info()
 		context["students"] = get_guardian_students()
-	elif role == "Student":
-		context["student"] = get_student_info()
-
 	return context
 
 
@@ -737,12 +815,12 @@ def apply_leave(leave_data, program_name):
 		"Education Settings", "attendance_based_on_course_schedule"
 	)
 	if attendance_based_on_course_schedule:
-		apply_leave_based_on_course_schedule(leave_data, program_name)
+		create_student_leave_application_based_on_course_schedule(leave_data, program_name)
 	else:
-		apply_leave_based_on_student_group(leave_data, program_name)
+		create_student_leave_application_based_on_student_group(leave_data, program_name)
 
 
-def apply_leave_based_on_course_schedule(leave_data, program_name):
+def create_student_leave_application_based_on_course_schedule(leave_data, program_name):
 	course_schedule_in_leave_period = frappe.db.get_list(
 		"Course Schedule",
 		fields=["name", "schedule_date"],
@@ -757,37 +835,35 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 	)
 	if not course_schedule_in_leave_period:
 		frappe.throw(_("No classes found in the leave period"))
-	for course_schedule in course_schedule_in_leave_period:
-		# check if attendance record does not exist for the student on the course schedule
-		if not frappe.db.exists(
-			"Student Attendance",
-			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
-		):
-			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
-				"Leave",
-				course_schedule.get("name"),
-				None,
-				course_schedule.get("schedule_date"),
-			)
 
-
-def apply_leave_based_on_student_group(leave_data, program_name):
-	student_groups = get_student_groups(leave_data.get("student"), program_name)
-	leave_dates = get_dates_from_timegrain(
-		leave_data.get("from_date"), leave_data.get("to_date")
+	student_leave_application = frappe.new_doc("Student Leave Application")
+	student_leave_application.student = leave_data.get("student")
+	student_leave_application.student_name = leave_data.get("student_name")
+	student_leave_application.attendance_based_on = "Course Schedule"
+	student_leave_application.course_schedule = course_schedule_in_leave_period[0].get(
+		"name"
 	)
-	for student_group in student_groups:
-		for leave_date in leave_dates:
-			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
-				"Leave",
-				None,
-				student_group.get("label"),
-				leave_date,
-			)
+	student_leave_application.from_date = leave_data.get("from_date")
+	student_leave_application.to_date = leave_data.get("to_date")
+	student_leave_application.reason = leave_data.get("reason")
+	student_leave_application.save()
+
+
+def create_student_leave_application_based_on_student_group(leave_data, program_name):
+	student_groups = get_student_groups(leave_data.get("student"), program_name)
+
+	if not student_groups:
+		frappe.throw(_("No student groups found for the student"))
+
+	student_leave_application = frappe.new_doc("Student Leave Application")
+	student_leave_application.student = leave_data.get("student")
+	student_leave_application.student_name = leave_data.get("student_name")
+	student_leave_application.attendance_based_on = "Student Group"
+	student_leave_application.student_group = student_groups[0].get("label")
+	student_leave_application.from_date = leave_data.get("from_date")
+	student_leave_application.to_date = leave_data.get("to_date")
+	student_leave_application.reason = leave_data.get("reason")
+	student_leave_application.save()
 
 
 @frappe.whitelist()
