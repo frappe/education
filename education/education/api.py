@@ -220,7 +220,7 @@ def get_student_group_students(student_group, include_inactive=0):
 
 	:param student_group: Student Group.
 	"""
-	if not frappe.has_permission("Student Group", "read"):
+	if not frappe.has_permission("Student Group", "read", student_group):
 		raise frappe.PermissionError(_("You are not authorized to access this student group"))
 
 	if include_inactive:
