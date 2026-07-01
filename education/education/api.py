@@ -852,6 +852,9 @@ def create_student_leave_application_based_on_course_schedule(leave_data, progra
 def create_student_leave_application_based_on_student_group(leave_data, program_name):
 	student_groups = get_student_groups(leave_data.get("student"), program_name)
 
+	if not student_groups:
+		frappe.throw(_("No student groups found for the student"))
+
 	student_leave_application = frappe.new_doc("Student Leave Application")
 	student_leave_application.student = leave_data.get("student")
 	student_leave_application.student_name = leave_data.get("student_name")
