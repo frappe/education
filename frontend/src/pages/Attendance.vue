@@ -94,6 +94,13 @@ const attendanceStatus = {
   Leave: 'bg-orange-100',
 }
 
+function resetNewLeave() {
+  newLeave.from_date = ''
+  newLeave.to_date = ''
+  newLeave.reason = ''
+  newLeave.total_days = ''
+}
+
 const attendanceResource = createResource({
   url: 'education.education.api.get_student_attendance',
   makeParams() {
@@ -136,6 +143,7 @@ const applyLeave = createResource({
       icon: 'check',
       iconClasses: 'text-green-600',
     })
+    resetNewLeave()
   },
   onError: (err) => {
     createToast({
