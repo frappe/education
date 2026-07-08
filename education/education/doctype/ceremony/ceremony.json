@@ -49,7 +49,7 @@
   },
   {
    "fieldname": "date",
-   "fieldtype": "Date",
+   "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Date",
    "reqd": 1
@@ -135,7 +135,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-12 16:31:58.225063",
+ "modified": "2026-07-08 17:55:21.036906",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Ceremony",

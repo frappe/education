@@ -15,6 +15,12 @@ frappe.ui.form.on('Faculty', {
 
 frappe.ui.form.on('Course Subject', {
   subjects_add: function (frm) {
+    allowed_departments = []
+    if (frm.doc.allowed_departments) {
+      frm.doc.allowed_departments.forEach((department) => {
+        allowed_departments.push(department.department)
+      })
+    }
     frm.fields_dict['subjects'].grid.get_field('subject').get_query = function (
       doc
     ) {
@@ -22,7 +28,12 @@ frappe.ui.form.on('Course Subject', {
       $.each(doc.subjects, function (idx, val) {
         if (val.subject) subjects_list.push(val.subject)
       })
-      return { filters: [['Subject', 'name', 'not in', subjects_list]] }
+      return {
+        filters: [
+          ['Subject', 'name', 'not in', subjects_list],
+          ['Subject', 'department', 'in', allowed_departments],
+        ],
+      }
     }
   },
 })

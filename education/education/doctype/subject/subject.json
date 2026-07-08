@@ -10,7 +10,6 @@
   "abbreviation",
   "type",
   "subject_type",
-  "course",
   "column_break_pljb",
   "credit_hours",
   "credit",
@@ -18,7 +17,7 @@
   "column_break_vwbb",
   "company",
   "department",
-  "use_default_course_template"
+  "course"
  ],
  "fields": [
   {
@@ -54,12 +53,6 @@
    "in_list_view": 1,
    "label": "Abbreviation",
    "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "use_default_course_template",
-   "fieldtype": "Check",
-   "label": "Use Default Course Template"
   },
   {
    "fieldname": "credit_hours",
@@ -113,7 +106,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-08 10:31:42.147369",
+ "modified": "2026-07-08 17:02:29.254538",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject",

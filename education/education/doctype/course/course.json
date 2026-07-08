@@ -32,8 +32,6 @@
   "section_break_byod",
   "short_description",
   "full_description",
-  "section_break_6",
-  "topics",
   "subjects_tab",
   "subjects",
   "assessment_tab",
@@ -58,16 +56,6 @@
    "in_standard_filter": 1,
    "label": "Department",
    "options": "Department"
-  },
-  {
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "topics",
-   "fieldtype": "Table",
-   "label": "Topics",
-   "options": "Course Topic"
   },
   {
    "fieldname": "hero_image",
@@ -253,7 +241,7 @@
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2026-06-11 11:12:11.018420",
+ "modified": "2026-07-08 16:59:32.939214",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

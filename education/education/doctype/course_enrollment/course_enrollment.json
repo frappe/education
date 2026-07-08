@@ -1,7 +1,6 @@
 {
  "actions": [],
  "autoname": "format:EDU-CE-{YYYY}-{#####}",
- "beta": 1,
  "creation": "2018-10-15 15:35:39.375161",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -119,7 +118,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-15 19:41:17.190704",
+ "modified": "2026-07-08 16:52:09.154180",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
