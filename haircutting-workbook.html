@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foundational Haircutting Workbook</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        nav button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #667eea;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        nav button:hover, nav button.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #764ba2;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            color: #667eea;
+            margin: 30px 0 15px 0;
+            font-size: 1.8em;
+            border-bottom: 2px solid #764ba2;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #764ba2;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+        p { margin: 15px 0; }
+        ul, ol { margin: 15px 0 15px 30px; }
+        li { margin: 8px 0; }
+        .highlight-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .safety-box {
+            background: #fff3cd;
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .exercise {
+            background: #e7f3ff;
+            border-left: 4px solid #0084ff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .exercise h4 {
+            color: #0084ff;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:nth-child(even) { background: #f9f9f9; }
+        footer {
+            background: #f8f9fa;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✂️ Foundational Haircutting Workbook</h1>
+            <p>A beginner's guide to professional haircutting for high school students</p>
+        </header>
+        <nav>
+            <button class="nav-btn active" data-section="intro">Introduction</button>
+            <button class="nav-btn" data-section="safety">Safety & Sanitation</button>
+            <button class="nav-btn" data-section="terminology">Terminology</button>
+            <button class="nav-btn" data-section="tools">Tools & Equipment</button>
+            <button class="nav-btn" data-section="techniques">Basic Techniques</button>
+            <button class="nav-btn" data-section="practice">Practice Guide</button>
+        </nav>
+
+        <div class="content">
+            <!-- Introduction Section -->
+            <div class="section active" id="intro">
+                <h2>Introduction to Haircutting</h2>
+                <p>Welcome to the world of professional haircutting! This workbook is designed to introduce you to the foundational skills, knowledge, and practices needed to begin your journey in the barbering and cosmetology field.</p>
+                
+                <h3>Learning Objectives</h3>
+                <p>By completing this workbook, you will:</p>
+                <ul>
+                    <li>Understand basic haircutting terminology and concepts</li>
+                    <li>Learn essential safety and sanitation practices</li>
+                    <li>Become familiar with professional cutting tools</li>
+                    <li>Practice fundamental cutting techniques</li>
+                    <li>Develop proper hand positioning and control</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <strong>Did you know?</strong> Professional haircutting is a skilled trade that requires both technical knowledge and artistic ability. Barbers and cosmetologists must master their craft through consistent practice and dedication.
+                </div>
+
+                <h3>What is Professional Haircutting?</h3>
+                <p>Professional haircutting is the art and science of cutting human hair using specialized tools and techniques to create desired styles while maintaining the health and integrity of the hair. It combines:</p>
+                <ul>
+                    <li><strong>Technical Skills:</strong> Proper tool handling, sectioning, and cutting angles</li>
+                    <li><strong>Communication:</strong> Understanding client needs and expectations</li>
+                    <li><strong>Artistic Vision:</strong> Creating balanced, flattering styles</li>
+                    <li><strong>Safety Awareness:</strong> Protecting both yourself and your client</li>
+                </ul>
+            </div>
+
+            <!-- Safety & Sanitation Section -->
+            <div class="section" id="safety">
+                <h2>Safety & Sanitation</h2>
+                <p>Safety and sanitation are the most critical aspects of any barbering profession. Before you ever pick up a pair of scissors, you must understand how to protect yourself and your clients from injury and infection.</p>
+
+                <h3>Personal Safety Rules</h3>
+                <div class="safety-box">
+                    ⚠️ <strong>CRITICAL:</strong> Always follow these safety rules during practice and professional work.
+                </div>
+
+                <ul>
+                    <li><strong>Proper Attire:</strong> Wear closed-toe shoes, keep hair tied back, and wear a clean uniform</li>
+                    <li><strong>Tool Handling:</strong> Never run with scissors; always walk carefully and purposefully</li>
+                    <li><strong>Sharp Tool Care:</strong> Keep blades sharp and handle them with respect; dull tools require more pressure and can slip</li>
+                    <li><strong>Posture:</strong> Maintain good posture to prevent back and neck strain</li>
+                    <li><strong>Fatigue Awareness:</strong> Take breaks; tired hands are more prone to accidents</li>
+                </ul>
+
+                <h3>Sanitation & Disinfection</h3>
+                <p>All tools must be properly sanitized before each use:</p>
+                
+                <table>
+                    <tr>
+                        <th>Step</th>
+                        <th>Process</th>
+                        <th>Duration</th>
+                    </tr>
+                    <tr>
+                        <td>1. Clean</td>
+                        <td>Remove all hair and visible debris with brush/cloth</td>
+                        <td>1-2 minutes</td>
+                    </tr>
+                    <tr>
+                        <td>2. Wash</td>
+                        <td>Soak in hot soapy water</td>
+                        <td>5 minutes</td>
+                    </tr>
+                    <tr>
+                        <td>3. Rinse</td>
+                        <td>Rinse thoroughly with clean water</td>
+                        <td>2 minutes</td>
+                    </tr>
+                    <tr>
+                        <td>4. Disinfect</td>
+                        <td>Soak in approved disinfectant solution</td>
+                        <td>10 minutes</td>
+                    </tr>
+                    <tr>
+                        <td>5. Dry</td>
+                        <td>Pat dry with clean towel or air dry</td>
+                        <td>Until dry</td>
+                    </tr>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>Remember:</strong> Proper sanitation protects both you and your clients. Never skip this step, even if you're in a hurry.
+                </div>
+            </div>
+
+            <!-- Terminology Section -->
+            <div class="section" id="terminology">
+                <h2>Haircutting Terminology</h2>
+                <p>Understanding the language of haircutting is essential for professional communication and accurate technique execution.</p>
+
+                <h3>Basic Terms</h3>
+                <ul>
+                    <li><strong>Section:</strong> A divided portion of the head for organized cutting</li>
+                    <li><strong>Subsection:</strong> A smaller division within a larger section</li>
+                    <li><strong>Tension:</strong> The way hair is held while cutting (loose, medium, or tight)</li>
+                    <li><strong>Guide:</strong> The first cut in a section that serves as a reference for subsequent cuts</li>
+                    <li><strong>Angle:</strong> The degree at which the hair is held relative to the head</li>
+                    <li><strong>Blend:</strong> To create a smooth transition between different lengths</li>
+                </ul>
+
+                <h3>Cutting Lines</h3>
+                <ul>
+                    <li><strong>Horizontal:</strong> Cut parallel to the ground; creates weight and fullness</li>
+                    <li><strong>Vertical:</strong> Cut from top to bottom; removes weight, creates movement</li>
+                    <li><strong>Diagonal:</strong> Cut at an angle; creates texture and movement</li>
+                    <li><strong>Clipper over Comb:</strong> Using clippers with a comb as a guide</li>
+                </ul>
+
+                <h3>Hair Characteristics</h3>
+                <ul>
+                    <li><strong>Density:</strong> How close together hair grows on the scalp (thin, medium, thick)</li>
+                    <li><strong>Texture:</strong> Hair type based on shape (straight, wavy, curly, coily)</li>
+                    <li><strong>Porosity:</strong> How well hair absorbs and retains moisture</li>
+                    <li><strong>Length:</strong> Measured from scalp to hair ends</li>
+                </ul>
+            </div>
+
+            <!-- Tools & Equipment Section -->
+            <div class="section" id="tools">
+                <h2>Professional Tools & Equipment</h2>
+                <p>Quality tools are essential for performing professional haircutting. Understanding each tool's purpose and proper use is fundamental.</p>
+
+                <h3>Scissors</h3>
+                <p><strong>Haircutting Scissors (Shears):</strong> The primary cutting tool, typically 5-6 inches long.</p>
+                <ul>
+                    <li><strong>Blade Types:</strong> Straight blades (blunt cuts), serrated (textured cuts)</li>
+                    <li><strong>Handle Styles:</strong> Crane handle, offset handle, bent handle</li>
+                    <li><strong>Proper Grip:</strong> Rest your ring and pinky fingers in the bottom handle, thumb in the top</li>
+                    <li><strong>Maintenance:</strong> Clean after use, keep sharp, oil regularly</li>
+                </ul>
+
+                <div class="exercise">
+                    <h4>✏️ Practice Exercise: Scissor Grip</h4>
+                    <p>Hold your scissors in the proper grip for 2 minutes. Practice opening and closing smoothly without moving your hand position. Focus on using your thumb and fingers independently.</p>
+                </div>
+
+                <h3>Clippers</h3>
+                <p>Electric clippers are used for cutting shorter hair and creating clean lines.</p>
+                <ul>
+                    <li><strong>Guard Numbers:</strong> Lower numbers = shorter cuts (e.g., #0.5 = 1/64", #1 = 1/8")</li>
+                    <li><strong>Types:</strong> Corded, cordless, and rotary clippers</li>
+                    <li><strong>Blade Maintenance:</strong> Check for dullness, clean after each use, oil blades</li>
+                    <li><strong>Safety:</strong> Always check guard is secure before use</li>
+                </ul>
+
+                <h3>Combs</h3>
+                <ul>
+                    <li><strong>Fine-toothed Comb:</strong> For precise sectioning and detail work</li>
+                    <li><strong>Wide-toothed Comb:</strong> For detangling and general use</li>
+                    <li><strong>Barber Comb:</strong> Combines fine and wide teeth; versatile for all techniques</li>
+                </ul>
+
+                <h3>Additional Tools</h3>
+                <ul>
+                    <li><strong>Spray Bottle:</strong> For keeping hair damp during cutting</li>
+                    <li><strong>Cutting Cape:</strong> Protects client clothing and catches hair</li>
+                    <li><strong>Neck Strip:</strong> Protects neck from hair clippings</li>
+                    <li><strong>Towels:</strong> For drying and cleanup</li>
+                    <li><strong>Disinfectant:</strong> EPA-approved disinfectant for tool sanitization</li>
+                </ul>
+            </div>
+
+            <!-- Basic Techniques Section -->
+            <div class="section" id="techniques">
+                <h2>Basic Cutting Techniques</h2>
+                <p>Mastering these fundamental techniques will form the foundation of your haircutting skills.</p>
+
+                <h3>1. Basic Head Sectioning</h3>
+                <p>The first step is always to divide the hair into manageable sections.</p>
+                <ul>
+                    <li>Create a center part from front to back</li>
+                    <li>Create a horizontal part from ear to ear across the crown</li>
+                    <li>This creates 4 main sections</li>
+                    <li>Clip away sections you're not working on</li>
+                </ul>
+
+                <h3>2. The Guide Cut</h3>
+                <p>The guide is your reference point for the rest of the cut.</p>
+                <ul>
+                    <li>Usually cut in the center of the head first</li>
+                    <li>This length guides all subsequent cuts</li>
+                    <li>Must be precise and clean</li>
+                    <li>Other sections are cut to match the guide</li>
+                </ul>
+
+                <h3>3. One-Length Blunt Cut</h3>
+                <p>One of the simplest and most fundamental cuts.</p>
+                <ul>
+                    <li><strong>Use:</strong> Creates clean, defined lines; removes damaged ends</li>
+                    <li><strong>Technique:</strong> Hold hair straight out from head at 90°; cut horizontally</li>
+                    <li><strong>Result:</strong> All hair is the same length; creates visible weight line</li>
+                    <li><strong>Best for:</strong> Thick, healthy hair; straight to wavy texture</li>
+                </ul>
+
+                <div class="exercise">
+                    <h4>✏️ Practice Exercise: Blunt Cut Technique</h4>
+                    <p>Using a practice head or willing volunteer, perform a basic blunt cut on one section:</p>
+                    <ol>
+                        <li>Section the hair into 4 equal parts</li>
+                        <li>Create a guide cut in the center back</li>
+                        <li>Cut the remaining sections to match the guide</li>
+                        <li>Check for balance and evenness</li>
+                        <li>Make adjustments as needed</li>
+                    </ol>
+                </div>
+
+                <h3>4. Clipper Cutting Basics</h3>
+                <p>Clipper work requires smooth, confident movements.</p>
+                <ul>
+                    <li><strong>Direction:</strong> Cut in the direction of hair growth</li>
+                    <li><strong>Pressure:</strong> Let the clippers do the work; don't force</li>
+                    <li><strong>Angle:</strong> Keep perpendicular to the head for even cuts</li>
+                    <li><strong>Guards:</strong> Always start with a longer guard and go shorter if needed</li>
+                </ul>
+
+                <h3>5. Blending and Transitions</h3>
+                <p>Creating smooth transitions between different lengths is a professional skill.</p>
+                <ul>
+                    <li>Use diagonal cutting lines to blend different lengths</li>
+                    <li>Work with tension to control the blend</li>
+                    <li>Use point-cutting (cutting into the hair) for texture</li>
+                    <li>Always blend from short to long gradually</li>
+                </ul>
+            </div>
+
+            <!-- Practice Guide Section -->
+            <div class="section" id="practice">
+                <h2>Practice Guide & Assessment</h2>
+                <p>Consistent, focused practice is the key to developing haircutting skills. This guide will help structure your learning.</p>
+
+                <h3>Week 1-2: Fundamentals</h3>
+                <ul>
+                    <li>☐ Practice scissor grip and hand positioning (30 minutes daily)</li>
+                    <li>☐ Learn proper sectioning technique on practice heads</li>
+                    <li>☐ Practice comb and scissors coordination</li>
+                    <li>☐ Master basic terminology through flashcards</li>
+                </ul>
+
+                <h3>Week 3-4: Tool Mastery</h3>
+                <ul>
+                    <li>☐ Practice clipper technique and guard changes</li>
+                    <li>☐ Cut 5+ blunt cuts on practice heads</li>
+                    <li>☐ Focus on creating clean, even lines</li>
+                    <li>☐ Practice one guide cut followed by matching sections</li>
+                </ul>
+
+                <h3>Week 5-6: Refinement</h3>
+                <ul>
+                    <li>☐ Work on speed and precision simultaneously</li>
+                    <li>☐ Practice cutting on different hair types</li>
+                    <li>☐ Develop your own cutting rhythm</li>
+                    <li>☐ Get feedback from instructors and peers</li>
+                </ul>
+
+                <h3>Self-Assessment Checklist</h3>
+                <div class="highlight-box">
+                    <p><strong>Before moving to advanced techniques, ensure you can:</strong></p>
+                    <ul>
+                        <li>☐ Hold scissors properly without fatigue</li>
+                        <li>☐ Section hair cleanly and precisely</li>
+                        <li>☐ Create a straight, even guide cut</li>
+                        <li>☐ Match sections to the guide accurately</li>
+                        <li>☐ Use clippers with control and confidence</li>
+                        <li>☐ Explain haircutting terminology correctly</li>
+                        <li>☐ Follow all safety and sanitation procedures</li>
+                        <li>☐ Work efficiently without rushing</li>
+                    </ul>
+                </div>
+
+                <h3>Common Beginner Mistakes to Avoid</h3>
+                <ul>
+                    <li><strong>Inconsistent tension:</strong> Hold hair at the same tension throughout the cut</li>
+                    <li><strong>Uneven angles:</strong> Keep cutting angles consistent; don't twist the comb</li>
+                    <li><strong>Rushing:</strong> Take your time; speed comes with practice</li>
+                    <li><strong>Skipping sanitation:</strong> Never skip tool cleaning between clients</li>
+                    <li><strong>Poor posture:</strong> Take breaks; standing all day requires proper positioning</li>
+                    <li><strong>Ignoring the guide:</strong> Always refer back to your guide cut</li>
+                </ul>
+
+                <h3>Next Steps After Mastering Fundamentals</h3>
+                <p>Once you've mastered these foundational techniques, you can progress to:</p>
+                <ul>
+                    <li>Graduated/layered cuts</li>
+                    <li>Textured and choppy styles</li>
+                    <li>Fades and tapered cuts with clippers</li>
+                    <li>Advanced blending techniques</li>
+                    <li>Working with different hair types and textures</li>
+                    <li>Personalized style consultations</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 Vocational Haircutting Workbook | For Educational Purposes</p>
+            <p>This workbook is designed for high school students beginning their haircutting education.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Remove active class from all buttons
+                document.querySelectorAll('.nav-btn').forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                // Show selected section
+                document.getElementById(sectionId).classList.add('active');
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
