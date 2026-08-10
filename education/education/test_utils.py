@@ -63,13 +63,17 @@ def make_holiday_list(holiday_list_name="Test Holiday List"):
 
 
 def create_academic_year(
-	academic_year_name=DEFAULT_ACADEMIC_YEAR, year_start_date=None, year_end_date=None
+	academic_year_name=DEFAULT_ACADEMIC_YEAR,
+	year_start_date=None,
+	year_end_date=None,
+	company="_Test Company",
 ):
 	if frappe.db.exists("Academic Year", {"academic_year_name": DEFAULT_ACADEMIC_YEAR}):
 		return
 
 	academic_year = frappe.new_doc("Academic Year")
 	academic_year.academic_year_name = academic_year_name
+	academic_year.company = company
 	academic_year.year_start_date = year_start_date or "2023-04-01"
 	academic_year.year_end_date = year_end_date or "2024-03-31"
 	academic_year.save()
@@ -83,6 +87,7 @@ def create_academic_term(
 
 	academic_term = frappe.new_doc("Academic Term")
 	academic_term.academic_year = academic_year
+	academic_term.company = frappe.db.get_value("Academic Year", academic_year, "company")
 	academic_term.term_name = term_name
 	academic_term.term_start_date = term_start_date
 	academic_term.term_end_date = term_end_date

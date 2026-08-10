@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2026-08-07 15:28:47.753997",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "attendance_type",
+  "weightage"
+ ],
+ "fields": [
+  {
+   "fieldname": "attendance_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Attendance Type",
+   "options": "Present\nLate\nAbsent\nAbsent Excused",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weightage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Weightage",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-08 02:33:22.176715",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Grade Template Attendance Weight",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,5 +1,5 @@
 frappe.ui.form.on('Course', {
-  refresh: function (frm) {
+  setup: function (frm) {
     // if (!cur_frm.doc.__islocal) {
     //   frm.add_custom_button(__('Add to Programs'), function () {
     //     frm.trigger('add_course_to_programs')
@@ -14,10 +14,34 @@ frappe.ui.form.on('Course', {
       }
     })
 
+    frm.set_query('grade_template', function () {
+      return {
+        filters: {
+          company: frm.doc.company,
+        },
+      }
+    })
+
     frm.set_query('fee_term', function () {
       return {
         filters: {
           docstatus: 1,
+        },
+      }
+    })
+
+    frm.set_query('grade_template', 'subjects', function () {
+      return {
+        filters: {
+          company: frm.doc.company,
+        },
+      }
+    })
+
+    frm.set_query('default_grading_scale', function () {
+      return {
+        filters: {
+          company: frm.doc.company,
         },
       }
     })

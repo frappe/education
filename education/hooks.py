@@ -92,6 +92,7 @@ global_search_doctypes = {
 		{"doctype": "Assessment Result", "index": 19},
 		{"doctype": "Assessment Plan", "index": 20},
 		{"doctype": "Grading Scale", "index": 21},
+		{"doctype": "Grade Template", "index": 40},
 		{"doctype": "Guardian", "index": 22},
 		{"doctype": "Student Leave Application", "index": 23},
 		{"doctype": "Student Log", "index": 24},

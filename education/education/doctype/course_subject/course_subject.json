@@ -16,7 +16,9 @@
   "credit",
   "attempted_units",
   "company",
-  "department"
+  "department",
+  "use_course_grade_template",
+  "grade_template"
  ],
  "fields": [
   {
@@ -99,13 +101,29 @@
   {
    "fieldname": "column_break_bjdm",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_course_grade_template",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Use Course Grade Template"
+  },
+  {
+   "depends_on": "eval:!doc.use_course_grade_template",
+   "fieldname": "grade_template",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Grade Template",
+   "mandatory_depends_on": "eval:!doc.use_course_grade_template",
+   "options": "Grade Template"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-11 17:21:40.194594",
+ "modified": "2026-08-07 15:00:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Subject",

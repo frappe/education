@@ -13,6 +13,7 @@ class Course(Document):
 	def validate(self):
 		self.validate_assessment_criteria()
 		self.validate_registration_fee()
+		self.validate_grade_templates()
 
 	def validate_registration_fee(self):
 		if self.registration_fee:
@@ -29,6 +30,39 @@ class Course(Document):
 				total_weightage += criteria.weightage or 0
 			if total_weightage != 100:
 				frappe.throw(_("Total Weightage of all Assessment Criteria must be 100%"))
+
+	def validate_grade_templates(self):
+		if self.grade_templates:
+			for template in self.grade_templates:
+				self._validate_grade_template_company(template.grade_template)
+
+		for row in self.subjects or []:
+			if row.use_course_grade_template:
+				row.grade_template = None
+				continue
+
+			if not row.grade_template:
+				frappe.throw(
+					_(
+						"Row {0}: Grade Template is required when Use Course Grade Template is unchecked"
+					).format(row.idx)
+				)
+
+			self._validate_grade_template_company(row.grade_template, row.idx)
+
+	def _validate_grade_template_company(self, grade_template, row_idx=None):
+		if not self.company:
+			return
+
+		template_company = frappe.db.get_value("Grade Template", grade_template, "company")
+
+		if template_company and template_company != self.company:
+			message = _("Grade Template {0} belongs to a different Company").format(
+				frappe.bold(grade_template)
+			)
+			if row_idx:
+				message = _("Row {0}: {1}").format(row_idx, message)
+			frappe.throw(message)
 
 	# def get_topics(self):
 	#     topic_data = []

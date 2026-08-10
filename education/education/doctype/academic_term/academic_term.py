@@ -19,11 +19,24 @@ class AcademicTerm(Document):
 		self.validate_duplication()
 		self.validate_dates()
 		self.validate_term_against_year()
+		self.validate_company()
 
 	def set_title(self):
 		self.title = (
 			self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
 		)
+
+	def validate_company(self):
+		if not self.academic_year or not self.company:
+			return
+
+		year_company = frappe.db.get_value("Academic Year", self.academic_year, "company")
+		if year_company and self.company != year_company:
+			frappe.throw(
+				_("Company must be the same as that of Academic Year {0}").format(
+					frappe.bold(self.academic_year)
+				)
+			)
 
 	def validate_duplication(self):
 		# Check if entry with same academic_year and the term_name already exists

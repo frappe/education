@@ -304,7 +304,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Assessment",
-   "link_count": 5,
+   "link_count": 7,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -355,6 +355,26 @@
    "label": "Grading Scale",
    "link_count": 0,
    "link_to": "Grading Scale",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Grade Template",
+   "link_count": 0,
+   "link_to": "Grade Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Assignment Type",
+   "link_count": 0,
+   "link_to": "Assignment Type",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"

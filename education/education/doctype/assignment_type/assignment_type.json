@@ -7,18 +7,22 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_choy"
+  "assignment_type"
  ],
  "fields": [
   {
-   "fieldname": "section_break_choy",
-   "fieldtype": "Section Break"
+   "fieldname": "assignment_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Assignment Type",
+   "options": "Subjective\nAttendance\nExam",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-08 20:18:51.982184",
+ "modified": "2026-08-08 02:07:01.650427",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assignment Type",

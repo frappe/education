@@ -37,7 +37,7 @@
   "assessment_tab",
   "assessment",
   "default_grading_scale",
-  "assessment_criteria",
+  "grade_templates",
   "connections_tab"
  ],
  "fields": [
@@ -72,12 +72,6 @@
    "fieldtype": "Link",
    "label": "Default Grading Scale",
    "options": "Grading Scale"
-  },
-  {
-   "fieldname": "assessment_criteria",
-   "fieldtype": "Table",
-   "label": "Assessment Criteria",
-   "options": "Course Assessment Criteria"
   },
   {
    "fieldname": "column_break_tflc",
@@ -237,11 +231,17 @@
    "fieldtype": "Currency",
    "label": "Course Change Fee Amount",
    "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "grade_templates",
+   "fieldtype": "Table MultiSelect",
+   "label": "Grade Templates",
+   "options": "Course Grade Template"
   }
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2026-07-08 16:59:32.939214",
+ "modified": "2026-08-08 03:16:35.961329",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

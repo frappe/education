@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "creation": "2026-08-07 15:28:47.753997",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "assignment_type",
+  "weightage"
+ ],
+ "fields": [
+  {
+   "fieldname": "assignment_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assignment Type",
+   "options": "Assignment Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weightage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Weightage",
+   "reqd": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-08 02:34:44.518607",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Grade Template Assignment Weight",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,136 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:template_name",
+ "creation": "2026-08-07 15:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "academic_year",
+  "academic_term",
+  "column_break_meta",
+  "company",
+  "weightage_section",
+  "weightage_type",
+  "assignment_weights",
+  "attendance_weights",
+  "connections_tab"
+ ],
+ "fields": [
+  {
+   "fieldname": "template_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Template Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Academic Term",
+   "options": "Academic Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weightage_section",
+   "fieldtype": "Section Break",
+   "label": "Weightage"
+  },
+  {
+   "fieldname": "weightage_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Weightage Type",
+   "options": "Assignment Type Weightage\nAttendance Weightage",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.weightage_type=='Assignment Type Weightage'",
+   "fieldname": "assignment_weights",
+   "fieldtype": "Table",
+   "label": "Assignment Type Weights",
+   "mandatory_depends_on": "eval:doc.weightage_type=='Assignment Type Weightage'",
+   "options": "Grade Template Assignment Weight"
+  },
+  {
+   "depends_on": "eval:doc.weightage_type=='Attendance Weightage'",
+   "fieldname": "attendance_weights",
+   "fieldtype": "Table",
+   "label": "Attendance Weights",
+   "mandatory_depends_on": "eval:doc.weightage_type=='Attendance Weightage'",
+   "options": "Grade Template Attendance Weight"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-08-08 02:19:16.854726",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Grade Template",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "company,academic_year,academic_term,weightage_type",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

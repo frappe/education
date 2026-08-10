@@ -11,6 +11,8 @@ class TestAcademicYear(FrappeTestCase):
 		year = frappe.get_doc(
 			{
 				"doctype": "Academic Year",
+				"academic_year_name": "_Test Academic Year Invalid Dates",
+				"company": "_Test Company",
 				"year_start_date": "13-02-2023",
 				"year_end_date": "27-01-2023",
 			}
