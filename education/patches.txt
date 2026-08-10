@@ -17,3 +17,4 @@ education.patches.v15_0.create_fee_component_item_group
 education.patches.v15_0.create_student_customer_group
 education.patches.v15_0.create_custom_permissions
 education.patches.v15_0.create_guardian_role
+education.patches.v15_0.guardian_invoice_permission

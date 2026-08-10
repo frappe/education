@@ -7,6 +7,7 @@ from frappe.permissions import add_permission, update_permission_property
 def after_install():
 	setup_fixtures()
 	create_student_role()
+	create_guardian_role()
 	create_parent_assessment_group()
 	create_invoice_permissions()
 	create_custom_fields(get_custom_fields())
@@ -42,12 +43,12 @@ def create_parent_assessment_group():
 
 def create_student_role():
 	if not frappe.db.exists("Role", "Student"):
-		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 0}).save()
+		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 1}).save()
 
 
 def create_guardian_role():
 	if not frappe.db.exists("Role", "Guardian"):
-		frappe.get_doc({"doctype": "Role", "role_name": "Guardian", "desk_access": 0}).save()
+		frappe.get_doc({"doctype": "Role", "role_name": "Guardian", "desk_access": 1}).save()
 
 
 def create_invoice_permissions():
