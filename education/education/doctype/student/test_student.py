@@ -25,5 +25,33 @@ class TestStudent(FrappeTestCase):
 		self.assertTrue(bool(student.customer))
 		self.assertEqual(student.customer_group, "Student")
 
+	def test_create_customer_during_import_with_duplicate_name(self):
+		frappe.flags.in_import = True
+		try:
+			s1 = frappe.get_doc(
+				{
+					"doctype": "Student",
+					"first_name": "DupStudent",
+					"last_name": "ImportTest",
+					"student_email_id": "dupstudent1@example.com",
+				}
+			).insert(ignore_permissions=True)
+
+			s2 = frappe.get_doc(
+				{
+					"doctype": "Student",
+					"first_name": "DupStudent",
+					"last_name": "ImportTest",
+					"student_email_id": "dupstudent2@example.com",
+				}
+			).insert(ignore_permissions=True)
+
+			self.assertEqual(s1.customer, "DupStudent ImportTest")
+			self.assertEqual(s2.customer, "DupStudent ImportTest - 1")
+		finally:
+			frappe.flags.in_import = False
+
 	def tearDown(self):
 		frappe.db.rollback()
+
+

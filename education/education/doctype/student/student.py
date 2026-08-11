@@ -135,6 +135,7 @@ class Student(Document):
 			}
 		).insert()
 
+		self.customer = customer.name
 		frappe.db.set_value("Student", self.name, "customer", customer.name)
 		frappe.msgprint(
 			_("Customer {0} created and linked to Student").format(customer.name), alert=True

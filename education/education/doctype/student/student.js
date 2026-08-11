@@ -2,6 +2,20 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Student', {
+  setup: function (frm) {
+    frm.set_query('guardian', 'guardians', function (doc, cdt, cdn) {
+      let guardian_list = (doc.guardians || [])
+        .filter((d) => d.name !== cdn && d.guardian)
+        .map((d) => d.guardian)
+
+      if (guardian_list.length) {
+        return {
+          filters: [['Guardian', 'name', 'not in', guardian_list]],
+        }
+      }
+      return {}
+    })
+  },
   refresh: function (frm) {
     frm.set_query('user', function (doc) {
       return {
@@ -27,19 +41,5 @@ frappe.ui.form.on('Student', {
           frm.set_df_property('student_email_id', 'reqd', 1)
         }
       })
-  },
-})
-
-frappe.ui.form.on('Student Guardian', {
-  guardians_add: function (frm) {
-    frm.fields_dict['guardians'].grid.get_field('guardian').get_query =
-      function (doc) {
-        let guardian_list = []
-        if (!doc.__islocal) guardian_list.push(doc.guardian)
-        $.each(doc.guardians, function (idx, val) {
-          if (val.guardian) guardian_list.push(val.guardian)
-        })
-        return { filters: [['Guardian', 'name', 'not in', guardian_list]] }
-      }
   },
 })

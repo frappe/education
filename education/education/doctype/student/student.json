@@ -24,10 +24,14 @@
   "student_email_id",
   "date_of_birth",
   "blood_group",
+  "religion",
+  "form_b_number",
   "column_break_3",
   "student_mobile_number",
   "gender",
   "nationality",
+  "tribe",
+  "orphan",
   "address_tab",
   "section_break_22",
   "address_line_1",
@@ -152,6 +156,16 @@
    "options": "\nA+\nA-\nB+\nB-\nO+\nO-\nAB+\nAB-"
   },
   {
+   "fieldname": "religion",
+   "fieldtype": "Data",
+   "label": "Religion"
+  },
+  {
+   "fieldname": "form_b_number",
+   "fieldtype": "Data",
+   "label": "Form B Number"
+  },
+  {
    "fieldname": "column_break_3",
    "fieldtype": "Column Break"
   },
@@ -165,6 +179,17 @@
    "fieldname": "nationality",
    "fieldtype": "Data",
    "label": "Nationality"
+  },
+  {
+   "fieldname": "tribe",
+   "fieldtype": "Data",
+   "label": "Tribe"
+  },
+  {
+   "default": "0",
+   "fieldname": "orphan",
+   "fieldtype": "Check",
+   "label": "Orphan"
   },
   {
    "fieldname": "student_applicant",
