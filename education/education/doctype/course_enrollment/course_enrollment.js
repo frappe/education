@@ -19,7 +19,20 @@ frappe.ui.form.on('Course Enrollment', {
       }
     })
 
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+          disabled: 0,
+        },
+      }
+    })
+
     frm.trigger('fetch_allowed_courses')
+  },
+
+  course: function (frm) {
+    frm.set_value('student_batch', null)
   },
 
   company: function (frm) {

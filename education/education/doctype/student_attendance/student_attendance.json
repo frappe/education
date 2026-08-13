@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2015-11-05 15:20:23.045996",
+ "creation": "2026-08-12 20:54:24.178441",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -12,7 +12,7 @@
   "student_name",
   "student_mobile_number",
   "course_schedule",
-  "student_group",
+  "student_batch",
   "column_break_3",
   "date",
   "status",
@@ -57,12 +57,12 @@
    "label": "Student Name"
   },
   {
-   "fieldname": "student_group",
+   "fieldname": "student_batch",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_standard_filter": 1,
-   "label": "Student Group",
-   "options": "Student Group"
+   "label": "Student Batch",
+   "options": "Student Batch Name"
   },
   {
    "allow_on_submit": 1,
@@ -105,7 +105,7 @@
    "options": "Phone"
   },
   {
-   "fetch_from": "student_group.program",
+   "fetch_from": "student_batch.program",
    "fieldname": "link_nvfk",
    "fieldtype": "Link",
    "label": "Program",
@@ -115,7 +115,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-23 17:14:36.280419",
+ "modified": "2026-08-13 02:53:47.541884",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",
@@ -149,6 +149,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [

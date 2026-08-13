@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "field:batch_name",
- "creation": "2016-11-17 18:45:57.965091",
+ "creation": "2026-08-12 20:54:23.323948",
  "doctype": "DocType",
  "document_type": "Setup",
  "editable_grid": 1,
@@ -9,9 +9,12 @@
  "field_order": [
   "batch_name",
   "course",
-  "start_date",
+  "program",
+  "max_strength",
+  "disabled",
   "column_break_advy",
   "company",
+  "start_date",
   "end_date"
  ],
  "fields": [
@@ -38,23 +41,49 @@
   {
    "fieldname": "course",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Course",
    "options": "Course",
    "reqd": 1
   },
   {
+   "fetch_from": "course.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Program",
+   "options": "Program",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course.company",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "column_break_advy",
    "fieldtype": "Column Break"
+  },
+  {
+   "description": "Maximum number of students that can be enrolled in this batch. Leave as 0 for no limit.",
+   "fieldname": "max_strength",
+   "fieldtype": "Int",
+   "label": "Max Strength"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
   }
  ],
  "links": [],
- "modified": "2026-06-09 13:36:23.441042",
+ "modified": "2026-08-13 02:54:39.749051",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Batch Name",
@@ -72,6 +101,15 @@
    "role": "Academics User",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Instructor",
+   "share": 1
   }
  ],
  "quick_entry": 1,

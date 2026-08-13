@@ -7,9 +7,11 @@ from erpnext.support.doctype.issue.issue import get_holidays
 from frappe import _
 from frappe.utils import add_days, cstr, date_diff, get_first_day, get_last_day, getdate
 
-from education.education.api import get_student_group_students
 from education.education.doctype.student_attendance.student_attendance import (
 	get_holiday_list,
+)
+from education.education.doctype.student_batch_name.student_batch_name import (
+	get_batch_students,
 )
 
 
@@ -21,10 +23,10 @@ def execute(filters=None):
 	to_date = get_last_day(filters["month"] + "-" + filters["year"])
 	total_days_in_month = date_diff(to_date, from_date) + 1
 	columns = get_columns(total_days_in_month)
-	students = get_student_group_students(filters.get("student_group"), 1)
+	students = get_batch_students(filters.get("student_batch"), include_inactive=1)
 	students_list = get_students_list(students)
 	att_map = get_attendance_list(
-		from_date, to_date, filters.get("student_group"), students_list
+		from_date, to_date, filters.get("student_batch"), students_list
 	)
 	data = []
 
@@ -125,14 +127,14 @@ def get_students_list(students):
 	return student_list
 
 
-def get_attendance_list(from_date, to_date, student_group, students_list):
+def get_attendance_list(from_date, to_date, student_batch, students_list):
 	attendance_list = frappe.db.sql(
 		"""select student, date, status
-		from `tabStudent Attendance` where student_group = %s
+		from `tabStudent Attendance` where student_batch = %s
 		and docstatus = 1
 		and date between %s and %s
 		order by student, date""",
-		(student_group, from_date, to_date),
+		(student_batch, from_date, to_date),
 		as_dict=1,
 	)
 

@@ -5,6 +5,10 @@
 import frappe
 from frappe.model.document import Document
 
+from education.education.doctype.student_batch_name.student_batch_name import (
+	get_batch_students,
+)
+
 
 class StudentAttendanceTool(Document):
 	pass
@@ -12,30 +16,16 @@ class StudentAttendanceTool(Document):
 
 @frappe.whitelist()
 def get_student_attendance_records(
-	based_on, date=None, student_group=None, course_schedule=None
+	based_on, date=None, student_batch=None, course_schedule=None
 ):
-	student_list = []
 	student_attendance_list = []
 
 	if based_on == "Course Schedule":
-		student_group = frappe.db.get_value(
-			"Course Schedule", course_schedule, "student_group"
+		student_batch = frappe.db.get_value(
+			"Course Schedule", course_schedule, "student_batch"
 		)
-		if student_group:
-			student_list = frappe.get_all(
-				"Student Group Student",
-				fields=["student", "student_name", "group_roll_number"],
-				filters={"parent": student_group, "active": 1},
-				order_by="group_roll_number",
-			)
 
-	if not student_list:
-		student_list = frappe.get_all(
-			"Student Group Student",
-			fields=["student", "student_name", "group_roll_number"],
-			filters={"parent": student_group, "active": 1},
-			order_by="group_roll_number",
-		)
+	student_list = get_batch_students(student_batch) if student_batch else []
 
 	StudentAttendance = frappe.qb.DocType("Student Attendance")
 
@@ -50,7 +40,7 @@ def get_student_attendance_records(
 			frappe.qb.from_(StudentAttendance)
 			.select(StudentAttendance.student, StudentAttendance.status)
 			.where(
-				(StudentAttendance.student_group == student_group)
+				(StudentAttendance.student_batch == student_batch)
 				& (StudentAttendance.date == date)
 				& (
 					(StudentAttendance.course_schedule == "")

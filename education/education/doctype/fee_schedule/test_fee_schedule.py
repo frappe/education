@@ -16,7 +16,8 @@ from education.education.test_utils import (
 	create_fee_structure,
 	create_student,
 	create_program_enrollment,
-	create_student_group,
+	create_course,
+	create_student_batch,
 	create_fee_schedule,
 )
 
@@ -42,7 +43,8 @@ class TestFeeSchedule(FrappeTestCase):
 		student = create_student()
 		create_program_enrollment(student_name=student.name, submit=1)
 
-		create_student_group()
+		create_course()
+		create_student_batch()
 
 	def tearDown(self):
 		frappe.db.rollback()
@@ -50,8 +52,8 @@ class TestFeeSchedule(FrappeTestCase):
 	def test_fee_schedule(self):
 		fee_schedule = create_fee_schedule(submit=1)
 		total_students = 0
-		for group in fee_schedule.student_groups:
-			total_students += group.total_students
+		for batch in fee_schedule.student_batches:
+			total_students += batch.total_students
 
 		self.assertEqual(fee_schedule.docstatus, 1)
 		self.assertEqual(total_students, 1)

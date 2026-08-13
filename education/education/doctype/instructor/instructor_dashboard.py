@@ -15,6 +15,6 @@ def get_data():
 				"label": _("Course and Assessment"),
 				"items": ["Course Schedule", "Assessment Plan"],
 			},
-			{"label": _("Students"), "items": ["Student Group"]},
+			{"label": _("Students"), "items": ["Instructor Log"]},
 		],
 	}

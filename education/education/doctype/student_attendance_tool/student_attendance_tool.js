@@ -9,10 +9,9 @@ frappe.ui.form.on('Student Attendance Tool', {
     )
   },
   onload: function (frm) {
-    frm.set_query('student_group', function () {
+    frm.set_query('student_batch', function () {
       return {
         filters: {
-          group_based_on: frm.doc.group_based_on,
           disabled: 0,
         },
       }
@@ -22,7 +21,7 @@ frappe.ui.form.on('Student Attendance Tool', {
   refresh: function (frm) {
     if (frappe.route_options) {
       frm.set_value('based_on', frappe.route_options.based_on)
-      frm.set_value('student_group', frappe.route_options.student_group)
+      frm.set_value('student_batch', frappe.route_options.student_batch)
       frm.set_value('course_schedule', frappe.route_options.course_schedule)
       frappe.route_options = null
     }
@@ -30,15 +29,15 @@ frappe.ui.form.on('Student Attendance Tool', {
   },
 
   based_on: function (frm) {
-    if (frm.doc.based_on == 'Student Group') {
+    if (frm.doc.based_on == 'Student Batch') {
       frm.set_value('course_schedule', '')
     } else {
-      frm.set_value('student_group', '')
+      frm.set_value('student_batch', '')
     }
   },
 
-  student_group: function (frm) {
-    if ((frm.doc.student_group && frm.doc.date) || frm.doc.course_schedule) {
+  student_batch: function (frm) {
+    if ((frm.doc.student_batch && frm.doc.date) || frm.doc.course_schedule) {
       frm.students_area
         .find('.student-attendance-checks')
         .html(`<div style='padding: 2rem 0'>Fetching...</div>`)
@@ -49,7 +48,7 @@ frappe.ui.form.on('Student Attendance Tool', {
         method: method,
         args: {
           based_on: frm.doc.based_on,
-          student_group: frm.doc.student_group,
+          student_batch: frm.doc.student_batch,
           date: frm.doc.date,
           course_schedule: frm.doc.course_schedule,
         },
@@ -63,11 +62,11 @@ frappe.ui.form.on('Student Attendance Tool', {
   date: function (frm) {
     if (frm.doc.date > frappe.datetime.get_today())
       frappe.throw(__('Cannot mark attendance for future dates.'))
-    frm.trigger('student_group')
+    frm.trigger('student_batch')
   },
 
   course_schedule: function (frm) {
-    frm.trigger('student_group')
+    frm.trigger('student_batch')
   },
 
   get_students: function (frm, students) {
@@ -139,7 +138,7 @@ education.StudentsEditor = class StudentsEditor {
           studs.push({
             student: $check.data().student,
             student_name: $check.data().studentName,
-            group_roll_number: $check.data().group_roll_number,
+            roll_number: $check.data().roll_number,
             disabled: $check.prop('disabled'),
             checked: $check.is(':checked'),
           })
@@ -168,13 +167,13 @@ education.StudentsEditor = class StudentsEditor {
                 args: {
                   students_present: students_present,
                   students_absent: students_absent,
-                  student_group: frm.doc.student_group,
+                  student_batch: frm.doc.student_batch,
                   course_schedule: frm.doc.course_schedule,
                   date: frm.doc.date,
                 },
                 callback: function (r) {
                   $(me.wrapper.find('.btn-mark-att')).attr('disabled', false)
-                  frm.trigger('student_group')
+                  frm.trigger('student_batch')
                 },
               })
             }
@@ -194,12 +193,12 @@ education.StudentsEditor = class StudentsEditor {
 						<label>
 							<input
 								type="checkbox"
-								data-group_roll_number="${student.group_roll_number}"
+								data-roll_number="${student.roll_number}"
 								data-student="${student.student}"
 								data-student-name="${student.student_name}"
 								class="students-check"
 								${student.status === 'Present' ? 'checked' : ''}>
-							${student.group_roll_number} - ${student.student_name}
+							${student.roll_number} - ${student.student_name}
 						</label>
 					</div>
 				</div>`
@@ -213,7 +212,7 @@ education.StudentsEditor = class StudentsEditor {
   show_empty_state() {
     $(this.wrapper).html(
       `<div class="text-center text-muted" style="line-height: 100px;">
-				${__('No Students in')} ${this.frm.doc.student_group}
+				${__('No Students in')} ${this.frm.doc.student_batch}
 			</div>`
     )
   }

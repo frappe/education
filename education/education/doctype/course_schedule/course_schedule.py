@@ -15,8 +15,8 @@ class CourseSchedule(Document):
 		self.instructor_name = frappe.db.get_value(
 			"Instructor", self.instructor, "instructor_name"
 		)
-		self.set_title()
 		self.validate_course()
+		self.set_title()
 		self.validate_date()
 		self.validate_time()
 		self.validate_overlap()
@@ -26,50 +26,36 @@ class CourseSchedule(Document):
 
 	def set_title(self):
 		"""Set document Title"""
+		instructor = self.instructor_name or self.instructor
 		self.title = (
-			self.course
-			+ " by "
-			+ (self.instructor_name if self.instructor_name else self.instructor)
+			f"{self.course} by {instructor}" if instructor else self.course or self.student_batch
 		)
 
 	def validate_course(self):
-		group_based_on, course = frappe.db.get_value(
-			"Student Group", self.student_group, ["group_based_on", "course"]
-		)
-		if group_based_on == "Course":
+		"""A batch belongs to a single course, so the course follows the batch."""
+		course = frappe.db.get_value("Student Batch Name", self.student_batch, "course")
+		if course:
 			self.course = course
 
 	def validate_date(self):
-		academic_year, academic_term = frappe.db.get_value(
-			"Student Group", self.student_group, ["academic_year", "academic_term"]
+		start_date, end_date = frappe.db.get_value(
+			"Student Batch Name", self.student_batch, ["start_date", "end_date"]
 		)
 		self.schedule_date = frappe.utils.getdate(self.schedule_date)
 
-		if academic_term:
-			start_date, end_date = frappe.db.get_value(
-				"Academic Term", academic_term, ["term_start_date", "term_end_date"]
+		if (
+			start_date
+			and end_date
+			and (
+				self.schedule_date < frappe.utils.getdate(start_date)
+				or self.schedule_date > frappe.utils.getdate(end_date)
 			)
-			if (
-				start_date
-				and end_date
-				and (self.schedule_date < start_date or self.schedule_date > end_date)
-			):
-				frappe.throw(
-					_(
-						"Schedule date selected does not lie within the Academic Term of the Student Group {0}."
-					).format(self.student_group)
+		):
+			frappe.throw(
+				_("Schedule date selected does not lie within the duration of Batch {0}.").format(
+					self.student_batch
 				)
-
-		elif academic_year:
-			start_date, end_date = frappe.db.get_value(
-				"Academic Year", academic_year, ["year_start_date", "year_end_date"]
 			)
-			if self.schedule_date < start_date or self.schedule_date > end_date:
-				frappe.throw(
-					_(
-						"Schedule date selected does not lie within the Academic Year of the Student Group {0}."
-					).format(self.student_group)
-				)
 
 	def validate_time(self):
 		"""Validates if from_time is greater than to_time"""
@@ -85,20 +71,20 @@ class CourseSchedule(Document):
 				pass
 
 	def validate_overlap(self):
-		"""Validates overlap for Student Group, Instructor, Room"""
+		"""Validates overlap for Batch, Instructor, Room"""
 
 		from education.education.utils import validate_overlap_for
 
 		# Validate overlapping course schedules.
-		if self.student_group:
-			validate_overlap_for(self, "Course Schedule", "student_group")
+		if self.student_batch:
+			validate_overlap_for(self, "Course Schedule", "student_batch")
 
 		validate_overlap_for(self, "Course Schedule", "instructor")
 		validate_overlap_for(self, "Course Schedule", "room")
 
 		# validate overlapping assessment schedules.
-		if self.student_group:
-			validate_overlap_for(self, "Assessment Plan", "student_group")
+		if self.student_batch:
+			validate_overlap_for(self, "Assessment Plan", "student_batch")
 
 		validate_overlap_for(self, "Assessment Plan", "room")
 		validate_overlap_for(self, "Assessment Plan", "supervisor", self.instructor)

@@ -4,15 +4,18 @@
   "intervals": [
       {
          "grade_code": "A",
-         "threshold": 75
+         "minimum_percentage": 75,
+         "maximum_percentage": 100
       },
       {
           "grade_code": "B",
-          "threshold": 50
+          "minimum_percentage": 50,
+          "maximum_percentage": 74
       },
       {
           "grade_code": "C",
-          "threshold": 0
+          "minimum_percentage": 0,
+          "maximum_percentage": 49
       }
   ]
  }

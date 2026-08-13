@@ -13,7 +13,8 @@ from education.education.test_utils import (
 	create_program,
 	create_student,
 	create_program_enrollment,
-	create_student_group,
+	create_course,
+	create_student_batch,
 	before_tests,
 )
 
@@ -32,7 +33,8 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		create_program()
 		student = create_student()
 		create_program_enrollment(student_name=student.name, submit=1)
-		create_student_group()
+		create_course()
+		create_student_batch()
 
 	def tearDown(self):
 		frappe.db.rollback()
@@ -103,8 +105,8 @@ def create_leave_application(from_date=None, to_date=None, mark_as_present=0, su
 
 	leave_application = frappe.new_doc("Student Leave Application")
 	leave_application.student = student.name
-	leave_application.attendance_based_on = "Student Group"
-	leave_application.student_group = "Test Student Group"
+	leave_application.attendance_based_on = "Student Batch"
+	leave_application.student_batch = "Test Batch"
 	leave_application.from_date = from_date if from_date else getdate()
 	leave_application.to_date = from_date if from_date else getdate()
 	leave_application.mark_as_present = mark_as_present
@@ -124,7 +126,7 @@ def create_student_attendance(date=None, status=None):
 			"student": student.name,
 			"status": status if status else "Present",
 			"date": date if date else getdate(),
-			"student_group": "Test Student Group",
+			"student_batch": "Test Batch",
 		}
 	).insert()
 	return attendance

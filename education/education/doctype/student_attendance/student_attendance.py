@@ -9,15 +9,15 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import formatdate, get_link_to_form, getdate
 
-from education.education.api import get_student_group_students
+from education.education.api import get_batch_students, validate_attendance_date
 
 
 class StudentAttendance(Document):
 	def validate(self):
 		self.validate_mandatory()
-		# self.validate_date()
+		self.validate_date()
 		self.set_date()
-		self.set_student_group()
+		self.set_student_batch()
 		self.validate_student()
 		self.validate_duplication()
 		self.validate_is_holiday()
@@ -29,10 +29,10 @@ class StudentAttendance(Document):
 			)
 
 	def validate_mandatory(self):
-		if not (self.student_group or self.course_schedule):
+		if not (self.student_batch or self.course_schedule):
 			frappe.throw(
 				_("{0} or {1} is mandatory").format(
-					frappe.bold("Student Group"), frappe.bold("Course Schedule")
+					frappe.bold(_("Student Batch")), frappe.bold(_("Course Schedule"))
 				),
 				title=_("Mandatory Fields"),
 			)
@@ -41,45 +41,25 @@ class StudentAttendance(Document):
 		if not self.leave_application and getdate(self.date) > getdate():
 			frappe.throw(_("Attendance cannot be marked for future dates."))
 
-		if self.student_group:
-			academic_year = frappe.db.get_value(
-				"Student Group", self.student_group, "academic_year"
-			)
-			if academic_year:
-				year_start_date, year_end_date = frappe.db.get_value(
-					"Academic Year", academic_year, ["year_start_date", "year_end_date"]
-				)
-				if year_start_date and year_end_date:
-					if getdate(self.date) < getdate(year_start_date) or getdate(self.date) > getdate(
-						year_end_date
-					):
-						frappe.throw(
-							_("Attendance cannot be marked outside of Academic Year {0}").format(
-								academic_year
-							)
-						)
+		if self.student_batch:
+			validate_attendance_date(self.student_batch, self.date)
 
-	def set_student_group(self):
+	def set_student_batch(self):
 		if self.course_schedule:
-			self.student_group = frappe.db.get_value(
-				"Course Schedule", self.course_schedule, "student_group"
+			self.student_batch = frappe.db.get_value(
+				"Course Schedule", self.course_schedule, "student_batch"
 			)
 
 	def validate_student(self):
-		if self.course_schedule:
-			student_group = frappe.db.get_value(
-				"Course Schedule", self.course_schedule, "student_group"
-			)
-		else:
-			student_group = self.student_group
-		student_group_students = [
-			d.student for d in get_student_group_students(student_group)
-		]
-		if student_group and self.student not in student_group_students:
-			student_group_doc = get_link_to_form("Student Group", student_group)
+		if not self.student_batch:
+			return
+
+		batch_students = [d.student for d in get_batch_students(self.student_batch)]
+		if self.student not in batch_students:
+			batch_link = get_link_to_form("Student Batch Name", self.student_batch)
 			frappe.throw(
-				_("Student {0}: {1} does not belong to Student Group {2}").format(
-					frappe.bold(self.student), self.student_name, frappe.bold(student_group_doc)
+				_("Student {0}: {1} is not enrolled in Batch {2}").format(
+					frappe.bold(self.student), self.student_name, batch_link
 				)
 			)
 
@@ -101,7 +81,7 @@ class StudentAttendance(Document):
 				"Student Attendance",
 				{
 					"student": self.student,
-					"student_group": self.student_group,
+					"student_batch": self.student_batch,
 					"date": self.date,
 					"docstatus": ("!=", 2),
 					"name": ("!=", self.name),

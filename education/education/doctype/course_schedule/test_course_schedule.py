@@ -15,7 +15,7 @@ from education.education.test_utils import (
 	create_program,
 	create_student,
 	create_program_enrollment,
-	create_student_group,
+	create_student_batch,
 	create_instructor,
 	create_course,
 	create_room,
@@ -31,14 +31,14 @@ class TestCourseSchedule(FrappeTestCase):
 		create_program("Class 1")
 		student = create_student()
 		create_program_enrollment(student_name=student.name, submit=1)
-		create_student_group(student_group_name="Test Student Group")
-		create_student_group(student_group_name="Test Student Group 2")
-
 		create_instructor()
 		create_instructor("Test Instructor 2")
 
 		create_course()
 		create_course("Test Course 2")
+
+		create_student_batch(batch_name="Test Batch", course="Test Course")
+		create_student_batch(batch_name="Test Batch 2", course="Test Course 2")
 
 		create_room()
 		create_room("Test Room 2")
@@ -46,7 +46,7 @@ class TestCourseSchedule(FrappeTestCase):
 	def tearDown(self):
 		frappe.db.rollback()
 
-	def test_student_group_conflict(self):
+	def test_student_batch_conflict(self):
 		cs1 = make_course_schedule_test_record(simulate=True, schedule_date="2023-08-01")
 		cs2 = make_course_schedule_test_record(
 			schedule_date=cs1.schedule_date,
@@ -65,7 +65,7 @@ class TestCourseSchedule(FrappeTestCase):
 			schedule_date=cs1.schedule_date,
 			from_time=cs1.from_time,
 			to_time=cs1.to_time,
-			student_group="Test Student Group 2",
+			student_batch="Test Batch 2",
 			room=frappe.get_all("Room")[1].name,
 			do_not_save=1,
 		)
@@ -78,7 +78,7 @@ class TestCourseSchedule(FrappeTestCase):
 			schedule_date=cs1.schedule_date,
 			from_time=cs1.from_time,
 			to_time=cs1.to_time,
-			student_group="Test Student Group 2",
+			student_batch="Test Batch 2",
 			instructor="Test Instructor 2",
 			do_not_save=1,
 		)
@@ -91,7 +91,7 @@ class TestCourseSchedule(FrappeTestCase):
 			schedule_date=cs1.schedule_date,
 			from_time=cs1.from_time,
 			to_time=cs1.to_time,
-			student_group="Test Student Group 2",
+			student_batch="Test Batch 2",
 			instructor="Test Instructor 2",
 			room=frappe.get_all("Room")[1].name,
 		)
@@ -108,7 +108,7 @@ def make_course_schedule_test_record(**args):
 	args = frappe._dict(args)
 
 	course_schedule = frappe.new_doc("Course Schedule")
-	course_schedule.student_group = args.student_group or "Test Student Group"
+	course_schedule.student_batch = args.student_batch or "Test Batch"
 	course_schedule.course = args.course or "Test Course"
 	course_schedule.instructor = args.instructor or "Test Instructor"
 	course_schedule.room = args.room or frappe.get_all("Room")[0].name

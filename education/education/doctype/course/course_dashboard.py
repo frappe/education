@@ -12,7 +12,7 @@ def get_data():
 				"label": _("Course"),
 				"items": ["Course Enrollment", "Course Schedule"],
 			},
-			{"label": _("Student"), "items": ["Student Group"]},
+			{"label": _("Student"), "items": ["Student Batch Name"]},
 			{
 				"label": _("Assessment"),
 				"items": ["Assessment Plan", "Assessment Result"],

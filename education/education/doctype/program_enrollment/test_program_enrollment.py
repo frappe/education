@@ -11,7 +11,6 @@ from education.education.test_utils import (
 	create_program,
 	create_student,
 	create_program_enrollment,
-	create_student_group,
 )
 
 

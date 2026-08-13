@@ -49,9 +49,9 @@
    "dependencies": "",
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Student Group",
+   "label": "Student Batch",
    "link_count": 0,
-   "link_to": "Student Group",
+   "link_to": "Student Batch Name",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -233,9 +233,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Student Group",
+   "label": "Student Batch",
    "link_count": 0,
-   "link_to": "Student Group",
+   "link_to": "Student Batch Name",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -304,7 +304,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Assessment",
-   "link_count": 7,
+   "link_count": 6,
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -315,16 +315,6 @@
    "label": "Assessment Plan",
    "link_count": 0,
    "link_to": "Assessment Plan",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Assessment Criteria",
-   "link_count": 0,
-   "link_to": "Assessment Criteria",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -482,16 +472,6 @@
    "label": "Program Enrollment",
    "link_count": 0,
    "link_to": "Program Enrollment Tool",
-   "link_type": "DocType",
-   "onboard": 0,
-   "type": "Link"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Student Group Creation Tool",
-   "link_count": 0,
-   "link_to": "Student Group Creation Tool",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"

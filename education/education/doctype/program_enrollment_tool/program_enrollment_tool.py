@@ -55,10 +55,9 @@ class ProgramEnrollmentTool(Document):
 						program_enrollment.student_category,
 					)
 					.where(program_enrollment.program == self.program)
-					.where(program_enrollment.academic_year == self.academic_year)
+					.where(program_enrollment.intake_year == self.academic_year)
+					.where(program_enrollment.docstatus == 1)
 				)
-				if self.academic_term:
-					students = students.where(program_enrollment.academic_term == self.academic_term)
 				if self.student_batch:
 					students = students.where(
 						program_enrollment.student_batch_name == self.student_batch
@@ -97,8 +96,10 @@ class ProgramEnrollmentTool(Document):
 				prog_enrollment.student_name = stud.student_name
 				prog_enrollment.student_category = stud.student_category
 				prog_enrollment.program = self.new_program
-				prog_enrollment.academic_year = self.new_academic_year
-				prog_enrollment.academic_term = self.new_academic_term
+				prog_enrollment.intake_year = self.new_academic_year
+				prog_enrollment.company = frappe.db.get_value(
+					"Program", self.new_program, "company"
+				) or frappe.defaults.get_defaults().get("company")
 				prog_enrollment.student_batch_name = (
 					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
 				)
@@ -107,8 +108,7 @@ class ProgramEnrollmentTool(Document):
 
 			elif stud.student_applicant:
 				prog_enrollment = enroll_student(stud.student_applicant)
-				prog_enrollment.academic_year = self.academic_year
-				prog_enrollment.academic_term = self.academic_term
+				prog_enrollment.intake_year = self.academic_year
 				prog_enrollment.student_batch_name = (
 					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
 				)

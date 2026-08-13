@@ -3,7 +3,7 @@
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
- "creation": "2015-09-07 13:00:55.938280",
+ "creation": "2026-08-12 20:54:24.627189",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -371,11 +371,6 @@
    "link_fieldname": "student"
   },
   {
-   "group": "Student Activity",
-   "link_doctype": "Student Group",
-   "link_fieldname": "student"
-  },
-  {
    "group": "Assessment",
    "link_doctype": "Assessment Result",
    "link_fieldname": "student"
@@ -391,7 +386,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2026-05-11 18:58:10.793799",
+ "modified": "2026-08-13 02:53:14.732615",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

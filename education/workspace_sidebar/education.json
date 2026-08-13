@@ -78,8 +78,8 @@
       "collapsible": 1,
       "indent": 0,
       "keep_closed": 0,
-      "label": "Student Group",
-      "link_to": "Student Group",
+      "label": "Student Batch",
+      "link_to": "Student Batch Name",
       "link_type": "DocType",
       "show_arrow": 0,
       "type": "Link"
@@ -256,17 +256,6 @@
       "keep_closed": 0,
       "label": "Assessment Plan",
       "link_to": "Assessment Plan",
-      "link_type": "DocType",
-      "show_arrow": 0,
-      "type": "Link"
-    },
-    {
-      "child": 1,
-      "collapsible": 1,
-      "indent": 0,
-      "keep_closed": 0,
-      "label": "Assessment Criteria",
-      "link_to": "Assessment Criteria",
       "link_type": "DocType",
       "show_arrow": 0,
       "type": "Link"
@@ -455,17 +444,6 @@
       "keep_closed": 0,
       "label": "Program Enrollment Tool",
       "link_to": "Program Enrollment Tool",
-      "link_type": "DocType",
-      "show_arrow": 0,
-      "type": "Link"
-    },
-    {
-      "child": 1,
-      "collapsible": 1,
-      "indent": 0,
-      "keep_closed": 0,
-      "label": "Student Group Creation Tool",
-      "link_to": "Student Group Creation Tool",
       "link_type": "DocType",
       "show_arrow": 0,
       "type": "Link"

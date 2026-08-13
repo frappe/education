@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2017-04-05 13:33:04.519313",
+ "creation": "2026-08-12 20:54:26.179490",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -9,8 +9,6 @@
   "current_academic_term",
   "attendance_freeze_date",
   "column_break_4",
-  "validate_batch",
-  "validate_course",
   "academic_term_reqd",
   "user_creation_skip",
   "accounting_section",
@@ -46,25 +44,12 @@
   {
    "fieldname": "attendance_freeze_date",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Attendance Freeze Date"
   },
   {
    "fieldname": "column_break_4",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "description": "For Batch based Student Group, the Student Batch will be validated for every Student from the Program Enrollment.",
-   "fieldname": "validate_batch",
-   "fieldtype": "Check",
-   "label": "Validate Batch for Students in Student Group"
-  },
-  {
-   "default": "0",
-   "description": "For Course based Student Group, the Course will be validated for every Student from the enrolled Courses in Program Enrollment.",
-   "fieldname": "validate_course",
-   "fieldtype": "Check",
-   "label": "Validate Enrolled Course for Students in Student Group"
   },
   {
    "default": "0",
@@ -106,7 +91,7 @@
   },
   {
    "default": "0",
-   "description": "If enabled, the attendance will be marked on Course Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Group Basis for that particular date.",
+   "description": "If enabled, the attendance will be marked on Course Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Batch Basis for that particular date.",
    "fieldname": "attendance_based_on_course_schedule",
    "fieldtype": "Check",
    "label": "Attendance Based on Course Schedule"
@@ -178,7 +163,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-02-04 12:15:05.069346",
+ "modified": "2026-08-13 02:48:53.638731",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",

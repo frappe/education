@@ -2,23 +2,29 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "EDU-ASP-.YYYY.-.#####",
- "creation": "2015-11-12 16:34:34.658092",
+ "creation": "2026-08-12 20:54:25.250778",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
  "field_order": [
-  "student_group",
+  "student_batch",
   "assessment_name",
+  "assignment_type",
   "assessment_group",
   "grading_scale",
   "column_break_2",
   "program",
   "course",
+  "subject",
+  "company",
   "academic_year",
   "academic_term",
   "section_break_5",
+  "issued_date",
   "schedule_date",
   "room",
+  "faculty",
+  "faculty_name",
   "examiner",
   "examiner_name",
   "column_break_4",
@@ -28,18 +34,17 @@
   "supervisor_name",
   "section_break_20",
   "maximum_assessment_score",
-  "assessment_criteria",
   "amended_from"
  ],
  "fields": [
   {
-   "fieldname": "student_group",
+   "fieldname": "student_batch",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Student Group",
-   "options": "Student Group",
+   "label": "Student Batch",
+   "options": "Student Batch Name",
    "reqd": 1
   },
   {
@@ -47,6 +52,15 @@
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Assessment Name"
+  },
+  {
+   "fieldname": "assignment_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Assignment Type",
+   "options": "Assignment Type",
+   "reqd": 1
   },
   {
    "fieldname": "assessment_group",
@@ -71,7 +85,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "student_group.course",
+   "fetch_from": "student_batch.course",
    "fetch_if_empty": 1,
    "fieldname": "course",
    "fieldtype": "Link",
@@ -82,7 +96,26 @@
    "reqd": 1
   },
   {
-   "fetch_from": "student_group.program",
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "options": "Subject",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "course.company",
+   "fetch_if_empty": 1,
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student_batch.program",
    "fieldname": "program",
    "fieldtype": "Link",
    "in_global_search": 1,
@@ -90,14 +123,12 @@
    "options": "Program"
   },
   {
-   "fetch_from": "student_group.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
    "options": "Academic Year"
   },
   {
-   "fetch_from": "student_group.academic_term",
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
@@ -107,6 +138,13 @@
    "fieldname": "section_break_5",
    "fieldtype": "Section Break",
    "label": "Schedule"
+  },
+  {
+   "default": "Today",
+   "fieldname": "issued_date",
+   "fieldtype": "Date",
+   "label": "Issued Date",
+   "no_copy": 1
   },
   {
    "default": "Today",
@@ -122,6 +160,19 @@
    "fieldtype": "Link",
    "label": "Room",
    "options": "Room"
+  },
+  {
+   "fieldname": "faculty",
+   "fieldtype": "Link",
+   "label": "Faculty",
+   "options": "Faculty"
+  },
+  {
+   "fetch_from": "faculty.faculty_name",
+   "fieldname": "faculty_name",
+   "fieldtype": "Data",
+   "label": "Faculty Name",
+   "read_only": 1
   },
   {
    "fieldname": "examiner",
@@ -176,14 +227,8 @@
   {
    "fieldname": "maximum_assessment_score",
    "fieldtype": "Float",
-   "label": "Maximum Assessment Score",
-   "reqd": 1
-  },
-  {
-   "fieldname": "assessment_criteria",
-   "fieldtype": "Table",
-   "label": "Assessment Criteria",
-   "options": "Assessment Plan Criteria",
+   "in_list_view": 1,
+   "label": "Maximum Score",
    "reqd": 1
   },
   {
@@ -198,10 +243,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2020-10-23 15:55:35.076251",
+ "modified": "2026-08-13 02:46:34.205016",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Plan",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -220,8 +266,9 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "assessment_name"
 }

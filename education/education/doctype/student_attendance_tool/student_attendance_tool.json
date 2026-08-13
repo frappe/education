@@ -1,17 +1,16 @@
 {
  "actions": [],
  "allow_copy": 1,
- "creation": "2016-11-16 17:12:46.437539",
+ "creation": "2026-08-12 20:54:23.983698",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "based_on",
-  "group_based_on",
   "column_break_2",
-  "student_group",
-  "academic_year",
-  "academic_term",
+  "student_batch",
+  "course",
+  "program",
   "course_schedule",
   "date",
   "attendance",
@@ -19,30 +18,23 @@
  ],
  "fields": [
   {
+   "default": "Student Batch",
    "fieldname": "based_on",
    "fieldtype": "Select",
    "label": "Based On",
-   "options": "Student Group\nCourse Schedule"
-  },
-  {
-   "default": "Batch",
-   "depends_on": "eval:doc.based_on == \"Student Group\"",
-   "fieldname": "group_based_on",
-   "fieldtype": "Select",
-   "label": "Group Based On",
-   "options": "Batch\nCourse\nActivity"
+   "options": "Student Batch\nCourse Schedule"
   },
   {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.based_on ==\"Student Group\"",
-   "fieldname": "student_group",
+   "depends_on": "eval:doc.based_on ==\"Student Batch\"",
+   "fieldname": "student_batch",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Student Group",
-   "options": "Student Group",
+   "label": "Student Batch",
+   "options": "Student Batch Name",
    "reqd": 1
   },
   {
@@ -55,7 +47,7 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.based_on ==\"Student Group\"",
+   "depends_on": "eval:doc.based_on ==\"Student Batch\"",
    "fieldname": "date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -63,7 +55,7 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval: (doc.course_schedule \n|| (doc.student_group && doc.date))",
+   "depends_on": "eval: (doc.course_schedule \n|| (doc.student_batch && doc.date))",
    "fieldname": "attendance",
    "fieldtype": "Section Break",
    "label": "Attendance"
@@ -74,26 +66,26 @@
    "label": "Students HTML"
   },
   {
-   "fetch_from": "student_group.academic_year",
-   "fieldname": "academic_year",
+   "fetch_from": "student_batch.course",
+   "fieldname": "course",
    "fieldtype": "Link",
-   "label": "Academic Year",
-   "options": "Academic Year",
+   "label": "Course",
+   "options": "Course",
    "read_only": 1
   },
   {
-   "fetch_from": "student_group.academic_term",
-   "fieldname": "academic_term",
+   "fetch_from": "student_batch.program",
+   "fieldname": "program",
    "fieldtype": "Link",
-   "label": "Academic Term",
-   "options": "Academic Term",
+   "label": "Program",
+   "options": "Program",
    "read_only": 1
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2020-10-23 17:52:28.078971",
+ "modified": "2026-08-13 02:54:00.145787",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance Tool",
@@ -112,7 +104,8 @@
    "write": 1
   }
  ],
- "restrict_to_domain": "",
+ "row_format": "Dynamic",
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }

@@ -1,6 +1,5 @@
 import frappe
 from education.education.doctype.fee_schedule.fee_schedule import get_fee_structure
-from education.education.doctype.student_group.student_group import get_students
 from erpnext.setup.utils import enable_all_roles_and_domains
 from frappe.utils import now_datetime, add_years, nowdate
 
@@ -8,8 +7,8 @@ from frappe.utils import now_datetime, add_years, nowdate
 DEFAULT_PROGRAM_NAME = "Class 1"
 DEFAULT_ACADEMIC_YEAR = "2023-2024"
 DEFAULT_ACADEMIC_TERM = "2023-2024 (Term 1)"
-DEFAULT_STUDENT_GROUP = "Test Student Group"
-DEFAULT_GROUP_BASED_ON = "Batch"
+DEFAULT_STUDENT_BATCH = "Test Batch"
+DEFAULT_COURSE = "Test Course"
 DEFAULT_FEES_CATEGORY = "Tuition Fee"
 DEFAULT_STUDENT_EMAIL_ID = "test@example.com"
 
@@ -156,16 +155,16 @@ def create_student(
 def create_program_enrollment(
 	student_name,
 	program=DEFAULT_PROGRAM_NAME,
-	academic_year=DEFAULT_ACADEMIC_YEAR,
-	academic_term=DEFAULT_ACADEMIC_TERM,
+	intake_year=DEFAULT_ACADEMIC_YEAR,
 	enrollment_date="2023-04-01",
+	company="_Test Company",
 	submit=False,
 ):
 	program_enrollment = frappe.new_doc("Program Enrollment")
 	program_enrollment.student = student_name
 	program_enrollment.program = program
-	program_enrollment.academic_year = academic_year
-	program_enrollment.academic_term = academic_term
+	program_enrollment.intake_year = intake_year
+	program_enrollment.company = company
 	program_enrollment.enrollment_date = enrollment_date
 	program_enrollment.save()
 	if submit:
@@ -173,29 +172,23 @@ def create_program_enrollment(
 	return program_enrollment
 
 
-def create_student_group(
-	student_group_name=DEFAULT_STUDENT_GROUP,
-	academic_year=DEFAULT_ACADEMIC_YEAR,
-	academic_term=DEFAULT_ACADEMIC_TERM,
-	group_based_on=DEFAULT_GROUP_BASED_ON,
-	program=DEFAULT_PROGRAM_NAME,
+def create_student_batch(
+	batch_name=DEFAULT_STUDENT_BATCH,
+	course=DEFAULT_COURSE,
+	start_date="2023-04-01",
+	end_date="2024-03-31",
 ):
-	if frappe.db.exists("Student Group", {"student_group_name": student_group_name}):
-		return frappe.get_doc("Student Group", {"student_group_name": student_group_name})
-	student_group = frappe.new_doc("Student Group")
-	student_group.student_group_name = student_group_name
-	student_group.academic_year = academic_year
-	student_group.academic_term = academic_term
-	student_group.group_based_on = group_based_on
-	student_group.program = program
+	if frappe.db.exists("Student Batch Name", batch_name):
+		return frappe.get_doc("Student Batch Name", batch_name)
 
-	students_in_group = get_students(academic_year, group_based_on, academic_term, program)
+	student_batch = frappe.new_doc("Student Batch Name")
+	student_batch.batch_name = batch_name
+	student_batch.course = course
+	student_batch.start_date = start_date
+	student_batch.end_date = end_date
+	student_batch.save()
 
-	for student in students_in_group:
-		student_group.append("students", {"student": student.get("student")})
-	student_group.save()
-
-	return student_group
+	return student_batch
 
 
 def create_fee_schedule(
@@ -210,17 +203,11 @@ def create_fee_schedule(
 	fee_schedule = get_fee_structure(fee_structure_name)
 	fee_schedule.due_date = due_date
 
-	student_groups = frappe.db.get_list(
-		"Student Group",
-		{
-			"academic_year": DEFAULT_ACADEMIC_YEAR,
-			"academic_term": DEFAULT_ACADEMIC_TERM,
-			"student_group_name": DEFAULT_STUDENT_GROUP,
-		},
-		"name",
+	student_batches = frappe.db.get_list(
+		"Student Batch Name", {"name": DEFAULT_STUDENT_BATCH}, "name"
 	)
-	for group in student_groups:
-		fee_schedule.append("student_groups", {"student_group": group.get("name")})
+	for batch in student_batches:
+		fee_schedule.append("student_batches", {"student_batch": batch.get("name")})
 
 	fee_schedule.save()
 	if submit:
@@ -256,9 +243,16 @@ def create_grading_scale(grading_scale_name="_Test Grading Scale"):
 
 	grading_scale = frappe.new_doc("Grading Scale")
 	grading_scale.grading_scale_name = grading_scale_name
-	grades = {"A": 80, "B": 70, "C": 60, "D": 50, "F": 0}
-	for grade, threshold in grades.items():
-		grading_scale.append("intervals", {"grade_code": grade, "threshold": threshold})
+	grades = {"A": (80, 100), "B": (70, 79), "C": (60, 69), "D": (50, 59), "F": (0, 49)}
+	for grade, (minimum, maximum) in grades.items():
+		grading_scale.append(
+			"intervals",
+			{
+				"grade_code": grade,
+				"minimum_percentage": minimum,
+				"maximum_percentage": maximum,
+			},
+		)
 
 	grading_scale.save()
 	grading_scale.submit()

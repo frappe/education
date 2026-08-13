@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "EDU-RES-.YYYY.-.#####",
- "creation": "2015-11-13 17:18:06.468332",
+ "creation": "2026-08-12 20:54:25.536074",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -15,15 +15,14 @@
   "column_break_3",
   "student",
   "student_name",
-  "student_group",
+  "student_batch",
   "assessment_group",
   "grading_scale",
-  "section_break_5",
-  "details",
   "section_break_8",
+  "score",
   "maximum_score",
   "column_break_11",
-  "total_score",
+  "percentage",
   "grade",
   "section_break_13",
   "comment",
@@ -88,11 +87,11 @@
    "read_only": 1
   },
   {
-   "fetch_from": "assessment_plan.student_group",
-   "fieldname": "student_group",
+   "fetch_from": "assessment_plan.student_batch",
+   "fieldname": "student_batch",
    "fieldtype": "Link",
-   "label": "Student Group",
-   "options": "Student Group"
+   "label": "Student Batch",
+   "options": "Student Batch Name"
   },
   {
    "fetch_from": "assessment_plan.assessment_group",
@@ -110,20 +109,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_break_5",
+   "fieldname": "section_break_8",
    "fieldtype": "Section Break",
    "label": "Result"
   },
   {
-   "fieldname": "details",
-   "fieldtype": "Table",
-   "label": "Details",
-   "options": "Assessment Result Detail",
+   "fieldname": "score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Score",
    "reqd": 1
-  },
-  {
-   "fieldname": "section_break_8",
-   "fieldtype": "Section Break"
   },
   {
    "fetch_from": "assessment_plan.maximum_assessment_score",
@@ -133,15 +128,13 @@
    "read_only": 1
   },
   {
-   "fetch_from": "assessment_plan.maximum_assessment_score",
    "fieldname": "column_break_11",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "total_score",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Total Score",
+   "fieldname": "percentage",
+   "fieldtype": "Percent",
+   "label": "Percentage",
    "read_only": 1
   },
   {
@@ -173,11 +166,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-19 10:15:59.176904",
+ "modified": "2026-08-13 02:47:01.000333",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -205,6 +198,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

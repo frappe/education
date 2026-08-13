@@ -17,6 +17,13 @@ frappe.ui.form.on('Assessment Plan', {
         },
       }
     })
+    frm.set_query('subject', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+        },
+      }
+    })
   },
 
   refresh: function (frm) {
@@ -26,7 +33,7 @@ frappe.ui.form.on('Assessment Plan', {
         function () {
           frappe.route_options = {
             assessment_plan: frm.doc.name,
-            student_group: frm.doc.student_group,
+            student_batch: frm.doc.student_batch,
           }
           frappe.set_route('Form', 'Assessment Result Tool')
         },
@@ -54,33 +61,8 @@ frappe.ui.form.on('Assessment Plan', {
   },
 
   course: function (frm) {
-    if (frm.doc.course && frm.doc.maximum_assessment_score) {
-      frappe.call({
-        method: 'education.education.api.get_assessment_criteria',
-        args: {
-          course: frm.doc.course,
-        },
-        callback: function (r) {
-          if (r.message) {
-            frm.doc.assessment_criteria = []
-            $.each(r.message, function (i, d) {
-              var row = frappe.model.add_child(
-                frm.doc,
-                'Assessment Plan Criteria',
-                'assessment_criteria'
-              )
-              row.assessment_criteria = d.assessment_criteria
-              row.maximum_score =
-                (d.weightage / 100) * frm.doc.maximum_assessment_score
-            })
-          }
-          refresh_field('assessment_criteria')
-        },
-      })
+    if (frm.doc.subject) {
+      frm.set_value('subject', '')
     }
-  },
-
-  maximum_assessment_score: function (frm) {
-    frm.trigger('course')
   },
 })

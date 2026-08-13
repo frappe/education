@@ -11,7 +11,6 @@ from frappe.model.document import Document
 
 class Course(Document):
 	def validate(self):
-		self.validate_assessment_criteria()
 		self.validate_registration_fee()
 		self.validate_grade_templates()
 
@@ -22,14 +21,6 @@ class Course(Document):
 
 			if not self.registration_fee_item:
 				frappe.throw(_("Registration Fee Item is required"))
-
-	def validate_assessment_criteria(self):
-		if self.assessment_criteria:
-			total_weightage = 0
-			for criteria in self.assessment_criteria:
-				total_weightage += criteria.weightage or 0
-			if total_weightage != 100:
-				frappe.throw(_("Total Weightage of all Assessment Criteria must be 100%"))
 
 	def validate_grade_templates(self):
 		if self.grade_templates:

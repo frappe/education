@@ -295,7 +295,7 @@
 				<thead>
 					<tr>
 						<th> {{ _("Term") }} </th>
-						<th>{{ _("Assessment Criteria") }}</th>
+						<th>{{ _("Subject") }}</th>
 						{% if doc.show_marks %}
 						<th> {{ _("Score") }} </th>
 						{% endif %}
@@ -305,18 +305,16 @@
 
 				<tbody>
 					{% for result in assessment_result %}
-					{% for criteria in result.details %}
 					{% if result.course == course %}
 					<tr>
 						<td> {{ result.assessment_group }} </td>
-						<td>{{ criteria.assessment_criteria }}</td>
+						<td>{{ result.subject }}</td>
 						{% if doc.show_marks %}
-						<td> {{ criteria.score }} </td>
+						<td> {{ result.score }} / {{ result.maximum_score }} </td>
 						{% endif %}
-						<td> {{ criteria.grade }} </td>
+						<td> {{ result.grade }} </td>
 					</tr>
 					{% endif %}
-					{% endfor %}
 					{% endfor %}
 				</tbody>
 

@@ -209,12 +209,15 @@ class Student(Document):
 
 	def enroll_in_program(self, program_name):
 		try:
+			academic_year = frappe.get_last_doc("Academic Year").name
+			program = frappe.get_cached_doc("Program", program_name)
 			enrollment = frappe.get_doc(
 				{
 					"doctype": "Program Enrollment",
 					"student": self.name,
-					"academic_year": frappe.get_last_doc("Academic Year").name,
+					"intake_year": academic_year,
 					"program": program_name,
+					"company": program.company or frappe.defaults.get_defaults().get("company"),
 					"enrollment_date": frappe.utils.datetime.datetime.now(),
 				}
 			)
@@ -222,39 +225,31 @@ class Student(Document):
 		except frappe.exceptions.ValidationError:
 			enrollment_name = frappe.get_list(
 				"Program Enrollment",
-				filters={"student": self.name, "Program": program_name},
+				filters={"student": self.name, "program": program_name},
 			)[0].name
 			return frappe.get_doc("Program Enrollment", enrollment_name)
 		else:
 			enrollment.submit()
 			return enrollment
 
-	def enroll_in_course(self, course_name, program_enrollment, enrollment_date=None):
-		if enrollment_date is None:
-			enrollment_date = frappe.utils.datetime.datetime.now()
-		try:
-			enrollment = frappe.get_doc(
-				{
-					"doctype": "Course Enrollment",
-					"student": self.name,
-					"course": course_name,
-					"program_enrollment": program_enrollment,
-					"enrollment_date": enrollment_date,
-				}
+	def enroll_in_course(self, course_name, program_enrollment=None, enrollment_date=None):
+		"""Return an existing Course Enrollment for the student and course.
+
+		Creating Course Enrollments requires an Admission Register and Fee Term, so this
+		helper only looks up enrollments that already exist.
+		"""
+		enrollment_name = frappe.db.exists(
+			"Course Enrollment",
+			{"student": self.name, "course": course_name, "docstatus": ("<", 2)},
+		)
+		if not enrollment_name:
+			frappe.throw(
+				_(
+					"No Course Enrollment found for Student {0} and Course {1}. "
+					"Enroll the student through Admission instead."
+				).format(frappe.bold(self.name), frappe.bold(course_name))
 			)
-			enrollment.save(ignore_permissions=True)
-		except frappe.exceptions.ValidationError:
-			enrollment_name = frappe.get_list(
-				"Course Enrollment",
-				filters={
-					"student": self.name,
-					"course": course_name,
-					"program_enrollment": program_enrollment,
-				},
-			)[0].name
-			return frappe.get_doc("Course Enrollment", enrollment_name)
-		else:
-			return enrollment
+		return frappe.get_doc("Course Enrollment", enrollment_name)
 
 
 def get_timeline_data(doctype, name):

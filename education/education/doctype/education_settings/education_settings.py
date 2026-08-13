@@ -10,8 +10,6 @@ education_keydict = {
 	# "key in defaults": "key in Global Defaults"
 	"academic_year": "current_academic_year",
 	"academic_term": "current_academic_term",
-	"validate_batch": "validate_batch",
-	"validate_course": "validate_course",
 }
 
 

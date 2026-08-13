@@ -3,10 +3,13 @@
 
 frappe.ui.form.on('Course Scheduling Tool', {
   setup(frm) {
-    frm.add_fetch('student_group', 'program', 'program')
-    frm.add_fetch('student_group', 'course', 'course')
-    frm.add_fetch('student_group', 'academic_year', 'academic_year')
-    frm.add_fetch('student_group', 'academic_term', 'academic_term')
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          disabled: 0,
+        },
+      }
+    })
   },
   refresh(frm) {
     frm.disable_save()

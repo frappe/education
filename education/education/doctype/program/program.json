@@ -3,7 +3,7 @@
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:program_name",
- "creation": "2015-09-07 12:54:03.609282",
+ "creation": "2026-08-12 20:54:26.034119",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -142,7 +142,7 @@
   },
   {
    "group": "Student Activity",
-   "link_doctype": "Student Group",
+   "link_doctype": "Student Batch Name",
    "link_fieldname": "program"
   },
   {
@@ -171,7 +171,7 @@
    "link_fieldname": "program"
   }
  ],
- "modified": "2026-07-08 16:59:48.897591",
+ "modified": "2026-08-13 02:52:20.904447",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",

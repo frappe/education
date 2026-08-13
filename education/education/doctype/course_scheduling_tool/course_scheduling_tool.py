@@ -28,11 +28,8 @@ class CourseSchedulingTool(Document):
 			"Instructor", self.instructor, "instructor_name"
 		)
 
-		group_based_on, course = frappe.db.get_value(
-			"Student Group", self.student_group, ["group_based_on", "course"]
-		)
-
-		if group_based_on == "Course":
+		course = frappe.db.get_value("Student Batch Name", self.student_batch, "course")
+		if course:
 			self.course = course
 
 		if self.reschedule:
@@ -88,7 +85,7 @@ class CourseSchedulingTool(Document):
 			"Course Schedule",
 			fields=["name", "schedule_date"],
 			filters=[
-				["student_group", "=", self.student_group],
+				["student_batch", "=", self.student_batch],
 				["course", "=", self.course],
 				["schedule_date", ">=", self.course_start_date],
 				["schedule_date", "<=", self.course_end_date],
@@ -108,7 +105,7 @@ class CourseSchedulingTool(Document):
 		"""Makes a new Course Schedule.
 		:param date: Date on which Course Schedule will be created."""
 		course_schedule = frappe.new_doc("Course Schedule")
-		course_schedule.student_group = self.student_group
+		course_schedule.student_batch = self.student_batch
 		course_schedule.course = self.course
 		course_schedule.instructor = self.instructor
 		course_schedule.instructor_name = self.instructor_name

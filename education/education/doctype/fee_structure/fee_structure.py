@@ -167,7 +167,7 @@ def make_fee_schedule(
 	dialog_values = json.loads(dialog_values)
 	per_component_amount = json.loads(per_component_amount)
 
-	student_groups = dialog_values.get("student_groups")
+	student_batches = dialog_values.get("student_batches")
 	fee_plan_wise_distribution = [
 		fee_plan.get("due_date") for fee_plan in dialog_values.get("distribution", [])
 	]
@@ -204,9 +204,9 @@ def make_fee_schedule(
 		# Each distribution will be a separate fee schedule
 		doc.total_amount = distribution.get("amount")
 
-		for group in student_groups:
-			fee_schedule_student_group = doc.append("student_groups", {})
-			fee_schedule_student_group.student_group = group.get("student_group")
+		for batch in student_batches:
+			fee_schedule_student_batch = doc.append("student_batches", {})
+			fee_schedule_student_batch.student_batch = batch.get("student_batch")
 
 		doc.save()
 

@@ -31,10 +31,10 @@ frappe.query_reports['Student Monthly Attendance Sheet'] = {
       reqd: 1,
     },
     {
-      fieldname: 'student_group',
-      label: __('Student Group'),
+      fieldname: 'student_batch',
+      label: __('Student Batch'),
       fieldtype: 'Link',
-      options: 'Student Group',
+      options: 'Student Batch Name',
       reqd: 1,
     },
   ],

@@ -61,10 +61,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-08 02:39:59.436835",
+ "modified": "2026-08-13 02:50:11.005987",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Grading Scale",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

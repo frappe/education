@@ -119,17 +119,14 @@ def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_students(doctype, txt, searchfield, start, page_len, filters):
-	if not filters.get("academic_term"):
-		filters["academic_term"] = frappe.defaults.get_defaults().academic_term
-
 	if not filters.get("academic_year"):
 		filters["academic_year"] = frappe.defaults.get_defaults().academic_year
 
 	enrolled_students = frappe.get_list(
 		"Program Enrollment",
 		filters={
-			"academic_term": filters.get("academic_term"),
-			"academic_year": filters.get("academic_year"),
+			"intake_year": filters.get("academic_year"),
+			"docstatus": 1,
 		},
 		fields=["student"],
 	)

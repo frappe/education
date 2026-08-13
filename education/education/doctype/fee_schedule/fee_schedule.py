@@ -11,6 +11,10 @@ from frappe.utils import cint, cstr, flt, money_in_words
 from frappe.utils.background_jobs import enqueue
 from frappe.utils.csvutils import getlink
 
+from education.education.doctype.student_batch_name.student_batch_name import (
+	get_batch_students,
+)
+
 
 class FeeSchedule(Document):
 	def onload(self):
@@ -69,24 +73,17 @@ class FeeSchedule(Document):
 
 	def calculate_total_and_program(self):
 		no_of_students = 0
-		for d in self.student_groups:
+		for d in self.student_batches:
 			# if not d.total_students:
-			d.total_students = get_total_students(
-				d.student_group,
-				self.academic_year,
-				self.academic_term,
-				self.student_category,
-			)
+			d.total_students = get_total_students(d.student_batch, self.student_category)
 			no_of_students += cint(d.total_students)
 
-			# validate the program of fee structure and student groups
-			student_group_program = frappe.db.get_value(
-				"Student Group", d.student_group, "program"
-			)
-			if self.program and student_group_program and self.program != student_group_program:
+			# validate the program of fee structure and batches
+			batch_program = frappe.db.get_value("Student Batch Name", d.student_batch, "program")
+			if self.program and batch_program and self.program != batch_program:
 				frappe.msgprint(
-					_("Program in the Fee Structure and Student Group {0} are different.").format(
-						d.student_group
+					_("Program in the Fee Structure and Batch {0} are different.").format(
+						d.student_batch
 					)
 				)
 		self.grand_total = no_of_students * self.total_amount
@@ -140,7 +137,7 @@ class FeeSchedule(Document):
 			user=frappe.session.user,
 		)
 
-		total_records = sum([int(d.total_students) for d in self.student_groups])
+		total_records = sum([cint(d.total_students) for d in self.student_batches])
 		if total_records > 10:
 			frappe.msgprint(
 				_(
@@ -164,16 +161,14 @@ def generate_fees(fee_schedule):
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	create_so = frappe.db.get_single_value("Education Settings", "create_so")
-	total_records = sum([int(d.total_students) for d in doc.student_groups])
+	total_records = sum([cint(d.total_students) for d in doc.student_batches])
 	created_records = 0
 
 	if not total_records:
-		frappe.throw(_("Please setup Students under Student Groups"))
+		frappe.throw(_("Please enroll Students in the selected Batches"))
 
-	for d in doc.student_groups:
-		students = get_students(
-			d.student_group, doc.academic_year, doc.academic_term, doc.student_category
-		)
+	for d in doc.student_batches:
+		students = get_students(d.student_batch, doc.student_category)
 		for student in students:
 			try:
 				student_id = student.student
@@ -310,40 +305,24 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 	return doc
 
 
-#  gives program name for multiple enrollments in a calendar year
-def get_students(
-	student_group, academic_year, academic_term=None, student_category=None
-):
-	conditions = ""
+def get_students(student_batch, student_category=None):
+	"""Return the students enrolled in the batch, optionally of a single category."""
+	students = get_batch_students(student_batch)
+
 	if student_category:
-		conditions = " and pe.student_category={}".format(frappe.db.escape(student_category))
-	if academic_term:
-		conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
-	students = frappe.db.sql(
-		"""
-        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
-        from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
-        where
-            pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
-            and sgs.parent = %s and sgs.active = 1
-            {conditions}
-        """.format(
-			conditions=conditions
-		),
-		(academic_year, student_group),
-		as_dict=1,
-	)
+		in_category = frappe.get_all(
+			"Program Enrollment",
+			filters={"student_category": student_category, "docstatus": 1},
+			pluck="student",
+		)
+		students = [student for student in students if student.student in in_category]
+
 	return students
 
 
 @frappe.whitelist()
-def get_total_students(
-	student_group, academic_year, academic_term=None, student_category=None
-):
-	total_students = get_students(
-		student_group, academic_year, academic_term, student_category
-	)
-	return len(total_students)
+def get_total_students(student_batch, student_category=None):
+	return len(get_students(student_batch, student_category))
 
 
 @frappe.whitelist()

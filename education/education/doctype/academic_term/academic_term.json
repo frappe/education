@@ -3,7 +3,7 @@
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:title",
- "creation": "2015-09-08 17:19:19.158228",
+ "creation": "2026-08-12 20:54:23.145645",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
@@ -84,11 +84,6 @@
   },
   {
    "group": "Student",
-   "link_doctype": "Student Group",
-   "link_fieldname": "academic_term"
-  },
-  {
-   "group": "Student",
    "link_doctype": "Student Log",
    "link_fieldname": "academic_term"
   },
@@ -118,7 +113,7 @@
    "link_fieldname": "academic_term"
   }
  ],
- "modified": "2026-08-07 17:31:18.167776",
+ "modified": "2026-08-13 02:46:16.560425",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Term",

@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "field:academic_year_name",
- "creation": "2015-09-07 12:49:51.303026",
+ "creation": "2026-08-12 20:54:23.644919",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -70,11 +70,6 @@
   },
   {
    "group": "Student",
-   "link_doctype": "Student Group",
-   "link_fieldname": "academic_year"
-  },
-  {
-   "group": "Student",
    "link_doctype": "Student Log",
    "link_fieldname": "academic_year"
   },
@@ -109,7 +104,7 @@
    "link_fieldname": "academic_year"
   }
  ],
- "modified": "2026-08-07 17:27:46.007389",
+ "modified": "2026-08-13 02:46:05.510770",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",

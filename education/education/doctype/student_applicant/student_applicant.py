@@ -47,7 +47,7 @@ class StudentApplicant(Document):
 		if not self.fee_term:
 			frappe.throw(_("Fee Term is required."))
 
-		if self.student_batch:
+		if not self.student_batch:
 			frappe.throw(_("Student Batch is required."))
 
 	def set_title(self):
