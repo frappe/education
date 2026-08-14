@@ -38,14 +38,14 @@ class Instructor(Document):
 
 
 def get_timeline_data(doctype, name):
-	"""Return timeline for course schedule"""
+	"""Return timeline for instructor activity"""
 	return dict(
 		frappe.db.sql(
 			"""
 			SELECT unix_timestamp(`schedule_date`), count(*)
-			FROM `tabCourse Schedule`
+			FROM `tabAssessment Plan`
 			WHERE
-				instructor=%s and
+				supervisor=%s and
 				`schedule_date` > date_sub(curdate(), interval 1 year)
 			GROUP BY schedule_date
 		""",

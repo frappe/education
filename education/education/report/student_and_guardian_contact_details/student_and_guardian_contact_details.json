@@ -13,7 +13,7 @@
  "name": "Student and Guardian Contact Details",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Program Enrollment",
+ "ref_doctype": "Course Enrollment",
  "report_name": "Student and Guardian Contact Details",
  "report_type": "Script Report",
  "roles": [

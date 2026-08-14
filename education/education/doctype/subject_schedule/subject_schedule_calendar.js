@@ -1,9 +1,9 @@
-frappe.views.calendar['Course Schedule'] = {
+frappe.views.calendar['Subject Schedule'] = {
   field_map: {
     start: 'from_time',
     end: 'to_time',
     id: 'name',
-    title: 'course',
+    title: 'title',
     allDay: 'allDay',
   },
   gantt: false,
@@ -17,15 +17,15 @@ frappe.views.calendar['Course Schedule'] = {
     },
     {
       fieldtype: 'Link',
-      fieldname: 'course',
-      options: 'Course',
-      label: __('Course'),
+      fieldname: 'subject',
+      options: 'Subject',
+      label: __('Subject'),
     },
     {
       fieldtype: 'Link',
-      fieldname: 'instructor',
-      options: 'Instructor',
-      label: __('Instructor'),
+      fieldname: 'faculty',
+      options: 'Faculty',
+      label: __('Faculty'),
     },
     {
       fieldtype: 'Link',
@@ -34,5 +34,5 @@ frappe.views.calendar['Course Schedule'] = {
       label: __('Room'),
     },
   ],
-  get_events_method: 'education.education.api.get_course_schedule_events',
+  get_events_method: 'education.education.api.get_subject_schedule_events',
 }

@@ -160,15 +160,14 @@ class Student(Document):
 			return enrollments
 
 	def get_program_enrollments(self):
-		"""Returns a list of course enrollments linked with the current student"""
-		program_enrollments = frappe.get_all(
-			"Program Enrollment", filters={"student": self.name}, fields=["program"]
+		"""Returns the programs the student is enrolled in via Course Enrollment."""
+		programs = frappe.get_all(
+			"Course Enrollment",
+			filters={"student": self.name, "docstatus": 1},
+			pluck="program",
+			distinct=True,
 		)
-		if not program_enrollments:
-			return None
-		else:
-			enrollments = [item["program"] for item in program_enrollments]
-			return enrollments
+		return programs or None
 
 	def get_topic_progress(self, course_enrollment_name, topic):
 		"""
@@ -206,31 +205,6 @@ class Student(Document):
 						}
 					)
 		return progress
-
-	def enroll_in_program(self, program_name):
-		try:
-			academic_year = frappe.get_last_doc("Academic Year").name
-			program = frappe.get_cached_doc("Program", program_name)
-			enrollment = frappe.get_doc(
-				{
-					"doctype": "Program Enrollment",
-					"student": self.name,
-					"intake_year": academic_year,
-					"program": program_name,
-					"company": program.company or frappe.defaults.get_defaults().get("company"),
-					"enrollment_date": frappe.utils.datetime.datetime.now(),
-				}
-			)
-			enrollment.save(ignore_permissions=True)
-		except frappe.exceptions.ValidationError:
-			enrollment_name = frappe.get_list(
-				"Program Enrollment",
-				filters={"student": self.name, "program": program_name},
-			)[0].name
-			return frappe.get_doc("Program Enrollment", enrollment_name)
-		else:
-			enrollment.submit()
-			return enrollment
 
 	def enroll_in_course(self, course_name, program_enrollment=None, enrollment_date=None):
 		"""Return an existing Course Enrollment for the student and course.

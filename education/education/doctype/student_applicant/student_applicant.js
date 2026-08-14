@@ -71,9 +71,15 @@ frappe.ui.form.on('Student Applicant', {
 
   course: function (frm) {
     if (frm.doc.course) {
+      frappe.db.get_value('Course', frm.doc.course, 'fee_term').then((r) => {
+        frm.set_value('fee_term', (r.message && r.message.fee_term) || null)
+      })
+
       frm.call('get_course_fee_amount').then((r) => {
         frm.set_value('course_fee_amount', r.message)
       })
+    } else {
+      frm.set_value('fee_term', null)
     }
 
     frm.set_value('student_batch', null)
@@ -122,22 +128,15 @@ frappe.ui.form.on('Student Applicant', {
     ) {
       frm
         .add_custom_button(__('Enroll'), function () {
-          frm.call('enroll_in_program_and_course').then((r) => {
+          frm.call('enroll_in_course').then((r) => {
             if (r.message) {
               frappe.msgprint(
-                frm.doc.admission_based_on === 'Course'
-                  ? __(
-                      'Course Enrollment {0} created and student enrolled in course.',
-                      [
-                        `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
-                      ]
-                    )
-                  : __(
-                      'Program Enrollment {0} created and student enrolled in course.',
-                      [
-                        `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
-                      ]
-                    )
+                __(
+                  'Course Enrollment {0} created and student enrolled in course.',
+                  [
+                    `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
+                  ]
+                )
               )
             }
             frm.reload_doc()

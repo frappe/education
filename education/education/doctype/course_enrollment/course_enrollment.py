@@ -23,13 +23,30 @@ class CourseEnrollment(Document):
 		self.set_roll_number()
 
 	def on_submit(self):
+		self.update_student_joining_date()
 		self.create_fee_plan()
 		self.create_registration_fee_invoice()
 
 	def on_cancel(self):
 		self.cancel_fee_plan()
 
+	def update_student_joining_date(self):
+		from frappe.query_builder.functions import Min
+
+		table = frappe.qb.DocType("Course Enrollment")
+		date = (
+			frappe.qb.from_(table)
+			.select(Min(table.enrollment_date).as_("enrollment_date"))
+			.where(table.student == self.student)
+			.where(table.docstatus == 1)
+		).run(as_dict=True)
+
+		if date and date[0].enrollment_date:
+			frappe.db.set_value("Student", self.student, "joining_date", date[0].enrollment_date)
+
 	def create_registration_fee_invoice(self):
+		if not self.student_applicant:
+			return
 		student_applicant = frappe.get_doc("Student Applicant", self.student_applicant)
 		if not student_applicant.registration_fee:
 			return

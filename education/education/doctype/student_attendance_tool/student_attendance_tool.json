@@ -11,7 +11,7 @@
   "student_batch",
   "course",
   "program",
-  "course_schedule",
+  "subject_schedule",
   "date",
   "attendance",
   "students_html"
@@ -22,7 +22,7 @@
    "fieldname": "based_on",
    "fieldtype": "Select",
    "label": "Based On",
-   "options": "Student Batch\nCourse Schedule"
+   "options": "Student Batch\nSubject Schedule"
   },
   {
    "fieldname": "column_break_2",
@@ -38,12 +38,12 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.based_on ==\"Course Schedule\"",
-   "fieldname": "course_schedule",
+   "depends_on": "eval:doc.based_on ==\"Subject Schedule\"",
+   "fieldname": "subject_schedule",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Course Schedule",
-   "options": "Course Schedule",
+   "label": "Subject Schedule",
+   "options": "Subject Schedule",
    "reqd": 1
   },
   {
@@ -55,7 +55,7 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval: (doc.course_schedule \n|| (doc.student_batch && doc.date))",
+   "depends_on": "eval: (doc.subject_schedule \n|| (doc.student_batch && doc.date))",
    "fieldname": "attendance",
    "fieldtype": "Section Break",
    "label": "Attendance"
@@ -85,7 +85,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 02:54:00.145787",
+ "modified": "2026-08-13 22:32:33.652446",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance Tool",

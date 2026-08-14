@@ -18,7 +18,7 @@ frappe.ui.form.on('Student Leave Application', {
               },
             }
           })
-          frm.set_query('course_schedule', () => {
+          frm.set_query('subject_schedule', () => {
             return {
               filters: {
                 student_batch: ['in', r.message],

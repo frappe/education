@@ -21,7 +21,7 @@
   "section_break_7",
   "instructor_created_by",
   "portal_settings_tab",
-  "attendance_based_on_course_schedule",
+  "attendance_based_on_subject_schedule",
   "razorpay_key",
   "razorpay_secret",
   "column_break_atxc",
@@ -53,7 +53,7 @@
   },
   {
    "default": "0",
-   "description": "If enabled, field Academic Term will be Mandatory in Program Enrollment Tool.",
+   "description": "If enabled, field Academic Term will be Mandatory on Student Applicant.",
    "fieldname": "academic_term_reqd",
    "fieldtype": "Check",
    "label": "Make Academic Term Mandatory"
@@ -82,7 +82,7 @@
    "description": "By default, the Sales Invoice Created will be in Draft Mode. If enabled, the Sales Invoice will be submitted once created.",
    "fieldname": "auto_submit_sales_invoice",
    "fieldtype": "Check",
-   "label": "Submit Sales Invoice from Program Enrollment / Fee Schedule"
+   "label": "Submit Sales Invoice from Course Enrollment / Fee Schedule"
   },
   {
    "fieldname": "portal_settings_tab",
@@ -91,10 +91,10 @@
   },
   {
    "default": "0",
-   "description": "If enabled, the attendance will be marked on Course Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Batch Basis for that particular date.",
-   "fieldname": "attendance_based_on_course_schedule",
+   "description": "If enabled, the attendance will be marked on Subject Schedule basis and will be mandatory.\n\nIf disabled, the attendance will be marked on Student Batch Basis for that particular date.",
+   "fieldname": "attendance_based_on_subject_schedule",
    "fieldtype": "Check",
-   "label": "Attendance Based on Course Schedule"
+   "label": "Attendance Based on Subject Schedule"
   },
   {
    "fieldname": "razorpay_key",
@@ -139,7 +139,7 @@
   },
   {
    "default": "0",
-   "description": "By default, Sales Invoice will be created against Program Enrollment / Fee Schedule.\nIf enabled Sales Order will be created",
+   "description": "By default, Sales Invoice will be created against Course Enrollment / Fee Schedule.\nIf enabled Sales Order will be created",
    "fieldname": "create_so",
    "fieldtype": "Check",
    "label": "Create Sales Order instead of Sales Invoice"
@@ -150,7 +150,7 @@
    "description": "By default, the Sales Order Created will be in Draft Mode. If enabled, the Sales Order will be submitted once created.",
    "fieldname": "auto_submit_sales_order",
    "fieldtype": "Check",
-   "label": "Submit Sales Order from Program Enrollment / Fee Schedule"
+   "label": "Submit Sales Order from Course Enrollment / Fee Schedule"
   },
   {
    "default": "1",
@@ -163,7 +163,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 02:48:53.638731",
+ "modified": "2026-08-13 22:29:02.104770",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",

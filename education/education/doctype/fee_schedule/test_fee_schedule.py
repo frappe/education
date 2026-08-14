@@ -15,7 +15,6 @@ from education.education.test_utils import (
 	create_program,
 	create_fee_structure,
 	create_student,
-	create_program_enrollment,
 	create_course,
 	create_student_batch,
 	create_fee_schedule,
@@ -41,7 +40,6 @@ class TestFeeSchedule(FrappeTestCase):
 		fee_structure = create_fee_structure(components=fee_components, submit=1)
 
 		student = create_student()
-		create_program_enrollment(student_name=student.name, submit=1)
 
 		create_course()
 		create_student_batch()

@@ -23,16 +23,16 @@ class StudentAttendance(Document):
 		self.validate_is_holiday()
 
 	def set_date(self):
-		if self.course_schedule:
+		if self.subject_schedule:
 			self.date = frappe.db.get_value(
-				"Course Schedule", self.course_schedule, "schedule_date"
+				"Subject Schedule", self.subject_schedule, "schedule_date"
 			)
 
 	def validate_mandatory(self):
-		if not (self.student_batch or self.course_schedule):
+		if not (self.student_batch or self.subject_schedule):
 			frappe.throw(
 				_("{0} or {1} is mandatory").format(
-					frappe.bold(_("Student Batch")), frappe.bold(_("Course Schedule"))
+					frappe.bold(_("Student Batch")), frappe.bold(_("Subject Schedule"))
 				),
 				title=_("Mandatory Fields"),
 			)
@@ -45,9 +45,9 @@ class StudentAttendance(Document):
 			validate_attendance_date(self.student_batch, self.date)
 
 	def set_student_batch(self):
-		if self.course_schedule:
+		if self.subject_schedule:
 			self.student_batch = frappe.db.get_value(
-				"Course Schedule", self.course_schedule, "student_batch"
+				"Subject Schedule", self.subject_schedule, "student_batch"
 			)
 
 	def validate_student(self):
@@ -66,12 +66,12 @@ class StudentAttendance(Document):
 	def validate_duplication(self):
 		"""Check if the Attendance Record is Unique"""
 		attendance_record = None
-		if self.course_schedule:
+		if self.subject_schedule:
 			attendance_record = frappe.db.exists(
 				"Student Attendance",
 				{
 					"student": self.student,
-					"course_schedule": self.course_schedule,
+					"subject_schedule": self.subject_schedule,
 					"docstatus": ("!=", 2),
 					"name": ("!=", self.name),
 				},

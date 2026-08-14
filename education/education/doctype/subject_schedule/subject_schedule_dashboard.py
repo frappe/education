@@ -6,6 +6,6 @@ from frappe import _
 
 def get_data():
 	return {
-		"fieldname": "course_schedule",
+		"fieldname": "subject_schedule",
 		"transactions": [{"label": _("Attendance"), "items": ["Student Attendance"]}],
 	}

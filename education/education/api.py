@@ -30,7 +30,7 @@ def get_course(program):
 
 @frappe.whitelist()
 def enroll_student(source_name):
-	"""Creates a Student Record and returns a Program Enrollment.
+	"""Creates a Student Record and a Course Enrollment.
 
 	:param source_name: Student Applicant.
 	"""
@@ -52,38 +52,30 @@ def enroll_student(source_name):
 	)
 	student.save()
 
-	student_applicant = frappe.db.get_value(
-		"Student Applicant",
-		source_name,
-		["student_category", "program", "academic_year", "company"],
-		as_dict=True,
-	)
-	program_enrollment = frappe.new_doc("Program Enrollment")
-	program_enrollment.student = student.name
-	program_enrollment.student_category = student_applicant.student_category
-	program_enrollment.student_name = student.student_name
-	program_enrollment.program = student_applicant.program
-	program_enrollment.intake_year = student_applicant.academic_year
-	program_enrollment.company = student_applicant.company
-	program_enrollment.save()
+	applicant = frappe.get_doc("Student Applicant", source_name)
+	applicant.db_set("student", student.name)
+	applicant.student = student.name
+	enrollment = applicant.create_course_enrollment()
 
 	frappe.publish_realtime(
 		"enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
 	)
-	return program_enrollment
+	return enrollment
 
 
 @frappe.whitelist()
-def check_attendance_records_exist(course_schedule=None, student_batch=None, date=None):
-	"""Check if Attendance Records are made against the specified Course Schedule or Batch for given date.
+def check_attendance_records_exist(
+	subject_schedule=None, student_batch=None, date=None
+):
+	"""Check if Attendance Records are made against the specified Subject Schedule or Batch for given date.
 
-	:param course_schedule: Course Schedule.
+	:param subject_schedule: Subject Schedule.
 	:param student_batch: Student Batch Name.
 	:param date: Date.
 	"""
-	if course_schedule:
+	if subject_schedule:
 		return frappe.get_list(
-			"Student Attendance", filters={"course_schedule": course_schedule}
+			"Student Attendance", filters={"subject_schedule": subject_schedule}
 		)
 	else:
 		return frappe.get_list(
@@ -93,13 +85,13 @@ def check_attendance_records_exist(course_schedule=None, student_batch=None, dat
 
 @frappe.whitelist()
 def mark_attendance(
-	students_present, students_absent, course_schedule=None, student_batch=None, date=None
+	students_present, students_absent, subject_schedule=None, student_batch=None, date=None
 ):
 	"""Creates Multiple Attendance Records.
 
 	:param students_present: Students Present JSON.
 	:param students_absent: Students Absent JSON.
-	:param course_schedule: Course Schedule.
+	:param subject_schedule: Subject Schedule.
 	:param student_batch: Student Batch Name.
 	:param date: Date.
 	"""
@@ -111,12 +103,12 @@ def mark_attendance(
 
 	for d in present:
 		make_attendance_records(
-			d["student"], d["student_name"], "Present", course_schedule, student_batch, date
+			d["student"], d["student_name"], "Present", subject_schedule, student_batch, date
 		)
 
 	for d in absent:
 		make_attendance_records(
-			d["student"], d["student_name"], "Absent", course_schedule, student_batch, date
+			d["student"], d["student_name"], "Absent", subject_schedule, student_batch, date
 		)
 
 	frappe.db.commit()
@@ -140,20 +132,20 @@ def validate_attendance_date(student_batch, date):
 
 
 def make_attendance_records(
-	student, student_name, status, course_schedule=None, student_batch=None, date=None
+	student, student_name, status, subject_schedule=None, student_batch=None, date=None
 ):
 	"""Creates/Update Attendance Record.
 
 	:param student: Student.
 	:param student_name: Student Name.
-	:param course_schedule: Course Schedule.
+	:param subject_schedule: Subject Schedule.
 	:param status: Status (Present/Absent/Leave).
 	"""
 	student_attendance = frappe.get_doc(
 		{
 			"doctype": "Student Attendance",
 			"student": student,
-			"course_schedule": course_schedule,
+			"subject_schedule": subject_schedule,
 			"student_batch": student_batch,
 			"date": date,
 		}
@@ -162,7 +154,7 @@ def make_attendance_records(
 		student_attendance = frappe.new_doc("Student Attendance")
 	student_attendance.student = student
 	student_attendance.student_name = student_name
-	student_attendance.course_schedule = course_schedule
+	student_attendance.subject_schedule = subject_schedule
 	student_attendance.student_batch = student_batch
 	student_attendance.date = date
 	student_attendance.status = status
@@ -226,18 +218,16 @@ def get_fee_components(fee_structure):
 
 @frappe.whitelist()
 def get_fee_schedule(program, student_category=None):
-	"""Returns Fee Schedule.
-
-	:param program: Program.
-	:param student_category: Student Category
-	"""
-	fs = frappe.get_all(
-		"Program Fee",
-		fields=["academic_term", "fee_schedule", "due_date", "amount"],
-		filters={"parent": program, "student_category": student_category},
-		order_by="idx",
+	"""Returns Fee Schedules for the program."""
+	filters = {"program": program, "docstatus": 1}
+	if student_category:
+		filters["student_category"] = student_category
+	return frappe.get_all(
+		"Fee Schedule",
+		fields=["name as fee_schedule", "academic_term", "due_date"],
+		filters=filters,
+		order_by="due_date",
 	)
-	return fs
 
 
 @frappe.whitelist()
@@ -250,8 +240,8 @@ def collect_fees(fees, amt):
 
 
 @frappe.whitelist()
-def get_course_schedule_events(start, end, filters=None):
-	"""Returns events for Course Schedule Calendar view rendering.
+def get_subject_schedule_events(start, end, filters=None):
+	"""Returns events for Subject Schedule Calendar view rendering.
 
 	:param start: Start date-time.
 	:param end: End date-time.
@@ -259,14 +249,14 @@ def get_course_schedule_events(start, end, filters=None):
 	"""
 	from frappe.desk.calendar import get_event_conditions
 
-	conditions = get_event_conditions("Course Schedule", filters)
+	conditions = get_event_conditions("Subject Schedule", filters)
 
 	data = frappe.db.sql(
-		"""select name, course, color,
+		"""select name, subject, title, color,
 			timestamp(schedule_date, from_time) as from_time,
 			timestamp(schedule_date, to_time) as to_time,
-			room, student_batch, 0 as 'allDay'
-		from `tabCourse Schedule`
+			room, student_batch, faculty, 0 as 'allDay'
+		from `tabSubject Schedule`
 		where ( schedule_date between %(start)s and %(end)s )
 		{conditions}""".format(
 			conditions=conditions
@@ -437,32 +427,25 @@ def update_email_group(doctype, name):
 
 @frappe.whitelist()
 def get_current_enrollment(student, academic_year=None):
-	# If academic_year is not passed, use today's date
-	compare_date = getdate(academic_year) if academic_year else getdate(today())
+	"""Return the student's latest running Course Enrollment."""
+	filters = {"student": student, "docstatus": 1}
+	if frappe.db.has_column("Course Enrollment", "status"):
+		filters["status"] = "Running"
 
-	program_enrollment_list = frappe.db.sql(
-		"""
-		SELECT
-			pe.name AS program_enrollment, pe.student_name, pe.program, pe.student_batch_name AS student_batch,
-			pe.student_category, pe.intake_year
-		FROM
-			`tabProgram Enrollment` pe
-		JOIN
-			`tabAcademic Year` ay ON pe.intake_year = ay.name
-		WHERE
-			pe.student = %s
-			AND ay.year_end_date >= %s
-		ORDER BY
-			pe.creation
-		""",
-		(student, compare_date),
-		as_dict=1,
+	enrollments = frappe.get_all(
+		"Course Enrollment",
+		filters=filters,
+		fields=[
+			"name as course_enrollment",
+			"student_name",
+			"program",
+			"student_batch",
+			"course",
+		],
+		order_by="creation desc",
+		limit=1,
 	)
-
-	if program_enrollment_list:
-		return program_enrollment_list[0]
-	else:
-		return None
+	return enrollments[0] if enrollments else None
 
 
 @frappe.whitelist()
@@ -501,12 +484,17 @@ def get_student_info():
 
 @frappe.whitelist()
 def get_student_programs(student):
-	# student = 'EDU-STU-2023-00043'
-	programs = frappe.db.get_list(
-		"Program Enrollment",
-		fields=["program", "name"],
+	seen = set()
+	programs = []
+	for row in frappe.get_all(
+		"Course Enrollment",
 		filters={"docstatus": 1, "student": student},
-	)
+		fields=["program", "name"],
+		order_by="creation",
+	):
+		if row.program and row.program not in seen:
+			seen.add(row.program)
+			programs.append(row)
 	return programs
 
 
@@ -540,19 +528,24 @@ def get_course_list_based_on_program(program_name):
 
 
 @frappe.whitelist()
-def get_course_schedule_for_student(program_name, student_batches):
+def get_subject_schedule_for_student(
+	program_name, student_batches=None, student_groups=None
+):
+	student_batches = student_batches or student_groups or []
 	student_batches = [batch.get("label") for batch in student_batches]
 
 	schedule = frappe.db.get_list(
-		"Course Schedule",
+		"Subject Schedule",
 		fields=[
 			"schedule_date",
 			"room",
 			"class_schedule_color",
 			"course",
+			"subject",
 			"from_time",
 			"to_time",
-			"instructor",
+			"faculty",
+			"faculty_name",
 			"title",
 			"name",
 		],
@@ -564,18 +557,18 @@ def get_course_schedule_for_student(program_name, student_batches):
 
 @frappe.whitelist()
 def apply_leave(leave_data, program_name):
-	attendance_based_on_course_schedule = frappe.db.get_single_value(
-		"Education Settings", "attendance_based_on_course_schedule"
+	attendance_based_on_subject_schedule = frappe.db.get_single_value(
+		"Education Settings", "attendance_based_on_subject_schedule"
 	)
-	if attendance_based_on_course_schedule:
-		apply_leave_based_on_course_schedule(leave_data, program_name)
+	if attendance_based_on_subject_schedule:
+		apply_leave_based_on_subject_schedule(leave_data, program_name)
 	else:
 		apply_leave_based_on_student_batch(leave_data, program_name)
 
 
-def apply_leave_based_on_course_schedule(leave_data, program_name):
-	course_schedule_in_leave_period = frappe.db.get_list(
-		"Course Schedule",
+def apply_leave_based_on_subject_schedule(leave_data, program_name):
+	subject_schedule_in_leave_period = frappe.db.get_list(
+		"Subject Schedule",
 		fields=["name", "schedule_date"],
 		filters={
 			"program": program_name,
@@ -586,21 +579,20 @@ def apply_leave_based_on_course_schedule(leave_data, program_name):
 		},
 		order_by="schedule_date asc",
 	)
-	if not course_schedule_in_leave_period:
+	if not subject_schedule_in_leave_period:
 		frappe.throw(_("No classes found in the leave period"))
-	for course_schedule in course_schedule_in_leave_period:
-		# check if attendance record does not exist for the student on the course schedule
+	for subject_schedule in subject_schedule_in_leave_period:
 		if not frappe.db.exists(
 			"Student Attendance",
-			{"course_schedule": course_schedule.get("name"), "docstatus": 1},
+			{"subject_schedule": subject_schedule.get("name"), "docstatus": 1},
 		):
 			make_attendance_records(
 				leave_data.get("student"),
 				leave_data.get("student_name"),
 				"Leave",
-				course_schedule.get("name"),
+				subject_schedule.get("name"),
 				None,
-				course_schedule.get("schedule_date"),
+				subject_schedule.get("schedule_date"),
 			)
 
 

@@ -137,7 +137,7 @@
   },
   {
    "group": "Admission and Enrollments",
-   "link_doctype": "Program Enrollment",
+   "link_doctype": "Course Enrollment",
    "link_fieldname": "program"
   },
   {

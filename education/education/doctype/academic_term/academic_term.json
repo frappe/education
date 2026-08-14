@@ -98,11 +98,6 @@
    "link_fieldname": "academic_term"
   },
   {
-   "group": "Program",
-   "link_doctype": "Program Enrollment",
-   "link_fieldname": "academic_term"
-  },
-  {
    "group": "Assessment",
    "link_doctype": "Assessment Plan",
    "link_fieldname": "academic_term"

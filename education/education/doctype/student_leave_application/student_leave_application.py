@@ -64,7 +64,7 @@ class StudentLeaveApplication(Document):
 
 		# get classes organized between from_date and to_date
 		leave_classes = frappe.db.get_list(
-			"Course Schedule",
+			"Subject Schedule",
 			filters={
 				"docstatus": 1,
 				"schedule_date": ("between", [self.from_date, self.to_date]),
@@ -103,7 +103,7 @@ class StudentLeaveApplication(Document):
 				if self.attendance_based_on == "Student Batch":
 					doc.student_batch = self.student_batch
 				else:
-					doc.course_schedule = self.course_schedule
+					doc.subject_schedule = self.subject_schedule
 				doc.insert(ignore_permissions=True, ignore_mandatory=True)
 				doc.submit()
 

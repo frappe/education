@@ -19,7 +19,7 @@
   "due_date",
   "set_posting_time",
   "student_details",
-  "program_enrollment",
+  "course_enrollment",
   "program",
   "column_break_16",
   "academic_year",
@@ -151,14 +151,14 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "program_enrollment",
+   "fieldname": "course_enrollment",
    "fieldtype": "Link",
-   "label": "Program Enrollment",
-   "options": "Program Enrollment",
+   "label": "Course Enrollment",
+   "options": "Course Enrollment",
    "reqd": 1
   },
   {
-   "fetch_from": "program_enrollment.program",
+   "fetch_from": "course_enrollment.program",
    "fieldname": "program",
    "fieldtype": "Link",
    "in_list_view": 1,

@@ -22,7 +22,7 @@ frappe.ui.form.on('Student Attendance Tool', {
     if (frappe.route_options) {
       frm.set_value('based_on', frappe.route_options.based_on)
       frm.set_value('student_batch', frappe.route_options.student_batch)
-      frm.set_value('course_schedule', frappe.route_options.course_schedule)
+      frm.set_value('subject_schedule', frappe.route_options.subject_schedule)
       frappe.route_options = null
     }
     frm.disable_save()
@@ -30,14 +30,14 @@ frappe.ui.form.on('Student Attendance Tool', {
 
   based_on: function (frm) {
     if (frm.doc.based_on == 'Student Batch') {
-      frm.set_value('course_schedule', '')
+      frm.set_value('subject_schedule', '')
     } else {
       frm.set_value('student_batch', '')
     }
   },
 
   student_batch: function (frm) {
-    if ((frm.doc.student_batch && frm.doc.date) || frm.doc.course_schedule) {
+    if ((frm.doc.student_batch && frm.doc.date) || frm.doc.subject_schedule) {
       frm.students_area
         .find('.student-attendance-checks')
         .html(`<div style='padding: 2rem 0'>Fetching...</div>`)
@@ -50,7 +50,7 @@ frappe.ui.form.on('Student Attendance Tool', {
           based_on: frm.doc.based_on,
           student_batch: frm.doc.student_batch,
           date: frm.doc.date,
-          course_schedule: frm.doc.course_schedule,
+          subject_schedule: frm.doc.subject_schedule,
         },
         callback: function (r) {
           frm.events.get_students(frm, r.message)
@@ -65,7 +65,7 @@ frappe.ui.form.on('Student Attendance Tool', {
     frm.trigger('student_batch')
   },
 
-  course_schedule: function (frm) {
+  subject_schedule: function (frm) {
     frm.trigger('student_batch')
   },
 
@@ -168,7 +168,7 @@ education.StudentsEditor = class StudentsEditor {
                   students_present: students_present,
                   students_absent: students_absent,
                   student_batch: frm.doc.student_batch,
-                  course_schedule: frm.doc.course_schedule,
+                  subject_schedule: frm.doc.subject_schedule,
                   date: frm.doc.date,
                 },
                 callback: function (r) {

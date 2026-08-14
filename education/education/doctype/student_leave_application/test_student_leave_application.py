@@ -12,7 +12,6 @@ from education.education.test_utils import (
 	create_academic_term,
 	create_program,
 	create_student,
-	create_program_enrollment,
 	create_course,
 	create_student_batch,
 	before_tests,
@@ -32,7 +31,6 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		)
 		create_program()
 		student = create_student()
-		create_program_enrollment(student_name=student.name, submit=1)
 		create_course()
 		create_student_batch()
 

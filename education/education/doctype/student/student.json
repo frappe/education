@@ -357,11 +357,6 @@
  "links": [
   {
    "group": "Admission",
-   "link_doctype": "Program Enrollment",
-   "link_fieldname": "student"
-  },
-  {
-   "group": "Admission",
    "link_doctype": "Course Enrollment",
    "link_fieldname": "student"
   },

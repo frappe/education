@@ -100,20 +100,18 @@ def get_enrollment(master, document, student):
 	Returns:
 	        string: Enrollment Name if exists else returns empty string
 	"""
+	filters = {"student": student, "docstatus": 1}
 	if master == "program":
-		enrollments = frappe.get_all(
-			"Program Enrollment",
-			filters={"student": student, "program": document, "docstatus": 1},
-		)
-	if master == "course":
-		enrollments = frappe.get_all(
-			"Course Enrollment", filters={"student": student, "course": document}
-		)
-
-	if enrollments:
-		return enrollments[0].name
+		filters["program"] = document
+	elif master == "course":
+		filters["course"] = document
 	else:
 		return None
+
+	enrollments = frappe.get_all("Course Enrollment", filters=filters)
+	if enrollments:
+		return enrollments[0].name
+	return None
 
 
 @frappe.whitelist()
@@ -126,7 +124,7 @@ def enroll_in_program(program_name, student=None):
 	                provided, a student will be created from the current user
 
 	Returns:
-	        string: name of the program enrollment document
+	        string: name of the course enrollment document
 	"""
 	if has_super_access():
 		return
@@ -143,19 +141,16 @@ def enroll_in_program(program_name, student=None):
 		if not student:
 			student = create_student_from_current_user()
 
-	# Check if student is already enrolled in program
+	# Check if student is already enrolled in a course of this program
 	enrollment = get_enrollment("program", program_name, student.name)
 	if enrollment:
 		return enrollment
 
-	# Check if self enrollment in allowed
-	program = frappe.get_doc("Program", program_name)
-	if not program.allow_self_enroll:
-		return frappe.throw(_("You are not allowed to enroll for this course"))
-
-	# Enroll in program
-	program_enrollment = student.enroll_in_program(program_name)
-	return program_enrollment.name
+	frappe.throw(
+		_(
+			"No Course Enrollment found for program {0}. Enroll the student through Admission."
+		).format(program_name)
+	)
 
 
 def has_super_access():
@@ -386,16 +381,8 @@ def get_or_create_course_enrollment(course, program):
 	student = get_current_student()
 	course_enrollment = get_enrollment("course", course, student.name)
 	if not course_enrollment:
-		program_enrollment = get_enrollment("program", program.name, student.name)
-		if not program_enrollment:
-			frappe.throw(_("You are not enrolled in program {0}").format(program))
-			return
-		return student.enroll_in_course(
-			course_name=course,
-			program_enrollment=get_enrollment("program", program.name, student.name),
-		)
-	else:
-		return frappe.get_doc("Course Enrollment", course_enrollment)
+		frappe.throw(_("You are not enrolled in course {0}").format(course))
+	return frappe.get_doc("Course Enrollment", course_enrollment)
 
 
 def check_content_completion(content_name, content_type, enrollment_name):

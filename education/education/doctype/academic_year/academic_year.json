@@ -79,11 +79,6 @@
    "link_fieldname": "academic_year"
   },
   {
-   "group": "Academic Term and Program",
-   "link_doctype": "Program Enrollment",
-   "link_fieldname": "academic_year"
-  },
-  {
    "group": "Assessment",
    "link_doctype": "Assessment Plan",
    "link_fieldname": "academic_year"

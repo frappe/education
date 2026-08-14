@@ -68,7 +68,7 @@ frappe.ui.form.on('Instructor', {
       let d = locals[cdt][cdn]
       return {
         query:
-          'education.education.doctype.program_enrollment.program_enrollment.get_program_courses',
+          'education.education.doctype.program.program.get_program_courses',
         filters: {
           program: d.program,
         },

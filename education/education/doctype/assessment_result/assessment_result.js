@@ -6,7 +6,7 @@ frappe.ui.form.on('Assessment Result', {
     frm.set_query('course', function () {
       return {
         query:
-          'education.education.doctype.program_enrollment.program_enrollment.get_program_courses',
+          'education.education.doctype.program.program.get_program_courses',
         filters: {
           program: frm.doc.program,
         },

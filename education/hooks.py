@@ -51,7 +51,7 @@ website_route_rules = [
 treeviews = ["Assessment Group"]
 
 calendars = [
-	"Course Schedule",
+	"Subject Schedule",
 ]
 
 standard_portal_menu_items = [
@@ -86,7 +86,6 @@ global_search_doctypes = {
 		{"doctype": "Course Activity", "index": 13},
 		{"doctype": "Quiz Activity", "index": 14},
 		{"doctype": "Course Enrollment", "index": 15},
-		{"doctype": "Program Enrollment", "index": 16},
 		{"doctype": "Student Language", "index": 17},
 		{"doctype": "Student Applicant", "index": 18},
 		{"doctype": "Assessment Result", "index": 19},
@@ -97,7 +96,7 @@ global_search_doctypes = {
 		{"doctype": "Student Leave Application", "index": 23},
 		{"doctype": "Student Log", "index": 24},
 		{"doctype": "Room", "index": 25},
-		{"doctype": "Course Schedule", "index": 26},
+		{"doctype": "Subject Schedule", "index": 26},
 		{"doctype": "Student Attendance", "index": 27},
 		{"doctype": "Announcement", "index": 28},
 		{"doctype": "Student Category", "index": 29},

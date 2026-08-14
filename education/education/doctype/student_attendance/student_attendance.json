@@ -11,7 +11,7 @@
   "student",
   "student_name",
   "student_mobile_number",
-  "course_schedule",
+  "subject_schedule",
   "student_batch",
   "column_break_3",
   "date",
@@ -32,11 +32,11 @@
    "search_index": 1
   },
   {
-   "fieldname": "course_schedule",
+   "fieldname": "subject_schedule",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Course Schedule",
-   "options": "Course Schedule"
+   "label": "Subject Schedule",
+   "options": "Subject Schedule"
   },
   {
    "fieldname": "date",
@@ -115,7 +115,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-13 02:53:47.541884",
+ "modified": "2026-08-13 22:32:02.599720",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",

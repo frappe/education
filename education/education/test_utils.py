@@ -152,26 +152,6 @@ def create_student(
 	return student
 
 
-def create_program_enrollment(
-	student_name,
-	program=DEFAULT_PROGRAM_NAME,
-	intake_year=DEFAULT_ACADEMIC_YEAR,
-	enrollment_date="2023-04-01",
-	company="_Test Company",
-	submit=False,
-):
-	program_enrollment = frappe.new_doc("Program Enrollment")
-	program_enrollment.student = student_name
-	program_enrollment.program = program
-	program_enrollment.intake_year = intake_year
-	program_enrollment.company = company
-	program_enrollment.enrollment_date = enrollment_date
-	program_enrollment.save()
-	if submit:
-		program_enrollment.submit()
-	return program_enrollment
-
-
 def create_student_batch(
 	batch_name=DEFAULT_STUDENT_BATCH,
 	course=DEFAULT_COURSE,
@@ -214,6 +194,40 @@ def create_fee_schedule(
 		fee_schedule.submit()
 
 	return fee_schedule
+
+
+def create_faculty(first_name="Test", last_name="Faculty", email=None):
+	faculty_name = " ".join(filter(None, [first_name, last_name]))
+	existing = frappe.db.exists("Faculty", {"faculty_name": faculty_name})
+	if existing:
+		return frappe.get_doc("Faculty", existing)
+
+	frappe.db.set_single_value("Education Settings", "user_creation_skip", 1)
+	faculty = frappe.new_doc("Faculty")
+	faculty.first_name = first_name
+	faculty.last_name = last_name
+	faculty.naming_series = "EDU-FCT-.YYYY.-"
+	faculty.email_address = (
+		email or f"{first_name.lower()}.{last_name.lower().replace(' ', '')}@example.com"
+	)
+	faculty.insert(ignore_mandatory=True)
+	return faculty
+
+
+def create_subject(subject_name="Test Subject", course=DEFAULT_COURSE):
+	if frappe.db.exists("Subject", subject_name):
+		return frappe.get_doc("Subject", subject_name)
+
+	subject = frappe.new_doc("Subject")
+	subject.subject_name = subject_name
+	subject.abbreviation = (
+		"".join(part[0] for part in subject_name.split() if part).upper() or "SUB"
+	)
+	subject.type = "Theory"
+	subject.subject_type = "Compulsory"
+	subject.course = course
+	subject.save()
+	return subject
 
 
 def create_instructor(instructor_name="Test Instructor"):

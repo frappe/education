@@ -197,13 +197,8 @@ class StudentApplicant(Document):
 		return student
 
 	@frappe.whitelist()
-	def enroll_in_program_and_course(self):
-		"""Enroll the approved student.
-
-		Program-based admission: enroll the student in the register's program
-		and in the selected course. Course-based admission: enroll the student
-		in the course only.
-		"""
+	def enroll_in_course(self):
+		"""Enroll the approved student in the selected course."""
 		if self.application_status != "Approved":
 			frappe.throw(_("Only approved applications can be enrolled."))
 
@@ -211,9 +206,6 @@ class StudentApplicant(Document):
 			frappe.throw(_("No Student is linked to this application. Please approve it first."))
 
 		try:
-			if self.admission_based_on == "Program":
-				self.get_or_create_program_enrollment()
-
 			enrollment_name = self.create_course_enrollment().name
 		except Exception:
 			frappe.db.rollback()
@@ -224,41 +216,6 @@ class StudentApplicant(Document):
 
 		return enrollment_name
 
-	def get_or_create_program_enrollment(self):
-		"""Return the student's submitted Program Enrollment, creating it if needed."""
-		program = frappe.db.get_value(
-			"Admission Register", self.admission_register, "program"
-		)
-
-		existing = frappe.db.exists(
-			"Program Enrollment",
-			{
-				"student": self.student,
-				"program": program,
-				"intake_year": self.academic_year,
-				"docstatus": ("<", 2),
-			},
-		)
-		if existing:
-			program_enrollment = frappe.get_doc("Program Enrollment", existing)
-		else:
-			program_enrollment = frappe.get_doc(
-				{
-					"doctype": "Program Enrollment",
-					"student": self.student,
-					"student_category": self.student_category,
-					"program": program,
-					"intake_year": self.academic_year,
-					"academic_term": self.academic_term,
-					"enrollment_date": today(),
-				}
-			).insert(ignore_permissions=True)
-
-		if program_enrollment.docstatus == 0:
-			program_enrollment.submit()
-
-		return program_enrollment
-
 	def create_course_enrollment(self):
 		if not self.course:
 			frappe.throw(_("Please select a Course to enroll the student in."))
@@ -268,6 +225,7 @@ class StudentApplicant(Document):
 				"doctype": "Course Enrollment",
 				"student": self.student,
 				"course": self.course,
+				"company": self.company,
 				"admission_register": self.admission_register,
 				"enrollment_date": today(),
 				"fee_term": self.fee_term,

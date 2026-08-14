@@ -12,21 +12,14 @@
   "column_break_3",
   "batch_start_date",
   "batch_end_date",
-  "section_break_6",
-  "instructor",
-  "instructor_name",
-  "column_break_9",
-  "room",
+  "section_break_dates",
+  "from_date",
+  "column_break_dates",
+  "to_date",
+  "reschedule",
   "class_schedule_color",
-  "section_break_7",
-  "days_html",
-  "section_break_14",
-  "from_time",
-  "course_start_date",
-  "column_break_15",
-  "to_time",
-  "course_end_date",
-  "reschedule"
+  "section_break_slots",
+  "slots"
  ],
  "fields": [
   {
@@ -74,50 +67,24 @@
    "read_only": 1
   },
   {
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
+   "fieldname": "section_break_dates",
+   "fieldtype": "Section Break",
+   "label": "Date Range"
   },
   {
-   "fieldname": "instructor",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Instructor",
-   "options": "Instructor",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
    "reqd": 1
   },
   {
-   "fetch_from": "instructor.instructor_name",
-   "fieldname": "instructor_name",
-   "fieldtype": "Read Only",
-   "label": "Instructor Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_9",
+   "fieldname": "column_break_dates",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "room",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Room",
-   "options": "Room",
-   "reqd": 1
-  },
-  {
-   "fieldname": "section_break_7",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "from_time",
-   "fieldtype": "Time",
-   "label": "From Time",
-   "reqd": 1
-  },
-  {
-   "fieldname": "course_start_date",
+   "fieldname": "to_date",
    "fieldtype": "Date",
-   "label": "Course Start Date",
+   "label": "To Date",
    "reqd": 1
   },
   {
@@ -127,44 +94,31 @@
    "label": "Reschedule"
   },
   {
-   "fieldname": "column_break_15",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "to_time",
-   "fieldtype": "Time",
-   "label": "To Time",
-   "reqd": 1
-  },
-  {
-   "fieldname": "course_end_date",
-   "fieldtype": "Date",
-   "label": "Course End Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "days_html",
-   "fieldtype": "HTML",
-   "label": "Days HTML"
-  },
-  {
-   "fieldname": "section_break_14",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "class_schedule_color",
    "fieldtype": "Select",
    "label": "Class Schedule Color",
    "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple"
+  },
+  {
+   "fieldname": "section_break_slots",
+   "fieldtype": "Section Break",
+   "label": "Weekly Slots"
+  },
+  {
+   "fieldname": "slots",
+   "fieldtype": "Table",
+   "label": "Slots",
+   "options": "Subject Scheduling Tool Slot",
+   "reqd": 1
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 02:48:26.368791",
+ "modified": "2026-08-13 22:34:34.794530",
  "modified_by": "Administrator",
  "module": "Education",
- "name": "Course Scheduling Tool",
+ "name": "Subject Scheduling Tool",
  "owner": "Administrator",
  "permissions": [
   {

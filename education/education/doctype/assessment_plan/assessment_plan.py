@@ -61,16 +61,17 @@ class AssessmentPlan(Document):
 				)
 
 	def validate_overlap(self):
-		"""Validates overlap for Batch, Instructor, Room"""
+		"""Validates overlap for Batch, Faculty, Room"""
 
 		from education.education.utils import validate_overlap_for
 
-		# Validate overlapping course schedules.
+		# Validate overlapping subject schedules.
 		if self.student_batch:
-			validate_overlap_for(self, "Course Schedule", "student_batch")
+			validate_overlap_for(self, "Subject Schedule", "student_batch")
 
-		validate_overlap_for(self, "Course Schedule", "instructor")
-		validate_overlap_for(self, "Course Schedule", "room")
+		if self.faculty:
+			validate_overlap_for(self, "Subject Schedule", "faculty", self.faculty)
+		validate_overlap_for(self, "Subject Schedule", "room")
 
 		# validate overlapping assessment schedules.
 		if self.student_batch:

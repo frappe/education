@@ -121,7 +121,7 @@ def get_student_attendance(student_batch, date):
 	student_attendance = frappe.db.sql(
 		"""select count(*) as count, status from `tabStudent Attendance` where
 				student_batch= %s and date= %s and docstatus = 1 and
-				(course_schedule is Null or course_schedule='') group by status""",
+				(subject_schedule is Null or subject_schedule='') group by status""",
 		(student_batch, date),
 		as_dict=1,
 	)
