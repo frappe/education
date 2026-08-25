@@ -33,6 +33,23 @@ frappe.ui.form.on('Course Enrollment', {
 
   course: function (frm) {
     frm.set_value('student_batch', null)
+    frm.set_value('roll_number', null)
+  },
+
+  student_batch: function (frm) {
+    if (!frm.doc.student_batch || frm.doc.roll_number) return
+
+    frappe
+      .call({
+        method:
+          'education.education.doctype.course_enrollment.course_enrollment.get_next_roll_number',
+        args: { batch: frm.doc.student_batch },
+      })
+      .then((r) => {
+        if (r.message && !frm.doc.roll_number) {
+          frm.set_value('roll_number', r.message)
+        }
+      })
   },
 
   company: function (frm) {

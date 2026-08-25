@@ -7,9 +7,18 @@ import calendar
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_days, formatdate, getdate
+from frappe.utils import add_days, cint, formatdate, getdate
 
 from education.education.utils import OverlapError
+
+IGNORE_FIELDTYPES = {
+	"Section Break",
+	"Column Break",
+	"Tab Break",
+	"HTML",
+	"Heading",
+	"Fold",
+}
 
 
 class SubjectSchedulingTool(Document):
@@ -22,12 +31,9 @@ class SubjectSchedulingTool(Document):
 		rescheduled = []
 		reschedule_errors = []
 
+		self.set_course_from_batch()
 		self.validate_mandatory()
 		self.validate_date()
-
-		course = frappe.db.get_value("Student Batch Name", self.student_batch, "course")
-		if course:
-			self.course = course
 
 		days = list({slot.day for slot in self.slots})
 
@@ -64,15 +70,29 @@ class SubjectSchedulingTool(Document):
 			reschedule_errors=reschedule_errors,
 		)
 
+	def set_course_from_batch(self):
+		if not self.student_batch:
+			return
+
+		course = frappe.db.get_value("Student Batch Name", self.student_batch, "course")
+		if course:
+			self.course = course
+
 	def validate_mandatory(self):
-		if not self.slots:
-			frappe.throw(_("Please add at least one weekly slot."))
+		"""Reject scheduling when any required form field is empty."""
+		for df in self.meta.get("fields", []):
+			if not cint(df.reqd) or df.fieldtype in IGNORE_FIELDTYPES:
+				continue
+			if not self.get(df.fieldname):
+				frappe.throw(_("{0} is mandatory").format(_(df.label or df.fieldname)))
 
 		for slot in self.slots:
-			for field in ("day", "subject", "faculty", "room", "from_time", "to_time"):
-				if not slot.get(field):
+			for df in slot.meta.get("fields", []):
+				if not cint(df.reqd) or df.fieldtype in IGNORE_FIELDTYPES:
+					continue
+				if not slot.get(df.fieldname):
 					frappe.throw(
-						_("Row {0}: {1} is mandatory").format(slot.idx, _(slot.meta.get_label(field)))
+						_("Row {0}: {1} is mandatory").format(slot.idx, _(df.label or df.fieldname))
 					)
 			if slot.from_time > slot.to_time:
 				frappe.throw(

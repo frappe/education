@@ -30,6 +30,9 @@ class CourseEnrollment(Document):
 	def on_cancel(self):
 		self.cancel_fee_plan()
 
+	def before_update_after_submit(self):
+		self.set_roll_number()
+
 	def update_student_joining_date(self):
 		from frappe.query_builder.functions import Min
 
@@ -187,7 +190,11 @@ class CourseEnrollment(Document):
 
 		enrolled = frappe.db.count(
 			"Course Enrollment",
-			{"student_batch": self.student_batch, "docstatus": 1, "name": ("!=", self.name)},
+			{
+				"student_batch": self.student_batch,
+				"docstatus": 1,
+				"name": ("!=", self.name),
+			},
 		)
 		if enrolled >= cint(batch.max_strength):
 			frappe.throw(
@@ -197,29 +204,38 @@ class CourseEnrollment(Document):
 			)
 
 	def set_roll_number(self):
-		"""Assign the next roll number within the batch and keep it unique."""
-		if not self.student_batch:
-			return
-
+		"""Assign the next roll number within the batch and keep it unique per course and batch."""
+		self.roll_number = str(self.roll_number).strip() if self.roll_number else None
 		if not self.roll_number:
-			self.roll_number = get_next_roll_number(self.student_batch)
-			return
+			if not self.student_batch:
+				return
+			self.roll_number = str(get_next_roll_number(self.student_batch))
 
-		duplicate = frappe.db.exists(
-			"Course Enrollment",
-			{
-				"student_batch": self.student_batch,
-				"roll_number": self.roll_number,
-				"docstatus": ("!=", 2),
-				"name": ("!=", self.name),
-			},
+		duplicate = frappe.db.sql(
+			"""
+			SELECT name FROM `tabCourse Enrollment`
+			WHERE course = %s
+				AND ifnull(student_batch, '') = %s
+				AND roll_number = %s
+				AND docstatus != 2
+				AND name != %s
+			LIMIT 1
+			""",
+			(
+				self.course,
+				self.student_batch or "",
+				self.roll_number,
+				self.name or "",
+			),
 		)
+
 		if duplicate:
 			frappe.throw(
-				_("Roll Number {0} is already used in Batch {1} by {2}").format(
+				_("Roll Number {0} is already used for Course {1} in Batch {2} by {3}").format(
 					frappe.bold(self.roll_number),
-					frappe.bold(self.student_batch),
-					get_link_to_form("Course Enrollment", duplicate),
+					frappe.bold(self.course),
+					(frappe.bold(self.student_batch) if self.student_batch else _("No Batch")),
+					get_link_to_form("Course Enrollment", duplicate[0][0]),
 				),
 				title=_("Duplicate Roll Number"),
 			)
@@ -231,6 +247,7 @@ class CourseEnrollment(Document):
 				"student": self.student,
 				"course": self.course,
 				"name": ("!=", self.name),
+				"docstatus": 1,
 			},
 		)
 		if enrollment:
@@ -295,6 +312,7 @@ class CourseEnrollment(Document):
 			return activity.name
 
 
+@frappe.whitelist()
 def get_next_roll_number(batch):
 	"""Return the next roll number available in the batch."""
 	roll_numbers = frappe.get_all(

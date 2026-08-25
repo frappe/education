@@ -34,7 +34,7 @@ frappe.ui.form.on('Subject Scheduling Tool', {
             frappe.throw(__('There were errors creating Subject Schedule'))
           }
           const { subject_schedules } = r.message
-          if (subject_schedules) {
+          if (subject_schedules && subject_schedules.length > 0) {
             const subject_schedules_html = subject_schedules
               .map(
                 (c) => `
