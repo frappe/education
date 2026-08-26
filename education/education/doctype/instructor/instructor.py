@@ -35,20 +35,3 @@ class Instructor(Document):
 			"Instructor", {"employee": self.employee, "name": ["!=", self.name]}, "name"
 		):
 			frappe.throw(_("Employee ID is linked with another instructor"))
-
-
-def get_timeline_data(doctype, name):
-	"""Return timeline for instructor activity"""
-	return dict(
-		frappe.db.sql(
-			"""
-			SELECT unix_timestamp(`schedule_date`), count(*)
-			FROM `tabAssessment Plan`
-			WHERE
-				supervisor=%s and
-				`schedule_date` > date_sub(curdate(), interval 1 year)
-			GROUP BY schedule_date
-		""",
-			name,
-		)
-	)

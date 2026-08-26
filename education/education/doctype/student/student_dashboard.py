@@ -9,5 +9,9 @@ def get_data():
 		"non_standard_fieldnames": {"Bank Account": "party"},
 		"transactions": [
 			{"label": _("Fee"), "items": ["Sales Invoice", "Bank Account"]},
+			{
+				"label": _("Assessment"),
+				"items": ["Assessment Result", "Grade Book"],
+			},
 		],
 	}

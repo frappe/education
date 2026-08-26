@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 
 class AssessmentPlan(Document):
@@ -29,14 +29,64 @@ class AssessmentPlan(Document):
 			)
 
 	def validate_academic_year_and_term(self):
-		if not (self.academic_year and self.academic_term):
+		if not self.academic_year:
+			frappe.throw(_("Academic Year is mandatory"))
+
+		self._validate_date_in_period(
+			"Academic Year",
+			self.academic_year,
+			["year_start_date", "year_end_date"],
+		)
+
+		if not self.academic_term:
 			return
 
-		term_year = frappe.db.get_value("Academic Term", self.academic_term, "academic_year")
-		if term_year and term_year != self.academic_year:
+		term = frappe.db.get_value(
+			"Academic Term",
+			self.academic_term,
+			["academic_year", "term_start_date", "term_end_date"],
+			as_dict=True,
+		)
+		if not term:
+			return
+
+		if term.academic_year != self.academic_year:
 			frappe.throw(
 				_("Academic Term {0} does not belong to Academic Year {1}").format(
 					frappe.bold(self.academic_term), frappe.bold(self.academic_year)
+				)
+			)
+
+		self._validate_date_in_period(
+			"Academic Term",
+			self.academic_term,
+			["term_start_date", "term_end_date"],
+			dates=term,
+		)
+
+	def _validate_date_in_period(self, doctype, name, date_fields, dates=None):
+		if not self.schedule_date:
+			return
+
+		dates = dates or frappe.db.get_value(doctype, name, date_fields, as_dict=True)
+		if not dates:
+			return
+
+		schedule_date = getdate(self.schedule_date)
+		start = dates.get(date_fields[0])
+		end = dates.get(date_fields[1])
+
+		if start and schedule_date < getdate(start):
+			frappe.throw(
+				_("Schedule Date cannot be before the start of {0} {1}").format(
+					_(doctype), frappe.bold(name)
+				)
+			)
+
+		if end and schedule_date > getdate(end):
+			frappe.throw(
+				_("Schedule Date cannot be after the end of {0} {1}").format(
+					_(doctype), frappe.bold(name)
 				)
 			)
 
@@ -45,6 +95,7 @@ class AssessmentPlan(Document):
 			return
 
 		for doctype, value in (
+			("Student Batch Name", self.student_batch),
 			("Course", self.course),
 			("Academic Year", self.academic_year),
 			("Academic Term", self.academic_term),
@@ -78,7 +129,6 @@ class AssessmentPlan(Document):
 			validate_overlap_for(self, "Assessment Plan", "student_batch")
 
 		validate_overlap_for(self, "Assessment Plan", "room")
-		validate_overlap_for(self, "Assessment Plan", "supervisor", self.supervisor)
 
 	def validate_max_score(self):
 		if flt(self.maximum_assessment_score) <= 0:

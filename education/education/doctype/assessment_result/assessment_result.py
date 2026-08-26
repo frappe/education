@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, get_link_to_form
 from frappe.utils.csvutils import getlink
 
 import education.education
@@ -17,9 +17,25 @@ class AssessmentResult(Document):
 		education.education.validate_student_belongs_to_batch(
 			self.student, self.student_batch
 		)
+		self.validate_assessment_plan()
 		self.validate_maximum_score()
 		self.validate_grade()
 		self.validate_duplicate()
+
+	def before_cancel(self):
+		self.validate_computed_grade_book()
+
+	def validate_assessment_plan(self):
+		if not self.assessment_plan:
+			return
+
+		plan_status = frappe.db.get_value(
+			"Assessment Plan", self.assessment_plan, "docstatus"
+		)
+		if plan_status != 1:
+			frappe.throw(
+				_("Assessment Plan {0} must be submitted").format(frappe.bold(self.assessment_plan))
+			)
 
 	def validate_maximum_score(self):
 		self.maximum_score = frappe.db.get_value(
@@ -59,3 +75,48 @@ class AssessmentResult(Document):
 					getlink("Assessment Result", assessment_result[0].name)
 				)
 			)
+
+	def validate_computed_grade_book(self):
+		grade_book = _get_computed_grade_book(
+			self.student,
+			self.course,
+			self.academic_year,
+			self.academic_term,
+			self.student_batch,
+		)
+		if not grade_book:
+			return
+
+		frappe.throw(
+			_(
+				"Cannot cancel Assessment Result because Grade Book {0} has already been computed. Reset that Grade Book to Draft before cancelling this result."
+			).format(get_link_to_form("Grade Book", grade_book))
+		)
+
+
+def _get_computed_grade_book(
+	student, course, academic_year, academic_term=None, student_batch=None
+):
+	if not (student and course and academic_year):
+		return None
+
+	existing = frappe.db.sql(
+		"""
+		SELECT name FROM `tabGrade Book`
+		WHERE status = 'Computed'
+			AND student = %s
+			AND course = %s
+			AND academic_year = %s
+			AND (ifnull(academic_term, '') = '' OR academic_term = %s)
+			AND (ifnull(student_batch, '') = '' OR student_batch = %s)
+		LIMIT 1
+		""",
+		(
+			student,
+			course,
+			academic_year,
+			academic_term or "",
+			student_batch or "",
+		),
+	)
+	return existing[0][0] if existing else None

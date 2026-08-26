@@ -371,6 +371,11 @@
    "link_fieldname": "student"
   },
   {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "student"
+  },
+  {
    "group": "Attendance",
    "link_doctype": "Student Attendance",
    "link_fieldname": "student"
@@ -381,7 +386,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2026-08-13 02:53:14.732615",
+ "modified": "2026-08-26 12:38:13.448605",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

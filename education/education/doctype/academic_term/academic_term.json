@@ -106,9 +106,14 @@
    "group": "Assessment",
    "link_doctype": "Assessment Result",
    "link_fieldname": "academic_term"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "academic_term"
   }
  ],
- "modified": "2026-08-13 02:46:16.560425",
+ "modified": "2026-08-26 12:51:26.509547",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Term",

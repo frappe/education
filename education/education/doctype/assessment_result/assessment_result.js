@@ -2,26 +2,6 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Assessment Result', {
-  refresh: function (frm) {
-    frm.set_query('course', function () {
-      return {
-        query:
-          'education.education.doctype.program.program.get_program_courses',
-        filters: {
-          program: frm.doc.program,
-        },
-      }
-    })
-
-    frm.set_query('academic_term', function () {
-      return {
-        filters: {
-          academic_year: frm.doc.academic_year,
-        },
-      }
-    })
-  },
-
   onload: function (frm) {
     frm.set_query('assessment_plan', function () {
       return {

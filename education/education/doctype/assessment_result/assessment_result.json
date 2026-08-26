@@ -8,8 +8,9 @@
  "engine": "InnoDB",
  "field_order": [
   "assessment_plan",
-  "program",
   "course",
+  "subject",
+  "assignment_type",
   "academic_year",
   "academic_term",
   "column_break_3",
@@ -38,32 +39,46 @@
    "reqd": 1
   },
   {
-   "fetch_from": "assessment_plan.program",
-   "fieldname": "program",
-   "fieldtype": "Link",
-   "label": "Program",
-   "options": "Program"
-  },
-  {
    "fetch_from": "assessment_plan.course",
    "fieldname": "course",
    "fieldtype": "Link",
    "label": "Course",
-   "options": "Course"
+   "options": "Course",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "assessment_plan.subject",
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "options": "Subject",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "assessment_plan.assignment_type",
+   "fieldname": "assignment_type",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assignment Type",
+   "options": "Assignment Type",
+   "read_only": 1
   },
   {
    "fetch_from": "assessment_plan.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "read_only": 1
   },
   {
    "fetch_from": "assessment_plan.academic_term",
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
-   "options": "Academic Term"
+   "options": "Academic Term",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_3",
@@ -91,14 +106,16 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch Name"
+   "options": "Student Batch Name",
+   "read_only": 1
   },
   {
    "fetch_from": "assessment_plan.assessment_group",
    "fieldname": "assessment_group",
    "fieldtype": "Link",
    "label": "Assessment Group",
-   "options": "Assessment Group"
+   "options": "Assessment Group",
+   "read_only": 1
   },
   {
    "fetch_from": "assessment_plan.grading_scale",
@@ -166,7 +183,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-13 02:47:01.000333",
+ "modified": "2026-08-26 12:49:53.870262",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",

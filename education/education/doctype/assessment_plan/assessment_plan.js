@@ -14,6 +14,7 @@ frappe.ui.form.on('Assessment Plan', {
       return {
         filters: {
           docstatus: 1,
+          company: frm.doc.company,
         },
       }
     })
@@ -24,6 +25,8 @@ frappe.ui.form.on('Assessment Plan', {
         },
       }
     })
+    set_academic_queries(frm)
+    set_default_academic_year(frm)
   },
 
   refresh: function (frm) {
@@ -41,28 +44,67 @@ frappe.ui.form.on('Assessment Plan', {
       )
     }
 
-    frm.set_query('course', function () {
-      return {
-        query:
-          'education.education.doctype.program.program.get_program_courses',
-        filters: {
-          program: frm.doc.program,
-        },
-      }
-    })
+    set_academic_queries(frm)
+    set_default_academic_year(frm)
+  },
 
-    frm.set_query('academic_term', function () {
-      return {
-        filters: {
-          academic_year: frm.doc.academic_year,
-        },
-      }
-    })
+  company: function (frm) {
+    set_academic_queries(frm)
+  },
+
+  academic_year: function (frm) {
+    if (frm.doc.academic_term) {
+      frm.set_value('academic_term', '')
+    }
+    set_academic_queries(frm)
   },
 
   course: function (frm) {
     if (frm.doc.subject) {
       frm.set_value('subject', '')
     }
+    if (frm.doc.course && !frm.doc.grading_scale) {
+      frappe.db.get_value(
+        'Course',
+        frm.doc.course,
+        'default_grading_scale',
+        (r) => {
+          if (r && r.default_grading_scale) {
+            frm.set_value('grading_scale', r.default_grading_scale)
+          }
+        }
+      )
+    }
   },
 })
+
+function set_default_academic_year(frm) {
+  if (!frm.is_new() || frm.doc.academic_year) {
+    return
+  }
+  const year = frappe.defaults.get_user_default('academic_year')
+  if (year) {
+    frm.set_value('academic_year', year)
+  }
+}
+
+function set_academic_queries(frm) {
+  frm.set_query('academic_year', function () {
+    const filters = {}
+    if (frm.doc.company) {
+      filters.company = frm.doc.company
+    }
+    return { filters }
+  })
+
+  frm.set_query('academic_term', function () {
+    const filters = {}
+    if (frm.doc.academic_year) {
+      filters.academic_year = frm.doc.academic_year
+    }
+    if (frm.doc.company) {
+      filters.company = frm.doc.company
+    }
+    return { filters }
+  })
+}

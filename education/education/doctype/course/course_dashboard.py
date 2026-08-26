@@ -15,7 +15,7 @@ def get_data():
 			{"label": _("Student"), "items": ["Student Batch Name"]},
 			{
 				"label": _("Assessment"),
-				"items": ["Assessment Plan", "Assessment Result"],
+				"items": ["Assessment Plan", "Assessment Result", "Grade Book"],
 			},
 		],
 	}

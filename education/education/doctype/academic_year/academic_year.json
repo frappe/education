@@ -89,6 +89,11 @@
    "link_fieldname": "academic_year"
   },
   {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "academic_year"
+  },
+  {
    "group": "Fee",
    "link_doctype": "Fee Schedule",
    "link_fieldname": "academic_year"
@@ -99,7 +104,7 @@
    "link_fieldname": "academic_year"
   }
  ],
- "modified": "2026-08-13 02:46:05.510770",
+ "modified": "2026-08-26 12:51:09.113123",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",

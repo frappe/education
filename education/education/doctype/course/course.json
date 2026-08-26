@@ -71,7 +71,8 @@
    "fieldname": "default_grading_scale",
    "fieldtype": "Link",
    "label": "Default Grading Scale",
-   "options": "Grading Scale"
+   "options": "Grading Scale",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_tflc",
@@ -236,12 +237,24 @@
    "fieldname": "grade_templates",
    "fieldtype": "Table MultiSelect",
    "label": "Grade Templates",
-   "options": "Course Grade Template"
+   "options": "Course Grade Template",
+   "reqd": 1
   }
  ],
  "image_field": "hero_image",
- "links": [],
- "modified": "2026-08-13 22:27:50.005288",
+ "links": [
+  {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "course"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "course"
+  }
+ ],
+ "modified": "2026-08-26 10:34:16.782880",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

@@ -298,6 +298,17 @@
    "collapsible": 1,
    "indent": 0,
    "keep_closed": 0,
+   "label": "Grade Book",
+   "link_to": "Grade Book",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
    "label": "Assignment Type",
    "link_to": "Assignment Type",
    "link_type": "DocType",
@@ -627,7 +638,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-08-13 22:36:48.444362",
+ "modified": "2026-08-26 12:36:41.176378",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education",

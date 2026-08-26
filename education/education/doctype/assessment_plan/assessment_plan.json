@@ -13,25 +13,19 @@
   "assessment_group",
   "grading_scale",
   "column_break_2",
-  "program",
   "course",
   "subject",
   "company",
   "academic_year",
   "academic_term",
   "section_break_5",
-  "issued_date",
   "schedule_date",
   "room",
   "faculty",
   "faculty_name",
-  "examiner",
-  "examiner_name",
   "column_break_4",
   "from_time",
   "to_time",
-  "supervisor",
-  "supervisor_name",
   "section_break_20",
   "maximum_assessment_score",
   "amended_from"
@@ -71,6 +65,7 @@
    "reqd": 1
   },
   {
+   "description": "Fetched from the Course Default Grading Scale. You can change it for this assessment.",
    "fetch_from": "course.default_grading_scale",
    "fetch_if_empty": 1,
    "fieldname": "grading_scale",
@@ -105,32 +100,28 @@
    "reqd": 1
   },
   {
-   "fetch_from": "course.company",
-   "fetch_if_empty": 1,
+   "fetch_from": "student_batch.company",
    "fieldname": "company",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Company",
    "options": "Company",
+   "read_only": 1,
    "reqd": 1
-  },
-  {
-   "fetch_from": "student_batch.program",
-   "fieldname": "program",
-   "fieldtype": "Link",
-   "in_global_search": 1,
-   "label": "Program",
-   "options": "Program"
   },
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "reqd": 1
   },
   {
    "fieldname": "academic_term",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Academic Term",
    "options": "Academic Term"
   },
@@ -138,13 +129,6 @@
    "fieldname": "section_break_5",
    "fieldtype": "Section Break",
    "label": "Schedule"
-  },
-  {
-   "default": "Today",
-   "fieldname": "issued_date",
-   "fieldtype": "Date",
-   "label": "Issued Date",
-   "no_copy": 1
   },
   {
    "default": "Today",
@@ -175,19 +159,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "examiner",
-   "fieldtype": "Link",
-   "label": "Examiner",
-   "options": "Instructor"
-  },
-  {
-   "fetch_from": "examiner.instructor_name",
-   "fieldname": "examiner_name",
-   "fieldtype": "Data",
-   "label": "Examiner Name",
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_4",
    "fieldtype": "Column Break"
   },
@@ -206,25 +177,13 @@
    "reqd": 1
   },
   {
-   "fieldname": "supervisor",
-   "fieldtype": "Link",
-   "label": "Supervisor",
-   "options": "Instructor"
-  },
-  {
-   "fetch_from": "supervisor.instructor_name",
-   "fieldname": "supervisor_name",
-   "fieldtype": "Data",
-   "in_global_search": 1,
-   "label": "Supervisor Name",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_20",
    "fieldtype": "Section Break",
    "label": "Evaluate"
   },
   {
+   "default": "100",
+   "description": "Raw marks are converted to a percentage as score divided by this value, times 100.",
    "fieldname": "maximum_assessment_score",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -243,7 +202,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-13 02:46:34.205016",
+ "modified": "2026-08-26 12:50:19.291080",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Plan",

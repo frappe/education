@@ -4,7 +4,10 @@ def get_data():
 		"transactions": [
 			{"label": "Enrollment", "items": ["Course Enrollment"]},
 			{"label": "Academics", "items": ["Subject Schedule", "Student Attendance"]},
-			{"label": "Assessment", "items": ["Assessment Plan", "Assessment Result"]},
+			{
+				"label": "Assessment",
+				"items": ["Assessment Plan", "Assessment Result", "Grade Book"],
+			},
 			{"label": "Fees", "items": ["Fee Schedule"]},
 		],
 	}
