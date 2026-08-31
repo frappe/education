@@ -13,7 +13,7 @@ frappe.ui.form.on('Assessment Result', {
   },
 
   score: function (frm) {
-    if (!frm.doc.maximum_score || !frm.doc.grading_scale) {
+    if (!frm.doc.maximum_score) {
       return
     }
 
@@ -22,17 +22,6 @@ frappe.ui.form.on('Assessment Result', {
       frappe.throw(__('Score cannot be greater than Maximum Score'))
     }
 
-    frappe.call({
-      method: 'education.education.api.get_grade',
-      args: {
-        grading_scale: frm.doc.grading_scale,
-        percentage: (frm.doc.score / frm.doc.maximum_score) * 100,
-      },
-      callback: function (r) {
-        if (r.message) {
-          frm.set_value('grade', r.message)
-        }
-      },
-    })
+    frm.set_value('percentage', (frm.doc.score / frm.doc.maximum_score) * 100)
   },
 })

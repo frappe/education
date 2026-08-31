@@ -18,13 +18,11 @@
   "student_name",
   "student_batch",
   "assessment_group",
-  "grading_scale",
   "section_break_8",
   "score",
   "maximum_score",
   "column_break_11",
   "percentage",
-  "grade",
   "section_break_13",
   "comment",
   "amended_from"
@@ -118,14 +116,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "assessment_plan.grading_scale",
-   "fieldname": "grading_scale",
-   "fieldtype": "Link",
-   "label": "Grading Scale",
-   "options": "Grading Scale",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_8",
    "fieldtype": "Section Break",
    "label": "Result"
@@ -151,14 +141,8 @@
   {
    "fieldname": "percentage",
    "fieldtype": "Percent",
-   "label": "Percentage",
-   "read_only": 1
-  },
-  {
-   "fieldname": "grade",
-   "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Grade",
+   "label": "Percentage",
    "read_only": 1
   },
   {

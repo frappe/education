@@ -10,14 +10,6 @@ frappe.ui.form.on('Assessment Plan', {
         },
       }
     })
-    frm.set_query('grading_scale', function () {
-      return {
-        filters: {
-          docstatus: 1,
-          company: frm.doc.company,
-        },
-      }
-    })
     frm.set_query('subject', function () {
       return {
         filters: {
@@ -62,18 +54,6 @@ frappe.ui.form.on('Assessment Plan', {
   course: function (frm) {
     if (frm.doc.subject) {
       frm.set_value('subject', '')
-    }
-    if (frm.doc.course && !frm.doc.grading_scale) {
-      frappe.db.get_value(
-        'Course',
-        frm.doc.course,
-        'default_grading_scale',
-        (r) => {
-          if (r && r.default_grading_scale) {
-            frm.set_value('grading_scale', r.default_grading_scale)
-          }
-        }
-      )
     }
   },
 })

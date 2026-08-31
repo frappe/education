@@ -11,7 +11,6 @@
   "assessment_name",
   "assignment_type",
   "assessment_group",
-  "grading_scale",
   "column_break_2",
   "course",
   "subject",
@@ -62,17 +61,6 @@
    "in_standard_filter": 1,
    "label": "Assessment Group",
    "options": "Assessment Group",
-   "reqd": 1
-  },
-  {
-   "description": "Fetched from the Course Default Grading Scale. You can change it for this assessment.",
-   "fetch_from": "course.default_grading_scale",
-   "fetch_if_empty": 1,
-   "fieldname": "grading_scale",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Grading Scale",
-   "options": "Grading Scale",
    "reqd": 1
   },
   {

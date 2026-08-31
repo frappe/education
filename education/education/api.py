@@ -279,7 +279,7 @@ def get_assessment_students(assessment_plan, student_batch):
 				{
 					"assessment_details": {
 						"score": cstr(result.score),
-						"grade": result.grade,
+						"percentage": result.percentage,
 						"comment": result.comment,
 					},
 					"docstatus": result.docstatus,
@@ -325,17 +325,35 @@ def get_result(student, assessment_plan):
 
 @frappe.whitelist()
 def get_grade(grading_scale, percentage):
-	"""Returns Grade based on the Grading Scale and Score.
+	"""Returns the letter grade code for a percentage on a Grading Scale."""
+	return get_grade_details(grading_scale, percentage).grade_code
 
-	:param Grading Scale: Grading Scale
-	:param Percentage: Score Percentage Percentage
+
+@frappe.whitelist()
+def get_grade_details(grading_scale, percentage):
+	"""Return letter grade, GPA, and credit flags for a percentage on a Grading Scale.
+
+	Letter grades and GPA are applied in Grade Book, not on Assessment Result.
 	"""
+	details = frappe._dict(
+		grade_code="",
+		gpa=0,
+		include_gpa=0,
+		earn_credits=0,
+	)
 	if not grading_scale:
-		return ""
+		return details
 
 	intervals = frappe.get_all(
 		"Grading Scale Interval",
-		fields=["grade_code", "minimum_percentage", "maximum_percentage"],
+		fields=[
+			"grade_code",
+			"gpa",
+			"include_gpa",
+			"earn_credits",
+			"minimum_percentage",
+			"maximum_percentage",
+		],
 		filters={"parent": grading_scale},
 		order_by="minimum_percentage desc",
 	)
@@ -343,9 +361,13 @@ def get_grade(grading_scale, percentage):
 	percentage = flt(percentage)
 	for interval in intervals:
 		if flt(interval.minimum_percentage) <= percentage <= flt(interval.maximum_percentage):
-			return interval.grade_code
+			details.grade_code = interval.grade_code
+			details.gpa = flt(interval.gpa)
+			details.include_gpa = 1 if interval.include_gpa else 0
+			details.earn_credits = 1 if interval.earn_credits else 0
+			return details
 
-	return ""
+	return details
 
 
 @frappe.whitelist()
@@ -371,7 +393,7 @@ def mark_assessment_result(assessment_plan, scores):
 		"name": assessment_result.name,
 		"student": assessment_result.student,
 		"score": assessment_result.score,
-		"grade": assessment_result.grade,
+		"percentage": assessment_result.percentage,
 	}
 
 

@@ -275,7 +275,7 @@
 	</div>
 
 
-	{% for course in courses %}
+	{% for book in grade_books %}
 
 	<div class="row section-break pbi_avoid">
 		<div class="col-xs-12 column-break">
@@ -288,6 +288,49 @@
 							<label>{{ _("Course: ") }}</label>
 						</div>
 						<div class="col-xs-11">
+							{{ frappe.db.get_value("Course", book.course, "course_name") or book.course }}
+							&nbsp; | {{ _("Grade") }}: {{ book.overall_grade or "-" }}
+							&nbsp; | {{ _("Percentage") }}: {{ book.overall_percentage or "-" }}
+						</div>
+					</div>
+				</caption>
+				<thead>
+					<tr>
+						<th>{{ _("Subject") }}</th>
+						<th>{{ _("Percentage") }}</th>
+						<th>{{ _("Grade") }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for subject in book.subjects %}
+					<tr>
+						<td>{{ subject.subject }}</td>
+						<td>{{ subject.percentage }}</td>
+						<td>{{ subject.grade }}{% if subject.is_overridden %} *{% endif %}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			</div>
+		</div>
+	</div>
+
+	{% endfor %}
+
+	{% if doc.show_marks %}
+	{% for course in courses %}
+
+	<div class="row section-break pbi_avoid">
+		<div class="col-xs-12 column-break">
+
+			<div>
+			<table class="table table-bordered table-condensed">
+				<caption>
+					<div class="row">
+						<div class="col-xs-1">
+							<label>{{ _("Scores: ") }}</label>
+						</div>
+						<div class="col-xs-11">
 							{{ frappe.db.get_value("Course", course, "course_name") }}
 						</div>
 					</div>
@@ -296,10 +339,8 @@
 					<tr>
 						<th> {{ _("Term") }} </th>
 						<th>{{ _("Subject") }}</th>
-						{% if doc.show_marks %}
 						<th> {{ _("Score") }} </th>
-						{% endif %}
-						<th> {{ _("Grade") }} </th>
+						<th> {{ _("Percentage") }} </th>
 					</tr>
 				</thead>
 
@@ -309,10 +350,8 @@
 					<tr>
 						<td> {{ result.assessment_group }} </td>
 						<td>{{ result.subject }}</td>
-						{% if doc.show_marks %}
 						<td> {{ result.score }} / {{ result.maximum_score }} </td>
-						{% endif %}
-						<td> {{ result.grade }} </td>
+						<td> {{ result.percentage }} </td>
 					</tr>
 					{% endif %}
 					{% endfor %}
@@ -324,6 +363,7 @@
 	</div>
 
 	{% endfor %}
+	{% endif %}
 
 	<br>
 

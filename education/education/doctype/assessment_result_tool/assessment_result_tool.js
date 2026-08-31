@@ -131,11 +131,6 @@ frappe.ui.form.on('Assessment Result Tool', {
             frm.doc.show_submit = true
             frm.events.submit_result(frm)
           }
-          result_table
-            .find(
-              `span[data-student=${assessment_result.student}].student-result-grade`
-            )
-            .html(assessment_result.grade)
           let link_span = result_table.find(
             `span[data-student=${assessment_result.student}].total-result-link`
           )

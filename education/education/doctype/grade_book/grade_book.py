@@ -8,7 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
-from education.education.api import get_grade
+from education.education.api import get_grade_details
 from education.education.doctype.course.course import get_grade_template
 
 
@@ -29,6 +29,7 @@ class GradeBook(Document):
 		self.validate_unique()
 		self.validate_grading_scale()
 		self.reset_if_identity_changed()
+		self.apply_overrides_and_totals()
 
 	def validate_academic_year_and_term(self):
 		if not self.academic_year:
@@ -163,8 +164,7 @@ class GradeBook(Document):
 		)
 		if any(self.has_value_changed(field) for field in identity_fields):
 			self.status = "Draft"
-			self.set("subjects", [])
-			self.set("components", [])
+			self.clear_grades()
 
 	@frappe.whitelist()
 	def reset_to_draft(self):
@@ -175,8 +175,7 @@ class GradeBook(Document):
 			return self.name
 
 		self.status = "Draft"
-		self.set("subjects", [])
-		self.set("components", [])
+		self.clear_grades()
 		self.save()
 		return self.name
 
@@ -195,6 +194,15 @@ class GradeBook(Document):
 					frappe.bold(self.course)
 				)
 			)
+
+		overrides = {
+			row.subject: {
+				"percentage": row.percentage,
+				"override_comment": row.override_comment,
+			}
+			for row in self.subjects
+			if row.subject and row.is_overridden
+		}
 
 		self.set("subjects", [])
 		self.set("components", [])
@@ -217,21 +225,63 @@ class GradeBook(Document):
 				)
 
 			percentage = flt(percentage, 6)
-			self.append(
-				"subjects",
-				{
-					"subject": row.subject,
-					"grade_template": template_name,
-					"percentage": percentage,
-					"grade": get_grade(self.grading_scale, percentage),
-				},
-			)
+			details = get_grade_details(self.grading_scale, percentage)
+			override = overrides.get(row.subject)
+			subject_row = {
+				"subject": row.subject,
+				"grade_template": template_name,
+				"computed_percentage": percentage,
+				"computed_grade": details.grade_code,
+				"percentage": percentage,
+				"grade": details.grade_code,
+			}
+			if override:
+				subject_row.update(
+					{
+						"is_overridden": 1,
+						"override_comment": override.get("override_comment"),
+						"percentage": flt(override.get("percentage"), 6),
+					}
+				)
+			self.append("subjects", subject_row)
 			for component in components:
 				self.append("components", component)
 
 		self.status = "Computed"
 		self.save()
 		return self.name
+
+	def clear_grades(self):
+		self.set("subjects", [])
+		self.set("components", [])
+		self.overall_percentage = 0
+		self.overall_grade = None
+
+	def apply_overrides_and_totals(self):
+		if self.status != "Computed" or not self.subjects:
+			return
+
+		for row in self.subjects:
+			if row.is_overridden:
+				if not row.override_comment:
+					frappe.throw(_("Row {0}: Override Comment is required").format(row.idx))
+				details = get_grade_details(self.grading_scale, row.percentage)
+				row.grade = details.grade_code
+			else:
+				row.percentage = row.computed_percentage
+				row.grade = row.computed_grade
+				row.override_comment = None
+
+		self.compute_overall()
+
+	def compute_overall(self):
+		percentages = [flt(row.percentage) for row in self.subjects]
+		self.overall_percentage = (
+			flt(sum(percentages) / len(percentages), 6) if percentages else 0
+		)
+		self.overall_grade = get_grade_details(
+			self.grading_scale, self.overall_percentage
+		).grade_code
 
 	def _compute_assignment_percentage(self, subject, template):
 		weights = {

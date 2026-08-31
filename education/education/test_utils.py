@@ -255,16 +255,31 @@ def create_grading_scale(grading_scale_name="_Test Grading Scale"):
 	if frappe.db.exists("Grading Scale", grading_scale_name):
 		return
 
+	company = frappe.db.get_value(
+		"Company", {"company_name": "_Test Company"}, "name"
+	) or frappe.db.get_value("Company", {}, "name")
+
 	grading_scale = frappe.new_doc("Grading Scale")
 	grading_scale.grading_scale_name = grading_scale_name
-	grades = {"A": (80, 100), "B": (70, 79), "C": (60, 69), "D": (50, 59), "F": (0, 49)}
-	for grade, (minimum, maximum) in grades.items():
+	if company:
+		grading_scale.company = company
+	grades = {
+		"A": (80, 100, 4.0, 1, 1),
+		"B": (70, 79, 3.0, 1, 1),
+		"C": (60, 69, 2.0, 1, 1),
+		"D": (50, 59, 1.0, 1, 1),
+		"F": (0, 49, 0.0, 1, 0),
+	}
+	for grade, (minimum, maximum, gpa, include_gpa, earn_credits) in grades.items():
 		grading_scale.append(
 			"intervals",
 			{
 				"grade_code": grade,
 				"minimum_percentage": minimum,
 				"maximum_percentage": maximum,
+				"gpa": gpa,
+				"include_gpa": include_gpa,
+				"earn_credits": earn_credits,
 			},
 		)
 

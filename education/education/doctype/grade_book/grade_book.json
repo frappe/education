@@ -17,6 +17,9 @@
   "academic_term",
   "grading_scale",
   "status",
+  "section_final",
+  "overall_percentage",
+  "overall_grade",
   "section_subjects",
   "subjects",
   "section_components",
@@ -118,16 +121,36 @@
    "read_only": 1
   },
   {
+   "fieldname": "section_final",
+   "fieldtype": "Section Break",
+   "label": "Final Grade"
+  },
+  {
+   "fieldname": "overall_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Overall Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "overall_grade",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Overall Grade",
+   "read_only": 1
+  },
+  {
    "fieldname": "section_subjects",
    "fieldtype": "Section Break",
    "label": "Subject Grades"
   },
   {
+   "cannot_add_rows": 1,
+   "cannot_delete_rows": 1,
    "fieldname": "subjects",
    "fieldtype": "Table",
    "label": "Subjects",
-   "options": "Grade Book Subject",
-   "read_only": 1
+   "options": "Grade Book Subject"
   },
   {
    "fieldname": "section_components",

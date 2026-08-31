@@ -9,7 +9,6 @@ from frappe.utils import flt, get_link_to_form
 from frappe.utils.csvutils import getlink
 
 import education.education
-from education.education.api import get_grade
 
 
 class AssessmentResult(Document):
@@ -19,7 +18,7 @@ class AssessmentResult(Document):
 		)
 		self.validate_assessment_plan()
 		self.validate_maximum_score()
-		self.validate_grade()
+		self.calculate_percentage()
 		self.validate_duplicate()
 
 	def before_cancel(self):
@@ -55,9 +54,8 @@ class AssessmentResult(Document):
 		if flt(self.score) < 0:
 			frappe.throw(_("Score cannot be negative"))
 
-	def validate_grade(self):
+	def calculate_percentage(self):
 		self.percentage = (flt(self.score) / flt(self.maximum_score)) * 100
-		self.grade = get_grade(self.grading_scale, self.percentage)
 
 	def validate_duplicate(self):
 		assessment_result = frappe.get_list(

@@ -23,12 +23,7 @@
 				{% } %}
 			</td>
 			<td>
-				<span data-student="{{s.student}}" class="student-result-grade badge" style="width:25%; float:left;">
-				{% if(s.assessment_details) { %}
-				{{s.assessment_details.grade}}
-				{% } %}
-				</span>
-				<input type="number" class="student-result-data" style="width:55%; float:left;"
+				<input type="number" class="student-result-data" style="width:80%; float:left;"
 					data-max-score="{{max_score}}"
 					data-student="{{s.student}}"
 					{% if(s.assessment_details && s.docstatus && s.docstatus == 1) { %} disabled {% } %}

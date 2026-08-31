@@ -10,6 +10,7 @@ frappe.ui.form.on('Grade Book', {
   refresh: function (frm) {
     set_grade_book_queries(frm)
     set_default_academic_year(frm)
+    toggle_subject_override_fields(frm)
 
     if (!frm.is_new()) {
       frm.add_custom_button(__('Generate Final Grade'), () => {
@@ -47,6 +48,38 @@ frappe.ui.form.on('Grade Book', {
       frm.set_value('academic_term', '')
     }
     set_grade_book_queries(frm)
+  },
+})
+
+frappe.ui.form.on('Grade Book Subject', {
+  is_overridden: function (frm, cdt, cdn) {
+    const row = locals[cdt][cdn]
+    if (!row.is_overridden) {
+      frappe.model.set_value(cdt, cdn, 'percentage', row.computed_percentage)
+      frappe.model.set_value(cdt, cdn, 'grade', row.computed_grade)
+      frappe.model.set_value(cdt, cdn, 'override_comment', '')
+    }
+    toggle_subject_override_fields(frm)
+  },
+
+  percentage: function (frm, cdt, cdn) {
+    const row = locals[cdt][cdn]
+    if (!row.is_overridden || !frm.doc.grading_scale) {
+      return
+    }
+    frappe.call({
+      method: 'education.education.api.get_grade_details',
+      args: {
+        grading_scale: frm.doc.grading_scale,
+        percentage: row.percentage,
+      },
+      callback: function (r) {
+        if (!r.message) {
+          return
+        }
+        frappe.model.set_value(cdt, cdn, 'grade', r.message.grade_code)
+      },
+    })
   },
 })
 
@@ -97,5 +130,25 @@ function set_grade_book_queries(frm) {
       filters.company = frm.doc.company
     }
     return { filters }
+  })
+}
+
+function toggle_subject_override_fields(frm) {
+  const grid = frm.fields_dict.subjects && frm.fields_dict.subjects.grid
+  if (!grid) {
+    return
+  }
+  const allow_override = frm.doc.status === 'Computed'
+  grid.toggle_enable('is_overridden', allow_override)
+  ;(frm.doc.subjects || []).forEach((row) => {
+    const grid_row = grid.grid_rows_by_docname[row.name]
+    if (!grid_row) {
+      return
+    }
+    grid_row.toggle_editable('percentage', allow_override && row.is_overridden)
+    grid_row.toggle_editable(
+      'override_comment',
+      allow_override && row.is_overridden
+    )
   })
 }
