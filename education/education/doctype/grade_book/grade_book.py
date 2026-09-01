@@ -68,26 +68,33 @@ class GradeBook(Document):
 				)
 
 	def validate_enrollment(self):
-		filters = {
-			"student": self.student,
-			"course": self.course,
-			"docstatus": 1,
-		}
-		if self.student_batch:
-			filters["student_batch"] = self.student_batch
+		if not self.student or not self.course:
+			return
 
-		if not frappe.db.exists("Course Enrollment", filters):
-			if self.student_batch:
-				frappe.throw(
-					_("Student {0} is not enrolled in Course {1} for Batch {2}").format(
-						frappe.bold(self.student),
-						frappe.bold(self.course),
-						frappe.bold(self.student_batch),
-					)
-				)
+		if not frappe.db.exists(
+			"Course Enrollment",
+			{"student": self.student, "course": self.course, "docstatus": 1},
+		):
 			frappe.throw(
 				_("Student {0} is not enrolled in Course {1}").format(
 					frappe.bold(self.student), frappe.bold(self.course)
+				)
+			)
+
+		if self.student_batch and not frappe.db.exists(
+			"Course Enrollment",
+			{
+				"student": self.student,
+				"course": self.course,
+				"student_batch": self.student_batch,
+				"docstatus": 1,
+			},
+		):
+			frappe.throw(
+				_("Student {0} is not enrolled in Course {1} for Batch {2}").format(
+					frappe.bold(self.student),
+					frappe.bold(self.course),
+					frappe.bold(self.student_batch),
 				)
 			)
 
@@ -205,7 +212,8 @@ class GradeBook(Document):
 		}
 
 		self.set("subjects", [])
-		self.set("components", [])
+		self.set("assignment_components", [])
+		self.set("attendance_components", [])
 
 		for row in course.subjects:
 			template_name = get_grade_template(
@@ -215,8 +223,10 @@ class GradeBook(Document):
 
 			if template.weightage_type == "Assignment Type Weightage":
 				percentage, components = self._compute_assignment_percentage(row.subject, template)
+				component_field = "assignment_components"
 			elif template.weightage_type == "Attendance Weightage":
 				percentage, components = self._compute_attendance_percentage(row.subject, template)
+				component_field = "attendance_components"
 			else:
 				frappe.throw(
 					_("Unknown Weightage Type {0} on Grade Template {1}").format(
@@ -245,7 +255,7 @@ class GradeBook(Document):
 				)
 			self.append("subjects", subject_row)
 			for component in components:
-				self.append("components", component)
+				self.append(component_field, component)
 
 		self.status = "Computed"
 		self.save()
@@ -253,7 +263,8 @@ class GradeBook(Document):
 
 	def clear_grades(self):
 		self.set("subjects", [])
-		self.set("components", [])
+		self.set("assignment_components", [])
+		self.set("attendance_components", [])
 		self.overall_percentage = 0
 		self.overall_grade = None
 
@@ -472,6 +483,80 @@ class GradeBook(Document):
 				)
 			)
 		return getdate(start), getdate(end)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_enrolled_students(doctype, txt, searchfield, start, page_len, filters):
+	filters = filters or {}
+	conditions = ["ce.docstatus = 1", "ifnull(s.enabled, 1) = 1"]
+	values = {
+		"txt": "%{0}%".format(txt),
+		"_txt": txt.replace("%", ""),
+	}
+
+	if filters.get("course"):
+		conditions.append("ce.course = %(course)s")
+		values["course"] = filters["course"]
+	if filters.get("student_batch"):
+		conditions.append("ce.student_batch = %(student_batch)s")
+		values["student_batch"] = filters["student_batch"]
+
+	return frappe.db.sql(
+		"""
+		SELECT DISTINCT s.name, s.student_name
+		FROM `tabCourse Enrollment` ce
+		INNER JOIN `tabStudent` s ON s.name = ce.student
+		WHERE {conditions}
+			AND (s.name LIKE %(txt)s OR ifnull(s.student_name, '') LIKE %(txt)s)
+		ORDER BY
+			if(locate(%(_txt)s, s.name), locate(%(_txt)s, s.name), 99999),
+			s.student_name
+		LIMIT {start}, {page_len}
+		""".format(
+			conditions=" AND ".join(conditions), start=start, page_len=page_len
+		),
+		values,
+	)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_enrolled_courses(doctype, txt, searchfield, start, page_len, filters):
+	filters = filters or {}
+	if not filters.get("student"):
+		return []
+
+	conditions = ["ce.docstatus = 1", "ce.student = %(student)s"]
+	values = {
+		"student": filters["student"],
+		"txt": "%{0}%".format(txt),
+		"_txt": txt.replace("%", ""),
+	}
+
+	if filters.get("student_batch"):
+		conditions.append("ce.student_batch = %(student_batch)s")
+		values["student_batch"] = filters["student_batch"]
+	if filters.get("company"):
+		conditions.append("(ifnull(c.company, '') = '' OR c.company = %(company)s)")
+		values["company"] = filters["company"]
+
+	return frappe.db.sql(
+		"""
+		SELECT DISTINCT c.name, c.course_name
+		FROM `tabCourse Enrollment` ce
+		INNER JOIN `tabCourse` c ON c.name = ce.course
+		WHERE {conditions}
+			AND (c.name LIKE %(txt)s OR ifnull(c.course_name, '') LIKE %(txt)s)
+		ORDER BY
+			if(locate(%(_txt)s, c.name), locate(%(_txt)s, c.name), 99999),
+			c.course_name
+		LIMIT {start}, {page_len}
+		""".format(
+			conditions=" AND ".join(conditions), start=start, page_len=page_len
+		),
+		values,
+	)
 
 
 def _grade_book_exists(student, course, academic_year, academic_term=None):

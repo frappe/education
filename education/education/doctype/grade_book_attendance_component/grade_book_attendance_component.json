@@ -1,12 +1,11 @@
 {
  "actions": [],
- "creation": "2026-08-26 12:43:52.754195",
+ "creation": "2026-09-01 19:43:14.470098",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "subject",
-  "assignment_type",
   "attendance_type",
   "raw_percentage",
   "weightage",
@@ -19,15 +18,8 @@
    "in_list_view": 1,
    "label": "Subject",
    "options": "Subject",
+   "read_only": 1,
    "reqd": 1
-  },
-  {
-   "fieldname": "assignment_type",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Assignment Type",
-   "options": "Assignment Type",
-   "read_only": 1
   },
   {
    "fieldname": "attendance_type",
@@ -35,7 +27,8 @@
    "in_list_view": 1,
    "label": "Attendance Type",
    "options": "Present\nLate\nAbsent\nAbsent Excused",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1
   },
   {
    "fieldname": "raw_percentage",
@@ -61,10 +54,10 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-08-26 12:48:27.872960",
+ "modified": "2026-09-01 19:49:21.666591",
  "modified_by": "Administrator",
  "module": "Education",
- "name": "Grade Book Component",
+ "name": "Grade Book Attendance Component",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",

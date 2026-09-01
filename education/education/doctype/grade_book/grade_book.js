@@ -11,6 +11,7 @@ frappe.ui.form.on('Grade Book', {
     set_grade_book_queries(frm)
     set_default_academic_year(frm)
     toggle_subject_override_fields(frm)
+    toggle_component_tables(frm)
 
     if (!frm.is_new()) {
       frm.add_custom_button(__('Generate Final Grade'), () => {
@@ -36,10 +37,18 @@ frappe.ui.form.on('Grade Book', {
     set_grade_book_queries(frm)
   },
 
+  student: function (frm) {
+    set_grade_book_queries(frm)
+  },
+
   course: function (frm) {
     if (frm.doc.student_batch) {
       frm.set_value('student_batch', '')
     }
+    set_grade_book_queries(frm)
+  },
+
+  student_batch: function (frm) {
     set_grade_book_queries(frm)
   },
 
@@ -94,6 +103,39 @@ function set_default_academic_year(frm) {
 }
 
 function set_grade_book_queries(frm) {
+  frm.set_query('student', function () {
+    if (!frm.doc.course && !frm.doc.student_batch) {
+      return {}
+    }
+    return {
+      query:
+        'education.education.doctype.grade_book.grade_book.get_enrolled_students',
+      filters: {
+        course: frm.doc.course,
+        student_batch: frm.doc.student_batch,
+      },
+    }
+  })
+
+  frm.set_query('course', function () {
+    if (!frm.doc.student) {
+      const filters = {}
+      if (frm.doc.company) {
+        filters.company = frm.doc.company
+      }
+      return { filters }
+    }
+    return {
+      query:
+        'education.education.doctype.grade_book.grade_book.get_enrolled_courses',
+      filters: {
+        student: frm.doc.student,
+        student_batch: frm.doc.student_batch,
+        company: frm.doc.company,
+      },
+    }
+  })
+
   frm.set_query('academic_year', function () {
     const filters = {}
     if (frm.doc.company) {
@@ -151,4 +193,13 @@ function toggle_subject_override_fields(frm) {
       allow_override && row.is_overridden
     )
   })
+}
+
+function toggle_component_tables(frm) {
+  const has_assignment = (frm.doc.assignment_components || []).length > 0
+  const has_attendance = (frm.doc.attendance_components || []).length > 0
+  frm.toggle_display('section_assignment_components', has_assignment)
+  frm.toggle_display('assignment_components', has_assignment)
+  frm.toggle_display('section_attendance_components', has_attendance)
+  frm.toggle_display('attendance_components', has_attendance)
 }

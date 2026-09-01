@@ -22,8 +22,10 @@
   "overall_grade",
   "section_subjects",
   "subjects",
-  "section_components",
-  "components",
+  "section_assignment_components",
+  "assignment_components",
+  "section_attendance_components",
+  "attendance_components",
   "connections_tab"
  ],
  "fields": [
@@ -145,23 +147,33 @@
    "label": "Subject Grades"
   },
   {
-   "cannot_add_rows": 1,
-   "cannot_delete_rows": 1,
    "fieldname": "subjects",
    "fieldtype": "Table",
    "label": "Subjects",
    "options": "Grade Book Subject"
   },
   {
-   "fieldname": "section_components",
+   "fieldname": "section_assignment_components",
    "fieldtype": "Section Break",
-   "label": "Grade Components"
+   "label": "Assignment Components"
   },
   {
-   "fieldname": "components",
+   "fieldname": "assignment_components",
    "fieldtype": "Table",
-   "label": "Components",
-   "options": "Grade Book Component",
+   "label": "Assignment Components",
+   "options": "Grade Book Assignment Component",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_attendance_components",
+   "fieldtype": "Section Break",
+   "label": "Attendance Components"
+  },
+  {
+   "fieldname": "attendance_components",
+   "fieldtype": "Table",
+   "label": "Attendance Components",
+   "options": "Grade Book Attendance Component",
    "read_only": 1
   },
   {
@@ -172,7 +184,7 @@
   }
  ],
  "links": [],
- "modified": "2026-08-26 12:49:01.215071",
+ "modified": "2026-09-01 19:43:14.470098",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Grade Book",

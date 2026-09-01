@@ -4,5 +4,5 @@
 from frappe.model.document import Document
 
 
-class GradeBookComponent(Document):
+class GradeBookAssignmentComponent(Document):
 	pass
