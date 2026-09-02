@@ -1728,11 +1728,11 @@ def get_class_prefill(class_program, academic_term=None):
 	Build prefill rows for the Subject, Teachers and Teaching Rooms tabs from a
 	selected Class (Program).
 
-	- subject_rules        — every Course whose custom_class == class_program.
+	- subject_rules        — every Course whose program == class_program.
 	- teachers_preference  — each Course's Subject Stream Assignment rows
 	                         (stream + teacher) scoped to academic_term.
 	- teaching_rooms       — (subject, stream) using the stream's
-	                         custom_default_room.
+	                         default_room.
 
 	Returns candidate rows only. Nothing is written: the client dedups against
 	the current grid rows and lets the user review before saving.
@@ -1742,7 +1742,7 @@ def get_class_prefill(class_program, academic_term=None):
 
 	courses = frappe.get_all(
 		"Course",
-		filters={"custom_class": class_program},
+		filters={"program": class_program},
 		pluck="name",
 		order_by="name asc",
 	)
@@ -1758,7 +1758,7 @@ def get_class_prefill(class_program, academic_term=None):
 			"Subject Stream Assignment",
 			filters={
 				"parenttype": "Course",
-				"parentfield": "custom_assignments",
+				"parentfield": "stream_assignments",
 				"parent": ["in", courses],
 				"academic_term": academic_term,
 			},
@@ -1772,9 +1772,9 @@ def get_class_prefill(class_program, academic_term=None):
 			for sg in frappe.get_all(
 				"Student Group",
 				filters={"name": ["in", streams]},
-				fields=["name", "custom_default_room"],
+				fields=["name", "default_room"],
 			):
-				room_map[sg.name] = sg.custom_default_room
+				room_map[sg.name] = sg.default_room
 
 		seen_teacher = set()
 		seen_room = set()

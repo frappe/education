@@ -24,7 +24,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Stream",
-   "link_filters": "[\n    [\"Student Group\", \"program\", \"=\", \"eval: parent.custom_class\"],\n    [\"Student Group\", \"academic_term\", \"=\", \"eval: doc.academic_term\"]\n]",
+   "link_filters": "[\n    [\"Student Group\", \"program\", \"=\", \"eval: parent.program\"],\n    [\"Student Group\", \"academic_term\", \"=\", \"eval: doc.academic_term\"]\n]",
    "options": "Student Group",
    "reqd": 1
   },
@@ -41,7 +41,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-09-02 12:00:00.000000",
+ "modified": "2026-09-02 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Stream Assignment",
