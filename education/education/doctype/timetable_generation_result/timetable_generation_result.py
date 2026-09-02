@@ -27,6 +27,9 @@ def get_timetable_view(result_name, source=None):
 	         before snapshots existed only have the live view.
 	"""
 	result = frappe.get_doc("Timetable Generation Result", result_name)
+	# frappe.get_doc does not enforce read permission; this doctype is
+	# System Manager only and its names are enumerable (TGR-YY-####).
+	result.check_permission("read")
 
 	snapshot = _load_snapshot(result)
 	snapshot_available = bool(snapshot and snapshot.get("entries"))

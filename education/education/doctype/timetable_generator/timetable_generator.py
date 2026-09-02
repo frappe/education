@@ -1646,6 +1646,9 @@ def get_unscheduled_diagnosis(result_name):
 	the Course Schedule records that are currently in the database.
 	"""
 	result = frappe.get_doc("Timetable Generation Result", result_name)
+	# frappe.get_doc does not enforce read permission; this doctype is
+	# System Manager only and its names are enumerable (TGR-YY-####).
+	result.check_permission("read")
 
 	if not result.unscheduled_subjects:
 		return {
@@ -1737,6 +1740,8 @@ def get_class_prefill(class_program, academic_term=None):
 	Returns candidate rows only. Nothing is written: the client dedups against
 	the current grid rows and lets the user review before saving.
 	"""
+	frappe.has_permission("Timetable Generator", "write", throw=True)
+
 	if not class_program:
 		frappe.throw("Select a Class first.")
 
@@ -1808,6 +1813,11 @@ def generate_timetable(student_groups=None):
 	"""
 	Validate config then queue a scoped background generation job.
 	"""
+	# This deletes and rewrites the term's Course Schedule, so it is gated on
+	# write access to the configuration rather than merely being logged in.
+	# Checked outside the try below so PermissionError is not swallowed.
+	frappe.has_permission("Timetable Generator", "write", throw=True)
+
 	try:
 		stream_filter = None
 		if student_groups:
@@ -1844,6 +1854,8 @@ def generate_timetable(student_groups=None):
 @frappe.whitelist()
 def debug_timetable_generation(student_groups=None):
 	"""Return diagnostic information without generating anything."""
+	frappe.has_permission("Timetable Generator", "read", throw=True)
+
 	try:
 		stream_filter = None
 		if student_groups:
