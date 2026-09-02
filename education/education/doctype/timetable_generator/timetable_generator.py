@@ -1150,8 +1150,6 @@ def save_schedule(schedule, batch_size=50):
 			"Assessment Plan / supervisor overlap — see Error Log for details."
 		)
 
-	# No commit here: process_timetable_generation owns the transaction so the
-	# delete and these inserts succeed or fail together.
 	return successful, failed, overlap_skipped, error_summary
 
 
@@ -1539,10 +1537,7 @@ def save_and_report_results(config, schedule_data):
 	)
 
 	# Hard failures mean the replacement is incomplete. Abort so the caller
-	# rolls back and the previous timetable survives intact; a half-written
-	# timetable is worse than an unchanged one. Overlap skips are a designed
-	# outcome (the instructor has an Assessment Plan) and are tolerated here,
-	# surfacing as a Partial result instead.
+	# rolls back and the previous timetable survives intact
 	if failed:
 		raise TimetableGenerationError(
 			f"{failed} Course Schedule row(s) failed to save. Rolling back so the "
@@ -1699,8 +1694,6 @@ def get_unscheduled_diagnosis(result_name):
 	the Course Schedule records that are currently in the database.
 	"""
 	result = frappe.get_doc("Timetable Generation Result", result_name)
-	# frappe.get_doc does not enforce read permission; this doctype is
-	# System Manager only and its names are enumerable (TGR-YY-####).
 	result.check_permission("read")
 
 	if not result.unscheduled_subjects:
@@ -1866,9 +1859,6 @@ def generate_timetable(student_groups=None):
 	"""
 	Validate config then queue a scoped background generation job.
 	"""
-	# This deletes and rewrites the term's Course Schedule, so it is gated on
-	# write access to the configuration rather than merely being logged in.
-	# Checked outside the try below so PermissionError is not swallowed.
 	frappe.has_permission("Timetable Generator", "write", throw=True)
 
 	try:
