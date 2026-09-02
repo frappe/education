@@ -6,6 +6,10 @@ import json
 import random
 
 
+class TimetableGenerationError(frappe.ValidationError):
+	"""Raised when a run must be abandoned and rolled back."""
+
+
 class TimetableGenerator(Document):
 	def validate(self):
 		self._check_duplicate_subjects()
@@ -1146,61 +1150,44 @@ def save_schedule(schedule, batch_size=50):
 			"Assessment Plan / supervisor overlap — see Error Log for details."
 		)
 
-	frappe.db.commit()
+	# No commit here: process_timetable_generation owns the transaction so the
+	# delete and these inserts succeed or fail together.
 	return successful, failed, overlap_skipped, error_summary
 
 
 def clear_existing_schedules(academic_term, school, streams=None):
 	"""
-	Delete Course Schedule records for the given term.
+	Delete Course Schedule records for the given term, returning the row count.
+
+	Failures are raised, not swallowed. This runs inside the same transaction
+	as the replacement inserts, so a silently failed delete would leave the old
+	rows in place and duplicate the timetable rather than replace it.
 	"""
-	try:
-		term = frappe.get_doc("Academic Term", academic_term)
-		start = term.term_start_date
-		end = term.term_end_date
+	term = frappe.get_doc("Academic Term", academic_term)
+	start = term.term_start_date
+	end = term.term_end_date
 
-		scope_label = f"{len(streams)} stream(s)" if streams else "all streams"
+	scope_label = f"{len(streams)} stream(s)" if streams else "all streams"
 
-		if streams:
-			placeholders = ", ".join(["%s"] * len(streams))
-			base_where = f"schedule_date BETWEEN %s AND %s AND student_group IN ({placeholders})"
-			base_params = [start, end] + list(streams)
-		else:
-			base_where = "schedule_date BETWEEN %s AND %s"
-			base_params = [start, end]
+	if streams:
+		placeholders = ", ".join(["%s"] * len(streams))
+		base_where = f"schedule_date BETWEEN %s AND %s AND student_group IN ({placeholders})"
+		base_params = [start, end] + list(streams)
+	else:
+		base_where = "schedule_date BETWEEN %s AND %s"
+		base_params = [start, end]
 
-		deleted = 0
-		try:
-			frappe.db.sql(
-				f"DELETE FROM `tabCourse Schedule` WHERE {base_where} AND company = %s",
-				base_params + [school],
-			)
-			deleted = frappe.db.sql("SELECT ROW_COUNT()")[0][0]
-		except Exception as col_err:
-			frappe.log_error(
-				title="Timetable: clear existing schedules failed",
-				message=(
-					f"School: {school}\nTerm: {academic_term}\n"
-					f"Error: {str(col_err)}\n\n{frappe.get_traceback()}"
-				),
-			)
+	frappe.db.sql(
+		f"DELETE FROM `tabCourse Schedule` WHERE {base_where} AND company = %s",
+		base_params + [school],
+	)
+	deleted = frappe.db.sql("SELECT ROW_COUNT()")[0][0]
 
-		frappe.db.commit()
-		frappe.log(
-			f"Timetable: cleared {deleted} Course Schedule records "
-			f"for term {academic_term} ({start} – {end}), scope: {scope_label}"
-		)
-		return True
-
-	except Exception as e:
-		frappe.log_error(
-			title="Timetable: Failed to clear existing schedules",
-			message=(
-				f"Academic Term: {academic_term}\nSchool: {school}\n"
-				f"Streams: {streams}\nError: {str(e)}\n\n{frappe.get_traceback()}"
-			),
-		)
-		return False
+	frappe.log(
+		f"Timetable: cleared {deleted} Course Schedule records "
+		f"for term {academic_term} ({start} – {end}), scope: {scope_label}"
+	)
+	return deleted
 
 
 def diagnose_unscheduled(unscheduled_items, config, scheduled_items):
@@ -1457,7 +1444,6 @@ def create_result_document(
 		result_doc.timetable_snapshot = json.dumps(timetable_snapshot)
 
 	result_doc.insert(ignore_permissions=True)
-	frappe.db.commit()
 	return result_doc
 
 
@@ -1551,6 +1537,18 @@ def save_and_report_results(config, schedule_data):
 	successful, failed, overlap_skipped, error_summary = save_schedule(
 		schedule_data["final_schedule"]
 	)
+
+	# Hard failures mean the replacement is incomplete. Abort so the caller
+	# rolls back and the previous timetable survives intact; a half-written
+	# timetable is worse than an unchanged one. Overlap skips are a designed
+	# outcome (the instructor has an Assessment Plan) and are tolerated here,
+	# surfacing as a Partial result instead.
+	if failed:
+		raise TimetableGenerationError(
+			f"{failed} Course Schedule row(s) failed to save. Rolling back so the "
+			"existing timetable is preserved. See the Error Log for details."
+		)
+
 	total_scheduled = len(schedule_data["scheduled_items"])
 	total_unscheduled = len(schedule_data["unscheduled_items"])
 
@@ -1622,16 +1620,71 @@ def save_and_report_results(config, schedule_data):
 def process_timetable_generation(stream_filter=None):
 	"""
 	Background job entry point.
+
+	The replacement is generated in full before anything is deleted, and the
+	delete plus the replacement inserts run inside a single transaction. A
+	failure at any stage rolls the whole run back, so the timetable that was
+	already in place survives untouched.
 	"""
 	config = load_configuration(stream_filter=stream_filter)
-	# Only wipe the streams being (re-)generated — leaves every other class untouched
-	clear_existing_schedules(
-		config["academic_term"],
-		config["school"],
-		streams=config["all_streams"],
-	)
+
+	# Generate before deleting: nothing is destroyed until a replacement exists.
+	# _pre_populate_from_db already excludes the streams being regenerated, so
+	# generating first yields the same plan as generating after the delete did.
 	schedule_data = generate_initial_schedule(config)
-	save_and_report_results(config, schedule_data)
+
+	try:
+		# Only wipe the streams being (re-)generated — leaves every other class untouched
+		clear_existing_schedules(
+			config["academic_term"],
+			config["school"],
+			streams=config["all_streams"],
+		)
+		result = save_and_report_results(config, schedule_data)
+		frappe.db.commit()
+		return result
+	except Exception as e:
+		frappe.db.rollback()
+		frappe.log_error(
+			title="Timetable: generation rolled back, previous timetable preserved",
+			message=f"Error: {e}\n\n{frappe.get_traceback()}",
+		)
+		_record_failed_run(config, e)
+		raise
+
+
+def _record_failed_run(config, error):
+	"""
+	Record a Failed result after a rollback so the run is visible in the UI.
+
+	Best effort and deliberately swallowing: this runs while an exception is
+	already propagating and must never mask the original failure.
+	"""
+	try:
+		frappe.get_doc(
+			{
+				"doctype": "Timetable Generation Result",
+				"academic_term": config.get("academic_term"),
+				"posting_date": datetime.now().date(),
+				"status": "Failed",
+				"unscheduled_subjects": json.dumps(
+					{
+						"error": str(error),
+						"note": (
+							"The run was rolled back. No Course Schedule records were "
+							"changed and the previous timetable is intact."
+						),
+					},
+					indent=2,
+				),
+			}
+		).insert(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.log_error(
+			title="Timetable: could not record the failed run",
+			message=frappe.get_traceback(),
+		)
 
 
 @frappe.whitelist()
