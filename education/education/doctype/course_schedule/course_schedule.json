@@ -22,7 +22,8 @@
   "column_break_9",
   "from_time",
   "to_time",
-  "title"
+  "title",
+  "company"
  ],
  "fields": [
   {
@@ -132,10 +133,16 @@
    "label": "Class Schedule Color",
    "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple",
    "print_hide": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "links": [],
- "modified": "2026-06-25 13:17:59.651523",
+ "modified": "2026-09-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Schedule",

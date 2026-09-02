@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-01 08:40:33.805795",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "teacher",
+  "subject",
+  "max_period_per_day",
+  "column_break_zvfr",
+  "max_period_per_week",
+  "preferred_days",
+  "stream"
+ ],
+ "fields": [
+  {
+   "fieldname": "teacher",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Teacher",
+   "options": "Instructor",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Subject",
+   "options": "Course",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zvfr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "max_period_per_week",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Max Period Per Week"
+  },
+  {
+   "fieldname": "preferred_days",
+   "fieldtype": "Select",
+   "label": "Preferred Days",
+   "options": "\nMonday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday"
+  },
+  {
+   "fieldname": "stream",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Stream",
+   "options": "Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "max_period_per_day",
+   "fieldtype": "Int",
+   "label": "Max Period Per Day"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-02 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Teacher Preference",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -16,6 +16,7 @@
   "academic_term",
   "program",
   "batch",
+  "custom_default_room",
   "student_category",
   "course",
   "disabled",
@@ -82,6 +83,12 @@
    "options": "Student Batch Name"
   },
   {
+   "fieldname": "custom_default_room",
+   "fieldtype": "Link",
+   "label": "Default Room",
+   "options": "Room"
+  },
+  {
    "depends_on": "eval:doc.group_based_on == 'Course'",
    "fieldname": "course",
    "fieldtype": "Link",
@@ -133,7 +140,7 @@
   }
  ],
  "links": [],
- "modified": "2026-07-01 15:04:37.649308",
+ "modified": "2026-09-02 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Group",
