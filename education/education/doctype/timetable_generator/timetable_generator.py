@@ -1370,6 +1370,60 @@ def diagnose_unscheduled(unscheduled_items, config, scheduled_items):
     return diagnosed
 
 
+def build_timetable_snapshot(base_schedule, timetable_doc):
+    """
+    Freeze the base week this run produced into a plain dict.
+
+    The timetable viewer only ever renders one week, so storing the base week
+    (before it is replicated across the term) is enough to reproduce the grid
+    exactly as generated. Room display names and the slot/break layout are
+    resolved now rather than at view time, so a later rename or config change
+    does not rewrite history.
+
+    Note this is what the algorithm produced, not what survived saving — save
+    failures and overlap skips are reported separately in the result counters.
+    """
+    from education.education.doctype.timetable_generation_result.timetable_generation_result import (
+        _build_slot_columns,
+    )
+
+    room_ids = {e.get("room") for e in base_schedule if e.get("room")}
+    room_names = {}
+    if room_ids:
+        for r in frappe.get_all(
+            "Room", filters={"name": ["in", list(room_ids)]}, fields=["name", "room_name"]
+        ):
+            room_names[r.name] = r.room_name or r.name
+
+    entries = []
+    week_start = None
+    for e in base_schedule:
+        day = datetime.strptime(e["schedule_date"], "%Y-%m-%d").date()
+        if day.weekday() >= 5:
+            continue
+        if week_start is None or day < week_start:
+            week_start = day
+        entries.append(
+            {
+                "day": _day_name(day),
+                "from": _fmt_time(e["from_time"])[:5],
+                "to": _fmt_time(e["to_time"])[:5],
+                "course": e.get("course"),
+                "instructor": e.get("instructor"),
+                "student_group": e.get("student_group"),
+                "room": e.get("room"),
+                "room_name": room_names.get(e.get("room"), e.get("room")),
+            }
+        )
+
+    return {
+        "generated_on": frappe.utils.now(),
+        "week_start": week_start.strftime("%Y-%m-%d") if week_start else None,
+        "columns": _build_slot_columns(timetable_doc.name),
+        "entries": entries,
+    }
+
+
 def create_result_document(
     academic_term,
     total_items,
@@ -1381,6 +1435,7 @@ def create_result_document(
     error_summary=None,
     diagnosed=None,
     overlap_skipped=0,
+    timetable_snapshot=None,
 ):
     if successful == 0 and failed > 0:
         status = "Failed"
@@ -1426,6 +1481,9 @@ def create_result_document(
 
     if notes:
         result_doc.unscheduled_subjects = json.dumps(notes, indent=2)
+
+    if timetable_snapshot:
+        result_doc.timetable_snapshot = json.dumps(timetable_snapshot)
 
     result_doc.insert(ignore_permissions=True)
     frappe.db.commit()
@@ -1511,6 +1569,7 @@ def generate_initial_schedule(config):
     return {
         "total_items": len(scheduling_data),
         "final_schedule": final_schedule,
+        "base_schedule": base_schedule,
         "scheduled_items": scheduled_items,
         "unscheduled_items": unscheduled_items,
         "total_weeks": len(all_weeks),
@@ -1538,6 +1597,17 @@ def save_and_report_results(config, schedule_data):
                 message=frappe.get_traceback(),
             )
 
+    snapshot = None
+    try:
+        snapshot = build_timetable_snapshot(
+            schedule_data["base_schedule"], config["timetable_doc"]
+        )
+    except Exception:
+        frappe.log_error(
+            title="Timetable: snapshot step failed (non-critical)",
+            message=frappe.get_traceback(),
+        )
+
     create_result_document(
         config["academic_term"],
         schedule_data["total_items"],
@@ -1549,6 +1619,7 @@ def save_and_report_results(config, schedule_data):
         error_summary,
         diagnosed,
         overlap_skipped=overlap_skipped,
+        timetable_snapshot=snapshot,
     )
 
     overlap_note = (

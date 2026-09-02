@@ -530,6 +530,13 @@ function openPrintOptions(onConfirm) {
   d.show();
 }
 
+// Where the rendered grid comes from: the week this run generated, or the
+// Course Schedule records that are live right now.
+const TT_SOURCES = [
+  { key: "snapshot", label: __("As Generated") },
+  { key: "live", label: __("Current") },
+];
+
 function openTimetableDialog(frm) {
   const dialog = new frappe.ui.Dialog({
     title: __("Timetable") + " — " + (frm.doc.academic_term || ""),
@@ -538,141 +545,201 @@ function openTimetableDialog(frm) {
   dialog.$wrapper
     .find(".modal-dialog")
     .css({ "max-width": "94vw", width: "94vw" });
-  dialog.$body.html(`<div class="text-center text-muted" style="padding:40px;">
-    <p>${__("Loading timetable...")}</p>
-  </div>`);
   dialog.show();
 
-  frappe.call({
-    method:
-      "education.education.doctype.timetable_generation_result" +
-      ".timetable_generation_result.get_timetable_view",
-    args: { result_name: frm.doc.name },
-    callback(r) {
-      if (!r.message) {
-        dialog.$body.html(
-          `<p class="text-danger" style="padding:20px;">${__("Failed to load timetable data.")}</p>`,
-        );
-        return;
-      }
-      const data = r.message;
-      if (!data.time_slots || !data.time_slots.length) {
-        dialog.$body.html(
-          `<p class="text-muted" style="padding:20px;">${__("No schedule entries found for the first week of this term.")}</p>`,
-        );
-        return;
-      }
+  let data = null;
+  let viewMode = "class";
+  let filterValue = "";
+  const colorMap = {};
 
-      let viewMode = "class";
-      let filterValue = data.student_groups[0] || "";
-      const colorMap = {};
+  function modeConfig() {
+    return VIEW_MODES.find((m) => m.key === viewMode);
+  }
 
-      function printTitle() {
-        const modeName =
-          VIEW_MODES.find((m) => m.key === viewMode)?.label || "";
-        return `${frm.doc.academic_term || __("Timetable")} — ${modeName}: ${filterValue || __("All")}`;
-      }
+  // Keep the selected filter valid: options differ per view mode, and they
+  // also differ between the snapshot and the live schedule.
+  function syncFilter(preferred) {
+    const cfg = modeConfig();
+    if (!cfg.optionsKey) {
+      filterValue = "";
+      return;
+    }
+    const opts = data[cfg.optionsKey] || [];
+    if (preferred && opts.includes(preferred)) filterValue = preferred;
+    else if (!opts.includes(filterValue)) filterValue = opts[0] || "";
+  }
 
-      function openPrint(html) {
-        const win = window.open("", "_blank");
-        win.document.write(html);
-        win.document.close();
-        win.focus();
-        win.print();
-      }
+  function load(requestedSource) {
+    const keepFilter = filterValue;
+    dialog.$body.html(`<div class="text-center text-muted" style="padding:40px;">
+      <p>${__("Loading timetable...")}</p>
+    </div>`);
 
-      function buildToolbar() {
-        const modeButtons = VIEW_MODES.map(
-          (m) =>
-            `<button data-mode="${m.key}" class="btn btn-sm ${m.key === viewMode ? "btn-primary" : "btn-default"}" style="margin-right:4px;">
-            ${m.label}
-          </button>`,
-        ).join("");
-
-        const cfg = VIEW_MODES.find((m) => m.key === viewMode);
-        let filterHtml = "";
-        if (cfg.optionsKey) {
-          const opts = (data[cfg.optionsKey] || [])
-            .map(
-              (v) =>
-                `<option value="${v}" ${v === filterValue ? "selected" : ""}>${v}</option>`,
-            )
-            .join("");
-          filterHtml = `<div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
-            <label class="control-label" style="margin:0;">${cfg.filterLabel}:</label>
-            <select id="tt-filter" class="form-control form-control-sm" style="min-width:200px;">${opts}</select>
-          </div>`;
+    frappe.call({
+      method:
+        "education.education.doctype.timetable_generation_result" +
+        ".timetable_generation_result.get_timetable_view",
+      args: { result_name: frm.doc.name, source: requestedSource || null },
+      callback(r) {
+        if (!r.message) {
+          dialog.$body.html(
+            `<p class="text-danger" style="padding:20px;">${__("Failed to load timetable data.")}</p>`,
+          );
+          return;
         }
+        data = r.message;
+        syncFilter(keepFilter);
+        refresh();
+      },
+    });
+  }
 
-        return `<div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;
-          padding:8px 12px; margin-bottom:12px; border-bottom:1px solid var(--border-color);">
-          <div>${modeButtons}</div>
-          ${filterHtml}
-          <div style="margin-left:auto; display:flex; gap:6px;">
-            <button id="tt-print-color" class="btn btn-sm btn-default">${__("Color Print")}</button>
-            <button id="tt-print-std"   class="btn btn-sm btn-default">${__("Standard Print")}</button>
-          </div>
-        </div>
-        <div id="tt-grid"></div>`;
-      }
+  function printTitle() {
+    const modeName = modeConfig()?.label || "";
+    return `${frm.doc.academic_term || __("Timetable")} — ${modeName}: ${filterValue || __("All")}`;
+  }
 
-      function attachEvents() {
-        dialog.$body.find("[data-mode]").on("click", function () {
-          viewMode = $(this).data("mode");
-          const cfg2 = VIEW_MODES.find((m) => m.key === viewMode);
-          filterValue = cfg2.optionsKey
-            ? (data[cfg2.optionsKey] || [])[0] || ""
-            : "";
-          refresh();
-        });
-        dialog.$body.find("#tt-filter").on("change", function () {
-          filterValue = $(this).val();
-          redrawGrid();
-        });
-        dialog.$body.find("#tt-print-color").on("click", () =>
-          openPrintOptions((opts) =>
-            openPrint(
-              generateColorPrintHtml(
-                data,
-                viewMode,
-                filterValue,
-                colorMap,
-                printTitle(),
-                opts,
-              ),
-            ),
-          ),
-        );
-        dialog.$body.find("#tt-print-std").on("click", () =>
-          openPrintOptions((opts) =>
-            openPrint(
-              generateStandardPrintHtml(
-                data,
-                viewMode,
-                filterValue,
-                printTitle(),
-                opts,
-              ),
-            ),
-          ),
-        );
-      }
+  function openPrint(html) {
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.print();
+  }
 
-      function redrawGrid() {
-        dialog.$body
-          .find("#tt-grid")
-          .html(renderTimetable(data, viewMode, filterValue, colorMap));
-      }
+  // Only offer the switch once there is something to switch between.
+  function buildSourceToggle() {
+    if (!data.snapshot_available) return "";
 
-      function refresh() {
-        dialog.$body.html(buildToolbar());
-        attachEvents();
-        redrawGrid();
-      }
+    const buttons = TT_SOURCES.map(
+      (s) =>
+        `<button data-source="${s.key}" class="btn btn-sm ${s.key === data.source ? "btn-primary" : "btn-default"}" style="margin-right:4px;">
+        ${s.label}
+      </button>`,
+    ).join("");
 
+    return `<div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
+      <label class="control-label" style="margin:0;">${__("Source")}:</label>
+      <div>${buttons}</div>
+    </div>`;
+  }
+
+  function buildSourceNote() {
+    if (data.source === "snapshot") {
+      const when = data.generated_on
+        ? frappe.datetime.str_to_user(data.generated_on)
+        : null;
+      return when
+        ? __("Showing the timetable as generated on {0}.", [when])
+        : __("Showing the timetable as generated by this run.");
+    }
+    return __(
+      "Showing the current Course Schedule, which includes later generations and manual edits.",
+    );
+  }
+
+  function buildToolbar() {
+    const modeButtons = VIEW_MODES.map(
+      (m) =>
+        `<button data-mode="${m.key}" class="btn btn-sm ${m.key === viewMode ? "btn-primary" : "btn-default"}" style="margin-right:4px;">
+        ${m.label}
+      </button>`,
+    ).join("");
+
+    const cfg = modeConfig();
+    let filterHtml = "";
+    if (cfg.optionsKey) {
+      const opts = (data[cfg.optionsKey] || [])
+        .map(
+          (v) =>
+            `<option value="${v}" ${v === filterValue ? "selected" : ""}>${v}</option>`,
+        )
+        .join("");
+      filterHtml = `<div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
+        <label class="control-label" style="margin:0;">${cfg.filterLabel}:</label>
+        <select id="tt-filter" class="form-control form-control-sm" style="min-width:200px;">${opts}</select>
+      </div>`;
+    }
+
+    return `<div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;
+      padding:8px 12px; border-bottom:1px solid var(--border-color);">
+      <div>${modeButtons}</div>
+      ${filterHtml}
+      ${buildSourceToggle()}
+      <div style="margin-left:auto; display:flex; gap:6px;">
+        <button id="tt-print-color" class="btn btn-sm btn-default">${__("Color Print")}</button>
+        <button id="tt-print-std"   class="btn btn-sm btn-default">${__("Standard Print")}</button>
+      </div>
+    </div>
+    <div style="padding:6px 12px; margin-bottom:6px; font-size:11px; color:var(--text-muted);">
+      ${buildSourceNote()}
+    </div>
+    <div id="tt-grid"></div>`;
+  }
+
+  function attachEvents() {
+    dialog.$body.find("[data-mode]").on("click", function () {
+      viewMode = $(this).data("mode");
+      syncFilter();
       refresh();
-    },
-  });
+    });
+    dialog.$body.find("[data-source]").on("click", function () {
+      const requested = $(this).data("source");
+      if (requested !== data.source) load(requested);
+    });
+    dialog.$body.find("#tt-filter").on("change", function () {
+      filterValue = $(this).val();
+      redrawGrid();
+    });
+    dialog.$body.find("#tt-print-color").on("click", () =>
+      openPrintOptions((opts) =>
+        openPrint(
+          generateColorPrintHtml(
+            data,
+            viewMode,
+            filterValue,
+            colorMap,
+            printTitle(),
+            opts,
+          ),
+        ),
+      ),
+    );
+    dialog.$body.find("#tt-print-std").on("click", () =>
+      openPrintOptions((opts) =>
+        openPrint(
+          generateStandardPrintHtml(
+            data,
+            viewMode,
+            filterValue,
+            printTitle(),
+            opts,
+          ),
+        ),
+      ),
+    );
+  }
+
+  function redrawGrid() {
+    // Rendered inside the toolbar shell rather than replacing it, so the
+    // source toggle stays reachable even when a view has nothing to show.
+    const $grid = dialog.$body.find("#tt-grid");
+    if (!data.time_slots || !data.time_slots.length) {
+      $grid.html(
+        `<p class="text-muted" style="padding:20px;">${__("No schedule entries found for the first week of this term.")}</p>`,
+      );
+      return;
+    }
+    $grid.html(renderTimetable(data, viewMode, filterValue, colorMap));
+  }
+
+  function refresh() {
+    dialog.$body.html(buildToolbar());
+    attachEvents();
+    redrawGrid();
+  }
+
+  load(null);
 }
 
 function openDiagnosisDialog(frm) {

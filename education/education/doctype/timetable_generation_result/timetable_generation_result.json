@@ -18,7 +18,8 @@
   "saved_count",
   "failed_count",
   "section_break_ksqh",
-  "unscheduled_subjects"
+  "unscheduled_subjects",
+  "timetable_snapshot"
  ],
  "fields": [
   {
@@ -91,6 +92,14 @@
    "fieldname": "unscheduled_subjects",
    "fieldtype": "Small Text",
    "label": "Unscheduled Subjects",
+   "read_only": 1
+  },
+  {
+   "description": "Base week produced by this generation run, stored as JSON so the timetable can be viewed exactly as it was generated.",
+   "fieldname": "timetable_snapshot",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Timetable Snapshot",
    "read_only": 1
   }
  ],
