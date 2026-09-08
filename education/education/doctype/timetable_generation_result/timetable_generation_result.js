@@ -1,6 +1,15 @@
 // Copyright (c) 2025, Navari and contributors
 // For license information, please see license.txt
 
+// Course, Student Group and Room names are user-supplied (Course and Student
+// Group are autonamed from their name field), and every renderer below builds
+// raw HTML. Escape anything schedule-derived before it reaches .html() or
+// document.write().
+function esc(value) {
+  if (value === null || value === undefined) return "";
+  return frappe.utils.escape_html(String(value));
+}
+
 // Colour palette
 const TT_COLORS = [
   "#4e79a7",
@@ -76,15 +85,15 @@ function buildCell(entries, viewMode, colorMap) {
           if (viewMode === "school" && i === meta.length - 1) {
             return `<span style="display:inline-block; margin-top:2px; font-size:10px;
             background:${color}22; border:1px solid ${color}44;
-            padding:0 5px; border-radius:3px; color:${color};">${m}</span>`;
+            padding:0 5px; border-radius:3px; color:${color};">${esc(m)}</span>`;
           }
-          return `<span>${m}</span>`;
+          return `<span>${esc(m)}</span>`;
         })
         .join("<br>");
 
       return `<div style="border-left:3px solid ${color}; background:${color}12;
       padding:4px 7px; margin-bottom:3px;">
-      <div style="font-weight:600; font-size:11px; color:var(--text-color);">${primary}</div>
+      <div style="font-weight:600; font-size:11px; color:var(--text-color);">${esc(primary)}</div>
       <div style="font-size:10px; color:var(--text-muted); line-height:1.5;">${metaHtml}</div>
     </div>`;
     })
@@ -154,7 +163,7 @@ function renderTimetable(data, viewMode, filterValue, colorMap) {
       ([label, color]) =>
         `<span style="display:inline-flex; align-items:center; gap:5px; margin:3px 8px; font-size:11px;">
       <span style="display:inline-block; width:10px; height:10px; background:${color};"></span>
-      ${label}
+      ${esc(label)}
     </span>`,
     )
     .join("");
@@ -243,7 +252,7 @@ function generateStandardPrintHtml(data, viewMode, filterValue, title, opts) {
               }
               const groupLabel =
                 viewMode === "school" && e.student_group
-                  ? `<div class="tt-group">${e.student_group}</div>`
+                  ? `<div class="tt-group">${esc(e.student_group)}</div>`
                   : "";
               return `${i > 0 ? `<hr class="tt-divider">` : ""}
           <div class="tt-entry">
@@ -366,11 +375,11 @@ function generateColorPrintHtml(data, viewMode, filterValue, colorMap, title, op
                   .filter(Boolean)
                   .join(" · ");
                 if (viewMode === "school" && e.student_group)
-                  meta += `  [${e.student_group}]`;
+                  meta += `  [${esc(e.student_group)}]`;
               }
               return `<div style="border-left:3px solid ${c};background:${c}18;padding:3px 5px;
           margin-bottom:${i < entries.length - 1 ? "3px" : "0"};">
-          <div style="font-weight:700;font-size:10px;">${primary}</div>
+          <div style="font-weight:700;font-size:10px;">${esc(primary)}</div>
           <div style="font-size:9px;color:#555;">${meta}</div>
         </div>`;
             })
@@ -392,7 +401,7 @@ function generateColorPrintHtml(data, viewMode, filterValue, colorMap, title, op
     .map(
       ([label, color]) =>
         `<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px;font-size:9px;">
-      <span style="display:inline-block;width:9px;height:9px;background:${color};"></span>${label}
+      <span style="display:inline-block;width:9px;height:9px;background:${color};"></span>${esc(label)}
     </span>`,
     )
     .join("");
@@ -652,7 +661,7 @@ function openTimetableDialog(frm) {
       const opts = (data[cfg.optionsKey] || [])
         .map(
           (v) =>
-            `<option value="${v}" ${v === filterValue ? "selected" : ""}>${v}</option>`,
+            `<option value="${esc(v)}" ${v === filterValue ? "selected" : ""}>${esc(v)}</option>`,
         )
         .join("");
       filterHtml = `<div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
@@ -785,7 +794,7 @@ function openDiagnosisDialog(frm) {
             ? `<span class="indicator-pill red">${d.scheduled_this_week}/${d.frequency_per_week} ${__("per week")}</span>`
             : `<span class="indicator-pill green">${d.scheduled_this_week}/${d.frequency_per_week} ${__("per week")}</span>`;
 
-          const reasonsList = d.reasons.map((r) => `<li>${r}</li>`).join("");
+          const reasonsList = d.reasons.map((r) => `<li>${esc(r)}</li>`).join("");
 
           const teacherRows = Object.entries(d.teacher_loads || {})
             .map(([t, info]) => {
@@ -822,15 +831,15 @@ function openDiagnosisDialog(frm) {
           const hintsSection = d.hints.length
             ? `<div class="mt-3">
               <strong style="font-size:12px;">${__("Suggested Fixes")}</strong>
-              <ul style="margin:4px 0 0 16px; font-size:12px;">${d.hints.map((h) => `<li>${h}</li>`).join("")}</ul>
+              <ul style="margin:4px 0 0 16px; font-size:12px;">${d.hints.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
             </div>`
             : "";
 
           return `<div style="padding:12px 0; border-bottom:1px solid var(--border-color);">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
             <div>
-              <strong>${d.subject}</strong>
-              <span class="text-muted" style="margin-left:8px; font-size:12px;">${d.stream}</span>
+              <strong>${esc(d.subject)}</strong>
+              <span class="text-muted" style="margin-left:8px; font-size:12px;">${esc(d.stream)}</span>
             </div>
             <div class="text-right">
               ${statusPill}

@@ -1,3 +1,11 @@
+// Course, Student Group, Instructor and Room names are user-supplied and every
+// renderer below builds raw HTML. Escape anything schedule-derived before it
+// reaches .html(), .append() or document.write().
+function esc(value) {
+  if (value === null || value === undefined) return "";
+  return frappe.utils.escape_html(String(value));
+}
+
 frappe.pages["school-timetable"].on_page_load = function (wrapper) {
   const page = frappe.ui.make_app_page({
     parent: wrapper,
@@ -145,7 +153,7 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
       allTerms = r.message || [];
       const sel = $("#tt-term");
       allTerms.forEach((t) =>
-        sel.append(`<option value="${t.value}">${t.label}</option>`),
+        sel.append(`<option value="${esc(t.value)}">${esc(t.label)}</option>`),
       );
     },
   });
@@ -156,7 +164,7 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
     callback(r) {
       const sel = $("#tt-stream");
       (r.message || []).forEach((s) =>
-        sel.append(`<option value="${s.value}">${s.label}</option>`),
+        sel.append(`<option value="${esc(s.value)}">${esc(s.label)}</option>`),
       );
     },
   });
@@ -167,7 +175,7 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
     callback(r) {
       const sel = $("#tt-teacher");
       (r.message || []).forEach((t) =>
-        sel.append(`<option value="${t.value}">${t.label}</option>`),
+        sel.append(`<option value="${esc(t.value)}">${esc(t.label)}</option>`),
       );
     },
   });
@@ -242,9 +250,9 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
         return {
           html: `<div style="overflow:hidden; padding:2px 3px;">
 						<div style="font-size:10px; opacity:.75; white-space:nowrap;">${arg.timeText}</div>
-						<div style="font-weight:700; font-size:11px; line-height:1.3; white-space:normal;">${ep.course || arg.event.title}</div>
-						${ep.student_group ? `<div style="font-size:10px; opacity:.85;">${ep.student_group}</div>` : ""}
-						${ep.room ? `<div style="font-size:10px; opacity:.7;">${ep.room}</div>` : ""}
+						<div style="font-weight:700; font-size:11px; line-height:1.3; white-space:normal;">${esc(ep.course || arg.event.title)}</div>
+						${ep.student_group ? `<div style="font-size:10px; opacity:.85;">${esc(ep.student_group)}</div>` : ""}
+						${ep.room ? `<div style="font-size:10px; opacity:.7;">${esc(ep.room)}</div>` : ""}
 					</div>`,
         };
       },
@@ -304,13 +312,13 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
       message: `
 				<table class="table table-bordered table-sm" style="margin:0;">
 					<tr><th style="width:110px;">${__("Date")}</th>
-					    <td>${ep.schedule_date || ""}</td></tr>
+					    <td>${esc(ep.schedule_date || "")}</td></tr>
 					<tr><th>${__("Time")}</th>
 					    <td>${fmtTime(ep.from_time)} – ${fmtTime(ep.to_time)}</td></tr>
 					<tr><th>${__("Class")}</th>
 					    <td><span style="display:inline-block; padding:2px 8px; border-radius:3px;
 					        background:${col.bg}; border:1px solid ${col.border};
-					        color:${col.text}; font-weight:600;">${ep.student_group || "-"}
+					        color:${col.text}; font-weight:600;">${esc(ep.student_group || "-")}
 					    </span></td></tr>
 					<tr><th>${__("Teacher")}</th><td>${ep.instructor || "-"}</td></tr>
 					<tr><th>${__("Room")}</th>  <td>${ep.room || "-"}</td></tr>
@@ -449,10 +457,10 @@ frappe.pages["school-timetable"].on_page_load = function (wrapper) {
               .map(
                 (m, idx) => `
 								<div style="${idx > 0 ? "border-top:1px dashed #ccc; margin-top:3px; padding-top:3px;" : ""}">
-									<strong style="font-size:11px;">${m.course}</strong><br>
-									<span style="font-size:10px; color:#444;">${m.instructor || ""}</span><br>
+									<strong style="font-size:11px;">${esc(m.course)}</strong><br>
+									<span style="font-size:10px; color:#444;">${esc(m.instructor || "")}</span><br>
 									<span style="font-size:10px; color:#777;">
-										${m.student_group || ""}${m.room ? " · " + m.room : ""}
+										${esc(m.student_group || "")}${m.room ? " · " + esc(m.room) : ""}
 									</span>
 								</div>`,
               )
