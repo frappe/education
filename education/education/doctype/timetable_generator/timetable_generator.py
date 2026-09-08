@@ -761,9 +761,10 @@ def fallback_pass(
 	max_daily,
 ):
 	"""
-	Last-resort pass: weekly workload cap removed, preferred days ignored,
-	any room used, and a room is force-assigned if the pool is fully occupied.
-	Still respects the daily cap to avoid unreasonable single-day overloads.
+	Last-resort pass: weekly workload cap removed, preferred days ignored and
+	any free room accepted. Still respects the daily cap, and still requires a
+	genuinely free room — an unscheduled lesson is reportable, a double-booked
+	one cannot be saved at all.
 	"""
 	for item in list(remaining_items):
 		subject, stream = item["subject"], item["stream"]
@@ -799,9 +800,11 @@ def fallback_pass(
 						all_rooms,
 						relax=True,
 					)
-					if room is None and all_rooms:
-						room = all_rooms[0]  # force-assign last resort
 					if room is None:
+						# Never force-assign an occupied room. Course Schedule
+						# validates room overlap, so such a row fails to insert
+						# and rolls back the entire run. Leaving the lesson
+						# unscheduled lets diagnose_unscheduled report it.
 						continue
 
 					add_schedule_entry(
@@ -1039,7 +1042,7 @@ def create_full_schedule(
 			**shared,
 		)
 
-	# Pass 3 — fallback: no weekly cap, force-assign room if needed
+	# Pass 3 — fallback: no weekly cap, any free room
 	if remaining_items:
 		fallback_pass(
 			remaining_items=remaining_items,
@@ -1168,17 +1171,21 @@ def clear_existing_schedules(academic_term, school, streams=None):
 	scope_label = f"{len(streams)} stream(s)" if streams else "all streams"
 
 	if streams:
+		# Scope by stream only. A Student Group already belongs to exactly one
+		# school, so the company column adds nothing here — and filtering on it
+		# would skip rows created before that field existed (company IS NULL).
+		# Those survivors then collide with the replacement rows on
+		# validate_overlap and roll the whole run back.
 		placeholders = ", ".join(["%s"] * len(streams))
 		base_where = f"schedule_date BETWEEN %s AND %s AND student_group IN ({placeholders})"
 		base_params = [start, end] + list(streams)
 	else:
-		base_where = "schedule_date BETWEEN %s AND %s"
-		base_params = [start, end]
+		# Whole-term wipe with no stream scope: keep the company predicate so
+		# another school's schedules are never touched.
+		base_where = "schedule_date BETWEEN %s AND %s AND company = %s"
+		base_params = [start, end, school]
 
-	frappe.db.sql(
-		f"DELETE FROM `tabCourse Schedule` WHERE {base_where} AND company = %s",
-		base_params + [school],
-	)
+	frappe.db.sql(f"DELETE FROM `tabCourse Schedule` WHERE {base_where}", base_params)
 	deleted = frappe.db.sql("SELECT ROW_COUNT()")[0][0]
 
 	frappe.log(
