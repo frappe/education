@@ -220,6 +220,32 @@ def _day_name(day):
 	return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][day.weekday()]
 
 
+def _within_max_time(period, max_time):
+	"""
+	True when a period starts no later than a subject's Latest Allowed Time.
+
+	Subjects with no max_time configured are unconstrained. Enforced in every
+	pass, including the fallback: a school that says a subject must not run
+	after a given time means it, so leaving the lesson unscheduled and
+	reporting it beats quietly breaking the rule.
+	"""
+	if not max_time:
+		return True
+	slot_start = _td_to_dt(period.get("from_time"))
+	limit = _td_to_dt(max_time)
+	if slot_start is None or limit is None:
+		return True
+	return slot_start <= limit
+
+
+def _teacher_limits(td, max_daily, max_weekly):
+	"""A teacher's own caps when set, otherwise the generator-wide defaults."""
+	return (
+		td.get("max_period_per_day") or max_daily,
+		td.get("max_period_per_week") or max_weekly,
+	)
+
+
 def _overlaps_break(slot_start, slot_end, break_intervals):
 	"""Return True if a slot overlaps any break interval (both as datetime)."""
 	for br_start, br_end in break_intervals:
@@ -486,6 +512,7 @@ def prepare_scheduling_data(teacher_preferences, subject_rules, all_streams):
 						"teachers": capable,
 						"priority": frequency,
 						"allow_double": subject.get("allow_double", False),
+						"max_time": subject.get("max_time"),
 						"instance": i + 1,
 						"target_day": target_days[i] if i < len(target_days) else i % 5,
 					}
@@ -688,6 +715,8 @@ def balanced_pass(
 			for period_index, period in enumerate(period_slots):
 				if (day_str, period_index, "stream", stream) in slot_lookup:
 					continue
+				if not _within_max_time(period, item.get("max_time")):
+					continue
 
 				for td in item["teachers"]:
 					if td["subject"] != subject or td["stream"] != stream:
@@ -696,9 +725,12 @@ def balanced_pass(
 					teacher = td["teacher"]
 					if (day_str, period_index, "teacher", teacher) in slot_lookup:
 						continue
-					if _daily(teacher_workload, teacher, day_str) >= max_daily:
+					# A teacher's own configured caps take precedence over the
+					# generator-wide defaults.
+					lim_day, lim_week = _teacher_limits(td, max_daily, max_weekly)
+					if _daily(teacher_workload, teacher, day_str) >= lim_day:
 						continue
-					if _total(teacher_workload, teacher) >= max_weekly:
+					if _total(teacher_workload, teacher) >= lim_week:
 						continue
 
 					if not relax_preferred_days:
@@ -781,12 +813,17 @@ def fallback_pass(
 			for period_index, period in enumerate(period_slots):
 				if (day_str, period_index, "stream", stream) in slot_lookup:
 					continue
+				if not _within_max_time(period, item.get("max_time")):
+					continue
 
 				for td in item["teachers"]:
 					teacher = td["teacher"]
 					if (day_str, period_index, "teacher", teacher) in slot_lookup:
 						continue
-					if _daily(teacher_workload, teacher, day_str) >= max_daily:
+					# The weekly cap is deliberately relaxed in this pass; the
+					# daily one still honours the teacher's own configuration.
+					lim_day, _ = _teacher_limits(td, max_daily, max_daily * 5)
+					if _daily(teacher_workload, teacher, day_str) >= lim_day:
 						continue
 
 					room = get_available_room(
