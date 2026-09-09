@@ -232,6 +232,39 @@
       "collapsible": 1,
       "indent": 0,
       "keep_closed": 0,
+      "label": "Timetable Generator",
+      "link_to": "Timetable Generator",
+      "link_type": "DocType",
+      "show_arrow": 0,
+      "type": "Link"
+    },
+    {
+      "child": 1,
+      "collapsible": 1,
+      "indent": 0,
+      "keep_closed": 0,
+      "label": "Timetable Generation Result",
+      "link_to": "Timetable Generation Result",
+      "link_type": "DocType",
+      "show_arrow": 0,
+      "type": "Link"
+    },
+    {
+      "child": 1,
+      "collapsible": 1,
+      "indent": 0,
+      "keep_closed": 0,
+      "label": "School Timetable",
+      "link_to": "school-timetable",
+      "link_type": "Page",
+      "show_arrow": 0,
+      "type": "Link"
+    },
+    {
+      "child": 1,
+      "collapsible": 1,
+      "indent": 0,
+      "keep_closed": 0,
       "label": "Course Activity",
       "link_to": "Course Activity",
       "link_type": "DocType",
@@ -649,7 +682,7 @@
       "type": "Link"
     }
   ],
-  "modified": "2026-03-24 23:52:05.716008",
+  "modified": "2026-09-02 13:00:00.000000",
   "modified_by": "Administrator",
   "module": "Education",
   "name": "Education",
