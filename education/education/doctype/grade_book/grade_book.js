@@ -20,6 +20,12 @@ frappe.ui.form.on('Grade Book', {
     }
 
     if (!frm.is_new() && frm.doc.status === 'Computed') {
+      frm.add_custom_button(__('Statistics'), () => {
+        frappe.set_route('query-report', 'Grade Book Statistics', {
+          grade_book: frm.doc.name,
+        })
+      })
+
       frm.add_custom_button(__('Reset to Draft'), () => {
         frappe.confirm(
           __(

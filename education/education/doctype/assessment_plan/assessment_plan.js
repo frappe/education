@@ -23,6 +23,12 @@ frappe.ui.form.on('Assessment Plan', {
 
   refresh: function (frm) {
     if (frm.doc.docstatus == 1) {
+      frm.add_custom_button(__('Statistics'), function () {
+        frappe.set_route('query-report', 'Assessment Statistics', {
+          assessment_plan: frm.doc.name,
+        })
+      })
+
       frm.add_custom_button(
         __('Assessment Result Tool'),
         function () {
