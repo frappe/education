@@ -104,6 +104,7 @@
   },
   {
    "fetch_from": "program.area_of_study",
+   "fetch_if_empty": 1,
    "fieldname": "area_of_study",
    "fieldtype": "Link",
    "label": "Area of Study",
@@ -120,8 +121,7 @@
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
-   "options": "Program",
-   "reqd": 1
+   "options": "Program"
   },
   {
    "fieldname": "section_break_byod",
@@ -254,7 +254,7 @@
    "link_fieldname": "course"
   }
  ],
- "modified": "2026-08-26 10:34:16.782880",
+ "modified": "2026-09-16 22:12:32.008215",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",

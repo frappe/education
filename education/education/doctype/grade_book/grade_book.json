@@ -59,7 +59,6 @@
   },
   {
    "fetch_from": "course.program",
-   "fetch_if_empty": 1,
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
@@ -184,7 +183,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-01 19:43:14.470098",
+ "modified": "2026-09-16 22:13:16.945809",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Grade Book",

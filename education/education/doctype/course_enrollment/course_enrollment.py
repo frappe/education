@@ -17,6 +17,8 @@ from education.education.doctype.fee_plan.fee_plan import (
 
 class CourseEnrollment(Document):
 	def validate(self):
+		self.set_program_from_course()
+		self.set_fee_term_from_course()
 		self.validate_admission_register()
 		self.validate_duplication()
 		self.validate_batch()
@@ -129,13 +131,43 @@ class CourseEnrollment(Document):
 
 		self.db_set("fee_plan", None)
 
+	def set_program_from_course(self):
+		if not self.course:
+			self.program = None
+			return
+
+		self.program = frappe.db.get_value("Course", self.course, "program")
+
+	def set_fee_term_from_course(self):
+		if self.fee_term or not self.course:
+			return
+
+		self.fee_term = frappe.db.get_value("Course", self.course, "fee_term")
+
 	def validate_admission_register(self):
-		if (
-			frappe.db.get_value("Admission Register", self.admission_register, "docstatus") != 1
-		):
+		register = frappe.db.get_value(
+			"Admission Register",
+			self.admission_register,
+			["docstatus", "admission_based_on", "program"],
+			as_dict=True,
+		)
+		if not register or register.docstatus != 1:
 			frappe.throw(
 				_("Admission Register {0} must be submitted.").format(self.admission_register)
 			)
+
+		if register.admission_based_on == "Program" and register.program:
+			if self.program != register.program:
+				frappe.throw(
+					_(
+						"Course {0} belongs to Program {1}, not to Program {2} of Admission Register {3}."
+					).format(
+						frappe.bold(self.course),
+						frappe.bold(self.program) if self.program else _("None"),
+						frappe.bold(register.program),
+						frappe.bold(self.admission_register),
+					)
+				)
 
 		if self.course not in get_register_courses(self.admission_register):
 			frappe.throw(

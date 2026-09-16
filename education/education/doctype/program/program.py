@@ -9,13 +9,29 @@ from frappe.model.document import Document
 
 
 class Program(Document):
-	def get_course_list(self):
-		program_course_list = self.courses
-		course_list = [
-			frappe.get_doc("Course", program_course.course)
-			for program_course in program_course_list
-		]
-		return course_list
+	def validate(self):
+		self.validate_unit_load()
+		self.validate_department_company()
+
+	def validate_unit_load(self):
+		if (
+			self.minimum_unit_load
+			and self.maximum_unit_load
+			and self.minimum_unit_load > self.maximum_unit_load
+		):
+			frappe.throw(_("Minimum Unit Load cannot exceed Maximum Unit Load."))
+
+	def validate_department_company(self):
+		if not self.department or not self.company:
+			return
+
+		department_company = frappe.db.get_value("Department", self.department, "company")
+		if department_company != self.company:
+			frappe.throw(
+				_("Department {0} does not belong to Company {1}.").format(
+					frappe.bold(self.department), frappe.bold(self.company)
+				)
+			)
 
 
 @frappe.whitelist()
@@ -25,14 +41,14 @@ def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
 		frappe.msgprint(_("Please select a Program first."))
 		return []
 
-	doctype = "Program Course"
+	doctype = "Course"
 	return frappe.db.sql(
-		"""select course, course_name from `tabProgram Course`
-        where  parent = %(program)s and course like %(txt)s {match_cond}
+		"""select name, course_name from `tabCourse`
+        where program = %(program)s and name like %(txt)s {match_cond}
         order by
-            if(locate(%(_txt)s, course), locate(%(_txt)s, course), 99999),
-            idx desc,
-            `tabProgram Course`.course asc
+            if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+            course_name asc,
+            name asc
         limit {start}, {page_len}""".format(
 			match_cond=get_match_cond(doctype), start=start, page_len=page_len
 		),

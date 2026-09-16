@@ -314,10 +314,16 @@ def get_course_progress(course, program):
 
 def get_program_progress(program):
 	program_progress = []
-	if not program.courses:
+	course_names = frappe.get_all(
+		"Course",
+		filters={"program": program.name},
+		pluck="name",
+		order_by="course_name asc",
+	)
+	if not course_names:
 		return None
-	for program_course in program.courses:
-		course = frappe.get_doc("Course", program_course.course)
+	for course_name in course_names:
+		course = frappe.get_doc("Course", course_name)
 		progress = get_course_progress(course, program.name)
 		if progress:
 			progress["name"] = course.name
@@ -333,10 +339,9 @@ def get_program_progress(program):
 def get_program_completion(program):
 	topics = frappe.db.sql(
 		"""select `tabCourse Topic`.topic, `tabCourse Topic`.parent
-	from `tabCourse Topic`,
-		 `tabProgram Course`
-	where `tabCourse Topic`.parent = `tabProgram Course`.course
-			and `tabProgram Course`.parent = %s""",
+	from `tabCourse Topic`
+	inner join `tabCourse` on `tabCourse`.name = `tabCourse Topic`.parent
+	where `tabCourse`.program = %s""",
 		program.name,
 	)
 

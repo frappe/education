@@ -161,12 +161,16 @@ class Student(Document):
 
 	def get_program_enrollments(self):
 		"""Returns the programs the student is enrolled in via Course Enrollment."""
-		programs = frappe.get_all(
-			"Course Enrollment",
-			filters={"student": self.name, "docstatus": 1},
-			pluck="program",
-			distinct=True,
-		)
+		programs = [
+			program
+			for program in frappe.get_all(
+				"Course Enrollment",
+				filters={"student": self.name, "docstatus": 1},
+				pluck="program",
+				distinct=True,
+			)
+			if program
+		]
 		return programs or None
 
 	def get_topic_progress(self, course_enrollment_name, topic):

@@ -28,12 +28,22 @@ frappe.ui.form.on('Course Enrollment', {
       }
     })
 
+    frm.set_query('fee_term', function () {
+      return {
+        filters: {
+          docstatus: 1,
+          company: frm.doc.company,
+        },
+      }
+    })
+
     frm.trigger('fetch_allowed_courses')
   },
 
   course: function (frm) {
     frm.set_value('student_batch', null)
     frm.set_value('roll_number', null)
+    frm.trigger('fetch_fee_term')
   },
 
   student_batch: function (frm) {
@@ -54,6 +64,7 @@ frappe.ui.form.on('Course Enrollment', {
 
   company: function (frm) {
     frm.set_value('admission_register', null)
+    frm.set_value('fee_term', null)
     if (frm.doc.company) {
       frm.set_query('admission_register', function () {
         return {
@@ -72,6 +83,17 @@ frappe.ui.form.on('Course Enrollment', {
 
   student: function (frm) {
     frm.trigger('fetch_allowed_courses')
+  },
+
+  fetch_fee_term: function (frm) {
+    if (!frm.doc.course) {
+      frm.set_value('fee_term', null)
+      return
+    }
+
+    frappe.db.get_value('Course', frm.doc.course, 'fee_term').then((r) => {
+      frm.set_value('fee_term', (r.message && r.message.fee_term) || null)
+    })
   },
 
   fetch_allowed_courses: function (frm) {

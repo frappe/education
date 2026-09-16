@@ -15,24 +15,10 @@ frappe.ui.form.on('Program', {
         return {
           filters: {
             company: frm.doc.company,
-            disabled: 1,
+            disabled: 0,
           },
         }
       })
-    }
-  },
-})
-
-frappe.ui.form.on('Course', {
-  courses_add: function (frm) {
-    frm.fields_dict['courses'].grid.get_field('course').get_query = function (
-      doc
-    ) {
-      var courses_list = []
-      $.each(doc.courses, function (idx, val) {
-        if (val.course) courses_list.push(val.course)
-      })
-      return { filters: [['Course', 'name', 'not in', courses_list]] }
     }
   },
 })

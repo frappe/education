@@ -46,13 +46,16 @@ frappe.ui.form.on('Instructor', {
 
     frm.set_query('course', 'instructor_log', function (_doc, cdt, cdn) {
       let d = locals[cdt][cdn]
-      return {
-        query:
-          'education.education.doctype.program.program.get_program_courses',
-        filters: {
-          program: d.program,
-        },
+      if (d.program) {
+        return {
+          query:
+            'education.education.doctype.program.program.get_program_courses',
+          filters: {
+            program: d.program,
+          },
+        }
       }
+      return {}
     })
   },
 })

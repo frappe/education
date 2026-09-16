@@ -20,12 +20,12 @@ def get_course(program):
 	"""Return list of courses for a particular program
 	:param program: Program
 	"""
-	courses = frappe.db.sql(
-		"""select course, course_name from `tabProgram Course` where parent=%s""",
-		(program),
-		as_dict=1,
+	return frappe.get_all(
+		"Course",
+		filters={"program": program},
+		fields=["name as course", "course_name"],
+		order_by="course_name asc",
 	)
-	return courses
 
 
 @frappe.whitelist()
@@ -498,7 +498,7 @@ def get_student_info():
 	current_program = get_current_enrollment(student_info.name)
 	if current_program:
 		student_info["student_batches"] = get_student_batches(
-			student_info.name, current_program.program
+			student_info.name, current_program.get("program")
 		)
 		student_info["current_program"] = current_program
 	return student_info
@@ -525,7 +525,7 @@ def get_student_batches(student, program_name):
 	enrollment = frappe.qb.DocType("Course Enrollment")
 	batch = frappe.qb.DocType("Student Batch Name")
 
-	return (
+	query = (
 		frappe.qb.from_(enrollment)
 		.inner_join(batch)
 		.on(enrollment.student_batch == batch.name)
@@ -533,20 +533,20 @@ def get_student_batches(student, program_name):
 		.distinct()
 		.where(enrollment.student == student)
 		.where(enrollment.docstatus == 1)
-		.where(batch.program == program_name)
-		.run(as_dict=1)
 	)
+	if program_name:
+		query = query.where(batch.program == program_name)
+	return query.run(as_dict=1)
 
 
 @frappe.whitelist()
 def get_course_list_based_on_program(program_name):
-	program = frappe.get_doc("Program", program_name)
-
-	course_list = []
-
-	for course in program.courses:
-		course_list.append(course.course)
-	return course_list
+	return frappe.get_all(
+		"Course",
+		filters={"program": program_name},
+		pluck="name",
+		order_by="course_name asc",
+	)
 
 
 @frappe.whitelist()

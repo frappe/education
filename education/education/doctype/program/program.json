@@ -132,7 +132,7 @@
  "links": [
   {
    "group": "Admission and Enrollments",
-   "link_doctype": "Student Applicant",
+   "link_doctype": "Admission Register",
    "link_fieldname": "program"
   },
   {
@@ -161,7 +161,7 @@
    "link_fieldname": "program"
   }
  ],
- "modified": "2026-08-26 12:42:16.052522",
+ "modified": "2026-09-15 18:29:23.146914",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",
