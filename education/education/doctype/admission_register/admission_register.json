@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_guest_to_view": 1,
  "allow_rename": 1,
  "autoname": "prompt",
  "creation": "2026-06-09 20:09:23.370590",
@@ -7,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "academic_year",
+  "academic_term",
   "start_date",
   "max_number_of_admissions",
   "minimum_age",
@@ -15,14 +17,20 @@
   "end_date",
   "course",
   "program",
+  "registration_fee",
   "column_break_mmuc",
   "company",
   "registration_fee_item",
   "registration_fee_amount",
   "course_fee_amount",
-  "registration_fee",
+  "status",
   "section_break_qoyw",
   "courses",
+  "website_section",
+  "title",
+  "route",
+  "introduction",
+  "published",
   "section_break_bnar",
   "amended_from"
  ],
@@ -49,6 +57,25 @@
    "label": "Academic Year",
    "options": "Academic Year",
    "reqd": 1
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nSubmitted\nPublished\nAdmission Open\nClosed\nCancelled",
+   "read_only": 1
   },
   {
    "fieldname": "admission_based_on",
@@ -163,13 +190,53 @@
    "label": "Course Fee Amount",
    "mandatory_depends_on": "eval:doc.admission_based_on===\"Course\";",
    "options": "Company:company:default_currency"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "website_section",
+   "fieldtype": "Section Break",
+   "label": "Website"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Route",
+   "no_copy": 1,
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "introduction",
+   "fieldtype": "Text Editor",
+   "label": "Introduction"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "published",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Published",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
+ "has_web_view": 1,
  "index_web_pages_for_search": 1,
+ "is_published_field": "published",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-11 20:12:37.891740",
+ "modified": "2026-09-17 21:28:02.785666",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Admission Register",
@@ -190,9 +257,36 @@
    "write": 1
   }
  ],
+ "route": "admission-registers",
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Blue",
+   "title": "Submitted"
+  },
+  {
+   "color": "Orange",
+   "title": "Published"
+  },
+  {
+   "color": "Green",
+   "title": "Admission Open"
+  },
+  {
+   "color": "Red",
+   "title": "Closed"
+  },
+  {
+   "color": "Red",
+   "title": "Cancelled"
+  }
+ ],
+ "title_field": "title"
 }

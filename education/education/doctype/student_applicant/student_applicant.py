@@ -8,6 +8,10 @@ from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import getdate, today
 
+from education.education.doctype.admission_register.admission_register import (
+	STATUS_ADMISSION_OPEN,
+)
+
 STUDENT_FIELDS = (
 	"first_name",
 	"middle_name",
@@ -86,12 +90,32 @@ class StudentApplicant(Document):
 		if not self.admission_register:
 			return
 
-		if (
-			frappe.db.get_value("Admission Register", self.admission_register, "docstatus") != 1
-		):
+		register = frappe.db.get_value(
+			"Admission Register",
+			self.admission_register,
+			["docstatus", "status", "end_date"],
+			as_dict=True,
+		)
+		if not register or register.docstatus != 1:
 			frappe.throw(
 				_("Admission Register {0} must be submitted.").format(self.admission_register)
 			)
+
+		is_new_application = self.is_new() or self.has_value_changed("admission_register")
+		if is_new_application:
+			if register.status != STATUS_ADMISSION_OPEN:
+				frappe.throw(
+					_("Admission is not open for Admission Register {0}.").format(
+						self.admission_register
+					)
+				)
+
+			if register.end_date and getdate(today()) > getdate(register.end_date):
+				frappe.throw(
+					_("The admission period for {0} ended on {1}.").format(
+						self.admission_register, frappe.bold(register.end_date)
+					)
+				)
 
 		if self.admission_based_on == "Program" and self.course:
 			allowed_courses = self.get_register_courses()
@@ -122,6 +146,7 @@ class StudentApplicant(Document):
 		return {
 			"admission_based_on": register.admission_based_on,
 			"academic_year": register.academic_year,
+			"academic_term": register.academic_term,
 			"course": register.course,
 			"program": register.program,
 			"registration_fee_item": register.registration_fee_item,
@@ -227,6 +252,7 @@ class StudentApplicant(Document):
 				"course": self.course,
 				"company": self.company,
 				"admission_register": self.admission_register,
+				"academic_term": self.academic_term,
 				"enrollment_date": today(),
 				"fee_term": self.fee_term,
 				"student_applicant": self.name,

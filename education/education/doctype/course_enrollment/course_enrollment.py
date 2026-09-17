@@ -9,6 +9,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt, get_link_to_form
 
+from education.education.doctype.admission_register.admission_register import (
+	ENROLLMENT_ALLOWED_STATUSES,
+)
 from education.education.doctype.fee_plan.fee_plan import (
 	INSTALLMENT_TERM_TYPES,
 	get_installments,
@@ -19,6 +22,7 @@ class CourseEnrollment(Document):
 	def validate(self):
 		self.set_program_from_course()
 		self.set_fee_term_from_course()
+		self.set_academic_term_from_register()
 		self.validate_admission_register()
 		self.validate_duplication()
 		self.validate_batch()
@@ -144,16 +148,32 @@ class CourseEnrollment(Document):
 
 		self.fee_term = frappe.db.get_value("Course", self.course, "fee_term")
 
+	def set_academic_term_from_register(self):
+		if not self.admission_register:
+			self.academic_term = None
+			return
+
+		self.academic_term = frappe.db.get_value(
+			"Admission Register", self.admission_register, "academic_term"
+		)
+
 	def validate_admission_register(self):
 		register = frappe.db.get_value(
 			"Admission Register",
 			self.admission_register,
-			["docstatus", "admission_based_on", "program"],
+			["docstatus", "admission_based_on", "program", "status"],
 			as_dict=True,
 		)
 		if not register or register.docstatus != 1:
 			frappe.throw(
 				_("Admission Register {0} must be submitted.").format(self.admission_register)
+			)
+
+		if register.status not in ENROLLMENT_ALLOWED_STATUSES:
+			frappe.throw(
+				_("Admission has not started for Admission Register {0}.").format(
+					self.admission_register
+				)
 			)
 
 		if register.admission_based_on == "Program" and register.program:

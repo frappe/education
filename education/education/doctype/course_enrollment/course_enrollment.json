@@ -13,6 +13,7 @@
   "fee_plan",
   "student_batch",
   "roll_number",
+  "academic_term",
   "column_break_uisg",
   "company",
   "program",
@@ -136,6 +137,15 @@
    "options": "Running\nFinished"
   },
   {
+   "fetch_from": "admission_register.academic_term",
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Academic Term",
+   "options": "Academic Term",
+   "read_only": 1
+  },
+  {
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -145,7 +155,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-16 22:11:44.368043",
+ "modified": "2026-09-17 21:27:26.632792",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",

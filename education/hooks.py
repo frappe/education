@@ -41,10 +41,11 @@ app_include_js = "education.bundle.js"
 # website
 update_website_context = []
 
-website_generators = ["Student Admission"]
+website_generators = ["Student Admission", "Admission Register"]
 
 website_route_rules = [
 	{"from_route": "/admissions", "to_route": "Student Admission"},
+	{"from_route": "/admission-registers", "to_route": "Admission Register"},
 	{"from_route": "/student-portal/<path:app_path>", "to_route": "student-portal"},
 ]
 
@@ -59,6 +60,12 @@ standard_portal_menu_items = [
 		"title": "Admission",
 		"route": "/admissions",
 		"reference_doctype": "Student Admission",
+		"role": "Student",
+	},
+	{
+		"title": "Open Admissions",
+		"route": "/admission-registers",
+		"reference_doctype": "Admission Register",
 		"role": "Student",
 	},
 ]
@@ -209,23 +216,11 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"education.tasks.all"
-# 	],
-# 	"daily": [
-# 		"education.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"education.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"education.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"education.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"education.education.doctype.admission_register.admission_register.process_admission_register_schedules",
+	],
+}
 
 # Testing
 # -------

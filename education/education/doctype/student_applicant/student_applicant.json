@@ -125,11 +125,12 @@
    "reqd": 1
   },
   {
+   "fetch_from": "admission_register.academic_term",
    "fieldname": "academic_term",
    "fieldtype": "Link",
    "label": "Academic Term",
    "options": "Academic Term",
-   "reqd": 1
+   "read_only": 1
   },
   {
    "fieldname": "image",
@@ -375,13 +376,12 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch Name",
-   "reqd": 1
+   "options": "Student Batch Name"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-06-15 19:17:15.538385",
+ "modified": "2026-09-17 21:26:41.877294",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",

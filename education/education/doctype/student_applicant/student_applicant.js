@@ -3,19 +3,12 @@
 
 frappe.ui.form.on('Student Applicant', {
   refresh: function (frm) {
-    frm.set_query('academic_term', function () {
-      return {
-        filters: {
-          academic_year: frm.doc.academic_year,
-        },
-      }
-    })
-
     frm.set_query('admission_register', function () {
       return {
         filters: {
           docstatus: 1,
           company: frm.doc.company,
+          status: 'Admission Open',
         },
       }
     })
@@ -60,6 +53,7 @@ frappe.ui.form.on('Student Applicant', {
           filters: {
             company: frm.doc.company,
             docstatus: 1,
+            status: 'Admission Open',
           },
         }
       })
@@ -192,7 +186,10 @@ frappe.ui.form.on('Student Applicant', {
     frm.set_value('course', null)
     frm._register_courses = []
 
-    if (!frm.doc.admission_register) return
+    if (!frm.doc.admission_register) {
+      frm.set_value('academic_term', null)
+      return
+    }
 
     frm.call('get_admission_register_details').then((r) => {
       const details = r.message
@@ -200,6 +197,7 @@ frappe.ui.form.on('Student Applicant', {
 
       frm.set_value('admission_based_on', details.admission_based_on)
       frm.set_value('academic_year', details.academic_year)
+      frm.set_value('academic_term', details.academic_term || null)
       frm.set_value('registration_fee', details.registration_fee)
       frm.set_value('registration_fee_item', details.registration_fee_item)
       frm.set_value('registration_fee_amount', details.registration_fee_amount)

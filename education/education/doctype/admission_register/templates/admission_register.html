@@ -1,0 +1,126 @@
+
+{% extends "templates/web.html" %}
+
+{% block breadcrumbs %}
+	{% include "templates/includes/breadcrumbs.html" %}
+{% endblock %}
+
+{% block header %}
+<h1>{{ title }}</h1>
+{% endblock %}
+
+{% block page_content %}
+	{% set today = frappe.utils.getdate(frappe.utils.nowdate()) %}
+	<div class="row transaction-subheading">
+		<div class="col-xs-6">
+			<span class="indicator
+				{% if doc.status == 'Admission Open' and frappe.utils.getdate(doc.end_date) == today %}
+					red"> {{ _("Application will be closed soon") }}
+				{% elif doc.status == 'Admission Open' %}
+					green"> {{ _("Applications open") }}
+				{% elif doc.status == 'Published' %}
+					blue"> {{ _("Applications will open") }}
+				{% else %}
+					gray"> {{ doc.status }}
+				{% endif %}
+			</span>
+		</div>
+		<div class="col-xs-6 text-muted text-right small">
+			{{ _("Start on") }}: {{ frappe.format_date(doc.start_date) }}<br>
+			{{ _("End on") }}: {{ frappe.format_date(doc.end_date) }}
+		</div>
+	</div>
+	<br>
+
+	{%- if introduction -%}
+		<div>{{ introduction }}</div>
+	{% endif %}
+
+	<div class="table-responsive">
+		<table class="table table-bordered">
+			<tbody>
+				<tr>
+					<th>{{ _("Academic Year") }}</th>
+					<td>{{ doc.academic_year }}</td>
+				</tr>
+				{% if doc.academic_term %}
+				<tr>
+					<th>{{ _("Academic Term") }}</th>
+					<td>{{ doc.academic_term }}</td>
+				</tr>
+				{% endif %}
+				<tr>
+					<th>{{ _("Admission Based on") }}</th>
+					<td>{{ doc.admission_based_on }}</td>
+				</tr>
+				{% if doc.admission_based_on == "Program" %}
+				<tr>
+					<th>{{ _("Program") }}</th>
+					<td>{{ doc.program }}</td>
+				</tr>
+				{% elif doc.course %}
+				<tr>
+					<th>{{ _("Course") }}</th>
+					<td>{{ doc.course }}</td>
+				</tr>
+				{% endif %}
+				<tr>
+					<th>{{ _("Minimum Age") }}</th>
+					<td>{{ doc.minimum_age }} {{ _("Years") }}</td>
+				</tr>
+				{% if doc.registration_fee %}
+				<tr>
+					<th>{{ _("Registration Fee") }}</th>
+					<td>{{ frappe.format_value(doc.registration_fee_amount, {"fieldtype": "Currency"}) }}</td>
+				</tr>
+				{% endif %}
+				{% if doc.admission_based_on == "Course" and doc.course_fee_amount %}
+				<tr>
+					<th>{{ _("Course Fee") }}</th>
+					<td>{{ frappe.format_value(doc.course_fee_amount, {"fieldtype": "Currency"}) }}</td>
+				</tr>
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+
+	{% if doc.admission_based_on == "Program" and doc.courses %}
+		<br>
+		<div class="table-responsive">
+			<h3 class="bold">{{ _("Offered Courses") }}</h3>
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr class="active">
+						<th>{{ _("Course") }}</th>
+						<th>{{ _("Course Fee") }}</th>
+						{%- if show_apply_button -%}
+							<th></th>
+						{% endif %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in doc.courses %}
+						<tr>
+							<td>{{ row.course }}</td>
+							<td>{{ frappe.format_value(row.course_fee_amount, {"fieldtype": "Currency"}) }}</td>
+							{%- if show_apply_button -%}
+							<td>
+								<a class="btn btn-sm btn-primary" href="/student-applicant/new?admission_register={{ doc.name }}&course={{ row.course }}">
+									{{ _("Apply Now") }}
+								</a>
+							</td>
+							{% endif %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	{% elif show_apply_button %}
+		<p>
+			<a class="btn btn-primary" href="/student-applicant/new?admission_register={{ doc.name }}">
+				{{ _("Apply Now") }}
+			</a>
+		</p>
+	{% endif %}
+
+{% endblock %}

@@ -12,6 +12,13 @@ frappe.ui.form.on('Admission Register', {
         }
       })
     }
+    frm.trigger('set_course_filters')
+    frm.trigger('setup_stage_actions')
+    frm.trigger('set_academic_term_filter')
+  },
+  academic_year: function (frm) {
+    frm.set_value('academic_term', null)
+    frm.trigger('set_academic_term_filter')
   },
   company: function (frm) {
     if (frm.doc.company) {
@@ -23,6 +30,7 @@ frappe.ui.form.on('Admission Register', {
         }
       })
     }
+    frm.trigger('set_course_filters')
   },
   course: function (frm) {
     if (frm.doc.course) {
@@ -53,15 +61,85 @@ frappe.ui.form.on('Admission Register', {
   },
 
   set_course_filters(frm) {
-    if (frm.doc.admission_based_on === 'Program') {
-      frm.set_query('course', 'courses', function () {
-        return {
-          filters: {
-            program: frm.doc.program,
-            company: frm.doc.company,
-          },
-        }
+    if (frm.doc.admission_based_on !== 'Program') return
+
+    frm.set_query('course', 'courses', function (doc, cdt, cdn) {
+      const selected_courses = (frm.doc.courses || [])
+        .filter((row) => row.name !== cdn && row.course)
+        .map((row) => row.course)
+
+      const filters = [
+        ['Course', 'program', '=', frm.doc.program],
+        ['Course', 'company', '=', frm.doc.company],
+      ]
+
+      if (selected_courses.length) {
+        filters.push(['Course', 'name', 'not in', selected_courses])
+      }
+
+      return { filters }
+    })
+  },
+
+  setup_stage_actions(frm) {
+    if (frm.doc.docstatus !== 1) return
+
+    const call_and_reload = (method) => {
+      frm.call(method).then(() => frm.reload_doc())
+    }
+
+    if (frm.doc.status === 'Submitted') {
+      frm
+        .add_custom_button(__('Publish'), () => call_and_reload('publish'))
+        .addClass('btn-primary')
+    }
+
+    if (frm.doc.status === 'Published') {
+      frm
+        .add_custom_button(__('Start Admission'), () =>
+          call_and_reload('start_admission')
+        )
+        .addClass('btn-primary')
+
+      frm.add_custom_button(__('Unpublish'), () => call_and_reload('unpublish'))
+
+      frm.add_custom_button(__('Close Admission'), () => {
+        frappe.confirm(
+          __(
+            'Close this admission? Applicants will no longer be able to apply.'
+          ),
+          () => call_and_reload('close_admission')
+        )
       })
     }
+
+    if (frm.doc.status === 'Admission Open') {
+      frm
+        .add_custom_button(__('Close Admission'), () => {
+          frappe.confirm(
+            __(
+              'Close this admission? Applicants will no longer be able to apply.'
+            ),
+            () => call_and_reload('close_admission')
+          )
+        })
+        .addClass('btn-primary')
+    }
+
+    if (frm.doc.status === 'Closed') {
+      frm.add_custom_button(__('Reopen Admission'), () =>
+        call_and_reload('reopen_admission')
+      )
+    }
+  },
+
+  set_academic_term_filter(frm) {
+    frm.set_query('academic_term', function () {
+      return {
+        filters: {
+          academic_year: frm.doc.academic_year,
+        },
+      }
+    })
   },
 })
