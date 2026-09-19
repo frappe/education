@@ -2,6 +2,7 @@
 import { watch } from "vue";
 import { useCourseList } from "@/features/courses/useCourses";
 import { formatDay, formatVnd } from "@/features/format";
+import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppButton from "@/ui/AppButton.vue";
@@ -38,7 +39,12 @@ const statusText = { draft: t.statusDraft, active: t.statusActive, archived: t.s
           <span class="text-sm text-[var(--color-text-muted)]">{{ statusText[c.status] }}</span>
         </div>
         <p class="text-sm text-[var(--color-text-muted)]">
-          {{ t.price }}: {{ formatVnd(c.pricePerLesson) }}
+          {{ t.price }}: {{ formatVnd(c.pricePerLesson) }} ·
+          {{
+            c.maxStudents === null
+              ? fill(t.placesNoLimit, { n: c.enrolledCount })
+              : fill(t.places, { n: c.enrolledCount, max: c.maxStudents })
+          }}
           <template v-if="c.startDate"> · {{ t.from }} {{ formatDay(c.startDate) }}</template>
           <template v-if="c.endDate"> · {{ t.until }} {{ formatDay(c.endDate) }}</template>
         </p>

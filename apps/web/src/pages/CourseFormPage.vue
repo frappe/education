@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCourseForm } from "@/features/courses/useCourses";
 import { messages } from "@/messages";
+import CourseRoster from "@/components/CourseRoster.vue";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppCheckbox from "@/ui/AppCheckbox.vue";
@@ -17,7 +18,7 @@ const router = useRouter();
 const id = computed(() => (route.params.id ? String(route.params.id) : undefined));
 const saved = ref(false);
 
-const { form, course, loading, notFound, archived, setArchived } = useCourseForm(id.value, (c) => {
+const { form, course, loading, notFound, archived, setArchived, reload } = useCourseForm(id.value, (c) => {
   if (!id.value) void router.replace(`/courses/${c.id}`);
   else saved.value = true;
 });
@@ -80,6 +81,14 @@ const { form, course, loading, notFound, archived, setArchived } = useCourseForm
         </template>
       </div>
     </form>
+    <CourseRoster
+      v-if="course && !archived"
+      :key="course.id"
+      :course-id="course.id"
+      :price-per-lesson="course.pricePerLesson"
+      :max-students="course.maxStudents"
+      @changed="reload"
+    />
     <AppLink to="/courses">{{ messages.common.back }}</AppLink>
   </AppPage>
 </template>

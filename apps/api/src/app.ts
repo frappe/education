@@ -10,6 +10,7 @@ import { securityHeaders } from "./middleware/security-headers";
 import { auth } from "./routes/auth";
 import { courses } from "./routes/courses";
 import { dev } from "./routes/dev";
+import { enrollments } from "./routes/enrollments";
 import { health } from "./routes/health";
 import { invites } from "./routes/invites";
 import { students } from "./routes/students";
@@ -33,6 +34,7 @@ export function createApp() {
   api.route("/", invites);
   api.route("/", courses);
   api.route("/", students);
+  api.route("/", enrollments);
   api.route("/", dev);
   app.route("/api", api);
 

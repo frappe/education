@@ -130,6 +130,8 @@ export interface CourseInfo {
   startDate: string | null;
   endDate: string | null;
   maxStudents: number | null;
+  /** Students who joined and are still taking the course. */
+  enrolledCount: number;
   status: "draft" | "active" | "archived";
   version: number;
   createdAt: string;
@@ -193,4 +195,59 @@ export interface ImportRowResult {
 export interface ImportResult {
   rows: ImportRowResult[];
   created: number;
+}
+
+// ------------------------------------------------------------------ enrollments (M2)
+
+export const ENROLLMENT_STATUSES_EDITABLE = ["active", "completed", "dropped"] as const;
+
+export const enrollBody = z.object({
+  studentIds: z
+    .array(z.string().min(1).max(64))
+    .min(1, "Please choose at least one student.")
+    .max(100, "You can add up to 100 students at a time."),
+  /** A price for these students only. Leave empty to use the course price. */
+  customPrice: money.nullable().default(null),
+});
+export const updateEnrollmentBody = z.object({
+  status: z.enum(ENROLLMENT_STATUSES_EDITABLE),
+  customPrice: money.nullable().default(null),
+});
+
+export type EnrollBody = z.infer<typeof enrollBody>;
+export type UpdateEnrollmentBody = z.infer<typeof updateEnrollmentBody>;
+
+export type EnrollmentStatus = "pending" | "active" | "completed" | "dropped";
+
+/** One student in a course roster. */
+export interface EnrollmentInfo {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentArchived: boolean;
+  status: EnrollmentStatus;
+  /** null means the course price applies. */
+  customPrice: number | null;
+  enrolledAt: string;
+  endedAt: string | null;
+}
+
+/** One course of a student, for the student's profile. */
+export interface StudentCourseInfo {
+  courseId: string;
+  courseName: string;
+  courseStatus: "draft" | "active" | "archived";
+  status: EnrollmentStatus;
+  customPrice: number | null;
+  pricePerLesson: number;
+  enrolledAt: string;
+}
+
+export interface EnrollOutcome {
+  studentId: string;
+  result: "enrolled" | "already_enrolled" | "full" | "not_found";
+}
+export interface EnrollResult {
+  results: EnrollOutcome[];
+  enrolled: number;
 }

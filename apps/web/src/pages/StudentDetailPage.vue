@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStudentDetail } from "@/features/students/useStudents";
 import { messages } from "@/messages";
+import StudentCourses from "@/components/StudentCourses.vue";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppInput from "@/ui/AppInput.vue";
@@ -51,6 +52,7 @@ const canInvite = computed(
         </div>
       </form>
     </template>
+    <StudentCourses v-if="student" :key="student.id" :student-id="student.id" :archived="student.archived" />
     <AppLink to="/students">{{ messages.common.back }}</AppLink>
   </AppPage>
 </template>

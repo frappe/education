@@ -10,13 +10,23 @@ export interface CourseRow {
   start_date: string | null;
   end_date: string | null;
   max_students: number | null;
+  enrolled_count: number;
   status: "draft" | "active" | "archived";
   version: number;
   created_at: string;
 }
 
-const COLUMNS =
-  "id, tenant_id, name, description, price_per_lesson, start_date, end_date, max_students, status, version, created_at";
+/**
+ * Students who hold a seat: joined (active) and not archived. Written once and used in every
+ * place that counts seats, so the number is always worked out the same way. It is a fixed
+ * piece of SQL, and nothing from a request can reach it.
+ * Expects the course to be called "c" in the query that uses it.
+ */
+export const ACTIVE_SEATS = `SELECT COUNT(*) FROM enrollments e JOIN students es ON es.id = e.student_id
+  WHERE e.course_id = c.id AND e.status = 'active' AND es.status != 'archived'`;
+
+const COLUMNS = `id, tenant_id, name, description, price_per_lesson, start_date, end_date, max_students,
+  (${ACTIVE_SEATS}) AS enrolled_count, status, version, created_at`;
 
 export const toCourseInfo = (r: CourseRow): CourseInfo => ({
   id: r.id,
@@ -26,6 +36,7 @@ export const toCourseInfo = (r: CourseRow): CourseInfo => ({
   startDate: r.start_date,
   endDate: r.end_date,
   maxStudents: r.max_students,
+  enrolledCount: r.enrolled_count,
   status: r.status,
   version: r.version,
   createdAt: r.created_at,
@@ -34,7 +45,7 @@ export const toCourseInfo = (r: CourseRow): CourseInfo => ({
 /** Every course query takes the tenant id, so another teacher's course is never returned. */
 export const findCourse = (db: D1Database, tenantId: string, id: string) =>
   db
-    .prepare(`SELECT ${COLUMNS} FROM courses WHERE tenant_id = ? AND id = ?`)
+    .prepare(`SELECT ${COLUMNS} FROM courses c WHERE tenant_id = ? AND id = ?`)
     .bind(tenantId, id)
     .first<CourseRow>();
 
@@ -45,7 +56,7 @@ export async function listCourses(
 ): Promise<CourseRow[]> {
   const res = await db
     .prepare(
-      `SELECT ${COLUMNS} FROM courses WHERE tenant_id = ? AND (? = 1 OR status != 'archived')
+      `SELECT ${COLUMNS} FROM courses c WHERE tenant_id = ? AND (? = 1 OR status != 'archived')
        ORDER BY created_at DESC, id DESC`,
     )
     .bind(tenantId, includeArchived ? 1 : 0)

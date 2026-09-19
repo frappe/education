@@ -23,6 +23,9 @@ export const ERROR_CODES = {
   ACCOUNT_PAUSED: { status: 403, message: "This account is paused. Please contact support." },
   INVITE_LIMIT: { status: 429, message: "You have sent many invites today. Please try again tomorrow." },
 
+  // Courses
+  COURSE_FULL: { status: 409, message: "This course is full." },
+
   // Work (assignments)
   DEADLINE_PASSED: { status: 409, message: "The due date has passed, so you cannot turn in this work." },
   INVALID_LINK: { status: 400, message: "Please enter a link that starts with https://" },

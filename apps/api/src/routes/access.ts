@@ -43,4 +43,8 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "PUT /api/students/:id": "teacher",
   "POST /api/students/:id/archive": "teacher",
   "POST /api/students/:id/restore": "teacher",
+  "GET /api/courses/:id/students": "teacher",
+  "POST /api/courses/:id/students": "teacher",
+  "PUT /api/courses/:id/students/:studentId": "teacher",
+  "GET /api/students/:id/courses": "teacher",
 };

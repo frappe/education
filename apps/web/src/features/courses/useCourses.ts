@@ -123,7 +123,17 @@ export function useCourseForm(id: string | undefined, onSaved: (course: CourseIn
     fill(res.course);
   }
 
+  /**
+   * Refreshes only the number of students (for example after students were added).
+   * The version stays as the person opened it, so a save is still refused if someone else changed the course.
+   */
+  async function reload() {
+    if (!course.value) return;
+    const fresh = (await api<{ course: CourseInfo }>(`/courses/${course.value.id}`)).course;
+    if (course.value) course.value = { ...course.value, enrolledCount: fresh.enrolledCount };
+  }
+
   const archived = computed(() => course.value?.status === "archived");
   onMounted(load);
-  return { form, course, loading, notFound, archived, setArchived };
+  return { form, course, loading, notFound, archived, setArchived, reload };
 }

@@ -43,9 +43,9 @@ describe("data access rules", () => {
   });
 
   it("never builds SQL by joining strings (only a few fixed, named pieces are allowed)", () => {
-    // `${COLUMNS}` and `${where}` are constants written in the same file. `${placeholders(n)}` only
+    // `${COLUMNS}`, `${where}` and `${ACTIVE_SEATS}` are constants written in the repos. `${placeholders(n)}` only
     // makes "?,?,?". No text from a request can reach these.
-    const SAFE = /^(COLUMNS|where|placeholders\(chunk\.length\))$/;
+    const SAFE = /^(COLUMNS|where|ACTIVE_SEATS|placeholders\((chunk|ids)\.length\))$/;
     const offenders: string[] = [];
     for (const f of files) {
       for (const match of f.text.matchAll(/\.prepare\(\s*`([^`]*)`/g)) {

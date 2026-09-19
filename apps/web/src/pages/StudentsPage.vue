@@ -9,11 +9,13 @@ import AppButton from "@/ui/AppButton.vue";
 import AppCheckbox from "@/ui/AppCheckbox.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLink from "@/ui/AppLink.vue";
+import AppSelect from "@/ui/AppSelect.vue";
 import AppPage from "@/ui/AppPage.vue";
 
 const t = messages.students;
 const router = useRouter();
-const { data, search, page, showArchived, loading, error, form } = useStudentList();
+const { data, search, page, showArchived, loading, error, form, courses, notice } = useStudentList();
+const courseOptions = computed(() => courses.value.map((c) => ({ value: c.id, label: c.name })));
 
 const pages = computed(() => Math.max(1, Math.ceil(data.value.total / data.value.pageSize)));
 const accessText = { joined: t.joined, invited: t.invited, not_invited: t.notInvited } as const;
@@ -25,6 +27,7 @@ const accessText = { joined: t.joined, invited: t.invited, not_invited: t.notInv
       <h2 class="text-lg font-medium">{{ t.addTitle }}</h2>
       <form class="flex flex-col gap-3" novalidate @submit.prevent="form.submit">
         <AppAlert v-if="form.formError.value" kind="error">{{ form.formError.value }}</AppAlert>
+        <AppAlert v-if="notice" kind="info">{{ fill(t.addedButNotEnrolled, { reason: notice }) }}</AppAlert>
         <AppInput v-model="form.values.name" :label="t.name" :error="form.errors.value.name" />
         <AppInput
           v-model="form.values.email"
@@ -33,6 +36,13 @@ const accessText = { joined: t.joined, invited: t.invited, not_invited: t.notInv
           :error="form.errors.value.email"
         />
         <AppInput v-model="form.values.phone" :label="t.phone" type="tel" :error="form.errors.value.phone" />
+        <AppSelect
+          v-if="courseOptions.length"
+          v-model="form.values.courseId"
+          :label="t.addToCourse"
+          :options="courseOptions"
+          :placeholder="t.noCourse"
+        />
         <AppCheckbox v-model="form.values.invite" :label="t.inviteNow" />
         <div class="flex flex-wrap gap-3">
           <AppButton type="submit" :loading="form.submitting.value">{{ t.submit }}</AppButton>

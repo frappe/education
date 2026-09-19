@@ -32,7 +32,8 @@ Browser → Cloudflare edge → Worker → D1 / R2 · Worker → email service �
 | 15 | Elevation of privilege | Student calls a teacher action | Central policy `can(actor, resource, action, target)`; permission matrix; a table of who may call each route, checked by tests (anonymous gets 401, student gets 403 on teacher routes) **(done)** | `access.test.ts`, `policy.test.ts` |
 | 16 | Elevation of privilege | Reach the admin console | Cloudflare Access (SSO + MFA), Worker checks the Access token **(M5)** | Admin tests **(M5)** |
 | 17 | Abuse | Use the platform to send spam | Teacher must confirm their own email before inviting, 50 invites a day, 5 emails an hour per address, sign up and reset always answer the same **(done)**; unsubscribe header **(M4)** | `invites.test.ts`, `auth.test.ts` |
-| 18 | Supply chain | Bad dependency or CI action | Lockfile, `pnpm audit` in CI, actions pinned by commit, install scripts allowed only for `esbuild` and `workerd` | `.github/workflows/lms-ci.yml` (done) |
+| 18 | Tampering | Two requests take the last seat of a course, or a student of teacher B is put into teacher A's course | The seat limit and the same-tenant check are inside the single `INSERT` statement, and a database trigger refuses any enrollment that mixes tenants **(done)** | `apps/api/test/enrollments.test.ts` |
+| 19 | Supply chain | Bad dependency or CI action | Lockfile, `pnpm audit` in CI, actions pinned by commit, install scripts allowed only for `esbuild` and `workerd` | `.github/workflows/lms-ci.yml` (done) |
 
 ## Lessons from the old Frappe code
 

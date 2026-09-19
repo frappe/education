@@ -5,6 +5,7 @@ import {
   type ImportResult,
   type StudentInfo,
 } from "@lms/shared";
+import type { CourseInfo, EnrollResult } from "@lms/shared";
 import { onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
@@ -56,13 +57,41 @@ export function useStudentList() {
   });
   watch([page, showArchived], () => void load());
 
+  const courses = ref<CourseInfo[]>([]);
+  /** Shown after adding a student to a course at the same time, when the course could not take them. */
+  const notice = ref<string | null>(null);
+
   const form = useForm(
-    { name: "", email: "", phone: "", invite: false },
+    { name: "", email: "", phone: "", invite: false, courseId: "" },
     {
       schema: addStudentBody,
-      toPayload: (v) => ({ ...v, phone: v.phone.trim() || undefined }),
+      toPayload: (v) => ({
+        name: v.name,
+        email: v.email,
+        phone: v.phone.trim() || undefined,
+        invite: v.invite,
+      }),
       submit: async (v) => {
-        await api("/students", { method: "POST", body: { ...v, phone: v.phone.trim() || undefined } });
+        notice.value = null;
+        const created = await api<{ student: StudentInfo }>("/students", {
+          method: "POST",
+          body: { name: v.name, email: v.email, phone: v.phone.trim() || undefined, invite: v.invite },
+        });
+        if (v.courseId) {
+          try {
+            const res = await api<EnrollResult>(`/courses/${v.courseId}/students`, {
+              method: "POST",
+              body: { studentIds: [created.student.id], customPrice: null },
+            });
+            if (res.results[0]?.result !== "enrolled")
+              notice.value =
+                res.results[0]?.result === "full"
+                  ? "This course is full."
+                  : "The student could not join the course.";
+          } catch (err) {
+            notice.value = err instanceof Error ? err.message : "The student could not join the course.";
+          }
+        }
         form.values.name = "";
         form.values.email = "";
         form.values.phone = "";
@@ -71,8 +100,15 @@ export function useStudentList() {
     },
   );
 
-  onMounted(load);
-  return { data, search, page, showArchived, loading, error, form, load };
+  onMounted(async () => {
+    await load();
+    try {
+      courses.value = (await api<{ courses: CourseInfo[] }>("/courses")).courses;
+    } catch {
+      courses.value = [];
+    }
+  });
+  return { data, search, page, showArchived, loading, error, form, load, courses, notice };
 }
 
 export function useStudentDetail(id: string) {
