@@ -7,7 +7,7 @@ defineProps<{ to: string; icon: IconName; exact?: boolean }>();
   <li>
     <RouterLink
       :to="to"
-      class="min-h-11 gap-3 rounded-field font-medium"
+      class="min-h-11 content-center gap-3 rounded-field font-medium"
       :active-class="exact ? '' : 'bg-primary/10! text-primary!'"
       :exact-active-class="exact ? 'bg-primary/10! text-primary!' : ''"
     >

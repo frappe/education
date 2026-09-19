@@ -15,7 +15,7 @@ const id = useId();
 </script>
 
 <template>
-  <div class="fieldset">
+  <div class="fieldset gap-1 py-0">
     <label :for="id" class="fieldset-legend">{{ label }}</label>
     <input
       :id="id"

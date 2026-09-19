@@ -23,6 +23,7 @@ withDefaults(
     :aria-busy="loading || undefined"
     class="btn gap-2 font-medium"
     :class="{
+      'border-base-300 bg-base-100 hover:bg-base-200': variant === 'secondary',
       'btn-primary': variant === 'primary',
       'btn-error': variant === 'danger',
       'btn-ghost': variant === 'ghost',
