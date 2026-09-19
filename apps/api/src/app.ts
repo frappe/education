@@ -19,6 +19,7 @@ import { invites } from "./routes/invites";
 import { invoices } from "./routes/invoices";
 import { lessons } from "./routes/lessons";
 import { my } from "./routes/my";
+import { notifications } from "./routes/notifications";
 import { students } from "./routes/students";
 
 export function createApp() {
@@ -47,6 +48,7 @@ export function createApp() {
   api.route("/", my);
   api.route("/", grading);
   api.route("/", invoices);
+  api.route("/", notifications);
   api.route("/", dev);
   app.route("/api", api);
 

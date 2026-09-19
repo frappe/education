@@ -15,6 +15,7 @@ import { AppError } from "../lib/errors";
 import { nowIso } from "../lib/time";
 import { gradeAuto } from "../lib/grade";
 import { localToUtc } from "../lib/zone";
+import { tell } from "../notifications/service";
 import { authorize } from "../policy";
 import {
   findAssignment,
@@ -37,6 +38,7 @@ import {
   type SubmissionRowFull,
 } from "../repos/grading";
 import { tenantTimezone } from "../repos/lessons";
+import { notifyWorkStatement } from "../repos/notifications";
 
 async function assignmentOf(ctx: Ctx, tenantId: string, id: string) {
   const a = await findAssignment(ctx.env.DB, tenantId, id);
@@ -238,6 +240,16 @@ export async function giveBack(
     targetId: assignmentId,
     ipHash: ctx.ipHash,
   });
+  await tell(
+    notifyWorkStatement(db, {
+      tenantId,
+      assignmentId,
+      studentId,
+      kind: "homework_returned",
+      prefix: "Your work was scored: ",
+      dedupe: null,
+    }),
+  );
   return detailOf(ctx, tenantId, assignmentId, studentId);
 }
 
@@ -275,6 +287,16 @@ export async function askAgain(
     targetId: assignmentId,
     ipHash: ctx.ipHash,
   });
+  await tell(
+    notifyWorkStatement(db, {
+      tenantId,
+      assignmentId,
+      studentId,
+      kind: "homework_again",
+      prefix: "Please change your work: ",
+      dedupe: null,
+    }),
+  );
   return detailOf(ctx, tenantId, assignmentId, studentId);
 }
 

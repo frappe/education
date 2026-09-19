@@ -18,7 +18,9 @@ import { AppError } from "../lib/errors";
 import { uuidv7 } from "../lib/id";
 import { nowIso } from "../lib/time";
 import { utcToLocal } from "../lib/zone";
+import { tell } from "../notifications/service";
 import { authorize } from "../policy";
+import { notifyHandInStatement } from "../repos/notifications";
 import { linksOf, parseList, parseNotes, parsePoints, questionsOf } from "../repos/assignments";
 import { lessonsOfCourse } from "../repos/lessons";
 import {
@@ -244,6 +246,9 @@ async function save(
       ipHash: ctx.ipHash,
       meta: { scored_by_system: allAuto },
     });
+    await tell(
+      notifyHandInStatement(db, { tenantId: row.tenant_id, assignmentId: row.id, studentId: row.student_id }),
+    );
   }
   return toDetail((await findMyWork(db, actor.userId, id))!, nowIso());
 }

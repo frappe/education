@@ -13,6 +13,7 @@ import { AppError } from "../lib/errors";
 import { normalizeAnswer, summaryKind, totalPoints } from "../lib/grade";
 import { uuidv7 } from "../lib/id";
 import { localToUtc, utcToLocal } from "../lib/zone";
+import { tell } from "../notifications/service";
 import { authorize } from "../policy";
 import {
   assignmentsOfCourse,
@@ -41,6 +42,7 @@ import {
   type AssignmentRow,
 } from "../repos/assignments";
 import { findCourse } from "../repos/courses";
+import { notifyPublishedStatement } from "../repos/notifications";
 import { handedInAnswers, regradeStatement } from "../repos/grading";
 import { tenantTimezone } from "../repos/lessons";
 
@@ -228,6 +230,7 @@ async function change(
   await load(ctx, tenantId, id);
   const res = await statement(ctx.env.DB, tenantId, id).run();
   if (!res.meta.changes) throw new AppError("CONFLICT", { message: conflict });
+  if (action === "publish") await tell(notifyPublishedStatement(ctx.env.DB, tenantId, id));
   await audit(ctx.env.DB, {
     action: `assignment.${action === "publish" ? "published" : "closed"}`,
     actorUserId: actor.userId,

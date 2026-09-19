@@ -3,6 +3,8 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import AppToaster from "@/components/AppToaster.vue";
 import { useSession } from "@/features/auth/session";
+import { useUnread, useUnreadPolling } from "@/features/notifications/useNotifications";
+import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAvatar from "@/ui/AppAvatar.vue";
 import AppBrand from "@/ui/AppBrand.vue";
@@ -16,6 +18,8 @@ import AppShell from "@/ui/AppShell.vue";
 const session = useSession();
 const router = useRouter();
 const t = messages.nav;
+const unread = useUnread();
+useUnreadPolling(() => session.me !== null);
 const role = computed(() => (session.isTeacher ? t.teacher : t.student));
 
 async function signOut() {
@@ -31,6 +35,13 @@ async function signOut() {
     </template>
     <template #nav>
       <AppNavItem to="/" icon="home" exact>{{ t.home }}</AppNavItem>
+      <AppNavItem
+        to="/notifications"
+        icon="bell"
+        :badge="unread"
+        :badge-label="fill(t.unreadCount, { n: unread })"
+        >{{ t.notifications }}</AppNavItem
+      >
       <template v-if="session.isTeacher">
         <AppNavItem to="/courses" icon="book">{{ t.courses }}</AppNavItem>
         <AppNavItem to="/students" icon="users">{{ t.students }}</AppNavItem>

@@ -74,6 +74,11 @@ export const router = createRouter({
       meta: { requiresTeacher: true },
     },
     {
+      path: "/notifications",
+      component: () => import("@/pages/NotificationsPage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/invoices",
       component: () => import("@/pages/InvoicesPage.vue"),
       meta: { requiresTeacher: true },

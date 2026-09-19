@@ -18,6 +18,7 @@ import { sendMail, type Ctx } from "../auth/service";
 import { AppError } from "../lib/errors";
 import { appUrl } from "../lib/config";
 import { localToUtc, utcToLocal } from "../lib/zone";
+import { tell } from "../notifications/service";
 import { authorize } from "../policy";
 import {
   deleteDraftStatement,
@@ -45,6 +46,7 @@ import {
   type PaymentRow,
 } from "../repos/invoices";
 import { tenantTimezone } from "../repos/lessons";
+import { notifyStudentStatement } from "../repos/notifications";
 
 /** A line as it is kept in the database. `lessons` are the lessons behind the line (with their start, UTC). */
 interface StoredLine {
@@ -526,6 +528,17 @@ export async function invoiceSend(ctx: Ctx, actor: Actor, id: string, version: n
     ipHash: ctx.ipHash,
     meta: { total: current.total },
   });
+  await tell(
+    notifyStudentStatement(db, {
+      tenantId,
+      studentId: current.student_id,
+      kind: "receipt_sent",
+      title: `New fee receipt: ${monthName(current.period)}`,
+      body: issued.teacherName,
+      link: `/my/invoices/${id}`,
+      dedupe: `receipt:${id}`,
+    }),
+  );
   await sendMail(ctx, {
     kind: "invoice",
     to: current.student_email,

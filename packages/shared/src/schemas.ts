@@ -880,3 +880,39 @@ export interface InvoiceSummary {
   unpaid: number;
   unpaidAmount: number;
 }
+
+// ------------------------------------------------------------- notifications (M5)
+
+/** The kinds of notification that can also come by email, and can be turned off. */
+export const EMAIL_KINDS = ["homework_new", "homework_due", "homework_returned", "homework_again"] as const;
+export type EmailKind = (typeof EMAIL_KINDS)[number];
+
+export interface NotificationItem {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  /** A path inside the app. */
+  link: string;
+  at: string;
+  read: boolean;
+}
+
+export interface NotificationList {
+  items: NotificationItem[];
+  unread: number;
+}
+
+/** Which kinds are sent by email to this person. Empty for a person who gets none (a teacher). */
+export interface NotificationSettings {
+  kinds: { kind: EmailKind; email: boolean }[];
+}
+
+export const markReadBody = z.object({
+  /** Leave out to mark everything as read. */
+  ids: z.array(z.string().min(1).max(64)).max(100).optional(),
+});
+export const notificationSettingsBody = z.object({
+  /** The kinds the person does NOT want by email. */
+  muted: z.array(z.enum(EMAIL_KINDS)).max(EMAIL_KINDS.length),
+});
