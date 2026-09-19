@@ -524,3 +524,70 @@ export interface MyCourseDetail {
   }[];
   work: MyWorkItem[];
 }
+
+// ------------------------------------------------------------ grading (M3)
+
+/** A score in steps of 0.5. The most it can be is checked against the work. */
+const scoreValue = z
+  .number("Please enter a score.")
+  .min(0, "The score cannot be below 0.")
+  .max(1000, "This score is too high.")
+  .refine((v) => Number.isInteger(v * 2), "Use whole numbers or halves, for example 7 or 7.5.");
+const feedbackText = z.string().trim().max(5000, "This text is too long.");
+
+export const gradeBody = z.object({
+  score: scoreValue,
+  feedback: feedbackText.default(""),
+  /** The version the teacher was looking at. If the student changed the answer since, the save is refused. */
+  version: z.number().int().min(1),
+});
+export const revisionBody = z.object({
+  /** Tells the student what to improve. */
+  feedback: feedbackText.min(1, "Please tell the student what to change."),
+  version: z.number().int().min(1),
+});
+export const returnBody = z.object({ version: z.number().int().min(1) });
+export const extensionBody = z.object({ date: isoDate, time: hhmm });
+
+export type GradeBody = z.infer<typeof gradeBody>;
+export type RevisionBody = z.infer<typeof revisionBody>;
+export type ExtensionBody = z.infer<typeof extensionBody>;
+
+export interface SubmissionRow {
+  studentId: string;
+  studentName: string;
+  status: SubmissionStatus;
+  isLate: boolean;
+  submittedAt: string | null;
+  score: number | null;
+  version: number | null;
+  /** More time the teacher gave this student. */
+  extensionUntil: string | null;
+}
+
+export interface SubmissionDetail {
+  assignment: AssignmentInfo;
+  studentId: string;
+  studentName: string;
+  status: SubmissionStatus;
+  isLate: boolean;
+  submittedAt: string | null;
+  revisionCount: number;
+  answer: AnswerBody;
+  score: number | null;
+  feedback: string;
+  version: number;
+  history: { at: string; by: string; oldScore: number | null; newScore: number | null; feedback: string }[];
+  extensionUntil: string | null;
+}
+
+export interface QueueItem {
+  assignmentId: string;
+  assignmentTitle: string;
+  courseId: string;
+  courseName: string;
+  studentId: string;
+  studentName: string;
+  submittedAt: string;
+  isLate: boolean;
+}

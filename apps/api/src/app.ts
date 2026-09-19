@@ -13,6 +13,7 @@ import { courses } from "./routes/courses";
 import { dev } from "./routes/dev";
 import { enrollments } from "./routes/enrollments";
 import { google } from "./routes/google";
+import { grading } from "./routes/grading";
 import { health } from "./routes/health";
 import { invites } from "./routes/invites";
 import { lessons } from "./routes/lessons";
@@ -43,6 +44,7 @@ export function createApp() {
   api.route("/", lessons);
   api.route("/", assignments);
   api.route("/", my);
+  api.route("/", grading);
   api.route("/", dev);
   app.route("/api", api);
 
