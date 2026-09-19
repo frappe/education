@@ -197,6 +197,21 @@ export const updateAssignmentStatement = (
       o.version,
     );
 
+/**
+ * Saves the questions of an open or closed assignment (used to accept one more answer), only if nobody changed
+ * the assignment since it was read. `meta.changes` is 0 when the version is old.
+ */
+export const setQuestionsStatement = (
+  db: D1Database,
+  o: { tenantId: string; id: string; version: number; questions: unknown[] },
+): D1PreparedStatement =>
+  db
+    .prepare(
+      `UPDATE assignments SET questions = ?1, version = version + 1, updated_at = ?2
+       WHERE tenant_id = ?3 AND id = ?4 AND version = ?5 AND status IN ('published', 'closed')`,
+    )
+    .bind(JSON.stringify(o.questions), nowIso(), o.tenantId, o.id, o.version);
+
 /** Replaces the chosen students, but only when the update just before it went through (version is now `newVersion`). */
 export const clearTargetsStatement = (
   db: D1Database,

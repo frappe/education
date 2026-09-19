@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   findSubmission,
   gradeStatement,
+  regradeStatement,
   requestRevisionStatement,
   returnStatement,
   rosterOf,
@@ -435,6 +436,175 @@ describe("a comment or a correction on each question", () => {
       notes: { [qs[2]!.id]: "x" },
     });
     expect(res.status).toBe(404);
+  });
+});
+
+describe("accepting one more answer for a short answer question", () => {
+  const accept = (t: Person, id: string, questionId: string, answer: string) =>
+    call(`/api/assignments/${id}/questions/${questionId}/accept`, {
+      method: "POST",
+      cookie: t.cookie,
+      body: { answer },
+    });
+  /** Hoa wrote a typo for the short question (question 2), Nam wrote it right. */
+  async function typoSetup(body: Record<string, unknown> = mixed()) {
+    const s = await setup(body);
+    const others = (typo: string) => [
+      a.choice(s.qs[0]!.id, 2),
+      a.text(s.qs[1]!.id, typo),
+      a.text(s.qs[2]!.id, "My family."),
+      a.video(s.qs[3]!.id, "https://youtu.be/a"),
+    ];
+    await submit(s.hoa, s.id, others("gatto"));
+    await submit(s.nam, s.id, others("gato"));
+    return s;
+  }
+
+  it("gives the points to the answers that match, and touches nobody else", async () => {
+    const { t, hoa, nam, id, qs } = await typoSetup();
+    const res = await accept(t, id, qs[1]!.id, "gatto");
+    expect(res.status, JSON.stringify(res.json)).toBe(200);
+    expect(res.json.regraded).toBe(1);
+    expect(res.json.assignment.questions[1].accepted).toEqual(["gato", "gatto"]);
+    const h = await open(t, id, hoa.studentId);
+    expect(h.points[qs[1]!.id]).toBe(3);
+    expect(h.perQuestion[1]).toMatchObject({ auto: true, correct: true });
+    expect(h.version).toBe(2);
+    expect(h.score).toBeNull(); // still waiting for the teacher: no half score
+    expect((await open(t, id, nam.studentId)).version).toBe(1); // already right: not touched
+    // After the teacher scores the rest, the total includes the new points.
+    const saved = await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 3: 4, 4: 5 }), version: 2 });
+    expect(saved.json.submission.score).toBe(14);
+  });
+
+  it("ignores spaces and capital letters, and does not add an answer that is already accepted", async () => {
+    const { t, hoa, id, qs } = await typoSetup();
+    const res = await accept(t, id, qs[1]!.id, "  GATTO ");
+    expect(res.json.regraded).toBe(1);
+    expect(res.json.assignment.questions[1].accepted).toEqual(["gato", "  GATTO ".trim()]);
+    const again = await accept(t, id, qs[1]!.id, " Gatto");
+    expect(again.status).toBe(200);
+    expect(again.json.regraded).toBe(0);
+    expect(again.json.assignment.questions[1].accepted).toHaveLength(2);
+    const same = await accept(t, id, qs[1]!.id, "GATO");
+    expect(same.json.assignment.questions[1].accepted).toHaveLength(2);
+    expect((await open(t, id, hoa.studentId)).version).toBe(2); // scored once
+  });
+
+  it("raises the total of scored and returned work, shows it to the student at once, and keeps the history", async () => {
+    const { t, hoa, id, qs } = await typoSetup();
+    await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 3: 4, 4: 5 }), version: 1 }); // 2 + 0 + 4 + 5 = 11
+    await giveBack(t, id, hoa.studentId, 2);
+    expect((await myWorkDetail(hoa, id)).json.work.score).toBe(11);
+    const res = await accept(t, id, qs[1]!.id, "gatto");
+    expect(res.json.regraded).toBe(1);
+    const work = (await myWorkDetail(hoa, id)).json.work;
+    expect(work).toMatchObject({ status: "returned", score: 14 });
+    expect(work.results.perQuestion[1]).toMatchObject({ correct: true, awarded: 3 });
+    const history = (await open(t, id, hoa.studentId)).history;
+    expect(history.map((h: { oldScore: number; newScore: number }) => [h.oldScore, h.newScore])).toEqual([
+      [11, 14],
+      [null, 11],
+    ]);
+  });
+
+  it("raises the score of a quiz that the system scored, and the student sees it", async () => {
+    const { t, hoa, id, qs } = await setup(quiz());
+    await submit(hoa, id, [a.choice(qs[0]!.id, 1), a.choice(qs[1]!.id, 1), a.text(qs[2]!.id, "goed")]);
+    expect((await myWorkDetail(hoa, id)).json.work).toMatchObject({ status: "returned", score: 3 });
+    await accept(t, id, qs[2]!.id, "goed");
+    expect((await myWorkDetail(hoa, id)).json.work).toMatchObject({ score: 5 });
+  });
+
+  it("work that is not handed in yet uses the new answer when it is handed in", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await draft(hoa, id, [a.text(qs[1]!.id, "gatto")]);
+    expect((await accept(t, id, qs[1]!.id, "gatto")).json.regraded).toBe(0);
+    await submit(hoa, id, [
+      a.choice(qs[0]!.id, 2),
+      a.text(qs[1]!.id, "gatto"),
+      a.text(qs[2]!.id, "x"),
+      a.video(qs[3]!.id, "https://youtu.be/a"),
+    ]);
+    expect((await open(t, id, hoa.studentId)).points[qs[1]!.id]).toBe(3);
+  });
+
+  it("refuses a question that is not a short answer question, a draft, an empty answer, and too many answers", async () => {
+    const { t, id, qs } = await typoSetup();
+    expect((await accept(t, id, qs[0]!.id, "x")).status).toBe(409); // multiple choice
+    expect((await accept(t, id, qs[2]!.id, "x")).status).toBe(409); // written
+    expect((await accept(t, id, "q_nope", "x")).status).toBe(404);
+    expect((await accept(t, id, qs[1]!.id, "  ")).status).toBe(400);
+    expect((await accept(t, id, qs[1]!.id, "x".repeat(201))).status).toBe(400);
+    for (let i = 0; i < 9; i++) expect((await accept(t, id, qs[1]!.id, `word ${i}`)).status).toBe(200);
+    expect((await accept(t, id, qs[1]!.id, "one more")).status).toBe(400); // 10 is the most
+    const course = await createCourse(t, { maxStudents: null });
+    const made = await call(`/api/courses/${course.id}/assignments`, {
+      method: "POST",
+      cookie: t.cookie,
+      body: mixed(),
+    });
+    const draftId = made.json.assignment.id as string;
+    expect((await accept(t, draftId, made.json.assignment.questions[1].id, "x")).status).toBe(409);
+  });
+
+  it("is only for the teacher who owns the work, and a student cannot use it", async () => {
+    const { hoa, id, qs } = await typoSetup();
+    const other = await createTeacher("Other");
+    expect((await accept(other, id, qs[1]!.id, "gatto")).status).toBe(404);
+    expect((await accept(hoa, id, qs[1]!.id, "gatto")).status).toBe(403);
+    expect(
+      (
+        await call(`/api/assignments/${id}/questions/${qs[1]!.id}/accept`, {
+          method: "POST",
+          body: { answer: "x" },
+        })
+      ).status,
+    ).toBe(401);
+  });
+
+  it("writes to the audit log", async () => {
+    const { t, id, qs } = await typoSetup();
+    await accept(t, id, qs[1]!.id, "gatto");
+    expect(
+      await count(
+        "SELECT COUNT(*) AS n FROM audit_log WHERE tenant_id = ? AND action = 'assignment.answer_accepted' AND target_id = ?",
+        t.tenantId,
+        id,
+      ),
+    ).toBe(1);
+  });
+
+  it("the statement leaves an answer alone when it changed a moment ago or when the work has another version", async () => {
+    const { t, hoa, id, qs } = await typoSetup();
+    const row = (await findSubmission(env.DB, t.tenantId, id, hoa.studentId))!;
+    const version = await count("SELECT version AS n FROM assignments WHERE id = ?", id);
+    const write = (over: Record<string, unknown> = {}) => ({
+      tenantId: t.tenantId,
+      assignmentId: id,
+      expectVersion: version,
+      questionId: qs[1]!.id,
+      points: 3,
+      rows: [{ id: row.id, version: row.version, delta: 3 }],
+      graderId: t.userId,
+      ...over,
+    });
+    const stale = write({ rows: [{ id: row.id, version: row.version + 5, delta: 3 }] });
+    expect((await regradeStatement(env.DB, stale).run()).meta.changes).toBe(0);
+    expect((await regradeStatement(env.DB, write({ expectVersion: version + 1 })).run()).meta.changes).toBe(
+      0,
+    );
+    expect((await regradeStatement(env.DB, write({ tenantId: "other" })).run()).meta.changes).toBe(0);
+    expect((await open(t, id, hoa.studentId)).points[qs[1]!.id]).toBe(0);
+    // ...and with everything right, it does change the answer.
+    expect((await regradeStatement(env.DB, write()).run()).meta.changes).toBeGreaterThan(0);
+    expect((await open(t, id, hoa.studentId)).points[qs[1]!.id]).toBe(3);
+  });
+
+  it("two teachers' clicks at the same moment: one wins, and the other is told to try again", async () => {
+    const { t, id, qs } = await typoSetup();
+    const [x, y] = await Promise.all([accept(t, id, qs[1]!.id, "gatto"), accept(t, id, qs[1]!.id, "gattto")]);
+    expect([x.status, y.status].sort()).toEqual([200, 409]);
   });
 });
 

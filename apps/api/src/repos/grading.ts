@@ -216,3 +216,63 @@ export async function queueOf(db: D1Database, tenantId: string): Promise<QueueRo
     .all<QueueRow>();
   return res.results;
 }
+
+export interface RegradeRow {
+  id: string;
+  version: number;
+  responses: string;
+  question_points: string;
+}
+
+/** The answers that are handed in (and may already be scored) for one piece of work. */
+export async function handedInAnswers(db: D1Database, tenantId: string, assignmentId: string) {
+  const res = await db
+    .prepare(
+      `SELECT id, version, responses, question_points FROM submissions
+       WHERE tenant_id = ? AND assignment_id = ? AND status IN ('submitted', 'graded', 'returned')`,
+    )
+    .bind(tenantId, assignmentId)
+    .all<RegradeRow>();
+  return res.results;
+}
+
+/**
+ * Gives points for one question to the answers listed (each with the version it was read at and how many points
+ * to add), in ONE statement. The total is only changed for an answer that already has one. It runs only while the
+ * assignment is at the version `expectVersion`, and only for an answer that still has that version, so a change
+ * made a moment ago is never overwritten. The score history is written by the database (see 0009).
+ */
+export const regradeStatement = (
+  db: D1Database,
+  o: {
+    tenantId: string;
+    assignmentId: string;
+    expectVersion: number;
+    questionId: string;
+    points: number;
+    rows: { id: string; version: number; delta: number }[];
+    graderId: string;
+  },
+): D1PreparedStatement =>
+  db
+    .prepare(
+      `UPDATE submissions SET
+         question_points = json_set(question_points, '$.' || ?1, ?2),
+         score = CASE WHEN score IS NULL THEN NULL ELSE score + json_extract(j.value, '$.delta') END,
+         version = submissions.version + 1, updated_at = ?3, last_grader_id = ?4
+       FROM json_each(?5) j
+       WHERE submissions.id = json_extract(j.value, '$.id') AND submissions.version = json_extract(j.value, '$.version')
+         AND submissions.tenant_id = ?6 AND submissions.assignment_id = ?7
+         AND submissions.status IN ('submitted', 'graded', 'returned')
+         AND EXISTS (SELECT 1 FROM assignments a WHERE a.id = ?7 AND a.tenant_id = ?6 AND a.version = ?8)`,
+    )
+    .bind(
+      o.questionId,
+      o.points,
+      nowIso(),
+      o.graderId,
+      JSON.stringify(o.rows),
+      o.tenantId,
+      o.assignmentId,
+      o.expectVersion,
+    );

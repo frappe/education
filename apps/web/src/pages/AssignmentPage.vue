@@ -38,6 +38,9 @@ const p = useAssignmentPage(id, {
   closed: t.closed,
   time: t.timeGiven,
   timeRemoved: t.timeTaken,
+  acceptDone: t.acceptDone,
+  acceptDoneOne: t.acceptDoneOne,
+  acceptNone: t.acceptNone,
 });
 const a = computed(() => p.assignment.value);
 
@@ -49,6 +52,18 @@ async function giveTime() {
   if (!extendFor.value) return;
   await p.giveTime(extendFor.value, extDate.value, extTime.value);
   extendFor.value = null;
+}
+
+// Accepting one more answer for a short answer question
+const acceptFor = ref<string | null>(null);
+const acceptText = ref("");
+async function accept() {
+  const qid = acceptFor.value;
+  if (!qid || acceptText.value.trim() === "") return;
+  if (await p.acceptAnswer(qid, acceptText.value.trim())) {
+    acceptFor.value = null;
+    acceptText.value = "";
+  }
 }
 
 const deleting = ref(false);
@@ -120,6 +135,14 @@ const canDelete = computed(
               v-else-if="q.kind === 'short' && q.accepted.length"
               class="mt-1 block text-base-content/70"
               >{{ fill(t.correctIs, { answer: q.accepted.join(" / ") }) }}</span
+            >
+            <AppButton
+              v-if="q.kind === 'short' && q.accepted.length && a.status !== 'draft'"
+              variant="ghost"
+              compact
+              class="mt-1"
+              @click="acceptFor = q.id"
+              >{{ t.acceptButton }}</AppButton
             >
           </li>
         </ol>
@@ -222,6 +245,20 @@ const canDelete = computed(
           >{{ t.extendTake }}</AppButton
         >
         <AppButton :disabled="!extDate" @click="giveTime">{{ t.extendGive }}</AppButton>
+      </template>
+    </AppModal>
+
+    <AppModal
+      :model-value="acceptFor !== null"
+      :title="t.acceptTitle"
+      :close-label="messages.common.close"
+      @update:model-value="(v: boolean) => !v && (acceptFor = null)"
+    >
+      <p class="text-sm">{{ t.acceptText }}</p>
+      <AppInput v-model="acceptText" :label="t.acceptLabel" />
+      <template #actions>
+        <AppButton variant="ghost" @click="acceptFor = null">{{ messages.common.cancel }}</AppButton>
+        <AppButton :disabled="acceptText.trim() === ''" @click="accept">{{ t.acceptButton }}</AppButton>
       </template>
     </AppModal>
 

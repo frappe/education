@@ -426,6 +426,11 @@ export interface QuestionInfo {
 }
 
 /** Does the system score this question by itself? */
+/** One more answer the system accepts for a short answer question. Allowed also after students handed in. */
+export const acceptAnswerBody = z.object({
+  answer: z.string().trim().min(1, "Please write the answer.").max(200, "This answer is too long."),
+});
+
 export const isAutoQuestion = (q: Pick<QuestionInfo, "kind" | "correct" | "accepted">): boolean =>
   (q.kind === "choice" && q.correct !== null) || (q.kind === "short" && q.accepted.length > 0);
 

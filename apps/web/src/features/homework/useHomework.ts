@@ -322,7 +322,15 @@ export function useAssignmentForm(
 /** One piece of work, the answers of the students, and what the teacher does with them. Logic only. */
 export function useAssignmentPage(
   id: string,
-  text: { published: string; closed: string; time: string; timeRemoved: string },
+  text: {
+    published: string;
+    closed: string;
+    time: string;
+    timeRemoved: string;
+    acceptDone: string;
+    acceptDoneOne: string;
+    acceptNone: string;
+  },
 ) {
   const toast = useToast();
   const assignment = ref<AssignmentInfo | null>(null);
@@ -365,6 +373,27 @@ export function useAssignmentPage(
     );
   const takeTime = (studentId: string) =>
     act(() => api(`/assignments/${id}/extensions/${studentId}`, { method: "DELETE" }), text.timeRemoved);
+  /** One more answer the system accepts for a short answer question. The handed in answers are scored again. */
+  async function acceptAnswer(questionId: string, answer: string): Promise<boolean> {
+    try {
+      const res = await api<{ regraded: number }>(`/assignments/${id}/questions/${questionId}/accept`, {
+        method: "POST",
+        body: { answer },
+      });
+      await load();
+      toast.success(
+        res.regraded === 0
+          ? text.acceptNone
+          : res.regraded === 1
+            ? text.acceptDoneOne
+            : text.acceptDone.replace("{n}", String(res.regraded)),
+      );
+      return true;
+    } catch (err) {
+      toast.error(messageOf(err));
+      return false;
+    }
+  }
   async function remove(): Promise<boolean> {
     try {
       await api(`/assignments/${id}`, { method: "DELETE" });
@@ -376,7 +405,7 @@ export function useAssignmentPage(
   }
 
   onMounted(load);
-  return { assignment, rows, loading, notFound, publish, close, giveTime, takeTime, remove };
+  return { assignment, rows, loading, notFound, publish, close, giveTime, takeTime, acceptAnswer, remove };
 }
 
 // ---------------------------------------------------------------- grading

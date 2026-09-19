@@ -10,7 +10,7 @@ import { requireTeacherTenant, type Actor } from "../auth/actor";
 import type { Ctx } from "../auth/service";
 import { audit } from "../audit";
 import { AppError } from "../lib/errors";
-import { summaryKind, totalPoints } from "../lib/grade";
+import { normalizeAnswer, summaryKind, totalPoints } from "../lib/grade";
 import { uuidv7 } from "../lib/id";
 import { localToUtc, utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
@@ -30,14 +30,18 @@ import {
   insertTargetsStatement,
   linksOf,
   materialsOf,
+  parseList,
+  parsePoints,
   publishStatement,
   questionsOf,
+  setQuestionsStatement,
   targetIds,
   updateAssignmentStatement,
   updateMaterialStatement,
   type AssignmentRow,
 } from "../repos/assignments";
 import { findCourse } from "../repos/courses";
+import { handedInAnswers, regradeStatement } from "../repos/grading";
 import { tenantTimezone } from "../repos/lessons";
 
 export function toAssignmentInfo(r: AssignmentRow, zone: string, studentIds: string[] = []): AssignmentInfo {
@@ -341,4 +345,96 @@ export async function removeMaterial(
   const res = await deleteMaterialStatement(db, tenantId, courseId, id).run();
   if (!res.meta.changes) throw new AppError("NOT_FOUND");
   return (await materialsOf(db, tenantId, courseId)).map(toMaterial);
+}
+
+/**
+ * Accepts one more answer for a short answer question, also after students handed in. Every handed in answer that
+ * matches it (and was scored 0) gets the points of the question, and its total goes up by the same. Answers that
+ * were already right, or that do not match, are not touched. Asking again with an answer that is already accepted
+ * only scores the answers again, so a save that was cut short can be finished.
+ */
+export async function acceptAnswer(
+  ctx: Ctx,
+  actor: Actor,
+  id: string,
+  questionId: string,
+  answer: string,
+): Promise<{ assignment: AssignmentInfo; regraded: number }> {
+  const db = ctx.env.DB;
+  const tenantId = requireTeacherTenant(actor);
+  authorize(actor, "assignment", "update", { tenantId });
+  const current = await load(ctx, tenantId, id);
+  if (current.status === "draft") {
+    throw new AppError("CONFLICT", { message: "Change the answers in the form. Nobody has answered yet." });
+  }
+  const questions = questionsOf(current);
+  const q = questions.find((x) => x.id === questionId);
+  if (!q) throw new AppError("NOT_FOUND");
+  if (q.kind !== "short" || q.accepted.length === 0) {
+    throw new AppError("CONFLICT", {
+      message: "Only a short answer question that the system scores can do this.",
+    });
+  }
+  const wanted = normalizeAnswer(answer);
+  const already = q.accepted.some((a) => normalizeAnswer(a) === wanted);
+  const accepted = already ? q.accepted : [...q.accepted, answer];
+  if (accepted.length > 10) {
+    throw new AppError("VALIDATION_FAILED", {
+      fields: { answer: "This question has too many accepted answers." },
+    });
+  }
+  const next = questions.map((x) => (x.id === questionId ? { ...x, accepted } : x));
+
+  // Which answers become right now.
+  const rows = (await handedInAnswers(db, tenantId, id)).flatMap((r) => {
+    const mine = parseList<{ questionId: string; text: string }>(r.responses).find(
+      (a) => a.questionId === questionId,
+    );
+    const before = parsePoints(r.question_points)[questionId] ?? 0;
+    const right =
+      mine !== undefined && accepted.some((a) => normalizeAnswer(a) === normalizeAnswer(mine.text));
+    return right && before < q.points ? [{ id: r.id, version: r.version, delta: q.points - before }] : [];
+  });
+
+  const expectVersion = already ? current.version : current.version + 1;
+  const statements = [
+    ...(already
+      ? []
+      : [setQuestionsStatement(db, { tenantId, id, version: current.version, questions: next })]),
+    ...(rows.length > 0
+      ? [
+          regradeStatement(db, {
+            tenantId,
+            assignmentId: id,
+            expectVersion,
+            questionId,
+            points: q.points,
+            rows,
+            graderId: actor.userId,
+          }),
+        ]
+      : []),
+  ];
+  let regraded = 0;
+  if (statements.length > 0) {
+    const results = await db.batch(statements);
+    if (!already && !results[0]?.meta.changes) throw new AppError("CONFLICT");
+    if (rows.length > 0) {
+      // (`meta.changes` also counts the history lines the database writes, so the answers are read again.)
+      const after = new Map((await handedInAnswers(db, tenantId, id)).map((r) => [r.id, r]));
+      regraded = rows.filter(
+        (r) => (parsePoints(after.get(r.id)?.question_points ?? null)[questionId] ?? 0) >= q.points,
+      ).length;
+    }
+  }
+  await audit(db, {
+    action: "assignment.answer_accepted",
+    actorUserId: actor.userId,
+    tenantId,
+    targetType: "assignment",
+    targetId: id,
+    ipHash: ctx.ipHash,
+    meta: { regraded },
+  });
+  return { assignment: await present(ctx, tenantId, id), regraded };
 }

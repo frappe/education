@@ -1,6 +1,7 @@
-import { createAssignmentBody, materialBody, updateAssignmentBody } from "@lms/shared";
+import { acceptAnswerBody, createAssignmentBody, materialBody, updateAssignmentBody } from "@lms/shared";
 import { Hono } from "hono";
 import {
+  acceptAnswer,
   addMaterial,
   closeAssignment,
   createAssignment,
@@ -48,6 +49,19 @@ assignments.post("/assignments/:id/publish", requireTeacher, async (c) => {
 
 assignments.post("/assignments/:id/close", requireTeacher, async (c) => {
   return c.json({ assignment: await closeAssignment(await makeCtx(c), actorOf(c), c.req.param("id")) });
+});
+
+assignments.post("/assignments/:id/questions/:questionId/accept", requireTeacher, async (c) => {
+  const body = await parseBody(c, acceptAnswerBody);
+  return c.json(
+    await acceptAnswer(
+      await makeCtx(c),
+      actorOf(c),
+      c.req.param("id"),
+      c.req.param("questionId"),
+      body.answer,
+    ),
+  );
 });
 
 assignments.delete("/assignments/:id", requireTeacher, async (c) => {
