@@ -1,58 +1,84 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import InvitePanel from "@/components/InvitePanel.vue";
+import GoogleButton from "@/components/GoogleButton.vue";
+import TeacherDashboard from "@/components/TeacherDashboard.vue";
 import { useSession } from "@/features/auth/session";
 import { useHealth } from "@/features/health/useHealth";
 import { messages } from "@/messages";
-import AppAlert from "@/ui/AppAlert.vue";
 import AppButton from "@/ui/AppButton.vue";
-import AppLink from "@/ui/AppLink.vue";
+import AppEmpty from "@/ui/AppEmpty.vue";
+import AppIcon, { type IconName } from "@/ui/AppIcon.vue";
 import AppPage from "@/ui/AppPage.vue";
 
-const t = messages.home;
+const t = messages.landing;
 const session = useSession();
 const router = useRouter();
 const { state, check } = useHealth();
 onMounted(check);
 
-async function signOut() {
-  await session.signOut();
-  await router.replace("/");
-}
+const features: { icon: IconName; title: string; text: string }[] = [
+  { icon: "users", title: t.f1Title, text: t.f1Text },
+  { icon: "calendar", title: t.f2Title, text: t.f2Text },
+  { icon: "attendance", title: t.f3Title, text: t.f3Text },
+  { icon: "shield", title: t.f4Title, text: t.f4Text },
+];
 </script>
 
 <template>
-  <AppPage v-if="session.me" :title="`${t.hello} ${session.me.user.name}`">
-    <AppAlert v-if="!session.me.user.emailVerified" kind="info">{{ t.unconfirmed }}</AppAlert>
-    <nav v-if="session.isTeacher" class="flex flex-wrap gap-4" :aria-label="t.manage">
-      <AppLink to="/courses">{{ messages.nav.courses }}</AppLink>
-      <AppLink to="/students">{{ messages.nav.students }}</AppLink>
-    </nav>
-    <InvitePanel v-if="session.isTeacher" />
-    <p v-else>{{ t.studentHome }}</p>
-    <div class="flex flex-wrap gap-4">
-      <AppLink to="/devices">{{ t.devices }}</AppLink>
-      <button type="button" class="text-[var(--color-primary)] underline underline-offset-2" @click="signOut">
-        {{ t.signOut }}
-      </button>
-    </div>
+  <TeacherDashboard v-if="session.me && session.isTeacher" />
+
+  <AppPage v-else-if="session.me" :title="messages.dashboard.studentTitle">
+    <AppEmpty icon="cap" :title="messages.dashboard.studentTitle" :text="messages.dashboard.studentText" />
   </AppPage>
 
-  <AppPage v-else :title="t.title">
-    <p>{{ t.intro }}</p>
-    <div class="flex flex-wrap gap-3">
-      <AppButton @click="router.push('/sign-in')">{{ t.signIn }}</AppButton>
-      <AppButton variant="secondary" @click="router.push('/sign-up')">{{ t.createAccount }}</AppButton>
-    </div>
-    <section aria-live="polite">
-      <h2 class="font-medium">{{ t.statusTitle }}</h2>
-      <p v-if="state === 'checking'">{{ t.statusChecking }}</p>
-      <p v-else-if="state === 'ok'" class="text-[var(--color-success)]">{{ t.statusOk }}</p>
-      <p v-else class="text-[var(--color-danger)]">{{ t.statusProblem }}</p>
-      <AppButton class="mt-2" variant="secondary" :disabled="state === 'checking'" @click="check">{{
-        t.retry
-      }}</AppButton>
+  <div v-else>
+    <section class="bg-linear-to-b from-primary/10 to-transparent">
+      <div class="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-16 text-center md:py-24">
+        <span
+          class="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-1 text-sm"
+        >
+          <AppIcon name="spark" :size="16" class="text-primary" />{{ t.badge }}
+        </span>
+        <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">{{ t.title }}</h1>
+        <p class="max-w-xl text-lg text-base-content/70">{{ t.text }}</p>
+        <div class="flex w-full max-w-sm flex-col gap-3">
+          <GoogleButton intent="sign-up" />
+          <AppButton @click="router.push('/sign-up')">{{ t.start }}</AppButton>
+          <AppButton variant="ghost" @click="router.push('/sign-in')">{{ t.haveAccount }}</AppButton>
+        </div>
+        <p class="text-sm text-base-content/60">{{ t.studentNote }}</p>
+      </div>
     </section>
-  </AppPage>
+
+    <section class="mx-auto max-w-6xl px-4 pb-16 md:px-8">
+      <h2 class="mb-6 text-center text-2xl font-semibold tracking-tight">{{ t.featuresTitle }}</h2>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <article
+          v-for="f in features"
+          :key="f.title"
+          class="rounded-box border border-base-300 bg-base-100 p-5"
+        >
+          <span class="mb-4 grid size-11 place-items-center rounded-field bg-primary/10 text-primary">
+            <AppIcon :name="f.icon" :size="22" />
+          </span>
+          <h3 class="font-semibold">{{ f.title }}</h3>
+          <p class="mt-1 text-sm text-base-content/60">{{ f.text }}</p>
+        </article>
+      </div>
+      <p class="mt-10 flex items-center justify-center gap-2 text-sm text-base-content/60" aria-live="polite">
+        <span
+          class="size-2 rounded-full"
+          :class="state === 'ok' ? 'bg-success' : state === 'checking' ? 'bg-base-300' : 'bg-error'"
+        />
+        {{
+          state === "ok"
+            ? messages.home.statusOk
+            : state === "checking"
+              ? messages.home.statusChecking
+              : messages.home.statusProblem
+        }}
+      </p>
+    </section>
+  </div>
 </template>

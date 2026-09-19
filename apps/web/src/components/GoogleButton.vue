@@ -2,6 +2,7 @@
 import { googleStartUrl, useGoogleAvailable, type GoogleIntent } from "@/features/auth/google";
 import { messages } from "@/messages";
 import AppButton from "@/ui/AppButton.vue";
+import GoogleLogo from "@/ui/GoogleLogo.vue";
 
 const props = defineProps<{ intent: GoogleIntent; invite?: string; keep?: boolean }>();
 const available = useGoogleAvailable();
@@ -11,5 +12,7 @@ const go = () => window.location.assign(googleStartUrl(props));
 </script>
 
 <template>
-  <AppButton v-if="available" variant="secondary" @click="go">{{ messages.google.continue }}</AppButton>
+  <AppButton v-if="available" variant="secondary" block @click="go">
+    <GoogleLogo />{{ messages.google.continue }}
+  </AppButton>
 </template>

@@ -267,7 +267,7 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 
 1. **API contract-first**: `zod-openapi` sinh OpenAPI, sinh client có kiểu. Giao diện mới chỉ cần gọi cùng client.
 2. `apps/web/src/features/<domain>/` chứa **logic thuần** (composable, store, máy trạng thái nộp bài, validate, định dạng ngày/tiền) và **không import thư viện UI**.
-3. `apps/web/src/ui/` là **lớp duy nhất** import thư viện component (đề xuất headless như Reka UI + Tailwind) và chỉ dùng design token qua CSS variables (màu, spacing, radius, font). Đổi giao diện = thay `ui/` và token.
+3. `apps/web/src/ui/` là **lớp duy nhất** quyết định giao diện. Đã chốt dùng **daisyUI 5** (Tailwind CSS 4; cài từ npm, cố định bản 5.7.42, trùng với fork `lgtanh2-commits/daisyui`): hai theme `lms` và `lms-dark` nằm trong `apps/web/src/styles/main.css`, trang và tính năng chỉ dùng tên màu ngữ nghĩa (`primary`, `base-100`, `error`...), không dùng giá trị màu. Phông Inter cài sẵn theo gói (không tải từ ngoài, đúng chính sách CSP), icon Lucide. Đổi giao diện = sửa theme và `ui/`.
 4. Mọi chuỗi nằm trong message catalog (MVP chỉ English, viết theo bảng thuật ngữ plain English ở Mục 5.1), không hard-code, để thêm ngôn ngữ sau mà không sửa logic.
 5. Test E2E dùng role/label và `data-testid`, không dựa vào class CSS, để không vỡ khi đổi thiết kế.
 

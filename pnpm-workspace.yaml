@@ -8,5 +8,8 @@ allowBuilds:
   workerd: true
 
 # Safe versions of tools used only while developing (not part of the deployed app).
+minimumReleaseAgeExclude:
+  - daisyui@5.7.42
+
 overrides:
   sharp: ">=0.35.4"

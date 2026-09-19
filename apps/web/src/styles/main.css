@@ -1,27 +1,100 @@
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
 
 /*
- * Design tokens. A new visual design replaces these values (and the components in
- * src/ui). Pages and features never use raw colors, only these tokens.
+ * The look comes from daisyUI (https://daisyui.com): components and themes. To change the look of
+ * the whole app, change the two themes below. To change how one piece looks, change src/ui.
+ * Pages and features only use the semantic color names (primary, base-100, base-content, error...),
+ * never a color value.
  */
-:root {
-  --color-surface: #ffffff;
-  --color-surface-muted: #f5f6f8;
-  --color-text: #1b1f24;
-  --color-text-muted: #5b6470;
-  --color-primary: #2456d6;
-  --color-primary-text: #ffffff;
-  --color-danger: #b42318;
-  --color-success: #067647;
-  --color-border: #d5d9e0;
-  --radius-control: 0.5rem;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --tap-size: 2.75rem; /* 44px minimum touch target */
+@plugin "daisyui" {
+  themes: false;
 }
 
-body {
-  margin: 0;
-  background: var(--color-surface-muted);
-  color: var(--color-text);
-  font-family: var(--font-sans);
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@plugin "daisyui/theme" {
+  name: "lms";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(97.4% 0.006 265);
+  --color-base-300: oklch(92.6% 0.012 265);
+  --color-base-content: oklch(25% 0.04 265);
+  --color-primary: oklch(52% 0.22 268);
+  --color-primary-content: oklch(98% 0.01 268);
+  --color-secondary: oklch(68% 0.12 195);
+  --color-secondary-content: oklch(21% 0.05 195);
+  --color-accent: oklch(81% 0.15 80);
+  --color-accent-content: oklch(27% 0.06 80);
+  --color-neutral: oklch(28% 0.045 265);
+  --color-neutral-content: oklch(96% 0.01 265);
+  --color-info: oklch(66% 0.14 235);
+  --color-info-content: oklch(21% 0.05 235);
+  --color-success: oklch(64% 0.16 155);
+  --color-success-content: oklch(20% 0.05 155);
+  --color-warning: oklch(80% 0.15 80);
+  --color-warning-content: oklch(27% 0.06 80);
+  --color-error: oklch(60% 0.21 25);
+  --color-error-content: oklch(98% 0.01 25);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "lms-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: oklch(24% 0.03 265);
+  --color-base-200: oklch(20% 0.03 265);
+  --color-base-300: oklch(31% 0.035 265);
+  --color-base-content: oklch(93% 0.01 265);
+  --color-primary: oklch(70% 0.16 268);
+  --color-primary-content: oklch(20% 0.05 268);
+  --color-secondary: oklch(74% 0.11 195);
+  --color-secondary-content: oklch(21% 0.05 195);
+  --color-accent: oklch(82% 0.14 80);
+  --color-accent-content: oklch(27% 0.06 80);
+  --color-neutral: oklch(35% 0.04 265);
+  --color-neutral-content: oklch(95% 0.01 265);
+  --color-info: oklch(72% 0.13 235);
+  --color-info-content: oklch(21% 0.05 235);
+  --color-success: oklch(72% 0.15 155);
+  --color-success-content: oklch(20% 0.05 155);
+  --color-warning: oklch(82% 0.14 80);
+  --color-warning-content: oklch(27% 0.06 80);
+  --color-error: oklch(68% 0.19 25);
+  --color-error-content: oklch(20% 0.05 25);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* Respect people who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

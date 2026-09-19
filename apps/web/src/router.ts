@@ -43,6 +43,16 @@ export const router = createRouter({
       component: () => import("@/pages/StudentDetailPage.vue"),
       meta: { requiresTeacher: true },
     },
+    {
+      path: "/schedule",
+      component: () => import("@/pages/SchedulePage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/lessons/:id/attendance",
+      component: () => import("@/pages/AttendancePage.vue"),
+      meta: { requiresTeacher: true },
+    },
     { path: "/dev/google", component: () => import("@/pages/DevGooglePage.vue") },
     { path: "/dev/outbox", component: () => import("@/pages/DevOutboxPage.vue") },
     { path: "/:pathMatch(.*)*", redirect: "/" },

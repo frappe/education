@@ -7,8 +7,8 @@ const id = useId();
 </script>
 
 <template>
-  <div class="flex items-start gap-2">
-    <input :id="id" v-model="model" type="checkbox" class="mt-1 h-5 w-5" />
-    <label :for="id" class="text-sm">{{ label }}</label>
+  <div class="flex min-h-11 items-center gap-3">
+    <input :id="id" v-model="model" type="checkbox" class="checkbox checkbox-primary" />
+    <label :for="id" class="cursor-pointer text-sm">{{ label }}</label>
   </div>
 </template>

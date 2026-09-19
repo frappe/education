@@ -32,6 +32,14 @@ describe("frontend architecture (plan 5.2)", () => {
     expect(bad).toEqual([]);
   });
 
+  it("no screen uses an inline style (the page security policy blocks them): use classes", () => {
+    const bad = files(root)
+      .filter((f) => f.endsWith(".vue"))
+      .filter((f) => /\sstyle="/.test(readFileSync(f, "utf8").replace(/<script[\s\S]*?<\/script>/, "")))
+      .map((f) => path.relative(root, f));
+    expect(bad).toEqual([]);
+  });
+
   it("pages and components do not hard-code text: they read from the message catalog", () => {
     const bad = [...files(path.join(root, "pages")), ...files(path.join(root, "components"))]
       .filter((f) => f.endsWith(".vue"))

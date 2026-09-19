@@ -5,9 +5,9 @@ import { devGoogleCode } from "@/features/auth/google";
 import { isLocalHost } from "@/features/health/isLocalHost";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
+import AppAuthPage from "@/ui/AppAuthPage.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppInput from "@/ui/AppInput.vue";
-import AppPage from "@/ui/AppPage.vue";
 
 // A stand-in for the Google page, only on the developer's own computer.
 const t = messages.devGoogle;
@@ -24,14 +24,13 @@ const cancel = () => back("error=access_denied");
 </script>
 
 <template>
-  <AppPage :title="t.title" narrow>
+  <AppAuthPage :title="t.title" :subtitle="local ? t.intro : undefined">
     <AppAlert v-if="!local" kind="info">{{ t.notAvailable }}</AppAlert>
     <form v-else class="flex flex-col gap-4" @submit.prevent="signIn">
-      <p>{{ t.intro }}</p>
       <AppInput v-model="email" :label="t.email" type="email" />
       <AppInput v-model="name" :label="t.name" />
-      <AppButton type="submit">{{ t.submit }}</AppButton>
-      <AppButton variant="secondary" @click="cancel">{{ t.cancel }}</AppButton>
+      <AppButton type="submit" block>{{ t.submit }}</AppButton>
+      <AppButton variant="ghost" block @click="cancel">{{ t.cancel }}</AppButton>
     </form>
-  </AppPage>
+  </AppAuthPage>
 </template>

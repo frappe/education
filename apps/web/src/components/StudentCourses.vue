@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { describeEnroll } from "@/features/enrollments/describe";
 import { useStudentCourses } from "@/features/enrollments/useStudentCourses";
 import { formatVnd } from "@/features/format";
-import { computed } from "vue";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
+import AppBadge from "@/ui/AppBadge.vue";
 import AppButton from "@/ui/AppButton.vue";
+import AppCard from "@/ui/AppCard.vue";
+import AppEmpty from "@/ui/AppEmpty.vue";
 import AppLink from "@/ui/AppLink.vue";
+import AppLoading from "@/ui/AppLoading.vue";
 import AppSelect from "@/ui/AppSelect.vue";
 
 const props = defineProps<{ studentId: string; archived: boolean }>();
@@ -20,43 +24,41 @@ const statusText = {
   dropped: r.statusDropped,
   pending: r.statusActive,
 } as const;
+const statusTone = { active: "success", completed: "info", dropped: "neutral", pending: "warning" } as const;
 const options = computed(() => available.value.map((c) => ({ value: c.id, label: c.name })));
 const summary = computed(() => (result.value ? describeEnroll(result.value, r) : ""));
 </script>
 
 <template>
-  <section class="flex flex-col gap-3">
-    <h2 class="text-lg font-medium">{{ t.title }}</h2>
-    <AppAlert v-if="error" kind="error">{{ error }}</AppAlert>
-    <p v-if="loading">{{ messages.common.loading }}</p>
-    <p v-else-if="courses.length === 0" class="text-[var(--color-text-muted)]">{{ t.empty }}</p>
-    <ul v-else class="flex flex-col gap-2">
-      <li
-        v-for="c in courses"
-        :key="c.courseId"
-        class="rounded-[var(--radius-control)] border border-[var(--color-border)] p-3"
-      >
-        <div class="flex flex-wrap items-baseline justify-between gap-2">
+  <AppCard :title="t.title" flush>
+    <AppAlert v-if="error" kind="error" class="m-5">{{ error }}</AppAlert>
+    <div v-if="loading" class="p-5"><AppLoading :label="messages.common.loading" :rows="2" /></div>
+    <AppEmpty v-else-if="courses.length === 0" icon="book" :title="t.empty" />
+    <ul v-else class="divide-y divide-base-300">
+      <li v-for="c in courses" :key="c.courseId" class="flex items-center gap-3 px-5 py-3">
+        <div class="min-w-0 flex-1">
           <AppLink :to="`/courses/${c.courseId}`">{{ c.courseName }}</AppLink>
-          <span class="text-sm text-[var(--color-text-muted)]">{{ statusText[c.status] }}</span>
+          <p class="text-sm text-base-content/60">
+            {{
+              c.customPrice === null
+                ? `${t.coursePrice}: ${formatVnd(c.pricePerLesson)}`
+                : `${t.ownPrice}: ${formatVnd(c.customPrice)}`
+            }}
+          </p>
         </div>
-        <p class="text-sm text-[var(--color-text-muted)]">
-          {{
-            c.customPrice === null
-              ? `${t.coursePrice}: ${formatVnd(c.pricePerLesson)}`
-              : `${t.ownPrice}: ${formatVnd(c.customPrice)}`
-          }}
-        </p>
+        <AppBadge :tone="statusTone[c.status]">{{ statusText[c.status] }}</AppBadge>
       </li>
     </ul>
 
-    <template v-if="!archived && !loading">
+    <div v-if="!archived && !loading" class="flex flex-col gap-3 border-t border-base-300 p-5">
       <AppAlert v-if="summary" :kind="result?.enrolled ? 'success' : 'info'">{{ summary }}</AppAlert>
-      <p v-if="options.length === 0" class="text-sm text-[var(--color-text-muted)]">{{ t.none }}</p>
+      <p v-if="options.length === 0" class="text-sm text-base-content/60">{{ t.none }}</p>
       <div v-else class="flex flex-wrap items-end gap-3">
-        <AppSelect v-model="chosen" :label="t.add" :options="options" :placeholder="t.choose" />
+        <div class="min-w-48 flex-1">
+          <AppSelect v-model="chosen" :label="t.add" :options="options" :placeholder="t.choose" />
+        </div>
         <AppButton :disabled="!chosen" :loading="busy" @click="add">{{ t.addButton }}</AppButton>
       </div>
-    </template>
-  </section>
+    </div>
+  </AppCard>
 </template>

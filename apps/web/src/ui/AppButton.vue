@@ -3,9 +3,14 @@
 withDefaults(
   defineProps<{
     type?: "button" | "submit";
-    variant?: "primary" | "secondary" | "danger";
+    /** primary: the main action of the page (use once). secondary: the normal button. */
+    variant?: "primary" | "secondary" | "danger" | "ghost" | "link";
     disabled?: boolean;
     loading?: boolean;
+    /** A smaller button for use inside lists and tables. */
+    compact?: boolean;
+    /** Fill the width of its container. */
+    block?: boolean;
   }>(),
   { type: "button", variant: "primary" },
 );
@@ -16,15 +21,18 @@ withDefaults(
     :type="type"
     :disabled="disabled || loading"
     :aria-busy="loading || undefined"
-    class="inline-flex items-center justify-center rounded-[var(--radius-control)] border px-4 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:opacity-50"
+    class="btn gap-2 font-medium"
     :class="{
-      'border-transparent bg-[var(--color-primary)] text-[var(--color-primary-text)]': variant === 'primary',
-      'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]':
-        variant === 'secondary',
-      'border-transparent bg-[var(--color-danger)] text-[var(--color-primary-text)]': variant === 'danger',
+      'btn-primary': variant === 'primary',
+      'btn-error': variant === 'danger',
+      'btn-ghost': variant === 'ghost',
+      'btn-link': variant === 'link',
+      'btn-sm': compact,
+      'min-h-11': !compact /* 44px: easy to touch */,
+      'w-full': block,
     }"
-    style="min-height: var(--tap-size)"
   >
+    <span v-if="loading" class="loading loading-spinner loading-sm" aria-hidden="true" />
     <slot />
   </button>
 </template>

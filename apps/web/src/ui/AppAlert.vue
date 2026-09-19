@@ -1,17 +1,25 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ kind?: "error" | "success" | "info" }>(), { kind: "info" });
+import AppIcon from "./AppIcon.vue";
+withDefaults(defineProps<{ kind?: "error" | "success" | "info" | "warning" }>(), { kind: "info" });
 </script>
 
 <template>
   <div
     :role="kind === 'error' ? 'alert' : 'status'"
-    class="rounded-[var(--radius-control)] border p-3 text-sm"
+    class="alert alert-soft items-start"
     :class="{
-      'border-[var(--color-danger)] text-[var(--color-danger)]': kind === 'error',
-      'border-[var(--color-success)] text-[var(--color-success)]': kind === 'success',
-      'border-[var(--color-border)] text-[var(--color-text)]': kind === 'info',
+      'alert-error': kind === 'error',
+      'alert-success': kind === 'success',
+      'alert-info': kind === 'info',
+      'alert-warning': kind === 'warning',
     }"
   >
-    <slot />
+    <AppIcon
+      :name="
+        kind === 'error' ? 'alert' : kind === 'success' ? 'done' : kind === 'warning' ? 'warning' : 'info'
+      "
+      :size="18"
+    />
+    <div class="text-sm"><slot /></div>
   </div>
 </template>
