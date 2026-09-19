@@ -24,16 +24,16 @@ describe("frontend architecture (plan 5.2)", () => {
     expect(bad).toEqual([]);
   });
 
-  it("pages/ does not use raw color values, only design tokens", () => {
-    const bad = files(path.join(root, "pages"))
+  it("pages/ and components/ do not use raw color values, only design tokens", () => {
+    const bad = [...files(path.join(root, "pages")), ...files(path.join(root, "components"))]
       .filter((f) => f.endsWith(".vue"))
       .filter((f) => /#[0-9a-fA-F]{3,8}\b|\brgb\(|\bhsl\(/.test(readFileSync(f, "utf8")))
       .map((f) => path.relative(root, f));
     expect(bad).toEqual([]);
   });
 
-  it("no component hard-codes text: pages read from the message catalog", () => {
-    const bad = files(path.join(root, "pages"))
+  it("pages and components do not hard-code text: they read from the message catalog", () => {
+    const bad = [...files(path.join(root, "pages")), ...files(path.join(root, "components"))]
       .filter((f) => f.endsWith(".vue"))
       .filter((f) =>
         />\s*[A-Z][a-z]+ [a-z]+[^<{]*</.test(
