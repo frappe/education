@@ -227,6 +227,9 @@ importers:
       pinia:
         specifier: ^4.0.3
         version: 4.0.3(@vue/devtools-api@8.2.1)(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3))
+      qrcode-generator:
+        specifier: ^2.0.4
+        version: 2.0.4
       vue:
         specifier: ^3.5.43
         version: 3.5.43(typescript@5.9.3)
@@ -1716,6 +1719,9 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+  qrcode-generator@2.0.4:
+    resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
+
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
 
@@ -3131,6 +3137,8 @@ snapshots:
       source-map-js: 1.2.1
 
   prettier@3.9.8: {}
+
+  qrcode-generator@2.0.4: {}
 
   quansync@0.2.11: {}
 

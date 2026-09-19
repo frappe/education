@@ -3,3 +3,4 @@ export * from "./errors";
 export * from "./glossary";
 export * from "./permissions";
 export * from "./schemas";
+export * from "./vietqr";

@@ -32,6 +32,21 @@ describe("frontend architecture (plan 5.2)", () => {
     expect(bad).toEqual([]);
   });
 
+  it("every App component that a screen uses is imported (a missing import shows as an empty gap, not as an error)", () => {
+    const bad = files(root)
+      .filter((f) => f.endsWith(".vue"))
+      .flatMap((f) => {
+        const text = readFileSync(f, "utf8");
+        const script = /<script[\s\S]*?<\/script>/.exec(text)?.[0] ?? "";
+        const template = text.replace(/<script[\s\S]*?<\/script>/, "");
+        const self = path.basename(f, ".vue");
+        return [...new Set([...template.matchAll(/<(App[A-Z][A-Za-z]*)[\s>/]/g)].map((m) => m[1]!))]
+          .filter((name) => name !== self && !new RegExp(`import ${name}(,| from)`).test(script))
+          .map((name) => `${path.relative(root, f)}: ${name}`);
+      });
+    expect(bad).toEqual([]);
+  });
+
   it("no screen uses an inline style (the page security policy blocks them): use classes", () => {
     const bad = files(root)
       .filter((f) => f.endsWith(".vue"))

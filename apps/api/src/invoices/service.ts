@@ -114,10 +114,21 @@ const paymentOf = (r: PaymentRow): PaymentDetails => ({
   payeeName: r.payee_name,
   payeePhone: r.payee_phone,
   bankName: r.bank_name,
+  bankBin: r.bank_bin,
   bankAccount: r.bank_account,
   bankHolder: r.bank_holder,
   paymentNote: r.payment_note,
 });
+
+const noPayment: PaymentDetails = {
+  payeeName: "",
+  payeePhone: "",
+  bankName: "",
+  bankBin: "",
+  bankAccount: "",
+  bankHolder: "",
+  paymentNote: "",
+};
 
 interface Issued {
   teacherName: string;
@@ -165,7 +176,7 @@ function toInfo(r: InvoiceRow, zone: string, attendanceChanged: boolean): Invoic
     voidedAt: r.voided_at,
     voidReason: r.void_reason,
     version: r.version,
-    payee: issued?.payee ?? paymentOf(r),
+    payee: issued ? { ...noPayment, ...issued.payee } : paymentOf(r),
     attendanceChanged,
   };
 }
@@ -641,6 +652,7 @@ export async function paymentSet(ctx: Ctx, actor: Actor, body: PaymentDetailsBod
     payeeName: body.payeeName,
     payeePhone: body.payeePhone,
     bankName: body.bankName,
+    bankBin: body.bankBin,
     bankAccount: body.bankAccount,
     bankHolder: body.bankHolder,
     paymentNote: body.paymentNote,
@@ -698,14 +710,17 @@ export async function myInvoiceGet(ctx: Ctx, actor: Actor, id: string): Promise<
     voidedAt: r.voided_at,
     voidReason: "", // why the teacher cancelled it is the teacher's business
     version: r.version,
-    payee: issued?.payee ?? {
-      payeeName: "",
-      payeePhone: "",
-      bankName: "",
-      bankAccount: "",
-      bankHolder: "",
-      paymentNote: "",
-    },
+    payee: issued
+      ? { ...noPayment, ...issued.payee }
+      : {
+          payeeName: "",
+          payeePhone: "",
+          bankName: "",
+          bankBin: "",
+          bankAccount: "",
+          bankHolder: "",
+          paymentNote: "",
+        },
   };
 }
 

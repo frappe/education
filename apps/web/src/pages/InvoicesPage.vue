@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels";
 import { formatVnd } from "@/features/format";
 import { useInvoiceList } from "@/features/invoices/useInvoices";
@@ -16,6 +16,7 @@ import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppSelect from "@/ui/AppSelect.vue";
 import AppStat from "@/ui/AppStat.vue";
 import AppTable from "@/ui/AppTable.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
@@ -28,6 +29,10 @@ const list = useInvoiceList({
   paymentSaved: t.paymentSaved,
 });
 const paying = ref(false);
+const bankOptions = computed(() => [
+  ...list.banks.map((b) => ({ value: b.bin, label: b.name })),
+  { value: "other", label: t.bankOther },
+]);
 function openPayment() {
   list.openPayment();
   paying.value = true;
@@ -135,8 +140,26 @@ async function savePayment() {
       <AppAlert v-if="list.paymentError.value" kind="error">{{ list.paymentError.value }}</AppAlert>
       <AppInput v-model="list.form.payeeName" :label="t.payeeName" autocomplete="name" />
       <AppInput v-model="list.form.payeePhone" :label="t.payeePhone" type="tel" autocomplete="tel" />
-      <AppInput v-model="list.form.bankName" :label="t.bankName" />
-      <AppInput v-model="list.form.bankAccount" :label="t.bankAccount" inputmode="numeric" />
+      <AppSelect
+        :model-value="list.bankChoice.value"
+        :label="t.bankName"
+        :options="bankOptions"
+        :placeholder="t.bankNone"
+        @update:model-value="list.chooseBank"
+      />
+      <template v-if="list.bankChoice.value === 'other'">
+        <AppInput v-model="list.form.bankName" :label="t.bankOtherName" />
+        <AppInput v-model="list.form.bankBin" :label="t.bankBin" :hint="t.bankBinHint" inputmode="numeric" />
+      </template>
+      <AppInput
+        v-model="list.form.bankAccount"
+        :label="t.bankAccount"
+        :hint="t.accountHint"
+        inputmode="numeric"
+      />
+      <AppAlert :kind="list.qrReady.value ? 'success' : 'info'">{{
+        list.qrReady.value ? t.qrReady : t.qrMissing
+      }}</AppAlert>
       <AppInput v-model="list.form.bankHolder" :label="t.bankHolder" />
       <AppTextarea
         v-model="list.form.paymentNote"

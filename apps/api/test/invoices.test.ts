@@ -810,6 +810,7 @@ describe("payment details", () => {
       payeeName: "",
       payeePhone: "",
       bankName: "",
+      bankBin: "",
       bankAccount: "",
       bankHolder: "",
       paymentNote: "",
@@ -839,6 +840,68 @@ describe("payment details", () => {
       expect((await put(max + 1)).status, field).toBe(400);
       expect((await put(max)).status, field).toBe(200);
     }
+  });
+
+  it("keeps the number of the bank (6 digits) for the payment QR, and refuses anything else", async () => {
+    const t = await createTeacher();
+    const put = (body: Record<string, unknown>) =>
+      call("/api/payment-details", { method: "PUT", cookie: t.cookie, body });
+    expect(
+      (await put({ bankName: "Vietcombank", bankBin: "970436", bankAccount: "0011001234567" })).json.payment,
+    ).toMatchObject({
+      bankBin: "970436",
+      bankName: "Vietcombank",
+    });
+    for (const bad of ["97043", "9704366", "abcdef", "970 436", "97043a"]) {
+      expect((await put({ bankBin: bad })).status, bad).toBe(400);
+    }
+    expect((await call("/api/payment-details", { cookie: t.cookie })).json.payment.bankBin).toBe("970436"); // unchanged
+    expect((await put({ bankBin: "" })).json.payment.bankBin).toBe(""); // can be cleared
+    await expect(
+      env.DB.prepare("UPDATE tenants SET bank_bin = '12' WHERE id = ?").bind(t.tenantId).run(),
+    ).rejects.toThrow();
+  });
+
+  it("a sent receipt keeps the bank number it had, and an older receipt without one still opens", async () => {
+    const { t } = await setup();
+    await call("/api/payment-details", {
+      method: "PUT",
+      cookie: t.cookie,
+      body: {
+        bankName: "Vietcombank",
+        bankBin: "970436",
+        bankAccount: "0011001234567",
+        bankHolder: "LAN TRAN",
+      },
+    });
+    const d = await drafts(t);
+    await send(t, d.Hoa!);
+    await call("/api/payment-details", {
+      method: "PUT",
+      cookie: t.cookie,
+      body: { bankBin: "970415", bankAccount: "999999" },
+    });
+    expect((await open(t, d.Hoa!.id)).payee).toMatchObject({
+      bankBin: "970436",
+      bankAccount: "0011001234567",
+    });
+    // A receipt sent before the bank number existed has none in its saved details.
+    await env.DB.prepare(
+      `INSERT INTO invoices (id, tenant_id, student_id, period, number, status, lines, total, issued, sent_at, created_at, updated_at)
+       VALUES ('old-receipt', ?1, ?2, '2019-12', 'INV-201912-0001', 'sent', '[]', 5, ?3, ?4, ?4, ?4)`,
+    )
+      .bind(
+        t.tenantId,
+        d.Nam!.studentId,
+        JSON.stringify({
+          teacherName: "Lan",
+          studentName: "Nam",
+          payee: { payeeName: "Lan", bankAccount: "123456" },
+        }),
+        new Date().toISOString(),
+      )
+      .run();
+    expect((await open(t, "old-receipt")).payee).toMatchObject({ bankBin: "", bankAccount: "123456" });
   });
 
   it("belongs to one teacher only", async () => {

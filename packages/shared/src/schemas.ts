@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isBin } from "./vietqr";
 import { ATTENDANCE_STATUSES, INVOICE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
@@ -719,6 +720,12 @@ export const paymentDetailsBody = z.object({
   payeeName: paymentText(100),
   payeePhone: paymentText(30),
   bankName: paymentText(100),
+  /** The 6 digit number of the bank (see VN_BANKS). With the account number it makes the payment QR. Empty: no QR. */
+  bankBin: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || isBin(v), "The bank number has 6 digits.")
+    .default(""),
   bankAccount: paymentText(50),
   bankHolder: paymentText(100),
   paymentNote: paymentText(500),

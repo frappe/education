@@ -6,9 +6,11 @@ import LessonPicker from "@/components/LessonPicker.vue";
 import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels";
 import { formatVnd } from "@/features/format";
 import { amountOf, parseMoney } from "@/features/invoices/lines";
+import { downloadReceiptPng, type PngLabels } from "@/features/invoices/png";
 import { periodLabel } from "@/features/invoices/period";
 import { sheetOf, type SheetData } from "@/features/invoices/sheet";
 import { useInvoice, useLessonPicker } from "@/features/invoices/useInvoices";
+import { useToast } from "@/features/toast/useToast";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -22,6 +24,7 @@ import AppPage from "@/ui/AppPage.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
 const t = messages.invoices;
+const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const inv = useInvoice(
@@ -66,7 +69,50 @@ const sheet = computed<SheetData | null>(() => {
   };
 });
 
-const print = () => window.print();
+// The receipt as a picture (PNG), with the payment QR code when it is sent and has the bank details.
+const pngLabels: PngLabels = {
+  receipt: t.receipt,
+  receiptVi: t.receiptVi,
+  number: t.receiptNo,
+  draftNumber: t.draftNumber,
+  from: t.from,
+  to: t.to,
+  month: t.month,
+  sentOn: t.sentOn,
+  due: t.due,
+  description: t.description,
+  howMany: t.howMany,
+  price: t.price,
+  amount: t.amount,
+  total: t.total,
+  perLesson: t.perLesson,
+  lessonOne: t.lessonOne,
+  lessonMany: t.lessonMany,
+  lessonDays: t.lessonDays,
+  paidOn: t.paidOn,
+  stampPaid: t.stampPaid,
+  note: t.noteTitle,
+  howToPay: t.howToPay,
+  payTo: t.payTo,
+  phone: t.phone,
+  bank: t.bank,
+  account: t.account,
+  holder: t.holder,
+  scan: t.scan,
+  notTax: t.notTax,
+};
+const makingPng = ref(false);
+async function downloadPng() {
+  if (!sheet.value || makingPng.value) return;
+  makingPng.value = true;
+  try {
+    await downloadReceiptPng(sheet.value, pngLabels, `${d.value?.number ?? "receipt"}.png`);
+  } catch {
+    toast.error(t.pngFailed);
+  } finally {
+    makingPng.value = false;
+  }
+}
 
 type Ask = null | "send" | "cancel" | "delete";
 const asking = ref<Ask>(null);
@@ -127,8 +173,12 @@ const canSend = computed(
   >
     <template v-if="d" #actions>
       <AppBadge :tone="invoiceStatusTone[d.status]">{{ invoiceStatusText[d.status] }}</AppBadge>
-      <AppButton v-if="!isDraft" variant="secondary" @click="print"
-        ><AppIcon name="print" :size="16" />{{ t.print }}</AppButton
+      <AppButton
+        v-if="d.status === 'sent' || d.status === 'paid'"
+        variant="secondary"
+        :loading="makingPng"
+        @click="downloadPng"
+        ><AppIcon name="download" :size="16" />{{ t.downloadPng }}</AppButton
       >
     </template>
 

@@ -25,6 +25,7 @@ export interface InvoiceRow {
   payee_name: string;
   payee_phone: string;
   bank_name: string;
+  bank_bin: string;
   bank_account: string;
   bank_holder: string;
   payment_note: string;
@@ -32,7 +33,7 @@ export interface InvoiceRow {
 
 const COLUMNS = `i.id, i.tenant_id, i.student_id, s.name AS student_name, s.email AS student_email, i.period, i.number,
   i.status, i.lines, i.total, i.note, i.due_date, i.issued, i.sent_at, i.paid_at, i.voided_at, i.void_reason, i.version,
-  t.name AS teacher_name, t.payee_name, t.payee_phone, t.bank_name, t.bank_account, t.bank_holder, t.payment_note`;
+  t.name AS teacher_name, t.payee_name, t.payee_phone, t.bank_name, t.bank_bin, t.bank_account, t.bank_holder, t.payment_note`;
 const FROM = `FROM invoices i
   JOIN students s ON s.id = i.student_id AND s.tenant_id = i.tenant_id
   JOIN tenants t ON t.id = i.tenant_id`;
@@ -315,6 +316,7 @@ export interface PaymentRow {
   payee_name: string;
   payee_phone: string;
   bank_name: string;
+  bank_bin: string;
   bank_account: string;
   bank_holder: string;
   payment_note: string;
@@ -323,7 +325,7 @@ export interface PaymentRow {
 export const paymentDetailsOf = (db: D1Database, tenantId: string) =>
   db
     .prepare(
-      `SELECT payee_name, payee_phone, bank_name, bank_account, bank_holder, payment_note FROM tenants WHERE id = ?`,
+      `SELECT payee_name, payee_phone, bank_name, bank_bin, bank_account, bank_holder, payment_note FROM tenants WHERE id = ?`,
     )
     .bind(tenantId)
     .first<PaymentRow>();
@@ -335,6 +337,7 @@ export const setPaymentDetailsStatement = (
     payeeName: string;
     payeePhone: string;
     bankName: string;
+    bankBin: string;
     bankAccount: string;
     bankHolder: string;
     paymentNote: string;
@@ -342,10 +345,20 @@ export const setPaymentDetailsStatement = (
 ) =>
   db
     .prepare(
-      `UPDATE tenants SET payee_name = ?1, payee_phone = ?2, bank_name = ?3, bank_account = ?4, bank_holder = ?5, payment_note = ?6
+      `UPDATE tenants SET payee_name = ?1, payee_phone = ?2, bank_name = ?3, bank_account = ?4, bank_holder = ?5, payment_note = ?6,
+         bank_bin = ?8
        WHERE id = ?7`,
     )
-    .bind(v.payeeName, v.payeePhone, v.bankName, v.bankAccount, v.bankHolder, v.paymentNote, tenantId);
+    .bind(
+      v.payeeName,
+      v.payeePhone,
+      v.bankName,
+      v.bankAccount,
+      v.bankHolder,
+      v.paymentNote,
+      tenantId,
+      v.bankBin,
+    );
 
 // ------------------------------------------------------------- the student's side
 

@@ -1,3 +1,4 @@
+import { VN_BANKS, isAccountNumber, isBin, type BankInfo } from "@lms/shared";
 import type {
   InvoiceInfo,
   InvoiceListResult,
@@ -19,6 +20,7 @@ const emptyPayment = (): PaymentDetails => ({
   payeeName: "",
   payeePhone: "",
   bankName: "",
+  bankBin: "",
   bankAccount: "",
   bankHolder: "",
   paymentNote: "",
@@ -100,8 +102,30 @@ export function useInvoiceList(text: {
   });
   const paymentEmpty = computed(() => Object.values(payment.value).every((v) => v === ""));
 
+  /** The bank as chosen from the list: its number, "other" (the teacher types the name and number) or empty. */
+  const bankChoice = ref("");
+  const banks: readonly BankInfo[] = VN_BANKS;
+  const choiceOf = (p: PaymentDetails) =>
+    banks.some((b) => b.bin === p.bankBin) ? p.bankBin : p.bankBin || p.bankName ? "other" : "";
+  function chooseBank(choice: string) {
+    bankChoice.value = choice;
+    const bank = banks.find((b) => b.bin === choice);
+    if (bank) {
+      form.bankBin = bank.bin;
+      form.bankName = bank.name;
+    } else if (choice === "") {
+      form.bankBin = "";
+      form.bankName = "";
+    } else if (banks.some((b) => b.bin === form.bankBin)) {
+      form.bankBin = ""; // "other": the teacher types the number
+    }
+  }
+  /** A payment QR code can be made when the bank number and the account number are right. */
+  const qrReady = computed(() => isBin(form.bankBin) && isAccountNumber(form.bankAccount.replace(/\s/g, "")));
+
   function openPayment() {
     Object.assign(form, payment.value);
+    bankChoice.value = choiceOf(payment.value);
     paymentError.value = null;
   }
   async function savePayment(): Promise<boolean> {
@@ -110,7 +134,11 @@ export function useInvoiceList(text: {
     paymentError.value = null;
     try {
       payment.value = (
-        await api<{ payment: PaymentDetails }>("/payment-details", { method: "PUT", body: { ...form } })
+        await api<{ payment: PaymentDetails }>("/payment-details", {
+          method: "PUT",
+          // Spaces inside the account number (people write "0011 0012 3456") are not part of it.
+          body: { ...form, bankAccount: form.bankAccount.replace(/\s/g, "") },
+        })
       ).payment;
       toast.success(text.paymentSaved);
       return true;
@@ -133,6 +161,10 @@ export function useInvoiceList(text: {
     goToNow,
     generate,
     form,
+    banks,
+    bankChoice,
+    chooseBank,
+    qrReady,
     paymentEmpty,
     openPayment,
     savePayment,
