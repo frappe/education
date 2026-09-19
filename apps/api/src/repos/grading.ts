@@ -49,6 +49,7 @@ export interface SubmissionRowFull {
   status: SubmissionStatus;
   responses: string;
   question_points: string;
+  question_notes: string;
   submitted_at: string | null;
   is_late: number;
   revision_count: number;
@@ -62,7 +63,7 @@ export interface SubmissionRowFull {
 export const findSubmission = (db: D1Database, tenantId: string, assignmentId: string, studentId: string) =>
   db
     .prepare(
-      `SELECT sub.id, sub.student_id, s.name AS student_name, sub.status, sub.responses, sub.question_points,
+      `SELECT sub.id, sub.student_id, s.name AS student_name, sub.status, sub.responses, sub.question_points, sub.question_notes,
          sub.submitted_at, sub.is_late, sub.revision_count, sub.score, sub.feedback, sub.version, x.until_at
        FROM submissions sub JOIN students s ON s.id = sub.student_id AND s.tenant_id = sub.tenant_id
        LEFT JOIN submission_extensions x ON x.assignment_id = sub.assignment_id AND x.student_id = sub.student_id
@@ -103,13 +104,14 @@ export const gradeStatement = (
     version: number;
     score: number;
     points: Record<string, number>;
+    notes: Record<string, string>;
     feedback: string;
     graderId: string;
   },
 ): D1PreparedStatement =>
   db
     .prepare(
-      `UPDATE submissions SET score = ?1, feedback = ?2, question_points = ?9,
+      `UPDATE submissions SET score = ?1, feedback = ?2, question_points = ?9, question_notes = ?10,
          status = CASE WHEN status = 'returned' THEN 'returned' ELSE 'graded' END,
          graded_at = ?3, version = version + 1, updated_at = ?3, last_grader_id = ?8
        WHERE tenant_id = ?4 AND assignment_id = ?5 AND student_id = ?6 AND version = ?7
@@ -125,6 +127,7 @@ export const gradeStatement = (
       o.version,
       o.graderId,
       JSON.stringify(o.points),
+      JSON.stringify(o.notes),
     );
 
 /** The student sees the score and feedback from now on. Needs a score, and the version the teacher looked at. */

@@ -268,6 +268,10 @@ const setLink = (qi: number, v: string) => {
           </template>
           <span v-else class="text-base-content/70">{{ t.waitingQuestion }}</span>
         </div>
+        <div v-if="resultOf(q.id)?.note" class="rounded-field border border-primary/30 bg-primary/5 p-3">
+          <p class="text-sm font-medium text-primary">{{ t.teacherNote }}</p>
+          <p class="whitespace-pre-wrap break-words">{{ resultOf(q.id)!.note }}</p>
+        </div>
       </AppCard>
 
       <div

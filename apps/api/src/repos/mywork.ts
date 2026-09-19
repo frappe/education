@@ -18,7 +18,7 @@ const VISIBLE = `FROM assignments a
 
 const COLUMNS = `a.id, a.tenant_id, a.course_id, c.name AS course_name, a.title, a.instructions, a.questions,
   a.links, a.due_at, a.allow_late, a.max_score, a.status AS assignment_status, t.timezone, s.id AS student_id,
-  sub.status AS sub_status, sub.responses, sub.question_points, sub.submitted_at, sub.is_late, sub.score,
+  sub.status AS sub_status, sub.responses, sub.question_points, sub.question_notes, sub.submitted_at, sub.is_late, sub.score,
   sub.feedback, x.until_at`;
 
 export interface MyWorkRow {
@@ -41,6 +41,7 @@ export interface MyWorkRow {
   responses: string | null;
   /** JSON: the points of each question so far. */
   question_points: string | null;
+  question_notes: string | null;
   submitted_at: string | null;
   is_late: number | null;
   score: number | null;

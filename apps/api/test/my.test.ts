@@ -471,9 +471,9 @@ describe("the system scores the questions that have a correct answer", () => {
     expect(res.json.work).toMatchObject({ status: "returned", score: 4, maxScore: 5, canEdit: false });
     expect(res.json.work.results).toEqual({
       perQuestion: [
-        { questionId: q1, correct: true, awarded: 2, correctAnswer: "goes" },
-        { questionId: q2, correct: false, awarded: 0, correctAnswer: "are" },
-        { questionId: q3, correct: true, awarded: 2, correctAnswer: "went" },
+        { questionId: q1, correct: true, awarded: 2, correctAnswer: "goes", note: "" },
+        { questionId: q2, correct: false, awarded: 0, correctAnswer: "are", note: "" },
+        { questionId: q3, correct: true, awarded: 2, correctAnswer: "went", note: "" },
       ],
       autoAwarded: 4,
       autoMax: 5,
@@ -524,10 +524,10 @@ describe("the system scores the questions that have a correct answer", () => {
     expect(res.json.work).toMatchObject({ status: "submitted", score: null, canEdit: false });
     expect(res.json.work.results).toEqual({
       perQuestion: [
-        { questionId: c, correct: true, awarded: 2, correctAnswer: "c" },
-        { questionId: s, correct: false, awarded: 0, correctAnswer: "gato" },
-        { questionId: wr, correct: null, awarded: null, correctAnswer: null },
-        { questionId: sp, correct: null, awarded: null, correctAnswer: null },
+        { questionId: c, correct: true, awarded: 2, correctAnswer: "c", note: "" },
+        { questionId: s, correct: false, awarded: 0, correctAnswer: "gato", note: "" },
+        { questionId: wr, correct: null, awarded: null, correctAnswer: null, note: "" },
+        { questionId: sp, correct: null, awarded: null, correctAnswer: null, note: "" },
       ],
       autoAwarded: 2,
       autoMax: 5,

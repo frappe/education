@@ -564,6 +564,8 @@ export interface QuestionResult {
   awarded: number | null;
   /** The correct answer, for a question the system scored. */
   correctAnswer: string | null;
+  /** The teacher's comment or correction on this question. Empty until the work is returned. */
+  note: string;
 }
 
 export interface MyWorkDetail extends MyWorkItem {
@@ -621,11 +623,14 @@ const scoreValue = z
   .max(100, "This score is too high.")
   .refine((v) => Number.isInteger(v * 2), "Use whole numbers or halves, for example 7 or 7.5.");
 const feedbackText = z.string().trim().max(5000, "This text is too long.");
+const noteText = z.string().trim().max(2000, "This comment is too long.");
 
 export const gradeBody = z.object({
   /** The points for each question (by question id). The ones the system scored can be left out. */
   points: z.record(z.string().max(40), scoreValue),
   feedback: feedbackText.default(""),
+  /** A comment or correction for each question (by question id). It replaces the saved ones; empty ones are dropped. */
+  notes: z.record(z.string().max(40), noteText).default({}),
   /** The version the teacher was looking at. If the student changed the answer since, the save is refused. */
   version: z.number().int().min(1),
 });
@@ -668,6 +673,8 @@ export interface SubmissionDetail {
   perQuestion: { questionId: string; auto: boolean; correct: boolean | null }[];
   score: number | null;
   feedback: string;
+  /** The teacher's comment or correction on each question (by question id). */
+  notes: Record<string, string>;
   version: number;
   history: { at: string; by: string; oldScore: number | null; newScore: number | null; feedback: string }[];
   extensionUntil: string | null;

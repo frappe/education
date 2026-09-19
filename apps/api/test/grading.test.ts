@@ -341,6 +341,93 @@ describe("scoring the questions the teacher scores", () => {
   });
 });
 
+describe("a comment or a correction on each question", () => {
+  it("is kept with the answer, comes back when the answer is opened, and is empty at first", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    expect((await open(t, id, hoa.studentId)).notes).toEqual({});
+    const res = await grade(t, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 4, 4: 5 }),
+      notes: { [qs[2]!.id]: "  'have' not 'has': My family has...  ", [qs[3]!.id]: "Speak slower." },
+    });
+    expect(res.status).toBe(200);
+    expect(res.json.submission.notes).toEqual({
+      [qs[2]!.id]: "'have' not 'has': My family has...",
+      [qs[3]!.id]: "Speak slower.",
+    });
+    expect((await open(t, id, hoa.studentId)).notes).toEqual(res.json.submission.notes);
+  });
+
+  it("a save replaces the comments: empty ones are dropped, and a comment can be written on a question the system scored", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    await grade(t, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 4, 4: 5 }),
+      notes: { [qs[0]!.id]: "Good", [qs[2]!.id]: "Fix this" },
+    });
+    const res = await grade(t, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 4, 4: 5 }),
+      notes: { [qs[0]!.id]: "", [qs[1]!.id]: "Check the spelling" },
+      version: 2,
+    });
+    expect(res.json.submission.notes).toEqual({ [qs[1]!.id]: "Check the spelling" });
+  });
+
+  it("refuses a comment for a question that is not in this homework, or one that is too long, and changes nothing", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    const points = pointsOf(qs, { 3: 4, 4: 5 });
+    const other = await grade(t, id, hoa.studentId, { points, notes: { q_unknown: "x" } });
+    expect(other.status).toBe(400);
+    expect(other.json.error.fields.notes).toMatch(/not for a question/);
+    const long = await grade(t, id, hoa.studentId, { points, notes: { [qs[2]!.id]: "x".repeat(2001) } });
+    expect(long.status).toBe(400);
+    expect((await open(t, id, hoa.studentId)).version).toBe(1);
+  });
+
+  it("the student sees the comments only once the work is returned", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    await grade(t, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 4, 4: 5 }),
+      notes: { [qs[2]!.id]: "Fix the verb" },
+    });
+    const before = await myWorkDetail(hoa, id);
+    expect(JSON.stringify(before.json.work)).not.toContain("Fix the verb");
+    await giveBack(t, id, hoa.studentId, 2);
+    const notes = (await myWorkDetail(hoa, id)).json.work.results.perQuestion.map(
+      (r: { note: string }) => r.note,
+    );
+    expect(notes).toEqual(["", "", "Fix the verb", ""]);
+  });
+
+  it("a comment added after returning shows to the student at once", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 3: 4, 4: 5 }) });
+    await giveBack(t, id, hoa.studentId, 2);
+    await grade(t, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 4, 4: 5 }),
+      notes: { [qs[0]!.id]: "Nice" },
+      version: 3,
+    });
+    const notes = (await myWorkDetail(hoa, id)).json.work.results.perQuestion.map(
+      (r: { note: string }) => r.note,
+    );
+    expect(notes[0]).toBe("Nice");
+  });
+
+  it("another teacher cannot read or write the comments", async () => {
+    const { hoa, id, qs } = await setup();
+    const other = await createTeacher("Other");
+    const res = await grade(other, id, hoa.studentId, {
+      points: pointsOf(qs, { 3: 1, 4: 1 }),
+      notes: { [qs[2]!.id]: "x" },
+    });
+    expect(res.status).toBe(404);
+  });
+});
+
 describe("a quiz the system scored can still be changed by the teacher", () => {
   it("the student sees the new score at once, and the change is in the history", async () => {
     const { t, hoa, id, qs } = await setup(quiz()); // 2 + 1 + 2 = 5
@@ -564,6 +651,7 @@ describe("the queries themselves keep to their rules, even when called directly"
     version: 1,
     score: 5,
     points: {},
+    notes: {},
     feedback: "",
     graderId: t.userId,
     ...over,

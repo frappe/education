@@ -16,7 +16,14 @@ import { nowIso } from "../lib/time";
 import { gradeAuto } from "../lib/grade";
 import { localToUtc } from "../lib/zone";
 import { authorize } from "../policy";
-import { findAssignment, parseList, parsePoints, questionsOf, targetIds } from "../repos/assignments";
+import {
+  findAssignment,
+  parseList,
+  parseNotes,
+  parsePoints,
+  questionsOf,
+  targetIds,
+} from "../repos/assignments";
 import {
   clearExtensionStatement,
   findSubmission,
@@ -92,6 +99,7 @@ async function detailOf(
     revisionCount: sub.revision_count,
     answers,
     points: parsePoints(sub.question_points),
+    notes: parseNotes(sub.question_notes),
     perQuestion: questions.map((q) => ({
       questionId: q.id,
       auto: !auto.manualIds.includes(q.id),
@@ -157,6 +165,17 @@ export async function grade(
   });
   const score = Object.values(points).reduce((sum, p) => sum + p, 0);
 
+  // The comments: only for questions of this homework, and empty ones are not kept.
+  const notes: Record<string, string> = {};
+  for (const [key, text] of Object.entries(body.notes)) {
+    if (!questions.some((q) => q.id === key)) {
+      throw new AppError("VALIDATION_FAILED", {
+        fields: { notes: "One of the comments is not for a question of this homework." },
+      });
+    }
+    if (text !== "") notes[key] = text;
+  }
+
   const changed = await gradeStatement(db, {
     tenantId,
     assignmentId,
@@ -164,6 +183,7 @@ export async function grade(
     version: body.version,
     score,
     points,
+    notes,
     feedback: body.feedback,
     graderId: actor.userId,
   }).run();

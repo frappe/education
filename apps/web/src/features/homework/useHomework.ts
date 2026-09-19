@@ -395,6 +395,8 @@ export function useGrading(
   const error = ref<string | null>(null);
   /** The points typed for each question (by question id). */
   const points = reactive<Record<string, string>>({});
+  /** The comment or correction typed for each question (by question id). */
+  const notes = reactive<Record<string, string>>({});
   const feedback = ref("");
   const base = `/assignments/${assignmentId}/submissions/${studentId}`;
 
@@ -403,6 +405,8 @@ export function useGrading(
     for (const key of Object.keys(points)) delete points[key];
     for (const q of d.assignment.questions)
       points[q.id] = d.points[q.id] === undefined ? "" : String(d.points[q.id]);
+    for (const key of Object.keys(notes)) delete notes[key];
+    for (const q of d.assignment.questions) notes[q.id] = d.notes[q.id] ?? "";
     feedback.value = d.feedback;
   }
 
@@ -449,7 +453,12 @@ export function useGrading(
     return run(
       "/grade",
       "PUT",
-      { points: given, feedback: feedback.value, version: detail.value!.version } satisfies GradeBody,
+      {
+        points: given,
+        notes: { ...notes },
+        feedback: feedback.value,
+        version: detail.value!.version,
+      } satisfies GradeBody,
       text.saved,
     );
   };
@@ -462,7 +471,9 @@ export function useGrading(
     if (!d) return false;
     if (feedback.value !== d.feedback) return true;
     return d.assignment.questions.some(
-      (q) => (points[q.id] ?? "") !== (d.points[q.id] === undefined ? "" : String(d.points[q.id])),
+      (q) =>
+        (points[q.id] ?? "") !== (d.points[q.id] === undefined ? "" : String(d.points[q.id])) ||
+        (notes[q.id] ?? "").trim() !== (d.notes[q.id] ?? ""),
     );
   });
   return {
@@ -472,6 +483,7 @@ export function useGrading(
     busy,
     error,
     points,
+    notes,
     feedback,
     total,
     complete,

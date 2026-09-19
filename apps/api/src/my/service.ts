@@ -19,7 +19,7 @@ import { uuidv7 } from "../lib/id";
 import { nowIso } from "../lib/time";
 import { utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
-import { linksOf, parseList, parsePoints, questionsOf } from "../repos/assignments";
+import { linksOf, parseList, parseNotes, parsePoints, questionsOf } from "../repos/assignments";
 import { lessonsOfCourse } from "../repos/lessons";
 import {
   findMyCourse,
@@ -79,6 +79,8 @@ function resultsOf(r: MyWorkRow, questions: QuestionInfo[], answers: AnswerItem[
   const auto = gradeAuto(questions, answers);
   const saved = parsePoints(r.question_points);
   const returned = r.sub_status === "returned";
+  // The teacher's comments show with the returned work, like the points do.
+  const notes = returned ? parseNotes(r.question_notes) : {};
   const perQuestion: QuestionResult[] = questions.map((q) => {
     if (isAutoQuestion(q)) {
       return {
@@ -86,6 +88,7 @@ function resultsOf(r: MyWorkRow, questions: QuestionInfo[], answers: AnswerItem[
         correct: auto.correct[q.id] ?? false,
         awarded: saved[q.id] ?? auto.points[q.id] ?? 0,
         correctAnswer: correctAnswerText(q),
+        note: notes[q.id] ?? "",
       };
     }
     return {
@@ -93,6 +96,7 @@ function resultsOf(r: MyWorkRow, questions: QuestionInfo[], answers: AnswerItem[
       correct: null,
       awarded: returned ? (saved[q.id] ?? null) : null,
       correctAnswer: null,
+      note: notes[q.id] ?? "",
     };
   });
   return {

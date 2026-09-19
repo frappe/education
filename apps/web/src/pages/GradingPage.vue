@@ -155,6 +155,8 @@ const stateNote = computed(() => {
             </p>
           </template>
 
+          <AppTextarea v-model="g.notes[q.id]!" :label="t.noteLabel" :hint="t.noteHint" :rows="2" />
+
           <p class="flex items-center gap-2 text-sm">
             <template v-if="info(q.id)?.auto">
               <AppBadge :tone="info(q.id)?.correct ? 'success' : 'error'">{{

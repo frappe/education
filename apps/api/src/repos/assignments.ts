@@ -55,6 +55,19 @@ export const parsePoints = (text: string | null): Record<string, number> => {
     return {};
   }
 };
+/** The teacher's comment on each question (question id to text). Anything that is not text is left out. */
+export const parseNotes = (text: string | null): Record<string, string> => {
+  try {
+    const v: unknown = JSON.parse(text ?? "{}");
+    if (v === null || typeof v !== "object" || Array.isArray(v)) return {};
+    return Object.fromEntries(Object.entries(v).filter(([, note]) => typeof note === "string")) as Record<
+      string,
+      string
+    >;
+  } catch {
+    return {};
+  }
+};
 export const questionsOf = (r: Pick<AssignmentRow, "questions">) => parseList<QuestionInfo>(r.questions);
 export const linksOf = (r: Pick<AssignmentRow, "links">) => parseList<LinkInfo>(r.links);
 
