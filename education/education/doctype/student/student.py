@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
-from frappe.utils import getdate, today
+from frappe.utils import getdate, today, validate_email_address
 from erpnext import get_default_currency
 from frappe.utils.nestedset import get_root_of
 
@@ -70,6 +70,9 @@ class Student(Document):
 
 	def validate_user(self):
 		"""Create a website user for student creation if not already exists"""
+		if not validate_email_address(self.student_email_id):
+			return
+
 		if not frappe.db.get_single_value(
 			"Education Settings", "user_creation_skip"
 		) and not frappe.db.exists("User", self.student_email_id):
