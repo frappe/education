@@ -7,6 +7,7 @@ import { loadActor } from "./middleware/auth";
 import { csrfProtection } from "./middleware/csrf";
 import { requestId } from "./middleware/request-id";
 import { securityHeaders } from "./middleware/security-headers";
+import { assignments } from "./routes/assignments";
 import { auth } from "./routes/auth";
 import { courses } from "./routes/courses";
 import { dev } from "./routes/dev";
@@ -39,6 +40,7 @@ export function createApp() {
   api.route("/", students);
   api.route("/", enrollments);
   api.route("/", lessons);
+  api.route("/", assignments);
   api.route("/", dev);
   app.route("/api", api);
 

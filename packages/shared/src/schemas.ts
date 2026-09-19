@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
+import { ASSIGNMENT_TYPES, ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
  * Request shapes shared by the API (which checks them) and the web app (which uses the
@@ -344,4 +344,108 @@ export interface StudentAttendanceInfo {
     startTime: string;
     status: AttendanceStatus;
   }[];
+}
+
+// ------------------------------------------------ course links and assignments (M3)
+
+/** A link students open in a new tab. https only, no spaces, nothing that runs code, no "name:password@". */
+export const httpsLink = z
+  .string()
+  .trim()
+  .max(LIMITS.maxLinkLength, "This link is too long.")
+  .regex(/^https:\/\/[^\s/?#@]+([/?#]\S*)?$/i, "Please enter a link that starts with https://");
+
+const linkTitle = z.string().trim().min(1, "Please enter a title.").max(100, "This title is too long.");
+
+export const materialBody = z.object({
+  title: linkTitle,
+  url: httpsLink,
+  /** false: only the teacher sees it. */
+  published: z.boolean().default(true),
+});
+export type MaterialBody = z.infer<typeof materialBody>;
+
+export interface MaterialInfo {
+  id: string;
+  title: string;
+  url: string;
+  published: boolean;
+  createdAt: string;
+}
+
+const question = z.object({
+  text: z.string().trim().min(1, "Please write the question.").max(500, "This question is too long."),
+  options: z
+    .array(z.string().trim().min(1, "Please write the answer.").max(200, "This answer is too long."))
+    .min(2, "Add at least 2 answers.")
+    .max(6, "Use at most 6 answers."),
+});
+export type QuestionInfo = z.infer<typeof question>;
+
+const linkItem = z.object({ title: linkTitle, url: httpsLink });
+export type LinkInfo = z.infer<typeof linkItem>;
+
+const hhmm = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please use the time format HH:mm, for example 18:30.");
+
+export const assignmentFields = z
+  .object({
+    type: z.enum(ASSIGNMENT_TYPES),
+    title: z.string().trim().min(1, "Please enter a title.").max(150, "This title is too long."),
+    instructions: z.string().trim().max(5000, "This text is too long.").default(""),
+    questions: z.array(question).max(50, "Use at most 50 questions.").default([]),
+    links: z.array(linkItem).max(10, "Use at most 10 links.").default([]),
+    /** Due day and time, in the teacher's time zone. Both, or neither. */
+    dueDate: isoDate.nullable().default(null),
+    dueTime: hhmm.nullable().default(null),
+    allowLate: z.boolean().default(false),
+    maxScore: z
+      .number("Please enter a number.")
+      .int("Please enter a whole number.")
+      .min(1, "Use at least 1.")
+      .max(100, "Use at most 100.")
+      .default(10),
+    targetMode: z.enum(["all", "selected"]).default("all"),
+    studentIds: z.array(z.string().min(1).max(64)).max(200, "Choose at most 200 students.").default([]),
+  })
+  .superRefine((v, ctx) => {
+    const add = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
+    if (v.type === "multiple_choice" && v.questions.length === 0)
+      add("questions", "Add at least 1 question.");
+    if (v.type !== "multiple_choice" && v.questions.length > 0)
+      add("questions", "Only multiple choice work has questions.");
+    if ((v.dueDate === null) !== (v.dueTime === null)) {
+      add(v.dueDate === null ? "dueDate" : "dueTime", "Please choose both the day and the time, or neither.");
+    }
+    if (v.targetMode === "selected" && v.studentIds.length === 0)
+      add("studentIds", "Choose at least 1 student.");
+  });
+
+export const createAssignmentBody = assignmentFields;
+export const updateAssignmentBody = assignmentFields.safeExtend({ version: z.number().int().min(1) });
+export type CreateAssignmentBody = z.infer<typeof createAssignmentBody>;
+export type UpdateAssignmentBody = z.infer<typeof updateAssignmentBody>;
+
+export interface AssignmentInfo {
+  id: string;
+  courseId: string;
+  courseName: string;
+  type: "multiple_choice" | "essay" | "speaking";
+  title: string;
+  instructions: string;
+  questions: QuestionInfo[];
+  links: LinkInfo[];
+  dueDate: string | null;
+  dueTime: string | null;
+  dueAt: string | null;
+  allowLate: boolean;
+  maxScore: number;
+  targetMode: "all" | "selected";
+  /** Only for target_mode "selected". */
+  studentIds: string[];
+  status: "draft" | "published" | "closed";
+  version: number;
+  /** How many students it is for, how many handed in, and how many wait for a score. */
+  counts: { targeted: number; handedIn: number; toGrade: number };
 }
