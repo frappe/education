@@ -4,8 +4,9 @@
  *  - public:  anyone
  *  - user:    any signed in person
  *  - teacher: a signed in person with a teacher membership
+ *  - student: a signed in person with a student membership
  */
-export type Access = "public" | "user" | "teacher";
+export type Access = "public" | "user" | "teacher" | "student";
 
 export const ROUTE_ACCESS: Record<string, Access> = {
   "GET /api/health": "public",
@@ -58,6 +59,12 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "GET /api/courses/:id/assignments": "teacher",
   "POST /api/courses/:id/assignments": "teacher",
   "GET /api/assignments/:id": "teacher",
+  "GET /api/my/courses": "student",
+  "GET /api/my/courses/:id": "student",
+  "GET /api/my/work": "student",
+  "GET /api/my/work/:id": "student",
+  "PUT /api/my/work/:id/draft": "student",
+  "POST /api/my/work/:id/submit": "student",
   "PUT /api/assignments/:id": "teacher",
   "POST /api/assignments/:id/publish": "teacher",
   "POST /api/assignments/:id/close": "teacher",

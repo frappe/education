@@ -60,6 +60,13 @@ export const requireTeacher = createMiddleware<AppBindings>(async (c, next) => {
   await next();
 });
 
+export const requireStudent = createMiddleware<AppBindings>(async (c, next) => {
+  const actor = c.get("actor");
+  if (!actor) throw new AppError("UNAUTHENTICATED");
+  if (!actor.memberships.some((m) => m.role === "student")) throw new AppError("FORBIDDEN");
+  await next();
+});
+
 /** Gets the signed in actor inside a handler that already passed requireAuth. */
 export function actorOf(c: { get(key: "actor"): Actor | null }): Actor {
   const actor = c.get("actor");

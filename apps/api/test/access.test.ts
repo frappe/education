@@ -27,6 +27,14 @@ describe("route access table", () => {
     });
   }
 
+  for (const [key] of protectedRoutes.filter(([, a]) => a === "student")) {
+    it(`${key} (student): a teacher who is not a student gets 403`, async () => {
+      const teacher = await createTeacher();
+      const res = await call(asPath(key), { method: methodOf(key), cookie: teacher.cookie });
+      expect(res.status).toBe(403);
+    });
+  }
+
   for (const [key] of protectedRoutes.filter(([, a]) => a === "teacher")) {
     it(`${key} (teacher): a student gets 403`, async () => {
       const teacher = await createTeacher();

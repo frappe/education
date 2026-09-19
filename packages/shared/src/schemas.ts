@@ -449,3 +449,78 @@ export interface AssignmentInfo {
   /** How many students it is for, how many handed in, and how many wait for a score. */
   counts: { targeted: number; handedIn: number; toGrade: number };
 }
+
+// ------------------------------------------------------- the student's side (M3)
+
+/** What a student writes for a piece of work. Which parts matter depends on the kind of work. */
+export const answerBody = z.object({
+  /** Essay text, or a short note with a speaking link. */
+  textAnswer: z.string().max(10000, "This text is too long.").default(""),
+  /** Speaking: the link to the video. Essay: an optional link. */
+  linkUrl: httpsLink.nullable().default(null),
+  /** Multiple choice: the chosen answer of each question (0 is the first), -1 when not answered. */
+  answers: z.array(z.number().int().min(-1).max(5)).max(50).default([]),
+});
+export type AnswerBody = z.infer<typeof answerBody>;
+
+export type SubmissionStatus =
+  "not_started" | "drafted" | "submitted" | "graded" | "returned" | "revision_requested";
+
+export interface MyWorkItem {
+  id: string;
+  courseId: string;
+  courseName: string;
+  title: string;
+  type: "multiple_choice" | "essay" | "speaking";
+  /** "closed": the teacher stopped taking work. */
+  assignmentStatus: "published" | "closed";
+  /** The due time that counts for this student (more time from the teacher is included). */
+  dueAt: string | null;
+  dueDate: string | null;
+  dueTime: string | null;
+  allowLate: boolean;
+  maxScore: number;
+  status: SubmissionStatus;
+  isLate: boolean;
+  submittedAt: string | null;
+  /** Only when the teacher returned the work. */
+  score: number | null;
+}
+
+export interface MyWorkDetail extends MyWorkItem {
+  instructions: string;
+  questions: QuestionInfo[];
+  links: LinkInfo[];
+  /** What the student saved or handed in so far. */
+  answer: AnswerBody;
+  /** The teacher's words: with a score when returned, or the reason when asked to do it again. */
+  feedback: string;
+  canEdit: boolean;
+  /** Why the student cannot hand in now. */
+  blocked: null | "closed" | "deadline" | "handed_in";
+}
+
+export interface MyCourseInfo {
+  id: string;
+  name: string;
+  description: string;
+  teacherName: string;
+  nextLesson: { date: string; startTime: string; endTime: string; title: string } | null;
+  openWork: number;
+}
+
+export interface MyCourseDetail {
+  course: MyCourseInfo;
+  materials: { id: string; title: string; url: string }[];
+  lessons: {
+    id: string;
+    title: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    place: string;
+    onlineUrl: string | null;
+    status: "scheduled" | "held" | "cancelled";
+  }[];
+  work: MyWorkItem[];
+}
