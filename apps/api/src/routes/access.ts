@@ -59,6 +59,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "GET /api/invoices": "teacher",
   "POST /api/invoices": "teacher",
   "POST /api/invoices/generate": "teacher",
+  "GET /api/invoices/summary": "teacher",
   "GET /api/invoices/unbilled": "teacher",
   "GET /api/invoices/lessons": "teacher",
   "GET /api/invoices/:id": "teacher",

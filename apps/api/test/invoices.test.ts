@@ -769,6 +769,39 @@ describe("choosing the lessons of a receipt", () => {
   }
 });
 
+describe("the summary for the start page", () => {
+  it("counts the students to charge, the drafts, and what was sent but is not paid", async () => {
+    const { t, hoa, lessons } = await setup();
+    const summary = async () => (await call("/api/invoices/summary", { cookie: t.cookie })).json.summary;
+    expect(await summary()).toEqual({ toCharge: 2, drafts: 0, unpaid: 0, unpaidAmount: 0 });
+    const d = await drafts(t); // Hoa 400,000 and Nam 200,000
+    expect(await summary()).toEqual({ toCharge: 0, drafts: 2, unpaid: 0, unpaidAmount: 0 });
+    await send(t, d.Hoa!);
+    await send(t, d.Nam!);
+    expect(await summary()).toEqual({ toCharge: 0, drafts: 0, unpaid: 2, unpaidAmount: 600_000 });
+    await post(t, `invoices/${d.Hoa!.id}/paid`, { version: 2 });
+    expect(await summary()).toMatchObject({ unpaid: 1, unpaidAmount: 200_000 });
+    await post(t, `invoices/${d.Nam!.id}/void`, { version: 2, reason: "x" });
+    expect(await summary()).toMatchObject({ unpaid: 0, unpaidAmount: 0, toCharge: 1 }); // Nam's lessons are free again
+    void hoa;
+    void lessons;
+  });
+
+  it("is about one teacher only, and closed to students", async () => {
+    const { t, hoa } = await setup();
+    await drafts(t);
+    const other = await createTeacher("Other");
+    expect((await call("/api/invoices/summary", { cookie: other.cookie })).json.summary).toEqual({
+      toCharge: 0,
+      drafts: 0,
+      unpaid: 0,
+      unpaidAmount: 0,
+    });
+    expect((await call("/api/invoices/summary", { cookie: hoa.cookie })).status).toBe(403);
+    expect((await call("/api/invoices/summary")).status).toBe(401);
+  });
+});
+
 describe("payment details", () => {
   it("starts empty, is kept trimmed, and refuses text that is too long", async () => {
     const t = await createTeacher();

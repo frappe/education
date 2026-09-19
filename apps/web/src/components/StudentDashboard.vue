@@ -14,7 +14,7 @@ import AppPage from "@/ui/AppPage.vue";
 
 const t = messages.my;
 const session = useSession();
-const { groups, courses, loading, error } = useMyHome();
+const { groups, courses, unpaidReceipts, loading, error } = useMyHome();
 const firstName = () => session.me?.user.name.split(" ")[0] ?? "";
 const empty = () =>
   !loading.value &&
@@ -27,6 +27,14 @@ const empty = () =>
 <template>
   <AppPage :title="fill(t.homeTitle, { name: firstName() })" :subtitle="t.homeText">
     <AppAlert v-if="error" kind="error">{{ error }}</AppAlert>
+    <AppAlert v-if="!loading && unpaidReceipts > 0" kind="warning">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span>{{
+          unpaidReceipts === 1 ? t.unpaidReceiptsOne : fill(t.unpaidReceipts, { n: unpaidReceipts })
+        }}</span>
+        <RouterLink to="/my/invoices" class="link font-medium">{{ t.unpaidReceiptsOpen }}</RouterLink>
+      </div>
+    </AppAlert>
     <AppLoading v-if="loading" :label="messages.common.loading" />
     <AppCard v-else-if="empty()"
       ><AppEmpty icon="attendance" :title="t.nothing" :text="t.nothingText"

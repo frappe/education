@@ -428,6 +428,42 @@ describe("a comment or a correction on each question", () => {
     expect(notes[0]).toBe("Nice");
   });
 
+  it("a change of a comment alone is kept in the history, and saving the same words again is not", async () => {
+    const { t, hoa, id, qs } = await setup();
+    await handIn(hoa, id, qs);
+    const points = pointsOf(qs, { 3: 4, 4: 5 });
+    await grade(t, id, hoa.studentId, { points, feedback: "Good", notes: { [qs[2]!.id]: "Fix the verb" } }); // v1 -> v2
+    await grade(t, id, hoa.studentId, {
+      points,
+      feedback: "Good",
+      notes: { [qs[2]!.id]: "Fix the verb" },
+      version: 2,
+    }); // same
+    await grade(t, id, hoa.studentId, {
+      points,
+      feedback: "Good",
+      notes: { [qs[2]!.id]: "Fix the tense" },
+      version: 3,
+    });
+    await grade(t, id, hoa.studentId, {
+      points,
+      feedback: "Very good",
+      notes: { [qs[2]!.id]: "Fix the tense" },
+      version: 4,
+    });
+    const h = (await open(t, id, hoa.studentId)).history as {
+      oldScore: number | null;
+      newScore: number | null;
+      feedbackChanged: boolean;
+      notesChanged: boolean;
+    }[];
+    expect(h.map((x) => [x.oldScore === x.newScore, x.feedbackChanged, x.notesChanged])).toEqual([
+      [true, true, false], // newest: only the feedback
+      [true, false, true], // only the comment
+      [false, true, true], // the first save
+    ]);
+  });
+
   it("another teacher cannot read or write the comments", async () => {
     const { hoa, id, qs } = await setup();
     const other = await createTeacher("Other");

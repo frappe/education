@@ -1,5 +1,6 @@
 import type { Env } from "../env";
 import { DevEmailProvider } from "./dev-provider";
+import { SmtpEmailProvider } from "./smtp-provider";
 
 export interface EmailMessage {
   /** What the email is for, e.g. "magic_link", "invite", "invoice". */
@@ -23,6 +24,6 @@ export function getEmailProvider(env: Env): EmailProvider {
     if (env.ENVIRONMENT === "production") throw new Error("EMAIL_MODE dev is not allowed in production");
     return new DevEmailProvider(env.DB);
   }
-  // Real sending is added after the email spike (docs/spikes.md).
-  throw new Error(`EMAIL_MODE "${env.EMAIL_MODE}" is not available yet`);
+  if (env.EMAIL_MODE === "smtp") return new SmtpEmailProvider(env);
+  throw new Error(`EMAIL_MODE "${String(env.EMAIL_MODE)}" is not available`);
 }

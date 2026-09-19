@@ -20,6 +20,7 @@ import {
   invoiceList,
   invoicePaid,
   invoiceSetLessons,
+  invoiceSummary,
   invoiceSend,
   invoiceUnpaid,
   invoiceUpdate,
@@ -41,6 +42,10 @@ invoices.get("/invoices", requireTeacher, async (c) => {
 });
 
 // These two come before "/invoices/:id" so that the names "unbilled" and "lessons" are not taken for an id.
+invoices.get("/invoices/summary", requireTeacher, async (c) => {
+  return c.json({ summary: await invoiceSummary(await makeCtx(c), actorOf(c)) });
+});
+
 invoices.get("/invoices/unbilled", requireTeacher, async (c) => {
   return c.json({ students: await unbilledList(await makeCtx(c), actorOf(c)) });
 });

@@ -2,8 +2,17 @@ export interface Env {
   DB: D1Database;
   ASSETS?: Fetcher;
   ENVIRONMENT: "local" | "test" | "staging" | "production";
-  /** "dev" stores emails in the outbox table. Real sending is added after the email spike. */
-  EMAIL_MODE: "dev" | "cloudflare";
+  /** "dev" stores emails in the outbox table. "smtp" sends them through an SMTP server (see docs/deploy.md). */
+  EMAIL_MODE: "dev" | "smtp";
+  /** SMTP server, for example smtp.gmail.com. Port 465 (TLS from the first byte) is the default. */
+  SMTP_HOST?: string;
+  SMTP_PORT?: string;
+  /** The account that signs in (an email address) and its password. Set both with `wrangler secret`. */
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  /** The "from" address, if different from SMTP_USER, and the name shown next to it. */
+  SMTP_FROM?: string;
+  SMTP_FROM_NAME?: string;
   /** Public address of the app, used in email links. Never taken from the request. */
   APP_URL: string;
   /** Secret used to hash IP addresses and emails in counters and logs. Set with `wrangler secret`. */

@@ -56,7 +56,7 @@ describe("email provider", () => {
   });
 
   it("refuses to run in an unknown mode instead of silently dropping mail", () => {
-    expect(() => getEmailProvider({ ...env, EMAIL_MODE: "cloudflare" })).toThrow();
+    expect(() => getEmailProvider({ ...env, EMAIL_MODE: "off" as never })).toThrow();
   });
 
   it("dev provider can be used directly", () => {

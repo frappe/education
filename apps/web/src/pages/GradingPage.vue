@@ -40,15 +40,25 @@ const answerOf = (qid: string) => d.value?.answers.find((a) => a.questionId === 
 const info = (qid: string) => d.value?.perQuestion.find((p) => p.questionId === qid);
 
 /** One line of the history in plain words. */
-function historyText(h: { by: string; oldScore: number | null; newScore: number | null }): string {
+function historyText(h: {
+  by: string;
+  oldScore: number | null;
+  newScore: number | null;
+  feedbackChanged: boolean;
+  notesChanged: boolean;
+}): string {
   const max = d.value?.assignment.maxScore ?? 0;
-  if (h.oldScore === h.newScore) return fill(t.historyFeedback, { by: h.by });
-  if (h.oldScore === null) return fill(t.historyGave, { by: h.by, score: scoreText(h.newScore, max) });
-  return fill(t.historyChanged, {
-    by: h.by,
-    old: scoreText(h.oldScore, max),
-    new: scoreText(h.newScore, max),
-  });
+  if (h.oldScore !== h.newScore) {
+    return h.oldScore === null
+      ? fill(t.historyGave, { by: h.by, score: scoreText(h.newScore, max) })
+      : fill(t.historyChanged, {
+          by: h.by,
+          old: scoreText(h.oldScore, max),
+          new: scoreText(h.newScore, max),
+        });
+  }
+  if (h.feedbackChanged && h.notesChanged) return fill(t.historyBoth, { by: h.by });
+  return fill(h.notesChanged ? t.historyNotes : t.historyFeedback, { by: h.by });
 }
 const stateNote = computed(() => {
   switch (d.value?.status) {

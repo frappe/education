@@ -355,7 +355,7 @@ describe("emails are sent after the answer", () => {
     const res = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       waitUntil: pending,
-      env: { EMAIL_MODE: "cloudflare" }, // not available yet: sending will fail
+      env: { EMAIL_MODE: "off" as never }, // not a real mode: sending will fail
       body: { email: t.email },
     });
     expect(res.status).toBe(202);
@@ -406,7 +406,7 @@ describe("bot check (Turnstile)", () => {
         ENVIRONMENT: "production",
         HMAC_KEY: "k",
         APP_URL: "https://x.workers.dev",
-        EMAIL_MODE: "cloudflare",
+        EMAIL_MODE: "off" as never,
       },
       body: { email: uniqueEmail() },
     });

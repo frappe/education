@@ -32,6 +32,7 @@ The address is printed at the end, like `https://ptv-lms-staging.<your-account>.
 |---|---|---|
 | `APP_URL` | `vars` in `apps/api/wrangler.jsonc` (per environment) | The address put in email links. Must start with `https://`. Never read from the request. |
 | `HMAC_KEY` | `wrangler secret put HMAC_KEY --env <env>` (long random text) | Hashes emails and IP addresses in counters and logs. The app refuses to run without it. |
+| `SMTP_USER`, `SMTP_PASS` | `wrangler secret put SMTP_USER --env <env>` and `wrangler secret put SMTP_PASS --env <env>` | The account that sends email, and its password. For Gmail: the address and an "App password" (needs 2-step verification, myaccount.google.com/apppasswords). See "Sending email" below. |
 | `GOOGLE_CLIENT_ID` | `vars` in `apps/api/wrangler.jsonc` (per environment) | Turns on "Continue with Google". Without it (and the secret) the Google buttons are hidden and email links are the only way in. See "Sign in with Google" below. |
 | `GOOGLE_CLIENT_SECRET` | `wrangler secret put GOOGLE_CLIENT_SECRET --env <env>` | Lets the server ask Google who signed in. |
 | `TURNSTILE_SECRET` | `wrangler secret put TURNSTILE_SECRET --env <env>` | Bot check on the server. The app refuses to run without it in staging and production. |
@@ -74,3 +75,12 @@ Pushes to `develop` deploy to staging. Production is a manual run of the workflo
 - Roll back a bad Worker with `wrangler rollback --env production`.
 - Secrets are set with `wrangler secret put NAME --env <env>`. Never put them in the repository.
 - Data can be restored from D1 Time Travel (30 days): `wrangler d1 time-travel restore`.
+
+## Sending email
+
+`EMAIL_MODE=smtp` sends mail through an SMTP server over a Worker TCP connection (port 465, TLS from the first byte; port 25 is blocked by Cloudflare). `EMAIL_MODE=dev` only stores mail in the outbox table and must not be used with real people.
+
+- `vars` (in `wrangler.jsonc`): `SMTP_HOST` (for Gmail `smtp.gmail.com`), `SMTP_PORT` (`465`), `SMTP_FROM_NAME` (name shown next to the address), and `SMTP_FROM` only if the "from" address differs from the account.
+- Secrets: `SMTP_USER` and `SMTP_PASS` (see the table above). Never put them in a file or in a chat.
+- Gmail sends about 500 mails a day and always shows the signed in address as the sender. With your own domain, a service such as Resend gives better delivery: only the adapter in `apps/api/src/email/` changes.
+- A mail that cannot be sent is logged as `deferred work failed` with the step and the server's code (for example `smtp sign in failed (535)` means a wrong user or password). The text of the mail and the password are never logged.

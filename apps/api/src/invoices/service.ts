@@ -1,6 +1,7 @@
 import type {
   CreateInvoiceBody,
   InvoiceInfo,
+  InvoiceSummary,
   InvoiceLine,
   InvoiceListResult,
   MyInvoiceDetail,
@@ -23,6 +24,7 @@ import {
   findInvoice,
   findMyInvoice,
   insertDraftsStatement,
+  invoiceCounts,
   invoicesOfPeriod,
   myInvoices,
   paidStatement,
@@ -691,5 +693,20 @@ export async function myInvoiceGet(ctx: Ctx, actor: Actor, id: string): Promise<
       bankHolder: "",
       paymentNote: "",
     },
+  };
+}
+
+export async function invoiceSummary(ctx: Ctx, actor: Actor): Promise<InvoiceSummary> {
+  const tenantId = requireTeacherTenant(actor);
+  authorize(actor, "invoice", "read", { tenantId });
+  const [counts, students] = await Promise.all([
+    invoiceCounts(ctx.env.DB, tenantId),
+    unbilledStudents(ctx.env.DB, tenantId),
+  ]);
+  return {
+    toCharge: students.length,
+    drafts: counts?.drafts ?? 0,
+    unpaid: counts?.unpaid ?? 0,
+    unpaidAmount: counts?.unpaid_amount ?? 0,
   };
 }

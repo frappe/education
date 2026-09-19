@@ -75,7 +75,7 @@ export const findSubmission = (db: D1Database, tenantId: string, assignmentId: s
 export async function historyOf(db: D1Database, tenantId: string, submissionId: string) {
   const res = await db
     .prepare(
-      `SELECT r.at, u.name AS by_name, r.old_score, r.new_score, r.new_feedback
+      `SELECT r.at, u.name AS by_name, r.old_score, r.new_score, r.old_feedback, r.new_feedback, r.old_notes, r.new_notes
        FROM grade_revisions r JOIN users u ON u.id = r.actor_user_id
        WHERE r.tenant_id = ? AND r.submission_id = ? ORDER BY r.at DESC, r.rowid DESC`,
     )
@@ -85,7 +85,10 @@ export async function historyOf(db: D1Database, tenantId: string, submissionId: 
       by_name: string;
       old_score: number | null;
       new_score: number | null;
+      old_feedback: string;
       new_feedback: string;
+      old_notes: string;
+      new_notes: string;
     }>();
   return res.results;
 }

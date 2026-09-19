@@ -438,3 +438,14 @@ export const studentInTenant = async (db: D1Database, tenantId: string, studentI
     .prepare("SELECT 1 AS x FROM students WHERE tenant_id = ? AND id = ?")
     .bind(tenantId, studentId)
     .first()) !== null;
+
+/** How many receipts are drafts, and how many are sent but not paid (with the money). Cancelled ones do not count. */
+export const invoiceCounts = (db: D1Database, tenantId: string) =>
+  db
+    .prepare(
+      `SELECT COALESCE(SUM(status = 'draft'), 0) AS drafts, COALESCE(SUM(status = 'sent'), 0) AS unpaid,
+         COALESCE(SUM(CASE WHEN status = 'sent' THEN total END), 0) AS unpaid_amount
+       FROM invoices WHERE tenant_id = ?`,
+    )
+    .bind(tenantId)
+    .first<{ drafts: number; unpaid: number; unpaid_amount: number }>();

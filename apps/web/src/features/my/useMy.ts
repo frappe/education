@@ -3,6 +3,7 @@ import type {
   AnswerItem,
   MyCourseDetail,
   MyCourseInfo,
+  MyInvoiceItem,
   MyWorkDetail,
   MyWorkItem,
 } from "@lms/shared";
@@ -17,6 +18,7 @@ import { createAutosave } from "./autosave";
 export function useMyHome() {
   const work = ref<MyWorkItem[]>([]);
   const courses = ref<MyCourseInfo[]>([]);
+  const unpaidReceipts = ref(0);
   const loading = ref(true);
   const error = ref<string | null>(null);
   onMounted(async () => {
@@ -27,6 +29,10 @@ export function useMyHome() {
       ]);
       work.value = w.work;
       courses.value = c.courses;
+      // The receipts are extra: the page still works without them.
+      unpaidReceipts.value = await api<{ invoices: MyInvoiceItem[] }>("/my/invoices")
+        .then((r) => r.invoices.filter((i) => i.status === "sent").length)
+        .catch(() => 0);
     } catch (err) {
       error.value = messageOf(err);
     } finally {
@@ -34,7 +40,7 @@ export function useMyHome() {
     }
   });
   const groups = computed(() => groupWork(work.value));
-  return { work, courses, groups, loading, error };
+  return { work, courses, groups, unpaidReceipts, loading, error };
 }
 
 export function useMyCourse(id: string) {

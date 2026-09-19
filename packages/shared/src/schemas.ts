@@ -681,7 +681,17 @@ export interface SubmissionDetail {
   /** The teacher's comment or correction on each question (by question id). */
   notes: Record<string, string>;
   version: number;
-  history: { at: string; by: string; oldScore: number | null; newScore: number | null; feedback: string }[];
+  history: {
+    at: string;
+    by: string;
+    oldScore: number | null;
+    newScore: number | null;
+    feedback: string;
+    /** The feedback for the whole work was changed in this step. */
+    feedbackChanged: boolean;
+    /** A comment on a question was changed in this step. */
+    notesChanged: boolean;
+  }[];
   extensionUntil: string | null;
 }
 
@@ -858,4 +868,15 @@ export interface UnbilledLesson {
   startTime: string;
   price: number;
   inThisReceipt: boolean;
+}
+
+/** What needs the teacher's attention about receipts, for the start page. */
+export interface InvoiceSummary {
+  /** Students with attended lessons that are on no receipt yet. */
+  toCharge: number;
+  /** Drafts that were not sent yet. */
+  drafts: number;
+  /** Receipts that were sent and are not paid yet, and what they add up to. */
+  unpaid: number;
+  unpaidAmount: number;
 }

@@ -1,4 +1,4 @@
-import type { CourseInfo, LessonInfo, QueueItem } from "@lms/shared";
+import type { CourseInfo, InvoiceSummary, LessonInfo, QueueItem } from "@lms/shared";
 import { onMounted, ref } from "vue";
 import { api } from "@/api/client";
 import { addDays, startOfWeek, today } from "@/features/format";
@@ -9,6 +9,7 @@ export function useDashboard() {
   const studentTotal = ref(0);
   const week = ref<LessonInfo[]>([]);
   const queue = ref<QueueItem[]>([]);
+  const receipts = ref<InvoiceSummary | null>(null);
   const loading = ref(true);
   const error = ref<string | null>(null);
 
@@ -22,6 +23,10 @@ export function useDashboard() {
         api<{ queue: QueueItem[] }>("/grading/queue"),
       ]);
       queue.value = q.queue;
+      // The receipts are extra: the page still works without them.
+      receipts.value = await api<{ summary: InvoiceSummary }>("/invoices/summary")
+        .then((r) => r.summary)
+        .catch(() => null);
       courses.value = c.courses;
       studentTotal.value = s.total;
       week.value = l.lessons;
@@ -33,5 +38,5 @@ export function useDashboard() {
   }
 
   onMounted(load);
-  return { courses, studentTotal, week, queue, loading, error };
+  return { courses, studentTotal, week, queue, receipts, loading, error };
 }

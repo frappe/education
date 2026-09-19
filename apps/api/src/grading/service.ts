@@ -114,6 +114,8 @@ async function detailOf(
       oldScore: h.old_score,
       newScore: h.new_score,
       feedback: h.new_feedback,
+      feedbackChanged: h.old_feedback !== h.new_feedback,
+      notesChanged: h.old_notes !== h.new_notes,
     })),
     extensionUntil: sub.until_at,
   };

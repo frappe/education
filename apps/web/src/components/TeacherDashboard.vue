@@ -4,7 +4,7 @@ import { computed } from "vue";
 import InvitePanel from "@/components/InvitePanel.vue";
 import { useSession } from "@/features/auth/session";
 import { useDashboard } from "@/features/dashboard/useDashboard";
-import { formatDayLong, formatDayShort, today } from "@/features/format";
+import { formatDayLong, formatDayShort, formatVnd, today } from "@/features/format";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -22,7 +22,7 @@ import { useRouter } from "vue-router";
 const t = messages.dashboard;
 const session = useSession();
 const router = useRouter();
-const { courses, studentTotal, week, queue, loading, error } = useDashboard();
+const { courses, studentTotal, week, queue, receipts, loading, error } = useDashboard();
 
 const firstName = computed(() => session.me?.user.name.split(" ")[0] ?? "");
 const steps = computed(() => [
@@ -48,6 +48,33 @@ const steps = computed(() => [
     icon: "calendar" as const,
   },
 ]);
+/** What needs attention about fee receipts, one line each. Empty when there is nothing to do. */
+const receiptLines = computed(() => {
+  const r = receipts.value;
+  if (!r) return [];
+  const lines: { text: string; to: string }[] = [];
+  if (r.toCharge > 0)
+    lines.push({
+      text: r.toCharge === 1 ? t.receiptsToChargeOne : fill(t.receiptsToCharge, { n: r.toCharge }),
+      to: "/invoices/new",
+    });
+  if (r.drafts > 0)
+    lines.push({
+      text: r.drafts === 1 ? t.receiptsDraftsOne : fill(t.receiptsDrafts, { n: r.drafts }),
+      to: "/invoices",
+    });
+  if (r.unpaid > 0) {
+    const amount = formatVnd(r.unpaidAmount);
+    lines.push({
+      text:
+        r.unpaid === 1
+          ? fill(t.receiptsUnpaidOne, { amount })
+          : fill(t.receiptsUnpaid, { n: r.unpaid, amount }),
+      to: "/invoices",
+    });
+  }
+  return lines;
+});
 const showStart = computed(() => !loading.value && steps.value.some((s) => !s.done));
 const upcoming = computed(() => week.value.filter((l) => l.status !== "cancelled").slice(0, 6));
 const statusTone = {
@@ -101,6 +128,18 @@ const statusText = {
           }}</AppButton>
         </li>
       </ol>
+    </AppCard>
+
+    <AppCard v-if="!loading && receiptLines.length" :title="t.receiptsTitle" flush>
+      <ul class="divide-y divide-base-300">
+        <li v-for="l in receiptLines" :key="l.text">
+          <RouterLink :to="l.to" class="flex items-center gap-3 px-5 py-3 hover:bg-base-200/60">
+            <AppIcon name="invoice" :size="18" />
+            <span class="flex-1">{{ l.text }}</span>
+            <AppIcon name="right" :size="16" />
+          </RouterLink>
+        </li>
+      </ul>
     </AppCard>
 
     <AppCard v-if="!loading && queue.length" :title="messages.queue.title" flush>
