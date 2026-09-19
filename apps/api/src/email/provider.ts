@@ -18,7 +18,11 @@ export interface EmailProvider {
 }
 
 export function getEmailProvider(env: Env): EmailProvider {
-  if (env.EMAIL_MODE === "dev") return new DevEmailProvider(env.DB);
+  if (env.EMAIL_MODE === "dev") {
+    // The dev outbox keeps links that sign people in. It must never run with real users.
+    if (env.ENVIRONMENT === "production") throw new Error("EMAIL_MODE dev is not allowed in production");
+    return new DevEmailProvider(env.DB);
+  }
   // Real sending is added after the email spike (docs/spikes.md).
   throw new Error(`EMAIL_MODE "${env.EMAIL_MODE}" is not available yet`);
 }

@@ -3,10 +3,14 @@ import { ZodError } from "zod";
 import { ERROR_CODES } from "@lms/shared";
 import type { AppBindings } from "./env";
 import { AppError, errorBody } from "./lib/errors";
+import { loadActor } from "./middleware/auth";
 import { csrfProtection } from "./middleware/csrf";
 import { requestId } from "./middleware/request-id";
 import { securityHeaders } from "./middleware/security-headers";
+import { auth } from "./routes/auth";
+import { dev } from "./routes/dev";
 import { health } from "./routes/health";
+import { invites } from "./routes/invites";
 
 export function createApp() {
   const app = new OpenAPIHono<AppBindings>({
@@ -19,9 +23,13 @@ export function createApp() {
   app.use("*", requestId);
   app.use("*", securityHeaders);
   app.use("/api/*", csrfProtection);
+  app.use("/api/*", loadActor);
 
   const api = new OpenAPIHono<AppBindings>();
   api.route("/", health);
+  api.route("/", auth);
+  api.route("/", invites);
+  api.route("/", dev);
   app.route("/api", api);
 
   // The API description is only public outside production.

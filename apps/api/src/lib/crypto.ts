@@ -33,3 +33,16 @@ export function timingSafeEqual(a: string, b: string): boolean {
   }
   return crypto.subtle.timingSafeEqual(ab, bb);
 }
+
+/** Keyed hash (HMAC-SHA-256). Used so raw emails and IP addresses never appear in counters or logs. */
+export async function hmacHex(key: string, value: string): Promise<string> {
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(key),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(value));
+  return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
+}

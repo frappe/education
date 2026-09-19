@@ -17,6 +17,7 @@
 
   "vars": {
     "ENVIRONMENT": "local",
+    "APP_URL": "http://localhost:8787",
     // "dev" writes emails to the outbox table so they can be read in the admin screen.
     // No custom domain yet, so real sending is off (see docs/spikes.md).
     "EMAIL_MODE": "dev",
@@ -36,7 +37,12 @@
   "env": {
     "staging": {
       "name": "ptv-lms-staging",
-      "vars": { "ENVIRONMENT": "staging", "EMAIL_MODE": "dev" },
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "EMAIL_MODE": "dev",
+        // Set to the real address after the first deploy, for example https://ptv-lms-staging.<account>.workers.dev
+        "APP_URL": "REPLACE_WITH_STAGING_URL",
+      },
       "d1_databases": [
         {
           "binding": "DB",
@@ -48,7 +54,11 @@
     },
     "production": {
       "name": "ptv-lms",
-      "vars": { "ENVIRONMENT": "production", "EMAIL_MODE": "dev" },
+      "vars": {
+        "ENVIRONMENT": "production",
+        "EMAIL_MODE": "dev",
+        "APP_URL": "REPLACE_WITH_PRODUCTION_URL",
+      },
       "d1_databases": [
         {
           "binding": "DB",
