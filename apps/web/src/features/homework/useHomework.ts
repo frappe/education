@@ -442,14 +442,18 @@ export function useGrading(
       0,
     ),
   );
-  /** Every question has points, so a score can be saved. */
+  /** The system scored this question, so its points are fixed. */
+  const isAuto = (qid: string) => detail.value?.perQuestion.find((p) => p.questionId === qid)?.auto === true;
+  /** Every question the teacher scores has points, so a score can be saved. */
   const complete = computed(() =>
-    (detail.value?.assignment.questions ?? []).every((q) => (points[q.id] ?? "").trim() !== ""),
+    (detail.value?.assignment.questions ?? []).every(
+      (q) => isAuto(q.id) || (points[q.id] ?? "").trim() !== "",
+    ),
   );
   const save = () => {
     const given: Record<string, number> = {};
     for (const q of detail.value?.assignment.questions ?? [])
-      if ((points[q.id] ?? "").trim() !== "") given[q.id] = num(points[q.id]!);
+      if (!isAuto(q.id) && (points[q.id] ?? "").trim() !== "") given[q.id] = num(points[q.id]!);
     return run(
       "/grade",
       "PUT",
@@ -483,6 +487,7 @@ export function useGrading(
     busy,
     error,
     points,
+    isAuto,
     notes,
     feedback,
     total,

@@ -207,17 +207,27 @@ describe("scoring the questions the teacher scores", () => {
     expect(work.results.perQuestion.map((r: { awarded: number }) => r.awarded)).toEqual([2, 3, 4, 5]);
   });
 
-  it("the teacher can give a different score for a question the system scored", async () => {
+  it("the points of a question the system scored cannot be changed, but the same points are fine and are ignored when left out", async () => {
     const { t, hoa, id, qs } = await setup();
     await submit(hoa, id, [
       a.choice(qs[0]!.id, 2),
       a.text(qs[1]!.id, "gatto"),
       a.text(qs[2]!.id, "x"),
       a.video(qs[3]!.id, "https://youtu.be/a"),
-    ]); // a typo: the system gave 0
-    const res = await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 2: 2.5, 3: 5, 4: 5 }) });
-    expect(res.json.submission.points[qs[1]!.id]).toBe(2.5);
-    expect(res.json.submission.score).toBe(14.5);
+    ]); // a typo: the system gave 0 for the short question
+    for (const [n, p] of [
+      [2, 2.5],
+      [1, 0],
+    ] as const) {
+      const res = await grade(t, id, hoa.studentId, { points: pointsOf(qs, { [n]: p, 3: 5, 4: 5 }) });
+      expect(res.status).toBe(400);
+      expect(res.json.error.fields.points).toMatch(new RegExp(`^Question ${n}: the system scored`));
+    }
+    expect((await open(t, id, hoa.studentId)).version).toBe(1); // nothing was saved
+    const same = await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 1: 2, 2: 0, 3: 5, 4: 5 }) });
+    expect(same.status).toBe(200);
+    expect(same.json.submission.points[qs[1]!.id]).toBe(0);
+    expect(same.json.submission.score).toBe(12);
   });
 
   it("asks for points for every question the system did not score", async () => {
@@ -428,28 +438,25 @@ describe("a comment or a correction on each question", () => {
   });
 });
 
-describe("a quiz the system scored can still be changed by the teacher", () => {
-  it("the student sees the new score at once, and the change is in the history", async () => {
+describe("a quiz the system scored", () => {
+  it("keeps the score of the system, while the teacher can still add feedback and comments that the student sees at once", async () => {
     const { t, hoa, id, qs } = await setup(quiz()); // 2 + 1 + 2 = 5
     await submit(hoa, id, [a.choice(qs[0]!.id, 1), a.choice(qs[1]!.id, 0), a.text(qs[2]!.id, "goed")]); // 2 right of 5
     expect((await myWorkDetail(hoa, id)).json.work.score).toBe(2);
+    const changed = await grade(t, id, hoa.studentId, { points: pointsOf(qs, { 3: 2 }), version: 1 });
+    expect(changed.status).toBe(400);
+    expect((await myWorkDetail(hoa, id)).json.work.score).toBe(2);
     const res = await grade(t, id, hoa.studentId, {
-      points: pointsOf(qs, { 3: 1 }),
-      feedback: "Half a point for trying",
+      points: {},
+      feedback: "Review the past tense",
+      notes: { [qs[2]!.id]: "'went' is the past of 'go'" },
       version: 1,
     });
     expect(res.status).toBe(200);
-    expect(res.json.submission).toMatchObject({ status: "returned", score: 3 });
-    expect((await myWorkDetail(hoa, id)).json.work).toMatchObject({
-      score: 3,
-      feedback: "Half a point for trying",
-    });
-    expect(
-      (await open(t, id, hoa.studentId)).history.map((h: { oldScore: number; newScore: number }) => [
-        h.oldScore,
-        h.newScore,
-      ]),
-    ).toEqual([[2, 3]]);
+    expect(res.json.submission).toMatchObject({ status: "returned", score: 2 });
+    const work = (await myWorkDetail(hoa, id)).json.work;
+    expect(work).toMatchObject({ score: 2, feedback: "Review the past tense" });
+    expect(work.results.perQuestion[2].note).toBe("'went' is the past of 'go'");
   });
 });
 

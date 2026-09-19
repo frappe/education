@@ -99,6 +99,7 @@ const stateNote = computed(() => {
                   v-model="g.points[q.id]!"
                   :label="fill(t.pointsOf, { max: q.points })"
                   inputmode="decimal"
+                  :disabled="g.isAuto(q.id)"
                 />
               </div>
             </div>
