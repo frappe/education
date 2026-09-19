@@ -2,14 +2,13 @@
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import GoogleButton from "@/components/GoogleButton.vue";
+import StudentDashboard from "@/components/StudentDashboard.vue";
 import TeacherDashboard from "@/components/TeacherDashboard.vue";
 import { useSession } from "@/features/auth/session";
 import { useHealth } from "@/features/health/useHealth";
 import { messages } from "@/messages";
 import AppButton from "@/ui/AppButton.vue";
-import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon, { type IconName } from "@/ui/AppIcon.vue";
-import AppPage from "@/ui/AppPage.vue";
 
 const t = messages.landing;
 const session = useSession();
@@ -28,9 +27,7 @@ const features: { icon: IconName; title: string; text: string }[] = [
 <template>
   <TeacherDashboard v-if="session.me && session.isTeacher" />
 
-  <AppPage v-else-if="session.me" :title="messages.dashboard.studentTitle">
-    <AppEmpty icon="cap" :title="messages.dashboard.studentTitle" :text="messages.dashboard.studentText" />
-  </AppPage>
+  <StudentDashboard v-else-if="session.me" />
 
   <div v-else>
     <section class="bg-linear-to-b from-primary/10 to-transparent">

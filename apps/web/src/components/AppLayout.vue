@@ -36,6 +36,7 @@ async function signOut() {
         <AppNavItem to="/students" icon="users">{{ t.students }}</AppNavItem>
         <AppNavItem to="/schedule" icon="calendar">{{ t.schedule }}</AppNavItem>
       </template>
+      <AppNavItem v-if="session.isStudent" to="/my/courses" icon="book">{{ t.myCourses }}</AppNavItem>
       <AppNavItem to="/devices" icon="devices">{{ t.devices }}</AppNavItem>
     </template>
     <template #footer>

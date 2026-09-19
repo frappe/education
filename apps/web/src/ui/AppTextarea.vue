@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { useId } from "vue";
 
-defineProps<{ label: string; error?: string; hint?: string; rows?: number }>();
+defineProps<{
+  disabled?: boolean;
+  label: string;
+  error?: string;
+  hint?: string;
+  rows?: number;
+}>();
 const model = defineModel<string>({ default: "" });
 const id = useId();
 </script>
@@ -13,6 +19,7 @@ const id = useId();
       :id="id"
       v-model="model"
       :rows="rows ?? 4"
+      :disabled="disabled"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       class="textarea w-full"

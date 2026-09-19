@@ -68,3 +68,24 @@ export function formatWeek(monday: string): string {
     }).format(utc(d));
   return `${fmt(monday, false)} - ${fmt(addDays(monday, 6), true)}`;
 }
+
+/** The site of a link, to show people where it leads: "https://docs.google.com/x" gives "docs.google.com". */
+export function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+/** A moment (UTC) shown as a date and time on this computer's clock: "5 Oct 2026, 18:30". */
+export function formatWhen(iso: string | null): string {
+  if (!iso) return "-";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import CourseHomework from "@/components/CourseHomework.vue";
 import CourseLessons from "@/components/CourseLessons.vue";
+import CourseLinks from "@/components/CourseLinks.vue";
 import CourseRoster from "@/components/CourseRoster.vue";
 import { useCourseForm } from "@/features/courses/useCourses";
 import { useToast } from "@/features/toast/useToast";
@@ -36,6 +38,8 @@ const tabs = [
   { key: "overview", label: t.tabOverview },
   { key: "students", label: t.tabStudents },
   { key: "lessons", label: t.tabLessons },
+  { key: "homework", label: t.tabHomework },
+  { key: "links", label: t.tabLinks },
 ];
 const tab = ref(tabs.some((x) => x.key === route.query.tab) ? String(route.query.tab) : "overview");
 watch(tab, (key) => void router.replace({ query: { ...route.query, tab: key } }));
@@ -135,6 +139,12 @@ const statusText = {
         @changed="reload"
       />
       <CourseLessons v-else-if="course && tab === 'lessons'" :key="`l-${course.id}`" :course-id="course.id" />
+      <CourseHomework
+        v-else-if="course && tab === 'homework'"
+        :key="`h-${course.id}`"
+        :course-id="course.id"
+      />
+      <CourseLinks v-else-if="course && tab === 'links'" :key="`k-${course.id}`" :course-id="course.id" />
     </template>
   </AppPage>
 </template>

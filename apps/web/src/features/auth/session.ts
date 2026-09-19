@@ -25,6 +25,7 @@ export const useSession = defineStore("session", () => {
   }
 
   const isTeacher = computed(() => me.value?.memberships.some((m) => m.role === "teacher") ?? false);
+  const isStudent = computed(() => me.value?.memberships.some((m) => m.role === "student") ?? false);
 
-  return { me, loaded, load, signOut, isTeacher };
+  return { me, loaded, load, signOut, isTeacher, isStudent };
 });

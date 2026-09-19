@@ -2,12 +2,13 @@
 import { useId } from "vue";
 
 defineProps<{
+  disabled?: boolean;
   label: string;
   type?: "text" | "email" | "number" | "date" | "time" | "tel" | "url";
   autocomplete?: string;
   error?: string;
   hint?: string;
-  inputmode?: "text" | "numeric" | "tel";
+  inputmode?: "text" | "numeric" | "decimal" | "tel";
   placeholder?: string;
 }>();
 const model = defineModel<string>({ default: "" });
@@ -24,6 +25,7 @@ const id = useId();
       :autocomplete="autocomplete"
       :inputmode="inputmode"
       :placeholder="placeholder"
+      :disabled="disabled"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       class="input min-h-11 w-full"

@@ -53,6 +53,37 @@ export const router = createRouter({
       component: () => import("@/pages/AttendancePage.vue"),
       meta: { requiresTeacher: true },
     },
+    {
+      path: "/courses/:courseId/homework/new",
+      component: () => import("@/pages/AssignmentFormPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/assignments/:id",
+      component: () => import("@/pages/AssignmentPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/assignments/:id/edit",
+      component: () => import("@/pages/AssignmentFormPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/assignments/:id/students/:studentId",
+      component: () => import("@/pages/GradingPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/my/courses",
+      component: () => import("@/pages/MyCoursesPage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/my/courses/:id",
+      component: () => import("@/pages/MyCoursePage.vue"),
+      meta: { requiresAuth: true },
+    },
+    { path: "/my/work/:id", component: () => import("@/pages/MyWorkPage.vue"), meta: { requiresAuth: true } },
     { path: "/dev/google", component: () => import("@/pages/DevGooglePage.vue") },
     { path: "/dev/outbox", component: () => import("@/pages/DevOutboxPage.vue") },
     { path: "/:pathMatch(.*)*", redirect: "/" },

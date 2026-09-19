@@ -8,6 +8,7 @@ import { formatDayLong, formatDayShort, today } from "@/features/format";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
+import AppAvatar from "@/ui/AppAvatar.vue";
 import AppBadge from "@/ui/AppBadge.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
@@ -21,7 +22,7 @@ import { useRouter } from "vue-router";
 const t = messages.dashboard;
 const session = useSession();
 const router = useRouter();
-const { courses, studentTotal, week, loading, error } = useDashboard();
+const { courses, studentTotal, week, queue, loading, error } = useDashboard();
 
 const firstName = computed(() => session.me?.user.name.split(" ")[0] ?? "");
 const steps = computed(() => [
@@ -100,6 +101,27 @@ const statusText = {
           }}</AppButton>
         </li>
       </ol>
+    </AppCard>
+
+    <AppCard v-if="!loading && queue.length" :title="messages.queue.title" flush>
+      <ul class="divide-y divide-base-300">
+        <li v-for="q in queue.slice(0, 6)" :key="`${q.assignmentId}-${q.studentId}`">
+          <RouterLink
+            :to="`/assignments/${q.assignmentId}/students/${q.studentId}`"
+            class="flex flex-wrap items-center gap-3 px-5 py-3 hover:bg-base-200/60"
+          >
+            <AppAvatar :name="q.studentName" size="sm" />
+            <span class="min-w-0 flex-1 basis-48">
+              <span class="block truncate font-medium">{{ q.studentName }}</span>
+              <span class="block truncate text-sm text-base-content/60"
+                >{{ q.assignmentTitle }} · {{ q.courseName }}</span
+              >
+            </span>
+            <AppBadge v-if="q.isLate" tone="error">{{ messages.queue.late }}</AppBadge>
+            <AppBadge tone="warning">{{ messages.queue.open }}</AppBadge>
+          </RouterLink>
+        </li>
+      </ul>
     </AppCard>
 
     <div class="grid min-w-0 gap-6 lg:grid-cols-5">

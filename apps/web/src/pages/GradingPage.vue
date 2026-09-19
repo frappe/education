@@ -1,0 +1,193 @@
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
+import { submissionText, submissionTone, typeText } from "@/components/homeworkLabels";
+import { formatWhen, hostOf } from "@/features/format";
+import { scoreText } from "@/features/homework/dates";
+import { useGrading } from "@/features/homework/useHomework";
+import { fill } from "@/features/text";
+import { messages } from "@/messages";
+import AppAlert from "@/ui/AppAlert.vue";
+import AppBadge from "@/ui/AppBadge.vue";
+import AppButton from "@/ui/AppButton.vue";
+import AppCard from "@/ui/AppCard.vue";
+import AppIcon from "@/ui/AppIcon.vue";
+import AppInput from "@/ui/AppInput.vue";
+import AppLoading from "@/ui/AppLoading.vue";
+import AppModal from "@/ui/AppModal.vue";
+import AppPage from "@/ui/AppPage.vue";
+import AppTextarea from "@/ui/AppTextarea.vue";
+
+const t = messages.grading;
+const route = useRoute();
+const assignmentId = String(route.params.id);
+const g = useGrading(assignmentId, String(route.params.studentId), {
+  saved: t.saved,
+  returned: t.returned,
+  again: t.asked,
+});
+const d = computed(() => g.detail.value);
+
+const asking = ref(false);
+const reason = ref("");
+async function send() {
+  asking.value = false;
+  await g.askAgain(reason.value);
+  reason.value = "";
+}
+const canReturn = computed(() => d.value?.status === "graded" && !g.dirty.value);
+/** One line of the history in plain words. */
+function historyText(h: { by: string; oldScore: number | null; newScore: number | null }): string {
+  const max = d.value?.assignment.maxScore ?? 0;
+  if (h.oldScore === h.newScore) return fill(t.historyFeedback, { by: h.by });
+  if (h.oldScore === null) return fill(t.historyGave, { by: h.by, score: scoreText(h.newScore, max) });
+  return fill(t.historyChanged, {
+    by: h.by,
+    old: scoreText(h.oldScore, max),
+    new: scoreText(h.newScore, max),
+  });
+}
+const stateNote = computed(() => {
+  switch (d.value?.status) {
+    case "returned":
+      return t.stateReturned;
+    case "graded":
+      return t.stateGraded;
+    case "revision_requested":
+      return t.stateAgain;
+    default:
+      return t.stateSubmitted;
+  }
+});
+</script>
+
+<template>
+  <AppPage
+    :title="d?.studentName ?? t.title"
+    :subtitle="d ? d.assignment.title : undefined"
+    :back-to="`/assignments/${assignmentId}`"
+    :back-label="t.back"
+  >
+    <template v-if="d" #actions>
+      <AppBadge>{{ typeText[d.assignment.type] }}</AppBadge>
+      <AppBadge :tone="submissionTone[d.status]">{{ submissionText[d.status] }}</AppBadge>
+      <AppBadge v-if="d.isLate" tone="error">{{ t.late }}</AppBadge>
+    </template>
+
+    <AppLoading v-if="g.loading.value" :label="messages.common.loading" />
+    <AppAlert v-else-if="g.notFound.value" kind="error">{{ t.notFound }}</AppAlert>
+    <div v-else-if="d" class="grid gap-6 lg:grid-cols-5">
+      <div class="flex min-w-0 flex-col gap-6 lg:col-span-3">
+        <AppCard :title="t.yourAnswer">
+          <p class="text-sm text-base-content/60">
+            {{ t.handedInAt }}: {{ formatWhen(d.submittedAt)
+            }}<template v-if="d.revisionCount > 0">
+              · {{ fill(t.tryN, { n: d.revisionCount + 1 }) }}</template
+            >
+          </p>
+
+          <template v-if="d.assignment.type === 'multiple_choice'">
+            <ol class="flex flex-col gap-4">
+              <li v-for="(q, qi) in d.assignment.questions" :key="qi" class="flex flex-col gap-2">
+                <p class="font-medium">{{ qi + 1 }}. {{ q.text }}</p>
+                <ul class="flex flex-col gap-1">
+                  <li
+                    v-for="(o, oi) in q.options"
+                    :key="oi"
+                    class="rounded-field border px-3 py-2 text-sm"
+                    :class="
+                      d.answer.answers[qi] === oi
+                        ? 'border-primary bg-primary/10 font-medium'
+                        : 'border-base-300'
+                    "
+                  >
+                    {{ o }}
+                  </li>
+                </ul>
+                <p v-if="(d.answer.answers[qi] ?? -1) === -1" class="text-sm text-base-content/60">
+                  {{ t.notAnswered }}
+                </p>
+              </li>
+            </ol>
+          </template>
+          <template v-else>
+            <div v-if="d.answer.linkUrl" class="rounded-field bg-base-200 p-3">
+              <p class="text-sm text-base-content/60">
+                {{ d.assignment.type === "speaking" ? t.videoLink : t.link }}
+              </p>
+              <a
+                :href="d.answer.linkUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link link-primary inline-flex items-center gap-1 break-all"
+              >
+                <AppIcon :name="d.assignment.type === 'speaking' ? 'video' : 'link'" :size="16" />{{
+                  d.answer.linkUrl
+                }}
+              </a>
+              <p class="text-xs text-base-content/60">{{ hostOf(d.answer.linkUrl) }}</p>
+            </div>
+            <div v-if="d.answer.textAnswer">
+              <p v-if="d.assignment.type === 'speaking'" class="text-sm text-base-content/60">
+                {{ t.noteFromStudent }}
+              </p>
+              <p class="whitespace-pre-wrap break-words">{{ d.answer.textAnswer }}</p>
+            </div>
+            <p v-if="!d.answer.linkUrl && !d.answer.textAnswer" class="text-base-content/60">
+              {{ t.noAnswer }}
+            </p>
+          </template>
+        </AppCard>
+
+        <AppCard :title="t.history" flush>
+          <p v-if="d.history.length === 0" class="p-5 text-sm text-base-content/60">{{ t.noHistory }}</p>
+          <ul v-else class="divide-y divide-base-300">
+            <li
+              v-for="(h, i) in d.history"
+              :key="i"
+              class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
+            >
+              <span>{{ historyText(h) }}</span>
+              <span class="text-base-content/60">{{ formatWhen(h.at) }}</span>
+            </li>
+          </ul>
+        </AppCard>
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-6 lg:col-span-2">
+        <AppCard
+          :title="t.scoreLabel.replace('{max}', String(d.assignment.maxScore))"
+          :description="stateNote"
+        >
+          <AppAlert v-if="g.error.value" kind="error">{{ g.error.value }}</AppAlert>
+          <AppInput
+            v-model="g.score.value"
+            :label="messages.homework.score"
+            inputmode="decimal"
+            :hint="t.scoreHint"
+          />
+          <AppTextarea v-model="g.feedback.value" :label="t.feedback" :rows="5" :hint="t.feedbackHint" />
+          <p v-if="g.dirty.value" class="text-sm text-warning">{{ t.unsaved }}</p>
+          <div class="flex flex-wrap gap-2">
+            <AppButton :loading="g.busy.value" :disabled="!g.dirty.value" @click="g.save">{{
+              t.save
+            }}</AppButton>
+            <AppButton variant="secondary" :disabled="!canReturn || g.busy.value" @click="g.giveBack"
+              ><AppIcon name="send" :size="16" />{{ t.giveBack }}</AppButton
+            >
+          </div>
+          <AppButton variant="ghost" compact @click="asking = true">{{ t.askAgain }}</AppButton>
+        </AppCard>
+      </div>
+    </div>
+
+    <AppModal v-model="asking" :title="t.askTitle" :close-label="messages.common.close">
+      <p>{{ t.askText }}</p>
+      <AppTextarea v-model="reason" :label="t.reason" :rows="4" />
+      <template #actions>
+        <AppButton variant="ghost" @click="asking = false">{{ messages.common.cancel }}</AppButton>
+        <AppButton :disabled="reason.trim() === ''" @click="send">{{ t.send }}</AppButton>
+      </template>
+    </AppModal>
+  </AppPage>
+</template>
