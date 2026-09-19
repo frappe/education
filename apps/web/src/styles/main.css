@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. A new visual design replaces these values (and the components in
+ * src/ui). Pages and features never use raw colors, only these tokens.
+ */
+:root {
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f6f8;
+  --color-text: #1b1f24;
+  --color-text-muted: #5b6470;
+  --color-primary: #2456d6;
+  --color-primary-text: #ffffff;
+  --color-danger: #b42318;
+  --color-success: #067647;
+  --color-border: #d5d9e0;
+  --radius-control: 0.5rem;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --tap-size: 2.75rem; /* 44px minimum touch target */
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}

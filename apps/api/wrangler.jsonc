@@ -1,0 +1,62 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ptv-lms",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // The web app is built to apps/web/dist and served as static assets.
+  // Only /api/* runs the Worker code, everything else is served straight from the edge.
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+
+  "vars": {
+    "ENVIRONMENT": "local",
+    // "dev" writes emails to the outbox table so they can be read in the admin screen.
+    // No custom domain yet, so real sending is off (see docs/spikes.md).
+    "EMAIL_MODE": "dev",
+  },
+
+  // Local development uses a local D1 database. The ids below are placeholders:
+  // run `wrangler d1 create ptv-lms-<env>` and paste the real id (see docs/deploy.md).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ptv-lms-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+
+  "env": {
+    "staging": {
+      "name": "ptv-lms-staging",
+      "vars": { "ENVIRONMENT": "staging", "EMAIL_MODE": "dev" },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "ptv-lms-staging",
+          "database_id": "REPLACE_WITH_STAGING_D1_ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+    "production": {
+      "name": "ptv-lms",
+      "vars": { "ENVIRONMENT": "production", "EMAIL_MODE": "dev" },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "ptv-lms-production",
+          "database_id": "REPLACE_WITH_PRODUCTION_D1_ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+  },
+}

@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Only these packages may run install scripts (needed by wrangler / vite).
+allowBuilds:
+  esbuild: true
+  workerd: true

@@ -1,8 +1,19 @@
 {
+  "name": "lms",
   "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-      "postinstall": "cd frontend && yarn install --check-files",
-      "dev": "cd frontend && yarn dev",
-      "build": "cd frontend && yarn build"
+    "dev": "pnpm --filter @lms/web build && pnpm --filter @lms/api dev",
+    "dev:web": "pnpm --filter @lms/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "prettier --check apps packages .github/workflows/lms-ci.yml package.json tsconfig.base.json"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.8"
   }
 }

@@ -1,0 +1,9 @@
+node_modules
+dist
+.wrangler
+pnpm-lock.yaml
+worker-configuration.d.ts
+# Legacy Frappe Education code (kept in git tag legacy-frappe-education)
+education
+frontend
+docker
