@@ -1,9 +1,9 @@
-import type { EmailKind, NotificationItem, NotificationList, NotificationSettings } from "@lms/shared";
+import type { NotificationItem, NotificationList } from "@lms/shared";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { messageOf } from "@/features/errors";
 
-/** How many notifications the person has not read. One copy for the whole app (the menu and the page use it). */
+/** How many notifications the person has not read. One copy for the whole app (the bell and the list use it). */
 const unread = ref(0);
 export const useUnread = () => unread;
 
@@ -39,29 +39,25 @@ export function useUnreadPolling(signedIn: () => boolean) {
   });
 }
 
-/** The notifications page: the list, marking as read, and the choices for email. Logic only. */
+/** The list in the bell: loading it when it opens, and marking as read. Logic only. */
 export function useNotificationList() {
   const items = ref<NotificationItem[]>([]);
-  const settings = ref<NotificationSettings>({ kinds: [] });
-  const loading = ref(true);
+  const loading = ref(false);
   const error = ref<string | null>(null);
-  const savingKind = ref<EmailKind | null>(null);
 
-  onMounted(async () => {
+  async function load() {
+    loading.value = items.value.length === 0; // no spinner when there is something to show already
+    error.value = null;
     try {
-      const [list, s] = await Promise.all([
-        api<NotificationList>("/notifications"),
-        api<{ settings: NotificationSettings }>("/notifications/settings"),
-      ]);
+      const list = await api<NotificationList>("/notifications");
       items.value = list.items;
       unread.value = list.unread;
-      settings.value = s.settings;
     } catch (err) {
       error.value = messageOf(err);
     } finally {
       loading.value = false;
     }
-  });
+  }
 
   async function read(ids?: string[]) {
     try {
@@ -74,29 +70,7 @@ export function useNotificationList() {
       error.value = messageOf(err);
     }
   }
-  const readAll = () => read();
-
-  /** Turns one kind of email on or off. The screen shows the new choice at once and goes back if it fails. */
-  async function setEmail(kind: EmailKind, on: boolean) {
-    const before = settings.value;
-    settings.value = { kinds: before.kinds.map((k) => (k.kind === kind ? { ...k, email: on } : k)) };
-    savingKind.value = kind;
-    try {
-      const muted = settings.value.kinds.filter((k) => !k.email).map((k) => k.kind);
-      settings.value = (
-        await api<{ settings: NotificationSettings }>("/notifications/settings", {
-          method: "PUT",
-          body: { muted },
-        })
-      ).settings;
-    } catch (err) {
-      settings.value = before;
-      error.value = messageOf(err);
-    } finally {
-      savingKind.value = null;
-    }
-  }
 
   const hasUnread = computed(() => items.value.some((i) => !i.read));
-  return { items, settings, loading, error, savingKind, hasUnread, read, readAll, setEmail };
+  return { items, loading, error, hasUnread, load, read, readAll: () => read() };
 }

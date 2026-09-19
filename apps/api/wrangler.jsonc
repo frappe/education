@@ -42,8 +42,8 @@
   "env": {
     "staging": {
       "name": "ptv-lms-staging",
-      // Every 5 minutes: reminders for work that is due soon, and the emails that are waiting.
-      "triggers": { "crons": ["*/5 * * * *"] },
+      // Once an hour: reminders (in the app) for work that is due soon, and removing old notifications.
+      "triggers": { "crons": ["0 * * * *"] },
       "vars": {
         "ENVIRONMENT": "staging",
         // Real email through an SMTP server. The account and its password are secrets (docs/deploy.md, "Sending email").

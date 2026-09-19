@@ -59,8 +59,6 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "GET /api/notifications": "user",
   "GET /api/notifications/unread": "user",
   "POST /api/notifications/read": "user",
-  "GET /api/notifications/settings": "user",
-  "PUT /api/notifications/settings": "user",
   "GET /api/invoices": "teacher",
   "POST /api/invoices": "teacher",
   "POST /api/invoices/generate": "teacher",

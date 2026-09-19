@@ -19,13 +19,15 @@ watch(
   <div class="drawer min-h-screen bg-base-200 text-base-content lg:drawer-open">
     <input id="app-menu" ref="toggle" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content flex min-w-0 flex-col">
+      <!-- The top bar: on a small screen it holds the menu button and the name; everywhere it holds the actions on the right. -->
       <header
-        class="sticky top-0 z-20 flex items-center gap-2 border-b border-base-300 bg-base-100/90 px-3 py-2 backdrop-blur lg:hidden"
+        class="sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b border-base-300 bg-base-100/90 px-3 py-1 backdrop-blur"
       >
-        <label for="app-menu" class="btn btn-square btn-ghost" :aria-label="menuLabel"
+        <label for="app-menu" class="btn btn-square btn-ghost lg:hidden" :aria-label="menuLabel"
           ><AppIcon name="menu"
         /></label>
-        <slot name="brand" />
+        <div class="lg:hidden"><slot name="brand" /></div>
+        <div class="ml-auto flex items-center gap-1"><slot name="topbar" /></div>
       </header>
       <div class="flex-1"><slot /></div>
     </div>

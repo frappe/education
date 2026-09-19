@@ -1,13 +1,7 @@
-import { EMAIL_KINDS, type NotificationList, type NotificationSettings } from "@lms/shared";
+import type { NotificationList } from "@lms/shared";
 import type { Actor } from "../auth/actor";
 import type { Ctx } from "../auth/service";
-import {
-  markReadStatement,
-  mutedKindsOf,
-  notificationsOf,
-  setMutedKindsStatement,
-  unreadCount,
-} from "../repos/notifications";
+import { markReadStatement, notificationsOf, unreadCount } from "../repos/notifications";
 
 /** The person's own notifications, newest first. */
 export async function list(ctx: Ctx, actor: Actor): Promise<NotificationList> {
@@ -35,18 +29,6 @@ export const unread = (ctx: Ctx, actor: Actor) => unreadCount(ctx.env.DB, actor.
 export async function markRead(ctx: Ctx, actor: Actor, ids: string[] | undefined): Promise<number> {
   await markReadStatement(ctx.env.DB, actor.userId, ids ?? null).run();
   return unreadCount(ctx.env.DB, actor.userId);
-}
-
-/** Only a student gets these emails, so a teacher sees no choices. */
-export async function settingsGet(ctx: Ctx, actor: Actor): Promise<NotificationSettings> {
-  if (!actor.memberships.some((m) => m.role === "student")) return { kinds: [] };
-  const muted = new Set(await mutedKindsOf(ctx.env.DB, actor.userId));
-  return { kinds: EMAIL_KINDS.map((kind) => ({ kind, email: !muted.has(kind) })) };
-}
-
-export async function settingsSet(ctx: Ctx, actor: Actor, muted: string[]): Promise<NotificationSettings> {
-  await setMutedKindsStatement(ctx.env.DB, actor.userId, [...new Set(muted)]).run();
-  return settingsGet(ctx, actor);
 }
 
 /**
