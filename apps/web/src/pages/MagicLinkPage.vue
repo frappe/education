@@ -18,7 +18,7 @@ const route = useRoute();
 const router = useRouter();
 const session = useSession();
 const token = computed(() => String(route.query.token ?? ""));
-const trust = ref(false);
+const trust = ref(true);
 
 const action = useOneClick(async () => {
   await authApi.consumeSignInLink(token.value, trust.value);

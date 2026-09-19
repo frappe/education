@@ -56,6 +56,17 @@ export async function isTokenValid(db: D1Database, token: string, kind: TokenKin
   return row !== null;
 }
 
+/** Reads a valid token without using it up. */
+export async function peekToken(db: D1Database, token: string, kind: TokenKind): Promise<TokenRow | null> {
+  return db
+    .prepare(
+      `SELECT id, email, user_id, tenant_id, student_id FROM auth_tokens
+       WHERE token_hash = ? AND kind = ? AND used_at IS NULL AND revoked_at IS NULL AND expires_at > ?`,
+    )
+    .bind(await sha256Hex(token), kind, nowIso())
+    .first<TokenRow>();
+}
+
 /**
  * Uses a token up. One statement, so two requests with the same link cannot both win:
  * the second finds used_at already set and gets nothing back.
@@ -75,6 +86,15 @@ export const revokeInvites = (db: D1Database, studentId: string): D1PreparedStat
   db
     .prepare(
       `UPDATE auth_tokens SET revoked_at = ? WHERE student_id = ? AND kind = 'invite'
+       AND used_at IS NULL AND revoked_at IS NULL`,
+    )
+    .bind(nowIso(), studentId);
+
+/** Marks every open invite of a student as used (they joined another way, for example with Google). */
+export const useUpInvites = (db: D1Database, studentId: string): D1PreparedStatement =>
+  db
+    .prepare(
+      `UPDATE auth_tokens SET used_at = ? WHERE student_id = ? AND kind = 'invite'
        AND used_at IS NULL AND revoked_at IS NULL`,
     )
     .bind(nowIso(), studentId);

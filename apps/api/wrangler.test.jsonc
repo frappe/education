@@ -4,7 +4,13 @@
   "name": "ptv-lms-test",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
-  "vars": { "ENVIRONMENT": "test", "EMAIL_MODE": "dev", "APP_URL": "https://lms.test" },
+  "vars": {
+    "ENVIRONMENT": "test",
+    "EMAIL_MODE": "dev",
+    "APP_URL": "https://lms.test",
+    "GOOGLE_CLIENT_ID": "test-client-id.apps.googleusercontent.com",
+    "GOOGLE_CLIENT_SECRET": "test-client-secret",
+  },
   "d1_databases": [
     {
       "binding": "DB",

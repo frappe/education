@@ -5,6 +5,10 @@
   "compatibility_date": "2026-08-01",
   "observability": { "enabled": true },
 
+  // Only the one workers.dev address. Preview URLs would add more addresses that reach the same database.
+  "workers_dev": true,
+  "preview_urls": false,
+
   // The web app is built to apps/web/dist and served as static assets.
   // Only /api/* runs the Worker code, everything else is served straight from the edge.
   "assets": {
@@ -20,6 +24,8 @@
     // "dev" writes emails to the outbox table so they can be read in the admin screen.
     // No custom domain yet, so real sending is off (see docs/spikes.md).
     "EMAIL_MODE": "dev",
+    // "dev" replaces Google with a local stand-in page. Ignored on staging and production.
+    "GOOGLE_MODE": "dev",
   },
 
   // Local development uses a local D1 database. The ids below are placeholders:
@@ -40,13 +46,15 @@
         "ENVIRONMENT": "staging",
         "EMAIL_MODE": "dev",
         // Set to the real address after the first deploy, for example https://ptv-lms-staging.<account>.workers.dev
-        "APP_URL": "REPLACE_WITH_STAGING_URL",
+        "APP_URL": "https://ptv-lms-staging.luongtamanh2.workers.dev",
+        // Not a secret. Google sign in stays off until GOOGLE_CLIENT_SECRET is also set (docs/deploy.md).
+        "GOOGLE_CLIENT_ID": "1007469535016-vhgeueo74sp7s8cjs33eocshnajvdgme.apps.googleusercontent.com",
       },
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "ptv-lms-staging",
-          "database_id": "REPLACE_WITH_STAGING_D1_ID",
+          "database_id": "8eb57ba0-5e1d-4eda-a837-978cf5ca5d48",
           "migrations_dir": "migrations",
         },
       ],
@@ -57,6 +65,7 @@
         "ENVIRONMENT": "production",
         "EMAIL_MODE": "dev",
         "APP_URL": "REPLACE_WITH_PRODUCTION_URL",
+        "GOOGLE_CLIENT_ID": "1007469535016-vhgeueo74sp7s8cjs33eocshnajvdgme.apps.googleusercontent.com",
       },
       "d1_databases": [
         {

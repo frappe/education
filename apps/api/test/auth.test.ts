@@ -463,14 +463,35 @@ describe("sessions", () => {
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
   });
 
-  it("ends after being idle too long (teachers: 7 days)", async () => {
+  it("ends after being idle too long (a teacher on a device not marked as their own: 7 days)", async () => {
     const t = await createTeacher();
+    const cookie = await signInWithLink(t.email); // no "own device" tick
     const old = new Date(Date.now() - 8 * 86_400_000).toISOString();
     await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE user_id = ?").bind(old, t.userId).run();
+    expect((await call("/api/me", { cookie })).status).toBe(401);
+    const recent = new Date(Date.now() - 6 * 86_400_000).toISOString();
+    const again = await signInWithLink(t.email);
+    await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE user_id = ?")
+      .bind(recent, t.userId)
+      .run();
+    expect((await call("/api/me", { cookie: again })).status).toBe(200);
+  });
+
+  it("lasts 30 days when the person says it is their own device", async () => {
+    const t = await createTeacher(); // confirming the email counts as their own device
+    const eight = new Date(Date.now() - 8 * 86_400_000).toISOString();
+    await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE user_id = ?")
+      .bind(eight, t.userId)
+      .run();
+    expect((await call("/api/me", { cookie: t.cookie })).status).toBe(200);
+    const thirtyOne = new Date(Date.now() - 31 * 86_400_000).toISOString();
+    await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE user_id = ?")
+      .bind(thirtyOne, t.userId)
+      .run();
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
   });
 
-  it("ends after the 30 day maximum", async () => {
+  it("ends after the 90 day maximum", async () => {
     const t = await createTeacher();
     await env.DB.prepare("UPDATE sessions SET expires_at = '2000-01-01T00:00:00.000Z' WHERE user_id = ?")
       .bind(t.userId)

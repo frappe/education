@@ -11,6 +11,7 @@ import { auth } from "./routes/auth";
 import { courses } from "./routes/courses";
 import { dev } from "./routes/dev";
 import { enrollments } from "./routes/enrollments";
+import { google } from "./routes/google";
 import { health } from "./routes/health";
 import { invites } from "./routes/invites";
 import { students } from "./routes/students";
@@ -31,6 +32,7 @@ export function createApp() {
   const api = new OpenAPIHono<AppBindings>();
   api.route("/", health);
   api.route("/", auth);
+  api.route("/", google);
   api.route("/", invites);
   api.route("/", courses);
   api.route("/", students);

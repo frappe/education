@@ -93,7 +93,7 @@ describe("student accepts an invite", () => {
     expect((await call("/api/invites/accept", { method: "POST", body: { token } })).status).toBe(410);
   });
 
-  it("keeps a student signed in for 1 day, or 7 days on a trusted device", async () => {
+  it("keeps a student signed in for 1 day, or 30 days on their own device", async () => {
     const t = await createTeacher();
     const idleDays = async (trust: boolean) => {
       const email = uniqueEmail("kid");
@@ -109,7 +109,7 @@ describe("student accepts an invite", () => {
       return row?.idle_days;
     };
     expect(await idleDays(false)).toBe(1);
-    expect(await idleDays(true)).toBe(7);
+    expect(await idleDays(true)).toBe(30);
   });
 
   it("lets a student sign in later with a magic link", async () => {

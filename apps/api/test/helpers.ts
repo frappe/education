@@ -13,9 +13,20 @@ export const randomIp = () =>
 // ---- fake outside world: Turnstile, so tests never use the network
 export const turnstileAnswer = { success: true };
 
-vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
+/** What Google's token address answers, and what it was asked. Set by `googleSignIn`. */
+export const googleFake: {
+  answer: ((form: URLSearchParams) => Response | Promise<Response>) | null;
+  asked: URLSearchParams[];
+} = { answer: null, asked: [] };
+
+vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input instanceof Request ? input.url : input);
   if (url.includes("challenges.cloudflare.com")) return Response.json(turnstileAnswer);
+  if (url === "https://oauth2.googleapis.com/token" && googleFake.answer) {
+    const form = new URLSearchParams(String(init?.body));
+    googleFake.asked.push(form);
+    return googleFake.answer(form);
+  }
   throw new Error(`Unexpected network call in test: ${url}`);
 });
 
@@ -187,4 +198,95 @@ export async function addStudent(teacher: Person, over: Record<string, unknown> 
   });
   if (res.status !== 201) throw new Error(`add student failed: ${JSON.stringify(res.json)}`);
   return res.json.student as { id: string; email: string; version: number; name: string };
+}
+
+// ---------------------------------------------------------------- Google sign in
+
+const b64url = (v: unknown) =>
+  btoa(JSON.stringify(v)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+export const GOOGLE_CLIENT_ID = "test-client-id.apps.googleusercontent.com";
+
+export interface GoogleTrip {
+  start: CallResult;
+  callback: CallResult;
+  /** Where the person was sent at the end (a path on our site). */
+  location: string;
+  /** The session cookie, if the trip signed them in. */
+  session?: string;
+  /** The claims Google's id token carried. */
+  claims: Record<string, unknown>;
+}
+
+/**
+ * Makes Google's token address answer as if the person signed in at Google. `target` is the address
+ * we sent the browser to (it holds the nonce Google must repeat). Returns the claims that were sent.
+ */
+export function armGoogle(
+  target: string,
+  o: {
+    email: string;
+    name?: string;
+    sub?: string;
+    claims?: Record<string, unknown>;
+    answer?: (form: URLSearchParams) => Response | Promise<Response>;
+  },
+): Record<string, unknown> {
+  const claims: Record<string, unknown> = {
+    iss: "https://accounts.google.com",
+    aud: GOOGLE_CLIENT_ID,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    sub: o.sub ?? `sub-${o.email}`,
+    email: o.email,
+    email_verified: true,
+    nonce: new URL(target).searchParams.get("nonce"),
+    name: o.name ?? "Google Person",
+    ...o.claims,
+  };
+  googleFake.asked = [];
+  googleFake.answer =
+    o.answer ?? (() => Response.json({ id_token: `${b64url({ alg: "RS256" })}.${b64url(claims)}.sig` }));
+  return claims;
+}
+
+/**
+ * One whole "Continue with Google" trip: start, Google answers, callback. Google is played by the
+ * test, so `claims` can be wrong on purpose (bad audience, expired, unverified email...).
+ */
+export async function googleSignIn(o: {
+  email: string;
+  name?: string;
+  sub?: string;
+  intent?: "sign-in" | "sign-up" | "invite";
+  invite?: string;
+  keep?: boolean;
+  claims?: Record<string, unknown>;
+  /** Replace the whole answer of Google's token address. */
+  answer?: (form: URLSearchParams) => Response | Promise<Response>;
+  ip?: string;
+  env?: Partial<Env>;
+}): Promise<GoogleTrip> {
+  const q = new URLSearchParams({ intent: o.intent ?? "sign-in", keep: o.keep === false ? "0" : "1" });
+  if (o.invite) q.set("invite", o.invite);
+  const ip = o.ip ?? randomIp();
+  const start = await call(`/api/auth/google/start?${q}`, { ip, env: o.env });
+  const flowCookie = start.setCookie?.match(/(?:^|, )((?:__Host-)?glogin=[^;]+)/)?.[1];
+  const target = start.headers.get("location") ?? "";
+  let claims: Record<string, unknown> = {};
+  let callback = start;
+  if (flowCookie && target.startsWith("https://accounts.google.com/")) {
+    claims = armGoogle(target, o);
+    callback = await call(
+      `/api/auth/google/callback?code=code-1&state=${new URL(target).searchParams.get("state")}`,
+      { cookie: flowCookie, ip, env: o.env },
+    );
+  }
+  const last = callback.headers.get("location") ?? "";
+  return {
+    start,
+    callback,
+    location: last,
+    session: callback.setCookie?.match(/(?:^|, )((?:__Host-)?sid=[^;]+)/)?.[1],
+    claims,
+  };
 }

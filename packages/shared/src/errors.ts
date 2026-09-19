@@ -20,6 +20,16 @@ export const ERROR_CODES = {
   CAPTCHA_FAILED: { status: 400, message: "We could not check that you are a person. Please try again." },
   ACCOUNT_PAUSED: { status: 403, message: "This account is paused. Please contact support." },
   INVITE_LIMIT: { status: 429, message: "You have sent many invites today. Please try again tomorrow." },
+  GOOGLE_FAILED: { status: 400, message: "Google sign in did not work. Please try again." },
+  NOT_INVITED: {
+    status: 403,
+    message:
+      "This email is not on a class list. Students: ask your teacher to invite the email you use with Google. Teachers: create an account first.",
+  },
+  GOOGLE_ACCOUNT_CHANGED: {
+    status: 403,
+    message: "This email is linked to a different Google account. Please sign in with an email link instead.",
+  },
 
   // Courses
   COURSE_FULL: { status: 409, message: "This course is full." },

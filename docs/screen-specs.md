@@ -17,11 +17,12 @@ Milestone in brackets = when it is built.
 
 | Screen | Purpose and rules | Special states / errors |
 |---|---|---|
-| Sign up (teacher) [M1] | Name and email. Bot check. Sends a link that confirms the email and signs the person in. No password. | Email already used shows the same "check your email" result (and that person gets a sign in link). |
-| Sign in [M1] | Email only. Bot check. Sends a sign in link (works 15 minutes, once). The answer is the same for every email. | Too many asks: same quiet answer, no mail. |
+| Sign up (teacher) [M1] | "Continue with Google" (when it is set up) or name and email. Bot check. The email way sends a link that confirms the email and signs the person in. No password. | Email already used shows the same "check your email" result (and that person gets a sign in link). |
+| Sign in [M1] | "Continue with Google" or email only. The email way has a bot check and sends a sign in link (works 15 minutes, once); the answer is the same for every email. A tick box "This is my own device" (on by default) keeps the person signed in for 30 days. Students are told to use the same email their teacher added. | Too many asks: same quiet answer, no mail. Google problems show on this page: `NOT_INVITED`, `GOOGLE_ACCOUNT_CHANGED`, `GOOGLE_FAILED`. |
 | Open the link from email [M1] | One button ("Sign in" or "Confirm my email"). The link is used up when the button is pressed. Option "this is my own device" keeps students signed in longer. | Used or old link: `LINK_EXPIRED` with a button to ask again. |
 | Verify email [M1] | Opens from the email link. | Expired link: ask again. |
-| Magic link landing (student) [M1] | Student opens the link and is signed in. Shows which teacher invited them. | Expired or used: "Ask your teacher for a new invite" (`LINK_EXPIRED`). |
+| Magic link landing (student) [M1] | Student opens the invite link and joins with one button, or with "Continue with Google" using the same email the teacher added. Shows which teacher invited them. | Expired or used: "Ask your teacher for a new invite" (`LINK_EXPIRED`). Wrong Google email: back on this page with `NOT_INVITED`, the link still works. |
+| Google (test page) [M1, local only] | Pretends to be Google on the developer's computer: type an email and a name. | Shows "only for testing" anywhere else. |
 | Devices [M1] | List of signed-in devices, "Sign out" per device and "Sign out everywhere". | |
 | Profile and settings [M5] | Name, time zone, which emails to get (security and invoice emails cannot be turned off), download my data, ask to delete my data. | |
 

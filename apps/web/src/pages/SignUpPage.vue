@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { signUpBody } from "@lms/shared";
 import { ref } from "vue";
+import GoogleButton from "@/components/GoogleButton.vue";
 import DevEmailHint from "@/components/DevEmailHint.vue";
 import { authApi } from "@/features/auth/api";
+import { useGoogleAvailable } from "@/features/auth/google";
 import { useForm } from "@/features/forms/useForm";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -13,6 +15,7 @@ import AppPage from "@/ui/AppPage.vue";
 import AppTurnstile from "@/ui/AppTurnstile.vue";
 
 const t = messages.signUp;
+const googleOn = useGoogleAvailable();
 const c = messages.common;
 const done = ref(false);
 const captcha = ref("");
@@ -43,6 +46,10 @@ const form = useForm(
     </template>
     <form v-else class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
       <p>{{ t.intro }}</p>
+      <template v-if="googleOn">
+        <GoogleButton intent="sign-up" />
+        <p class="text-sm text-[var(--color-text-muted)]">{{ t.orEmail }}</p>
+      </template>
       <AppAlert v-if="form.formError.value" kind="error">{{ form.formError.value }}</AppAlert>
       <AppInput
         v-model="form.values.name"

@@ -32,8 +32,22 @@ The address is printed at the end, like `https://ptv-lms-staging.<your-account>.
 |---|---|---|
 | `APP_URL` | `vars` in `apps/api/wrangler.jsonc` (per environment) | The address put in email links. Must start with `https://`. Never read from the request. |
 | `HMAC_KEY` | `wrangler secret put HMAC_KEY --env <env>` (long random text) | Hashes emails and IP addresses in counters and logs. The app refuses to run without it. |
+| `GOOGLE_CLIENT_ID` | `vars` in `apps/api/wrangler.jsonc` (per environment) | Turns on "Continue with Google". Without it (and the secret) the Google buttons are hidden and email links are the only way in. See "Sign in with Google" below. |
+| `GOOGLE_CLIENT_SECRET` | `wrangler secret put GOOGLE_CLIENT_SECRET --env <env>` | Lets the server ask Google who signed in. |
 | `TURNSTILE_SECRET` | `wrangler secret put TURNSTILE_SECRET --env <env>` | Bot check on the server. The app refuses to run without it in staging and production. |
 | `VITE_TURNSTILE_SITE_KEY` | Set when building the web app (`VITE_TURNSTILE_SITE_KEY=... pnpm --filter @lms/web build`) | Shows the bot check on the forms. Create a Turnstile widget in the Cloudflare dashboard and allow the `workers.dev` address. |
+
+## Sign in with Google
+
+Students and teachers can sign in with one click, so nobody has to wait for an email each time. It is free.
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project (any name).
+2. "APIs & Services", "OAuth consent screen": user type **External**. Fill the app name and your email. Scopes: only `openid`, `email` and `profile` (these need no Google review). Press **Publish app**, otherwise only listed test users can sign in.
+3. "Credentials", "Create credentials", "OAuth client ID", type **Web application**. Under "Authorized redirect URIs" add **exactly** `https://<your address>/api/auth/google/callback` (one for staging, one for production). Nothing else.
+4. Put the client id in `GOOGLE_CLIENT_ID` (`vars` of that environment in `wrangler.jsonc`) and the secret with `wrangler secret put GOOGLE_CLIENT_SECRET --env <env>`.
+
+Who can get in does not change: a teacher creates their own account, and a student gets in **only with the exact email a teacher added and invited**. Locally, `GOOGLE_MODE=dev` (already set in `wrangler.jsonc`) shows a test page instead of Google; it is ignored on staging and production.
+Not yet tried on a real `workers.dev` address: check that Google accepts it on the consent screen.
 
 Email is still in dev mode (see `docs/spikes.md`). The dev outbox page is **not** available on staging or production
 (it can sign people in), and `EMAIL_MODE=dev` is refused in production. On staging, read a link with:

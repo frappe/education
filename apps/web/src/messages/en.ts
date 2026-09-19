@@ -12,9 +12,23 @@ export const en = {
     name: "Your name",
     back: "Back",
     loading: "Loading...",
-    trustDevice: "This is my own device. Keep me signed in longer.",
+    trustDevice: "This is my own device. Keep me signed in.",
     tryAgain: "Try again",
     somethingWrong: "Something went wrong. Please try again.",
+  },
+  google: {
+    continue: "Continue with Google",
+    or: "or",
+  },
+  devGoogle: {
+    title: "Google (test page)",
+    intro:
+      "This page pretends to be Google. It only works on your own computer. Type the email you want to sign in with.",
+    email: "Google email",
+    name: "Name",
+    submit: "Continue",
+    cancel: "Cancel",
+    notAvailable: "This page is only for testing on your own computer.",
   },
   home: {
     title: "Welcome",
@@ -36,7 +50,8 @@ export const en = {
   signUp: {
     title: "Create your account",
     intro:
-      "Enter your name and email. We will send you a link to confirm your email and sign in. You do not need a password.",
+      "Use your Google account, or enter your name and email and we will send you a link. You do not need a password.",
+    orEmail: "or use your email",
     submit: "Create account",
     hasAccount: "Already have an account?",
     doneTitle: "Check your email",
@@ -44,7 +59,10 @@ export const en = {
   },
   signIn: {
     title: "Sign in",
-    intro: "Enter your email. We will send you a link to sign in. You do not need a password.",
+    intro:
+      "Use your Google account, or enter your email and we will send you a link. You do not need a password.",
+    orEmail: "or use your email",
+    students: "Students: use the same email your teacher added.",
     submit: "Email me a link",
     noAccount: "New here?",
     doneTitle: "Check your email",
@@ -66,7 +84,9 @@ export const en = {
   },
   invite: {
     title: "Join the class",
-    intro: "Your teacher invited you. Press the button to join.",
+    intro: "Your teacher invited you.",
+    googleHint: "Use the Google account with the same email your teacher added.",
+    orEmail: "or, if this invite came to your email:",
     submit: "Join",
     expired: "This invite is no longer valid. Please ask your teacher to send a new one.",
   },

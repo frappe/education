@@ -76,9 +76,14 @@ export async function sendMail(ctx: Ctx, message: EmailMessage): Promise<void> {
   await ctx.defer((async () => getEmailProvider(ctx.env).send(message))());
 }
 
-/** Students who only use email links stay signed in for 1 day, unless they trust the device. */
-function idleDaysFor(roles: string[], trustDevice: boolean): number {
-  return roles.includes("teacher") || trustDevice ? LIMITS.sessionIdleDays : 1;
+/**
+ * How long a session may sit unused. A device the person marked as their own keeps them signed in
+ * for a month, so they do not need a new link or Google sign in all the time. Otherwise (a shared
+ * computer) teachers get 7 days and students 1 day.
+ */
+export function idleDaysFor(roles: string[], trustDevice: boolean): number {
+  if (trustDevice) return LIMITS.trustedIdleDays;
+  return roles.includes("teacher") ? LIMITS.sessionIdleDays : 1;
 }
 
 export async function openSession(
@@ -110,7 +115,7 @@ export async function openSession(
 }
 
 /** Slows down someone who tries many random links. */
-async function limitTokenTries(ctx: Ctx): Promise<void> {
+export async function limitTokenTries(ctx: Ctx): Promise<void> {
   const r = await hit(ctx.env.DB, `token:ip:${ctx.ipHash}`, 60, 900);
   if (!r.allowed) throw new AppError("RATE_LIMITED");
 }
@@ -188,6 +193,7 @@ export async function verifyEmail(ctx: Ctx, token: string): Promise<NewSession> 
   const row = await consumeToken(ctx.env.DB, token, "verify_email");
   if (!row?.user_id) throw new AppError("LINK_EXPIRED");
   return openSession(ctx, row.user_id, {
+    trustDevice: true, // they just made this account on this device
     before: [markEmailVerified(ctx.env.DB, row.user_id)],
     action: "auth.email_verified",
   });

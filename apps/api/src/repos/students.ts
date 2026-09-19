@@ -188,3 +188,29 @@ export async function existingEmails(
   }
   return found;
 }
+
+export interface OpenInvite {
+  id: string;
+  tenant_id: string;
+  name: string;
+}
+
+/**
+ * Every class (in any teacher's tenant) that has a valid, unused invite for exactly this email.
+ * This is the one query that looks across tenants: it is used only after Google has proved the
+ * person owns the email, and it returns nothing except the invites made for that email.
+ */
+export async function openInvitesForEmail(db: D1Database, email: string): Promise<OpenInvite[]> {
+  const res = await db
+    .prepare(
+      `SELECT s.id, s.tenant_id, s.name
+       FROM students s JOIN tenants t ON t.id = s.tenant_id AND t.status = 'active'
+       WHERE s.email = ?1 AND s.status = 'invited'
+         AND EXISTS (SELECT 1 FROM auth_tokens k WHERE k.student_id = s.id AND k.kind = 'invite'
+                     AND k.used_at IS NULL AND k.revoked_at IS NULL AND k.expires_at > ?2)
+       ORDER BY s.created_at`,
+    )
+    .bind(email, nowIso())
+    .all<OpenInvite>();
+  return res.results;
+}

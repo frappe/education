@@ -8,6 +8,11 @@ export interface Env {
   APP_URL: string;
   /** Secret used to hash IP addresses and emails in counters and logs. Set with `wrangler secret`. */
   HMAC_KEY?: string;
+  /** Google sign in. Needs both, from a Google Cloud "OAuth client" (see docs/deploy.md). Without them Google is off. */
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  /** "dev" replaces Google with a local stand-in page. Ignored (Google stays off) outside local and tests. */
+  GOOGLE_MODE?: "dev";
   /** Cloudflare Turnstile secret. Required in staging and production. */
   TURNSTILE_SECRET?: string;
 }

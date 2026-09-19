@@ -11,6 +11,9 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "GET /api/health": "public",
   "GET /api/openapi.json": "public",
   "GET /api/dev/outbox": "public", // answers "not found" unless running locally
+  "GET /api/auth/options": "public",
+  "GET /api/auth/google/start": "public",
+  "GET /api/auth/google/callback": "public",
   "POST /api/auth/sign-up": "public",
   "POST /api/auth/verify-email": "public",
   "POST /api/auth/sign-in-link/request": "public",

@@ -22,6 +22,26 @@ export async function sha256Hex(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/** SHA-256 as base64url, the form PKCE (the Google sign in code check) needs. */
+export async function sha256Base64Url(value: string): Promise<string> {
+  return toBase64Url(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value))));
+}
+
+/** Reads a base64url string (as used in tokens) back to text. Throws on bad input. */
+export function fromBase64Url(value: string): string {
+  const b64 = value
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const binary = atob(b64);
+  return new TextDecoder().decode(Uint8Array.from(binary, (ch) => ch.charCodeAt(0)));
+}
+
+/** Text as base64url. */
+export function toBase64UrlText(value: string): string {
+  return toBase64Url(encoder.encode(value));
+}
+
 /** Constant-time string comparison, to avoid leaking how many characters matched. */
 export function timingSafeEqual(a: string, b: string): boolean {
   const ab = encoder.encode(a);

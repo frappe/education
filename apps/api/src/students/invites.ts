@@ -146,6 +146,34 @@ export async function invitesOf(ctx: Ctx, actor: Actor): Promise<InviteInfo[]> {
   }));
 }
 
+/**
+ * Puts a student into their teacher's class: makes the account when there is none, adds the
+ * membership, and marks the profile as joined.
+ */
+export function joinStatements(
+  db: D1Database,
+  j: {
+    tenantId: string;
+    student: Pick<StudentRow, "id" | "name" | "email">;
+    userId: string;
+    userExists: boolean;
+  },
+): D1PreparedStatement[] {
+  return [
+    j.userExists
+      ? markEmailVerified(db, j.userId)
+      : insertUser(db, {
+          id: j.userId,
+          email: j.student.email,
+          name: j.student.name,
+          passwordHash: null,
+          verified: true,
+        }),
+    insertMembership(db, { userId: j.userId, tenantId: j.tenantId, role: "student" }),
+    activateStudent(db, j.tenantId, j.student.id, j.userId),
+  ];
+}
+
 /** A student opens the invite link. Creates the account if needed and signs them in. */
 export async function acceptInvite(ctx: Ctx, token: string, trustDevice: boolean): Promise<NewSession> {
   const db = ctx.env.DB;
@@ -164,21 +192,12 @@ export async function acceptInvite(ctx: Ctx, token: string, trustDevice: boolean
   if (existing?.disabled_at) throw new AppError("ACCOUNT_PAUSED");
 
   const userId = existing?.id ?? uuidv7();
-  const before: D1PreparedStatement[] = existing
-    ? [markEmailVerified(db, userId)]
-    : [
-        insertUser(db, {
-          id: userId,
-          email: student.email,
-          name: student.name,
-          passwordHash: null,
-          verified: true,
-        }),
-      ];
-  before.push(
-    insertMembership(db, { userId, tenantId: row.tenant_id, role: "student" }),
-    activateStudent(db, row.tenant_id, student.id, userId),
-  );
+  const before = joinStatements(db, {
+    tenantId: row.tenant_id,
+    student,
+    userId,
+    userExists: existing !== null,
+  });
   return openSession(ctx, userId, {
     trustDevice,
     before,

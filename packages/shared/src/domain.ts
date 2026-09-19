@@ -35,7 +35,10 @@ export const LIMITS = {
   maxLinkLength: 2048,
   magicLinkMinutes: 15,
   inviteDays: 7,
+  /** Signed in on a device the person marked as their own. Fewer emails and fewer sign ins. */
+  trustedIdleDays: 30,
+  /** A teacher who did not mark the device as their own. */
   sessionIdleDays: 7,
-  sessionMaxDays: 30,
+  sessionMaxDays: 90,
   anonymousFeedbackMinResponses: 3,
 } as const;

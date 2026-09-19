@@ -213,7 +213,8 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 
 - Đăng ký và xin link đăng nhập: Turnstile + giới hạn theo email và theo kết nối. Câu trả lời luôn giống nhau dù email có tài khoản hay không. Mail được gửi **sau khi trả lời** (`waitUntil`) nên thời gian phản hồi không lộ email nào có tài khoản.
 - Không có mật khẩu, nên không có khoá tài khoản, quên mật khẩu hay kiểm tra mật khẩu bị lộ. Độ an toàn của tài khoản bằng độ an toàn của hộp thư email (đúng như luồng "quên mật khẩu" của mọi hệ thống khác). Có thể thêm TOTP cho giáo viên sau này (v1.2).
-- Session: idle 7 ngày, tuyệt đối 30 ngày (học sinh: idle 24h nếu dùng magic link trên máy chung, có tuỳ chọn "thiết bị này tin cậy"); xoay token khi đăng nhập/đổi quyền; thu hồi toàn bộ khi đổi mật khẩu; trang "Thiết bị đang đăng nhập".
+- **Đăng nhập bằng Google** (miễn phí, không cần email): luồng authorization code + PKCE, `state`/`nonce` trong cookie ký 10 phút, chỉ nhận khi Google báo `email_verified`, liên kết theo mã tài khoản Google (`sub`). Giáo viên tự đăng ký; **học sinh chỉ vào được bằng đúng email giáo viên đã thêm và mời** (so khớp chính xác, chỉ bỏ qua hoa/thường). Email link vẫn là đường dự phòng.
+- Session: tick "đây là thiết bị của tôi" (mặc định bật): idle 30 ngày; thiết bị dùng chung: giáo viên 7 ngày, học sinh 1 ngày; tuyệt đối 90 ngày; xoay token khi đăng nhập/đổi quyền; trang "Thiết bị đang đăng nhập".
 - Magic link: 15 phút, dùng một lần, gắn với email; lời mời: 7 ngày. Link xem hóa đơn từ email là token giới hạn 1 tài nguyên, 7 ngày.
 - CSRF: `SameSite=Lax` + kiểm tra `Origin`/`Sec-Fetch-Site` cho phương thức thay đổi dữ liệu + header tuỳ chỉnh bắt buộc.
 - TOTP MFA cho giáo viên: đưa vào phase 3, thiết kế bảng sẵn từ đầu. Admin console bắt buộc MFA qua Cloudflare Access.
