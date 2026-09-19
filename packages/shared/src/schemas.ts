@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
+import { ATTENDANCE_STATUSES, INVOICE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
  * Request shapes shared by the API (which checks them) and the web app (which uses the
@@ -690,3 +690,126 @@ export interface QueueItem {
   submittedAt: string;
   isLate: boolean;
 }
+
+// --------------------------------------------------------- fee receipts (invoices, M4)
+
+export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
+
+/** A month, like "2026-09". */
+export const period = z.string().regex(/^(20\d{2})-(0[1-9]|1[0-2])$/, "Please choose a month.");
+
+const paymentText = (max: number) => z.string().trim().max(max, "This text is too long.").default("");
+/** How students pay the teacher. All of it is optional: some teachers take cash. */
+export const paymentDetailsBody = z.object({
+  payeeName: paymentText(100),
+  payeePhone: paymentText(30),
+  bankName: paymentText(100),
+  bankAccount: paymentText(50),
+  bankHolder: paymentText(100),
+  paymentNote: paymentText(500),
+});
+export type PaymentDetailsBody = z.infer<typeof paymentDetailsBody>;
+export type PaymentDetails = Required<PaymentDetailsBody>;
+
+const lineFields = {
+  /** The id of a line that already exists. Leave it out for a new line. */
+  id: z.string().max(40).optional(),
+  description: z.string().trim().min(1, "Please describe this line.").max(200, "This text is too long."),
+  quantity: z
+    .number("Please enter a number.")
+    .int("Please enter a whole number.")
+    .min(1, "Use at least 1.")
+    .max(1000, "This is too many."),
+  /** A discount is a minus number. */
+  unitPrice: z
+    .number("Please enter a number.")
+    .int("Please enter a whole number.")
+    .min(-1_000_000_000, "This price is too low.")
+    .max(1_000_000_000, "This price is too high."),
+};
+export const invoiceLineInput = z.object(lineFields);
+export const LIMITS_INVOICE = { maxLines: 30 } as const;
+
+export const createInvoiceBody = z.object({ studentId: z.string().min(1).max(40), period });
+export const generateInvoicesBody = z.object({ period });
+export const updateInvoiceBody = z.object({
+  lines: z.array(invoiceLineInput).max(LIMITS_INVOICE.maxLines, "There are too many lines."),
+  note: z.string().trim().max(2000, "This text is too long.").default(""),
+  dueDate: isoDate.nullable().default(null),
+  version: z.number().int().min(1),
+});
+export const invoiceVersionBody = z.object({ version: z.number().int().min(1) });
+export const voidInvoiceBody = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Please write why you cancel this receipt.")
+    .max(500, "This text is too long."),
+  version: z.number().int().min(1),
+});
+
+export type CreateInvoiceBody = z.infer<typeof createInvoiceBody>;
+export type UpdateInvoiceBody = z.infer<typeof updateInvoiceBody>;
+
+export interface InvoiceLine {
+  id: string;
+  /** The course a line was made from. null for a line the teacher added. */
+  courseId: string | null;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  /** quantity x unitPrice. Worked out by the server. */
+  amount: number;
+  /** The days of the lessons behind this line, in the teacher's time zone. Empty for a line the teacher added. */
+  dates: string[];
+}
+
+export interface InvoiceInfo {
+  id: string;
+  studentId: string;
+  studentName: string;
+  teacherName: string;
+  period: string;
+  /** null until the receipt is sent. */
+  number: string | null;
+  status: InvoiceStatus;
+  lines: InvoiceLine[];
+  total: number;
+  note: string;
+  dueDate: string | null;
+  sentAt: string | null;
+  paidAt: string | null;
+  voidedAt: string | null;
+  voidReason: string;
+  version: number;
+  /** Fixed once sent. For a draft it is what the teacher has now. */
+  payee: PaymentDetails;
+  /** The receipt was sent, then the attendance it was built from changed. */
+  attendanceChanged: boolean;
+}
+
+export interface InvoiceListItem {
+  id: string;
+  studentId: string;
+  studentName: string;
+  period: string;
+  number: string | null;
+  status: InvoiceStatus;
+  total: number;
+  sentAt: string | null;
+  paidAt: string | null;
+  version: number;
+}
+
+export interface InvoiceListResult {
+  period: string;
+  invoices: InvoiceListItem[];
+  /** Receipts of this month that were cancelled. */
+  cancelled: InvoiceListItem[];
+  /** Students who attended lessons this month and have no receipt yet. */
+  missing: number;
+}
+
+/** What a student sees: only receipts that were sent. */
+export type MyInvoiceItem = Omit<InvoiceListItem, "version"> & { teacherName: string };
+export type MyInvoiceDetail = Omit<InvoiceInfo, "attendanceChanged">;

@@ -2,6 +2,7 @@ import { answerBody } from "@lms/shared";
 import { Hono } from "hono";
 import { makeCtx } from "../auth/service";
 import type { AppBindings } from "../env";
+import { myInvoiceGet, myInvoiceList } from "../invoices/service";
 import { actorOf, requireStudent } from "../middleware/auth";
 import { courseGet, courseList, handIn, saveDraft, workGet, workList } from "../my/service";
 import { parseBody } from "./helpers";
@@ -36,4 +37,12 @@ my.put("/my/work/:id/draft", requireStudent, async (c) => {
 my.post("/my/work/:id/submit", requireStudent, async (c) => {
   const body = await parseBody(c, answerBody);
   return c.json({ work: await handIn(await makeCtx(c), actorOf(c), c.req.param("id"), body) });
+});
+
+my.get("/my/invoices", requireStudent, async (c) => {
+  return c.json({ invoices: await myInvoiceList(await makeCtx(c), actorOf(c)) });
+});
+
+my.get("/my/invoices/:id", requireStudent, async (c) => {
+  return c.json({ invoice: await myInvoiceGet(await makeCtx(c), actorOf(c), c.req.param("id")) });
 });
