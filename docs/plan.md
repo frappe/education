@@ -152,7 +152,7 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 | Tài liệu | CRUD, kiểm soát hiển thị | Đọc/tải tài liệu khoá đã ghi danh, đã publish |
 | Bài tập | CRUD, publish, gia hạn theo từng học sinh | Đọc bài được giao |
 | Bài nộp | Đọc, chấm, trả bài, cho nộp lại | Tạo/sửa bản nháp/nộp bài của chính mình, đọc điểm đã trả |
-| Nhận xét | CRUD (`student_visible` hoặc `private`) | Đọc nhận xét `student_visible` về mình |
+| Ghi chú và nhận xét | Ghi chú riêng trên hồ sơ học sinh (chỉ giáo viên thấy). Nhận xét cho học sinh nằm trong phản hồi khi chấm bài (M3) và ghi chú trên hóa đơn (M4), không có mục nhận xét riêng | Đọc phản hồi bài đã trả và ghi chú hóa đơn của mình |
 | Feedback buổi học | Đọc tổng hợp | Gửi (tuỳ chọn ẩn danh) |
 | Hóa đơn | CRUD khi còn nháp, gửi, đánh dấu paid/void | Đọc và tải hóa đơn của mình (khi đã gửi) |
 
@@ -320,7 +320,7 @@ Mỗi màn sẽ có đặc tả hành vi (dữ liệu, quyền, 4 trạng thái,
 |---|---|---|
 | **M0 Nền tảng** (1 tuần) | Tái cấu trúc repo (Mục 8); monorepo, Worker + D1 + R2 + Queues qua `wrangler.jsonc` 3 env; CI/CD (lint, typecheck, test, deploy staging/prod có phê duyệt, migration); security headers, logging, mã lỗi, i18n; **spike Argon2id** đo CPU; **spike Cloudflare Email Service** (kiểm chứng có gửi được từ `workers.dev` không, và cần gì để gửi thật; nếu cần tên miền thì hoãn phần gửi thử sang khi có, đo hạn mức, độ trễ, tỷ lệ vào inbox); adapter email chế độ dev + màn hình xem `email_outbox`; threat model; đặc tả hành vi các màn hình | Deploy staging tự động, `GET /api/health`, 2 spike có số đo và quyết định |
 | **M1 Tenant và xác thực** (2 tuần) | Đăng ký giáo viên + xác minh email, đăng nhập bằng link email, session, lời mời học sinh, Turnstile, rate limit, audit log, policy layer + repository scope, thiết bị đăng nhập | Suite IDOR/AuthN xanh; không có đường query thiếu tenant; cùng thông điệp khi email không tồn tại |
-| **M2 Khoá học, học sinh, buổi học, điểm danh** (2 tuần) | CRUD khoá học (PVD 4.1, 5.5), học sinh + ghi danh + import CSV, buổi học và lịch lặp, điểm danh mặc định cả lớp, nhận xét (PVD 4.5) | Quản lý 20 học sinh không lỗi; điểm danh cả lớp ≤ 3 thao tác |
+| **M2 Khoá học, học sinh, buổi học, điểm danh** (2 tuần) | CRUD khoá học (PVD 4.1, 5.5), học sinh + ghi danh + import CSV, buổi học và lịch lặp, điểm danh mặc định cả lớp | Quản lý 20 học sinh không lỗi; điểm danh cả lớp ≤ 3 thao tác |
 | **M3 Bài tập, nộp bài, chấm điểm, file** (2,5 tuần) | Upload/tải file an toàn (tài liệu, bài nộp dạng file), tài liệu khoá học, 3 loại bài tập (speaking = link video, kiểm tra link), giao bài (all/selected), máy trạng thái nộp bài, autosave nháp, thang điểm, chấm/phản hồi, "Trả bài", grade_revisions, gia hạn, "Yêu cầu nộp lại" | Nộp bài < 2 phút; deadline chốt server; bộ test upload độc hại và link độc hại xanh |
 | **M4 Hóa đơn và email** (2 tuần) | Đặc tả chi tiết hóa đơn (gồm nội dung pháp lý nếu cần) ngay đầu milestone; EmailProvider (Cloudflare Email Service) + Queue + DLQ, template email và PDF bằng plain English, tính hóa đơn tháng (chỉ buổi `attended`), số liên tục, xem trước, PDF/XLSX, gửi email kèm link an toàn, đánh dấu paid/void, cron bản nháp hóa đơn | Hóa đơn 100 học sinh < 5 phút; số hóa đơn không trùng/thủng khi chạy song song |
 | **M5 Portal học sinh, thông báo, hoàn thiện** (2 tuần) | Dashboard "Việc cần làm", điểm/nhận xét/hóa đơn/lịch, thông báo in-app + email, nhắc deadline, opt-out, PWA, a11y, xuất/xoá dữ liệu cá nhân, admin console tối thiểu (Access) | axe không lỗi nghiêm trọng; nhắc deadline không trùng lặp |

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ATTENDANCE_STATUSES, COMMENT_VISIBILITY, LIMITS, type AttendanceStatus } from "./domain";
+import { ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
  * Request shapes shared by the API (which checks them) and the web app (which uses the
@@ -344,22 +344,4 @@ export interface StudentAttendanceInfo {
     startTime: string;
     status: AttendanceStatus;
   }[];
-}
-
-// ------------------------------------------------------------------- notes (M2)
-
-export const addNoteBody = z.object({
-  body: z.string().trim().min(1, "Please write a note.").max(2000, "This note is too long."),
-  visibility: z.enum(COMMENT_VISIBILITY),
-});
-export const noteVisibilityBody = z.object({ visibility: z.enum(COMMENT_VISIBILITY) });
-
-export type AddNoteBody = z.infer<typeof addNoteBody>;
-
-export interface NoteInfo {
-  id: string;
-  body: string;
-  visibility: "student_visible" | "private";
-  authorName: string;
-  createdAt: string;
 }
