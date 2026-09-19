@@ -17,9 +17,9 @@ Milestone in brackets = when it is built.
 
 | Screen | Purpose and rules | Special states / errors |
 |---|---|---|
-| Sign up (teacher) [M1] | Name, email, password. Password at least 10 characters, checked against known leaked passwords. Bot check. Sends a verify email. | Email already used shows the same "check your email" result (no account hints). |
-| Sign in [M1] | Email and password. Bot check. | Wrong details: one message for all cases. After 5 wrong tries: locked for 15 minutes (`ACCOUNT_LOCKED`). |
-| Forgot / reset password [M1] | Ask by email, then set a new one from a one-time link. Signs out all other devices. | Link used or old: `LINK_EXPIRED` with a button to ask again. |
+| Sign up (teacher) [M1] | Name and email. Bot check. Sends a link that confirms the email and signs the person in. No password. | Email already used shows the same "check your email" result (and that person gets a sign in link). |
+| Sign in [M1] | Email only. Bot check. Sends a sign in link (works 15 minutes, once). The answer is the same for every email. | Too many asks: same quiet answer, no mail. |
+| Open the link from email [M1] | One button ("Sign in" or "Confirm my email"). The link is used up when the button is pressed. Option "this is my own device" keeps students signed in longer. | Used or old link: `LINK_EXPIRED` with a button to ask again. |
 | Verify email [M1] | Opens from the email link. | Expired link: ask again. |
 | Magic link landing (student) [M1] | Student opens the link and is signed in. Shows which teacher invited them. | Expired or used: "Ask your teacher for a new invite" (`LINK_EXPIRED`). |
 | Devices [M1] | List of signed-in devices, "Sign out" per device and "Sign out everywhere". | |

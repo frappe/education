@@ -13,44 +13,10 @@ export const verifyEmailMessage = (to: string, name: string, link: string): Emai
   text: [
     `Hi ${name},`,
     "",
-    "Thanks for joining. Please confirm your email address:",
+    "Thanks for joining. Please confirm your email address. This also signs you in:",
     link,
     "",
     "This link works for 24 hours. If you did not sign up, you can ignore this email.",
-  ].join("\n"),
-});
-
-export const alreadyHaveAccountMessage = (
-  to: string,
-  name: string,
-  signInLink: string,
-  resetLink: string,
-): EmailMessage => ({
-  kind: "account_exists",
-  to,
-  subject: "You already have an account",
-  text: [
-    `Hi ${name},`,
-    "",
-    "Someone tried to sign up with this email, but you already have an account.",
-    `Sign in here: ${signInLink}`,
-    `Forgot your password? ${resetLink}`,
-    "",
-    "If this was not you, you can ignore this email.",
-  ].join("\n"),
-});
-
-export const resetPasswordMessage = (to: string, name: string, link: string): EmailMessage => ({
-  kind: "password_reset",
-  to,
-  subject: "Reset your password",
-  text: [
-    `Hi ${name},`,
-    "",
-    "We got a request to reset your password. Choose a new one here:",
-    link,
-    "",
-    "This link works for 1 hour and only once. If you did not ask for this, you can ignore this email. Your password will not change.",
   ].join("\n"),
 });
 

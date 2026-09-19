@@ -21,7 +21,7 @@ const token = computed(() => String(route.query.token ?? ""));
 const trust = ref(false);
 
 const action = useOneClick(async () => {
-  await authApi.consumeMagicLink(token.value, trust.value);
+  await authApi.consumeSignInLink(token.value, trust.value);
   await session.load(true);
   await router.replace("/");
 });
@@ -31,7 +31,7 @@ const action = useOneClick(async () => {
   <AppPage :title="t.landingTitle" narrow>
     <template v-if="action.expired.value || !token">
       <AppAlert kind="error">{{ t.expired }}</AppAlert>
-      <AppLink to="/sign-in-link">{{ t.askAgain }}</AppLink>
+      <AppLink to="/sign-in">{{ t.askAgain }}</AppLink>
     </template>
     <template v-else>
       <p>{{ t.landingIntro }}</p>

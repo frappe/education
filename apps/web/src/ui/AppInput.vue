@@ -3,7 +3,7 @@ import { useId } from "vue";
 
 defineProps<{
   label: string;
-  type?: "text" | "email" | "password" | "number" | "date" | "tel";
+  type?: "text" | "email" | "number" | "date" | "tel";
   autocomplete?: string;
   error?: string;
   hint?: string;

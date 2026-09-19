@@ -115,8 +115,8 @@ describe("student accepts an invite", () => {
   it("lets a student sign in later with a magic link", async () => {
     const t = await createTeacher();
     const s = await createStudent(t);
-    await call("/api/auth/magic-link/request", { method: "POST", body: { email: s.email } });
-    const res = await call("/api/auth/magic-link/consume", {
+    await call("/api/auth/sign-in-link/request", { method: "POST", body: { email: s.email } });
+    const res = await call("/api/auth/sign-in-link/consume", {
       method: "POST",
       body: { token: await latestToken(s.email, "magic_link") },
     });

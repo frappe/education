@@ -2,7 +2,9 @@
 
 Results of the technical checks planned for M0 (see `docs/plan.md`, Section 7).
 
-## 1. Argon2id password hashing on Workers — DONE
+## 1. Argon2id password hashing on Workers — DONE, THEN NOT USED (there are no passwords now)
+
+> **Update:** sign in now uses only email links, so there is no password hashing at all. The Free plan gives 10 ms of CPU per request, and Argon2id needs about 150 ms, so keeping passwords would have forced the paid plan. The findings below stay here because they show why.
 
 **Question:** can we hash passwords with Argon2id inside a Worker, and how long does it take?
 
@@ -32,3 +34,17 @@ Results of the technical checks planned for M0 (see `docs/plan.md`, Section 7).
 
 - `@cloudflare/vitest-pool-workers` needs Vitest 4 (not 5). `vue-tsc` needs TypeScript 5 (not 7), so `apps/web` uses TypeScript 5 and `apps/api` uses TypeScript 7.
 - The installed workerd supports compatibility dates up to 2026-08-22, so `wrangler.jsonc` uses `2026-08-01`.
+
+## 4. CPU cost of the heaviest requests (Free plan check)
+
+Rough numbers measured on a laptop with Node (V8, close to the Workers engine). They are **not** Cloudflare numbers.
+Check the real CPU time in the Workers dashboard after the first deploy.
+
+| Work | Time |
+|---|---|
+| Check a CSV import of 200 rows (first call, cold) | about 2 ms |
+| The same, after warm up | about 0.1 to 0.5 ms |
+| Check one course | 0.005 ms |
+| Hash a session token and an IP address | 0.004 ms |
+
+The Free plan allows 10 ms of CPU per request. Waiting for the database or the email server does not count as CPU time.

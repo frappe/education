@@ -3,7 +3,6 @@
   "name": "ptv-lms",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
-  "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
 
   // The web app is built to apps/web/dist and served as static assets.

@@ -4,7 +4,6 @@
   "name": "ptv-lms-test",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
-  "compatibility_flags": ["nodejs_compat"],
   "vars": { "ENVIRONMENT": "test", "EMAIL_MODE": "dev", "APP_URL": "https://lms.test" },
   "d1_databases": [
     {

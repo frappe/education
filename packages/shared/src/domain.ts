@@ -33,9 +33,6 @@ export const DEFAULT_CURRENCY = "VND";
 export const LIMITS = {
   maxFileBytes: 25 * 1024 * 1024,
   maxLinkLength: 2048,
-  minPasswordLength: 10,
-  loginMaxFailures: 5,
-  loginLockMinutes: 15,
   magicLinkMinutes: 15,
   inviteDays: 7,
   sessionIdleDays: 7,

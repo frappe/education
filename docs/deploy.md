@@ -1,7 +1,9 @@
 # Deploy to Cloudflare
 
 Everything runs on Cloudflare with the free `*.workers.dev` address. No custom domain is needed.
-The **Workers Paid** plan is required (password hashing CPU time, Queues, Browser Rendering).
+The **Workers Free** plan is enough for a small number of users. There are no passwords to hash and no Queues.
+Limits to watch on Free: 10 ms of CPU time per request and 100,000 requests a day. After the first deploy, look at the CPU time in the
+Workers dashboard. Move to Workers Paid (5 USD a month) if requests come close to 10 ms or the daily limit.
 
 ## One-time setup (needs a Cloudflare account)
 

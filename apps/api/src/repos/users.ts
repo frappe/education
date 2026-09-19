@@ -61,9 +61,6 @@ export const markEmailVerified = (db: D1Database, userId: string): D1PreparedSta
     )
     .bind(nowIso(), userId);
 
-export const setPassword = (db: D1Database, userId: string, hash: string): D1PreparedStatement =>
-  db.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?").bind(hash, nowIso(), userId);
-
 export interface MembershipRow {
   tenant_id: string;
   tenant_name: string;

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { signUpBody } from "@lms/shared";
 import { ref } from "vue";
+import DevEmailHint from "@/components/DevEmailHint.vue";
 import { authApi } from "@/features/auth/api";
 import { useForm } from "@/features/forms/useForm";
 import { messages } from "@/messages";
-import DevEmailHint from "@/components/DevEmailHint.vue";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppInput from "@/ui/AppInput.vue";
@@ -19,7 +19,7 @@ const captcha = ref("");
 const turnstile = ref<InstanceType<typeof AppTurnstile>>();
 
 const form = useForm(
-  { name: "", email: "", password: "" },
+  { name: "", email: "" },
   {
     schema: signUpBody,
     submit: async (v) => {
@@ -42,6 +42,7 @@ const form = useForm(
       <DevEmailHint />
     </template>
     <form v-else class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
+      <p>{{ t.intro }}</p>
       <AppAlert v-if="form.formError.value" kind="error">{{ form.formError.value }}</AppAlert>
       <AppInput
         v-model="form.values.name"
@@ -55,14 +56,6 @@ const form = useForm(
         type="email"
         autocomplete="email"
         :error="form.errors.value.email"
-      />
-      <AppInput
-        v-model="form.values.password"
-        :label="c.password"
-        type="password"
-        autocomplete="new-password"
-        :hint="t.passwordHint"
-        :error="form.errors.value.password"
       />
       <AppTurnstile ref="turnstile" v-model="captcha" />
       <AppButton type="submit" :loading="form.submitting.value">{{ t.submit }}</AppButton>

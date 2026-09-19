@@ -21,7 +21,8 @@
 |---|---|
 | Hướng kiến trúc | Viết lại Cloudflare-native. Frappe Education giữ làm tài liệu tham chiếu nghiệp vụ, không mang code sang |
 | Tenancy | Mỗi giáo viên freelancer là 1 tenant. Mọi bảng có `tenant_id`, thiết kế sẵn để tách D1-per-tenant sau này |
-| Đăng nhập | Giáo viên: email + mật khẩu. Học sinh: magic link theo lời mời của giáo viên. Không SSO ở MVP |
+| Đăng nhập | **Không dùng mật khẩu.** Mọi người (giáo viên và học sinh) đăng nhập bằng link gửi qua email. Lý do: gói Cloudflare Free chỉ cho 10 mili-giây xử lý mỗi request, không đủ để băm mật khẩu an toàn; số người dùng ít nên bỏ hẳn mật khẩu cho đơn giản và dễ vận hành (không còn quên mật khẩu, đổi mật khẩu, khoá tài khoản). Không SSO ở MVP |
+| Gói Cloudflare | Chạy được trên gói **Free** (không cần Workers Paid): không băm mật khẩu, gửi email bằng SMTP hoặc dịch vụ ngoài qua `waitUntil`, không dùng Queues, hoá đơn PDF tạo ở trình duyệt hoặc bằng thư viện nhẹ. Trần Free cần theo dõi: 10 mili-giây xử lý mỗi request, 100.000 request mỗi ngày |
 | Thanh toán | MVP chỉ tạo hóa đơn PDF, giáo viên tự đánh dấu đã thanh toán (đúng phần Out of Scope trong PVD) |
 | Điểm danh và tiền | Chỉ có 2 trạng thái, hiển thị là **Attended** (`attended`, đã học) và **Absent** (`absent`, vắng mặt). Buổi nào học sinh đã học (`attended`) thì tính tiền, `absent` không tính. Không có "đi trễ", không có "vắng có phép" |
 | Ngôn ngữ giao diện | Tiếng Anh cơ bản, câu ngắn, không dùng từ khó hiểu. MVP chỉ có một ngôn ngữ (English); vẫn để chuỗi trong message catalog để thêm ngôn ngữ sau |
@@ -99,10 +100,10 @@ Một Worker phục vụ cả SPA lẫn API để **same-origin**: cookie `HttpO
 | D1 `ptv-db-{env}` | Location hint `apac`. Time Travel (PITR 30 ngày) + export đêm sang R2 backup. Ràng buộc đã kiểm tra: 10 GB/DB, 1.000 query/invocation, không có transaction tương tác nên dùng `db.batch()` cho thao tác nguyên tử |
 | R2 `ptv-files-{env}`, `ptv-backup-{env}` | Bucket private, không bật public access. Lifecycle rule: PDF cache xoá sau 30 ngày (SAD Mục 5.3) |
 | Queues `email`, `notify`, `dlq` | Retry có backoff, DLQ để điều tra |
-| Turnstile | Đăng ký, đăng nhập, quên mật khẩu, xin magic link |
+| Turnstile | Đăng ký và xin link đăng nhập |
 | Email | Binding gửi mail của Cloudflare Email Service; gửi thật cần onboard một tên miền và cấu hình SPF/DKIM/DMARC (xem dòng "Gửi email thật" ở Mục 0). Đang Beta nên chưa rõ hạn mức, đo ở M0 (xem Mục 10) |
 | Secrets | `TURNSTILE_SECRET`, `HMAC_KEY`, `ACCESS_AUD`; chỉ qua `wrangler secret` hoặc Secrets Store, không có trong repo |
-| Yêu cầu | Gói **Workers Paid** (Queues, Browser Rendering, giới hạn D1 cần cho production) |
+| Gói dịch vụ | Gói **Workers Free** là đủ cho số người dùng ít. Workers Paid (5 USD/tháng) chỉ cần khi số người dùng tăng, hoặc khi muốn Queues, Browser Rendering và Cloudflare Email Service |
 
 ### 2.3 Cấu trúc repo (monorepo pnpm)
 
@@ -119,14 +120,14 @@ legacy/         KHÔNG copy code. Frappe Education được giữ ở git tag `l
 | Chủ đề | Quyết định | Lý do |
 |---|---|---|
 | Phiên đăng nhập | Session token ngẫu nhiên 256-bit, cookie `__Host-sid`, DB chỉ lưu SHA-256 của token. Không dùng JWT | SAD cho phép cả hai; session thu hồi được ngay (đổi mật khẩu, đăng xuất mọi thiết bị) |
-| Hash mật khẩu | Argon2id (WASM, ví dụ hash-wasm), tối thiểu m=19 MiB, t=2, p=1 theo OWASP. Không dùng PBKDF2 | workerd giới hạn PBKDF2 tối đa 100.000 vòng, thấp hơn khuyến nghị OWASP. **Spike M0** để đo CPU time và cấu hình `cpu_ms` |
+| Mật khẩu | **Không có.** Đăng nhập bằng link email dùng một lần (15 phút), xác nhận email bằng link (24 giờ). Không cần hash nặng nên không vướng giới hạn CPU của gói Free | Bỏ Argon2id sau spike M0 (xem `docs/spikes.md`): chạy được nhưng cần gói Paid |
 | ID | UUIDv7/ULID ngẫu nhiên, không tự tăng | Chống dò ID |
 | Tiền | Số nguyên + `currency` (VND không có đơn vị nhỏ) | Tránh sai số float |
 | Thời gian | Lưu UTC, hiển thị theo timezone tenant/học sinh | Đúng deadline giữa các timezone |
 | Upload file | Đi qua Worker (có kiểm tra quyền, dung lượng, magic bytes, quota) rồi ghi R2 bằng binding. Tải xuống cũng qua Worker có kiểm tra quyền | Khác SAD (signed URL trực tiếp) vì kiểm soát quyền và quota nguyên tử; giới hạn 25 MB/file. Chỉ tài liệu và bài nộp dạng file; video/audio không lưu trên hệ thống, chỉ là link ngoài, giảm tải và chi phí R2 |
 | PDF hóa đơn | HTML → PDF bằng Browser Rendering, lưu cache R2. Phương án dự phòng: pdf-lib + nhúng font | Tên học sinh và giáo viên vẫn có dấu tiếng Việt nên font phải hỗ trợ đầy đủ ký tự có dấu |
 | Excel/CSV | Xuất CSV + XLSX phía Worker | PVD 4.4 yêu cầu PDF/Excel |
-| Chống spam đăng nhập | Rate Limiting binding (thô) + bảng `login_attempts` trong D1 (khoá theo tài khoản) | KV không nhất quán tức thời nên không dùng cho lockout |
+| Chống spam link | Bảng `rate_limits` trong D1 (đếm theo khoá đã băm): tối đa 5 link mỗi giờ cho một email, 10 mỗi giờ cho một kết nối, cộng 5 email mỗi giờ mỗi địa chỉ | KV không nhất quán tức thời nên không dùng |
 | Realtime | MVP dùng polling 60s + refetch khi focus. Durable Objects/WebSocket để phase sau | SAD Mục 5.4 cho phép polling |
 | Scale | Một D1 đủ cho hàng nghìn giáo viên. Mốc cảnh báo: DB > 5 GB hoặc write latency tăng → tách D1-per-tenant-group (repository đã scope theo tenant nên chuyển được) | D1 thiết kế để scale ngang bằng nhiều DB nhỏ |
 
@@ -198,7 +199,7 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 | Nhóm | Biện pháp |
 |---|---|
 | A01 Kiểm soát truy cập | Lớp policy tập trung `can(actor, action, resource)`; repository **bắt buộc** nhận `tenantId`/`actor`, không có đường truy vấn trần. Học sinh chỉ đi qua join ghi danh. Test tự sinh: mọi route × vai trò × sở hữu ⇒ mã trạng thái mong đợi. Suite chống IDOR chéo tenant chạy ở CI |
-| A02 Mật mã | TLS Full (strict), TLS ≥ 1.2, HSTS preload. Argon2id. Token (session, magic link, invite, reset) ngẫu nhiên 256-bit, chỉ lưu hash, dùng một lần khi cần, so sánh hằng thời gian |
+| A02 Mật mã | TLS Full (strict), TLS ≥ 1.2, HSTS preload. Không lưu mật khẩu. Token (session, link đăng nhập, link xác nhận, lời mời) ngẫu nhiên 256-bit, chỉ lưu hash, dùng một lần khi cần, so sánh hằng thời gian |
 | A03 Injection/XSS | Mọi truy vấn D1 dùng `prepare().bind()` có tham số, cấm ghép chuỗi SQL, chỉ một danh sách module cho phép (`repos/`, audit, rate-limit, health...) được gọi `prepare()`; test `architecture.test.ts` giữ quy tắc này và cấm ghép chuỗi SQL. Zod xác thực mọi input (body, query, params, header). Rich text: lưu văn bản/markdown, render qua sanitizer (DOMPurify). CSP nghiêm ngặt, không `unsafe-inline` |
 | A04 Thiết kế | Threat model STRIDE ở M0 (`docs/threat-model.md`), cập nhật mỗi milestone |
 | A05 Cấu hình | Header: CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (tắt micro, camera, định vị), COOP. Tách env; API token Cloudflare theo đúng quyền tối thiểu |
@@ -210,8 +211,8 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 
 ### 4.2 Xác thực và phiên
 
-- Đăng ký/đăng nhập/quên mật khẩu/xin magic link: Turnstile + rate limit theo IP và theo tài khoản. Khoá tạm sau 5 lần sai/15 phút (làm chậm luỹ tiến, không lộ tài khoản có tồn tại hay không: cùng thông điệp và thời gian phản hồi).
-- Mật khẩu ≥ 10 ký tự, kiểm tra danh sách mật khẩu bị lộ qua HIBP k-anonymity, không ép ký tự đặc biệt.
+- Đăng ký và xin link đăng nhập: Turnstile + giới hạn theo email và theo kết nối. Câu trả lời luôn giống nhau dù email có tài khoản hay không. Mail được gửi **sau khi trả lời** (`waitUntil`) nên thời gian phản hồi không lộ email nào có tài khoản.
+- Không có mật khẩu, nên không có khoá tài khoản, quên mật khẩu hay kiểm tra mật khẩu bị lộ. Độ an toàn của tài khoản bằng độ an toàn của hộp thư email (đúng như luồng "quên mật khẩu" của mọi hệ thống khác). Có thể thêm TOTP cho giáo viên sau này (v1.2).
 - Session: idle 7 ngày, tuyệt đối 30 ngày (học sinh: idle 24h nếu dùng magic link trên máy chung, có tuỳ chọn "thiết bị này tin cậy"); xoay token khi đăng nhập/đổi quyền; thu hồi toàn bộ khi đổi mật khẩu; trang "Thiết bị đang đăng nhập".
 - Magic link: 15 phút, dùng một lần, gắn với email; lời mời: 7 ngày. Link xem hóa đơn từ email là token giới hạn 1 tài nguyên, 7 ngày.
 - CSRF: `SameSite=Lax` + kiểm tra `Origin`/`Sec-Fetch-Site` cho phương thức thay đổi dữ liệu + header tuỳ chỉnh bắt buộc.
@@ -235,8 +236,8 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 
 | Hành động | Giới hạn |
 |---|---|
-| Đăng nhập sai | 5 lần / 15 phút / (tài khoản + IP) |
-| Xin magic link / reset mật khẩu | 3 lần / giờ / email |
+| Xin link đăng nhập | 5 lần / giờ / email, 10 lần / giờ / kết nối |
+| Đăng ký | 10 lần / giờ / kết nối |
 | API chung | 120 req / phút / session |
 | Upload | 20 file / phút / user |
 | Mời học sinh (tenant mới) | 50 email / ngày cho tới khi đủ điều kiện tin cậy |
@@ -273,7 +274,7 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 
 | Phân hệ | Màn |
 |---|---|
-| Chung | Đăng ký/đăng nhập giáo viên, quên/đặt lại mật khẩu, xác minh email, nhận magic link, chọn ngôn ngữ/timezone, thiết bị đăng nhập |
+| Chung | Đăng ký, đăng nhập bằng link email, xác nhận email, mở link đăng nhập, chọn ngôn ngữ/timezone, thiết bị đăng nhập |
 | Giáo viên | Wizard bắt đầu, Tổng quan (việc hôm nay, cần chấm, hóa đơn chờ), Khoá học (danh sách, chi tiết, tài liệu, buổi học), Học sinh (danh sách, hồ sơ, import CSV, lời mời), Lịch, Điểm danh, Bài tập (tạo/sửa/giao), Hàng đợi chấm, Nhận xét, Hóa đơn (kỳ, xem trước, gửi), Cài đặt (thang điểm, hồ sơ, thông báo) |
 | Học sinh | Việc cần làm, Chi tiết khoá học, Làm/nộp bài (trắc nghiệm, tự luận, speaking bằng link video), Điểm và nhận xét, Lịch học, Hóa đơn, Gửi feedback |
 | Admin | Danh sách tenant, tạm khoá, audit log |
@@ -317,7 +318,7 @@ Mỗi màn sẽ có đặc tả hành vi (dữ liệu, quyền, 4 trạng thái,
 | MS | Nội dung | Điều kiện hoàn thành |
 |---|---|---|
 | **M0 Nền tảng** (1 tuần) | Tái cấu trúc repo (Mục 8); monorepo, Worker + D1 + R2 + Queues qua `wrangler.jsonc` 3 env; CI/CD (lint, typecheck, test, deploy staging/prod có phê duyệt, migration); security headers, logging, mã lỗi, i18n; **spike Argon2id** đo CPU; **spike Cloudflare Email Service** (kiểm chứng có gửi được từ `workers.dev` không, và cần gì để gửi thật; nếu cần tên miền thì hoãn phần gửi thử sang khi có, đo hạn mức, độ trễ, tỷ lệ vào inbox); adapter email chế độ dev + màn hình xem `email_outbox`; threat model; đặc tả hành vi các màn hình | Deploy staging tự động, `GET /api/health`, 2 spike có số đo và quyết định |
-| **M1 Tenant và xác thực** (2 tuần) | Đăng ký giáo viên + xác minh email, đăng nhập, session, reset mật khẩu, lời mời/magic link học sinh, Turnstile, rate limit/lockout, audit log, policy layer + repository scope, thiết bị đăng nhập | Suite IDOR/AuthN xanh; không có đường query thiếu tenant; cùng thông điệp khi email không tồn tại |
+| **M1 Tenant và xác thực** (2 tuần) | Đăng ký giáo viên + xác minh email, đăng nhập bằng link email, session, lời mời học sinh, Turnstile, rate limit, audit log, policy layer + repository scope, thiết bị đăng nhập | Suite IDOR/AuthN xanh; không có đường query thiếu tenant; cùng thông điệp khi email không tồn tại |
 | **M2 Khoá học, học sinh, buổi học, điểm danh** (2 tuần) | CRUD khoá học (PVD 4.1, 5.5), học sinh + ghi danh + import CSV, buổi học và lịch lặp, điểm danh mặc định cả lớp, nhận xét (PVD 4.5) | Quản lý 20 học sinh không lỗi; điểm danh cả lớp ≤ 3 thao tác |
 | **M3 Bài tập, nộp bài, chấm điểm, file** (2,5 tuần) | Upload/tải file an toàn (tài liệu, bài nộp dạng file), tài liệu khoá học, 3 loại bài tập (speaking = link video, kiểm tra link), giao bài (all/selected), máy trạng thái nộp bài, autosave nháp, thang điểm, chấm/phản hồi, "Trả bài", grade_revisions, gia hạn, "Yêu cầu nộp lại" | Nộp bài < 2 phút; deadline chốt server; bộ test upload độc hại và link độc hại xanh |
 | **M4 Hóa đơn và email** (2 tuần) | Đặc tả chi tiết hóa đơn (gồm nội dung pháp lý nếu cần) ngay đầu milestone; EmailProvider (Cloudflare Email Service) + Queue + DLQ, template email và PDF bằng plain English, tính hóa đơn tháng (chỉ buổi `attended`), số liên tục, xem trước, PDF/XLSX, gửi email kèm link an toàn, đánh dấu paid/void, cron bản nháp hóa đơn | Hóa đơn 100 học sinh < 5 phút; số hóa đơn không trùng/thủng khi chạy song song |
@@ -352,7 +353,7 @@ Thao tác này làm thay đổi cấu trúc repo nên sẽ xin xác nhận lại
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Argon2id WASM vượt CPU time | Trung bình | Spike ở M0; cấu hình `cpu_ms`; phương án dự phòng scrypt/dịch vụ hash |
+| Vượt 10 mili-giây xử lý mỗi request trên gói Free (nhập CSV 200 dòng, danh sách lớn) | Thấp | Đo ước lượng: kiểm tra 200 dòng CSV khoảng 2 mili-giây lần đầu, dưới 0,5 khi đã nóng. Sau lần deploy đầu xem CPU time trong dashboard; nếu gần trần thì giảm số dòng nhập tối đa hoặc nâng lên Workers Paid |
 | D1 không có transaction tương tác | Trung bình | Thiết kế mọi thao tác nguyên tử quanh `db.batch()` và bộ đếm; test đồng thời |
 | Rò rỉ dữ liệu chéo tenant | Cao | Repository bắt buộc scope + suite IDOR ở CI + pen test |
 | Lạm dụng email (spam) | Trung bình | Xác minh email, giới hạn lời mời, rate limit, List-Unsubscribe |

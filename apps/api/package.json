@@ -12,7 +12,6 @@
   "dependencies": {
     "@hono/zod-openapi": "^1.6.3",
     "@lms/shared": "workspace:*",
-    "@noble/hashes": "^2.4.0",
     "hono": "^4.13.8",
     "zod": "^4.6.5"
   },

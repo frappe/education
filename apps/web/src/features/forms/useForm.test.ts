@@ -42,12 +42,12 @@ describe("useForm", () => {
       { email: "a@b.co" },
       {
         submit: async () => {
-          throw new ApiError("INVALID_CREDENTIALS", "The email or password is not correct.", 401);
+          throw new ApiError("FORBIDDEN", "You do not have permission to do this.", 403);
         },
       },
     );
     await form.submit();
-    expect(form.formError.value).toBe("The email or password is not correct.");
+    expect(form.formError.value).toBe("You do not have permission to do this.");
   });
 
   it("never sends twice at the same time", async () => {

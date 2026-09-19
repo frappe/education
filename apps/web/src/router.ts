@@ -12,9 +12,6 @@ export const router = createRouter({
     { path: "/", name: "home", component: () => import("@/pages/HomePage.vue") },
     { path: "/sign-up", component: () => import("@/pages/SignUpPage.vue"), meta: { guestOnly: true } },
     { path: "/sign-in", component: () => import("@/pages/SignInPage.vue"), meta: { guestOnly: true } },
-    { path: "/forgot-password", component: () => import("@/pages/ForgotPasswordPage.vue") },
-    { path: "/reset-password", component: () => import("@/pages/ResetPasswordPage.vue") },
-    { path: "/sign-in-link", component: () => import("@/pages/SignInLinkPage.vue") },
     // Opened from an email. Public, and each one needs a button press to use the link.
     { path: "/verify-email", component: () => import("@/pages/VerifyEmailPage.vue") },
     { path: "/magic-link", component: () => import("@/pages/MagicLinkPage.vue") },

@@ -1,25 +1,24 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import {
-  GOOD_PASSWORD,
   call,
   createTeacher,
   emailsTo,
   latestToken,
-  pwnedPasswords,
   randomIp,
+  signInWithLink,
   turnstileAnswer,
   uniqueEmail,
 } from "./helpers";
 
 const signUp = (email: string, extra: Record<string, unknown> = {}) =>
-  call("/api/auth/sign-up", {
-    method: "POST",
-    body: { name: "Anna", email, password: GOOD_PASSWORD, ...extra },
-  });
+  call("/api/auth/sign-up", { method: "POST", body: { name: "Anna", email, ...extra } });
+const requestLink = (email: string, ip?: string) =>
+  call("/api/auth/sign-in-link/request", { method: "POST", ip, body: { email } });
+const kinds = async (email: string) => (await emailsTo(email)).map((e) => e.kind);
 
 describe("sign up", () => {
-  it("creates an unconfirmed teacher with their own tenant and sends a confirm email", async () => {
+  it("creates an unconfirmed teacher with their own tenant and sends one confirm email", async () => {
     const email = uniqueEmail();
     const res = await signUp(email);
     expect(res.status).toBe(202);
@@ -27,27 +26,46 @@ describe("sign up", () => {
       "SELECT id, email_verified_at, password_hash FROM users WHERE email = ?",
     )
       .bind(email)
-      .first<{ id: string; email_verified_at: string | null; password_hash: string }>();
+      .first<{ id: string; email_verified_at: string | null; password_hash: string | null }>();
     expect(user?.email_verified_at).toBeNull();
-    expect(user?.password_hash).toMatch(/^\$argon2id\$/);
+    expect(user?.password_hash).toBeNull();
     const m = await env.DB.prepare("SELECT role FROM memberships WHERE user_id = ?")
       .bind(user!.id)
       .all<{ role: string }>();
     expect(m.results).toEqual([{ role: "teacher" }]);
-    expect((await emailsTo(email)).map((e) => e.kind)).toEqual(["verify_email"]);
+    expect(await kinds(email)).toEqual(["verify_email"]);
   });
 
   it("gives the same answer for a new and an already used email (no account guessing)", async () => {
-    const email = uniqueEmail();
-    const first = await signUp(email);
-    const second = await signUp(email);
-    expect(second.status).toBe(first.status);
-    expect(second.json).toEqual(first.json);
-    expect((await emailsTo(email)).map((e) => e.kind)).toEqual(["verify_email", "account_exists"]);
+    const t = await createTeacher();
+    const fresh = uniqueEmail();
+    const a = await signUp(fresh);
+    const b = await signUp(t.email);
+    expect(b.status).toBe(a.status);
+    expect(b.json).toEqual(a.json);
     const count = await env.DB.prepare("SELECT COUNT(*) AS n FROM users WHERE email = ?")
-      .bind(email)
+      .bind(t.email)
       .first<{ n: number }>();
     expect(count?.n).toBe(1);
+  });
+
+  it("sends a sign in link to someone who signs up again, and a new confirm link if still unconfirmed", async () => {
+    const t = await createTeacher();
+    await signUp(t.email);
+    expect((await kinds(t.email)).at(-1)).toBe("magic_link");
+
+    const email = uniqueEmail();
+    await signUp(email);
+    const first = await latestToken(email, "verify_email");
+    await signUp(email);
+    const second = await latestToken(email, "verify_email");
+    expect(second).not.toBe(first);
+    expect((await call("/api/auth/verify-email", { method: "POST", body: { token: first } })).status).toBe(
+      410,
+    );
+    expect((await call("/api/auth/verify-email", { method: "POST", body: { token: second } })).status).toBe(
+      200,
+    );
   });
 
   it("treats emails as case-insensitive and trims spaces", async () => {
@@ -60,31 +78,29 @@ describe("sign up", () => {
     expect(count?.n).toBe(1);
   });
 
-  it("refuses short passwords, very long passwords and bad emails with field errors", async () => {
-    const short = await signUp(uniqueEmail(), { password: "short" });
-    expect(short.status).toBe(400);
-    expect(short.json.error.fields.password).toMatch(/at least 10/);
-    const long = await signUp(uniqueEmail(), { password: "x".repeat(129) });
-    expect(long.status).toBe(400);
-    const badEmail = await signUp("not-an-email");
-    expect(badEmail.status).toBe(400);
-    expect(badEmail.json.error.fields.email).toBeDefined();
-  });
-
-  it("refuses a password found in a data leak", async () => {
-    pwnedPasswords.add("Password123456");
-    const res = await signUp(uniqueEmail(), { password: "Password123456" });
-    expect(res.status).toBe(400);
-    expect(res.json.error.fields.password).toMatch(/data leak/);
-  });
-
-  it("refuses malformed JSON", async () => {
-    const res = await call("/api/auth/sign-up", {
+  it("refuses a missing name and a bad email with field errors, and malformed JSON", async () => {
+    const noName = await call("/api/auth/sign-up", {
+      method: "POST",
+      body: { name: "  ", email: uniqueEmail() },
+    });
+    expect(noName.status).toBe(400);
+    expect(noName.json.error.fields.name).toBeDefined();
+    const bad = await signUp("not-an-email");
+    expect(bad.json.error.fields.email).toBeDefined();
+    const broken = await call("/api/auth/sign-up", {
       method: "POST",
       headers: { "content-type": "application/json" },
     });
-    expect(res.status).toBe(400);
-    expect(res.json.error.code).toBe("VALIDATION_FAILED");
+    expect(broken.json.error.code).toBe("VALIDATION_FAILED");
+  });
+
+  it("ignores a password sent by an old client (nothing is stored)", async () => {
+    const email = uniqueEmail();
+    expect((await signUp(email, { password: "whatever-123456" })).status).toBe(202);
+    const row = await env.DB.prepare("SELECT password_hash FROM users WHERE email = ?")
+      .bind(email)
+      .first<{ password_hash: string | null }>();
+    expect(row?.password_hash).toBeNull();
   });
 
   it("limits sign ups from one address", async () => {
@@ -92,13 +108,8 @@ describe("sign up", () => {
     const statuses: number[] = [];
     for (let i = 0; i < 12; i++) {
       statuses.push(
-        (
-          await call("/api/auth/sign-up", {
-            method: "POST",
-            ip,
-            body: { name: "A", email: uniqueEmail(), password: GOOD_PASSWORD },
-          })
-        ).status,
+        (await call("/api/auth/sign-up", { method: "POST", ip, body: { name: "A", email: uniqueEmail() } }))
+          .status,
       );
     }
     expect(statuses.filter((s) => s === 429).length).toBe(2);
@@ -112,7 +123,6 @@ describe("confirm email", () => {
     const token = await latestToken(email, "verify_email");
     const ok = await call("/api/auth/verify-email", { method: "POST", body: { token } });
     expect(ok.status).toBe(200);
-    expect(ok.cookie).toBeDefined();
     const me = await call("/api/me", { cookie: ok.cookie });
     expect(me.json.user).toMatchObject({ email, emailVerified: true });
     const again = await call("/api/auth/verify-email", { method: "POST", body: { token } });
@@ -121,20 +131,19 @@ describe("confirm email", () => {
   });
 
   it("refuses a wrong or expired token", async () => {
-    const wrong = await call("/api/auth/verify-email", { method: "POST", body: { token: "x".repeat(43) } });
-    expect(wrong.status).toBe(410);
-
+    expect(
+      (await call("/api/auth/verify-email", { method: "POST", body: { token: "x".repeat(43) } })).status,
+    ).toBe(410);
     const email = uniqueEmail();
     await signUp(email);
     const token = await latestToken(email, "verify_email");
     await env.DB.prepare("UPDATE auth_tokens SET expires_at = '2000-01-01T00:00:00.000Z' WHERE email = ?")
       .bind(email)
       .run();
-    const expired = await call("/api/auth/verify-email", { method: "POST", body: { token } });
-    expect(expired.status).toBe(410);
+    expect((await call("/api/auth/verify-email", { method: "POST", body: { token } })).status).toBe(410);
   });
 
-  it("lets only one of two simultaneous clicks win", async () => {
+  it("lets only one of several simultaneous clicks win", async () => {
     const email = uniqueEmail();
     await signUp(email);
     const token = await latestToken(email, "verify_email");
@@ -145,57 +154,110 @@ describe("confirm email", () => {
   });
 });
 
-describe("send the confirm email again", () => {
-  it("sends a new link to someone who has not confirmed, and the old link stops working", async () => {
-    const email = uniqueEmail();
-    await signUp(email);
-    const first = await latestToken(email, "verify_email");
-    const res = await call("/api/auth/verify-email/resend", { method: "POST", body: { email } });
-    expect(res.status).toBe(202);
-    const second = await latestToken(email, "verify_email");
-    expect(second).not.toBe(first);
-    expect((await call("/api/auth/verify-email", { method: "POST", body: { token: first } })).status).toBe(
-      410,
-    );
-    expect((await call("/api/auth/verify-email", { method: "POST", body: { token: second } })).status).toBe(
-      200,
-    );
-  });
-
-  it("says the same for confirmed, unknown and unconfirmed emails, and mails only the last", async () => {
+describe("sign in with an email link", () => {
+  it("gives the same answer for known and unknown emails, and mails only known ones", async () => {
     const t = await createTeacher();
     const unknown = uniqueEmail();
-    const a = await call("/api/auth/verify-email/resend", { method: "POST", body: { email: t.email } });
-    const b = await call("/api/auth/verify-email/resend", { method: "POST", body: { email: unknown } });
-    expect(a.json).toEqual(b.json);
-    expect(a.status).toBe(b.status);
-    expect((await emailsTo(t.email)).filter((e) => e.kind === "verify_email").length).toBe(1);
+    const a = await requestLink(t.email);
+    const b = await requestLink(unknown);
+    expect(a.status).toBe(202);
+    expect(b.status).toBe(a.status);
+    expect(b.json).toEqual(a.json);
+    expect((await kinds(t.email)).includes("magic_link")).toBe(true);
     expect(await emailsTo(unknown)).toEqual([]);
   });
-});
 
-describe("sign in", () => {
-  it("works with the right password and sets a safe cookie", async () => {
+  it("signs a person in once, with a safe cookie", async () => {
     const t = await createTeacher();
-    const res = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    expect(res.status).toBe(200);
-    expect(res.setCookie).toMatch(/HttpOnly/i);
-    expect(res.setCookie).toMatch(/SameSite=Lax/i);
-    expect(res.setCookie).toMatch(/Path=\//);
-    const me = await call("/api/me", { cookie: res.cookie });
-    expect(me.status).toBe(200);
-    expect(me.json.memberships[0].role).toBe("teacher");
+    await requestLink(t.email);
+    const token = await latestToken(t.email, "magic_link");
+    const ok = await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token } });
+    expect(ok.status).toBe(200);
+    expect(ok.setCookie).toMatch(/HttpOnly/i);
+    expect(ok.setCookie).toMatch(/SameSite=Lax/i);
+    expect(ok.setCookie).toMatch(/Path=\//);
+    expect((await call("/api/me", { cookie: ok.cookie })).json.memberships[0].role).toBe("teacher");
+    expect((await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token } })).status).toBe(
+      410,
+    );
+  });
+
+  it("lets only one of several simultaneous clicks win", async () => {
+    const t = await createTeacher();
+    await requestLink(t.email);
+    const token = await latestToken(t.email, "magic_link");
+    const results = await Promise.all(
+      [1, 2, 3].map(() => call("/api/auth/sign-in-link/consume", { method: "POST", body: { token } })),
+    );
+    expect(results.filter((r) => r.status === 200).length).toBe(1);
+  });
+
+  it("expires after 15 minutes", async () => {
+    const t = await createTeacher();
+    await requestLink(t.email);
+    const token = await latestToken(t.email, "magic_link");
+    await env.DB.prepare(
+      "UPDATE auth_tokens SET expires_at = '2000-01-01T00:00:00.000Z' WHERE email = ? AND kind = 'magic_link'",
+    )
+      .bind(t.email)
+      .run();
+    expect((await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token } })).status).toBe(
+      410,
+    );
+  });
+
+  it("a newer link replaces the older one", async () => {
+    const t = await createTeacher();
+    await requestLink(t.email);
+    const first = await latestToken(t.email, "magic_link");
+    await requestLink(t.email);
+    const second = await latestToken(t.email, "magic_link");
+    expect(second).not.toBe(first);
+    expect(
+      (await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token: first } })).status,
+    ).toBe(410);
+    expect(
+      (await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token: second } })).status,
+    ).toBe(200);
+  });
+
+  it("sends the confirm link, not a sign in link, to someone who has not confirmed yet", async () => {
+    const email = uniqueEmail();
+    await signUp(email);
+    await requestLink(email);
+    expect(await kinds(email)).toEqual(["verify_email", "verify_email"]);
+  });
+
+  it("gives a new session token every time (no session fixation), and stores only a hash", async () => {
+    const t = await createTeacher();
+    const a = await signInWithLink(t.email);
+    const b = await signInWithLink(t.email);
+    expect(new Set([a, b, t.cookie]).size).toBe(3);
+    const token = a.split("=")[1]!;
+    const rows = await env.DB.prepare("SELECT token_hash FROM sessions WHERE user_id = ?")
+      .bind(t.userId)
+      .all<{ token_hash: string }>();
+    for (const r of rows.results) expect(r.token_hash).not.toContain(token);
   });
 
   it("uses the __Host- cookie with Secure outside local and test", async () => {
     const t = await createTeacher();
-    const res = await call("/api/auth/sign-in", {
+    const config = {
+      ENVIRONMENT: "staging",
+      HMAC_KEY: "k",
+      TURNSTILE_SECRET: "s",
+      APP_URL: "https://x.workers.dev",
+    } as const;
+    await call("/api/auth/sign-in-link/request", {
       method: "POST",
-      body: { email: t.email, password: t.password, captcha: "ok" },
-      env: { ENVIRONMENT: "staging", HMAC_KEY: "k", TURNSTILE_SECRET: "s", APP_URL: "https://x.workers.dev" },
+      env: config,
+      body: { email: t.email, captcha: "ok" },
+    });
+    const token = await latestToken(t.email, "magic_link");
+    const res = await call("/api/auth/sign-in-link/consume", {
+      method: "POST",
+      env: config,
+      body: { token },
     });
     expect(res.status).toBe(200);
     expect(res.setCookie).toMatch(/^__Host-sid=/);
@@ -203,239 +265,142 @@ describe("sign in", () => {
     expect(res.setCookie).not.toMatch(/Domain=/i);
   });
 
-  it("stores only a hash of the session token", async () => {
+  it("limits how many links one address can ask for (5 an hour) and how many one connection can ask for", async () => {
     const t = await createTeacher();
-    const token = t.cookie.split("=")[1]!;
-    const rows = await env.DB.prepare("SELECT token_hash FROM sessions WHERE user_id = ?")
-      .bind(t.userId)
-      .all<{ token_hash: string }>();
-    expect(rows.results.length).toBeGreaterThan(0);
-    for (const r of rows.results) expect(r.token_hash).not.toContain(token);
-  });
+    for (let i = 0; i < 8; i++) await requestLink(t.email);
+    expect((await emailsTo(t.email)).filter((e) => e.kind === "magic_link").length).toBeLessThanOrEqual(5);
 
-  it("gives a new session token every time (no session fixation)", async () => {
-    const t = await createTeacher();
-    const a = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    const b = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    expect(a.cookie).not.toBe(b.cookie);
-    expect(a.cookie).not.toBe(t.cookie);
-  });
-
-  it("gives the same answer for a wrong password and an unknown email", async () => {
-    const t = await createTeacher();
-    const wrong = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: "wrong-password-1" },
-    });
-    const unknown = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: uniqueEmail(), password: "wrong-password-1" },
-    });
-    expect(wrong.status).toBe(401);
-    expect(unknown.status).toBe(401);
-    expect(wrong.json.error.code).toBe(unknown.json.error.code);
-    expect(wrong.json.error.message).toBe(unknown.json.error.message);
-  });
-
-  it("does the slow password work for an unknown email too, so timing shows nothing", async () => {
-    const time = async () => {
-      const t0 = performance.now();
-      await call("/api/auth/sign-in", {
-        method: "POST",
-        body: { email: uniqueEmail(), password: "wrong-password-1" },
-      });
-      return performance.now() - t0;
-    };
-    // A full Argon2id hash takes about 100 ms or more. Returning early would take a few ms.
-    // The fastest of three tries is used, so a busy machine cannot make this test fail by chance.
-    const fastest = Math.min(await time(), await time(), await time());
-    expect(fastest).toBeGreaterThan(40);
-  });
-
-  it("does not sign in before the email is confirmed, but only says so after the right password", async () => {
-    const email = uniqueEmail();
-    await signUp(email);
-    const right = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email, password: GOOD_PASSWORD },
-    });
-    expect(right.status).toBe(403);
-    expect(right.json.error.code).toBe("EMAIL_NOT_VERIFIED");
-    const wrong = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email, password: "wrong-password-1" },
-    });
-    expect(wrong.json.error.code).toBe("INVALID_CREDENTIALS");
-  });
-
-  it("locks after 5 wrong tries, even for the right password, and does not lock other places", async () => {
-    const t = await createTeacher();
     const ip = randomIp();
-    for (let i = 0; i < 5; i++) {
-      const r = await call("/api/auth/sign-in", {
-        method: "POST",
-        ip,
-        body: { email: t.email, password: "wrong-password-1" },
-      });
-      expect(r.status).toBe(401);
-    }
-    const locked = await call("/api/auth/sign-in", {
-      method: "POST",
-      ip,
-      body: { email: t.email, password: t.password },
-    });
-    expect(locked.status).toBe(429);
-    expect(locked.json.error.code).toBe("ACCOUNT_LOCKED");
-    // The real owner on another connection is not locked out by a stranger's guesses.
-    const other = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    expect(other.status).toBe(200);
+    for (let i = 0; i < 12; i++) await requestLink(uniqueEmail(), ip);
+    const extra = await createTeacher();
+    await requestLink(extra.email, ip); // this connection asked too many times: still the same quiet answer
+    expect((await emailsTo(extra.email)).filter((e) => e.kind === "magic_link").length).toBe(0);
   });
 
-  it("locks unknown emails the same way, so the lock never shows if an account exists", async () => {
-    const email = uniqueEmail();
-    const ip = randomIp();
-    for (let i = 0; i < 5; i++)
-      await call("/api/auth/sign-in", { method: "POST", ip, body: { email, password: "wrong-password-1" } });
-    const res = await call("/api/auth/sign-in", {
-      method: "POST",
-      ip,
-      body: { email, password: "wrong-password-1" },
-    });
-    expect(res.json.error.code).toBe("ACCOUNT_LOCKED");
-  });
-
-  it("does not count the lock counters by raw email or IP", async () => {
-    const email = uniqueEmail();
-    const ip = "203.0.113.77";
-    await call("/api/auth/sign-in", { method: "POST", ip, body: { email, password: "wrong-password-1" } });
-    const keys = await env.DB.prepare("SELECT key FROM rate_limits").all<{ key: string }>();
-    for (const k of keys.results) {
-      expect(k.key).not.toContain(email);
-      expect(k.key).not.toContain(ip);
-    }
-  });
-
-  it("clears the wrong-try counter after a good sign in", async () => {
+  it("refuses a disabled account, and a teacher whose tenant is paused", async () => {
     const t = await createTeacher();
-    const ip = randomIp();
-    for (let i = 0; i < 4; i++)
-      await call("/api/auth/sign-in", {
-        method: "POST",
-        ip,
-        body: { email: t.email, password: "wrong-password-1" },
-      });
+    await requestLink(t.email);
+    const token = await latestToken(t.email, "magic_link");
+    await env.DB.prepare("UPDATE users SET disabled_at = ? WHERE id = ?")
+      .bind(new Date().toISOString(), t.userId)
+      .run();
     expect(
-      (
-        await call("/api/auth/sign-in", {
-          method: "POST",
-          ip,
-          body: { email: t.email, password: t.password },
-        })
-      ).status,
-    ).toBe(200);
-    for (let i = 0; i < 4; i++) {
-      expect(
-        (
-          await call("/api/auth/sign-in", {
-            method: "POST",
-            ip,
-            body: { email: t.email, password: "wrong-password-1" },
-          })
-        ).status,
-      ).toBe(401);
-    }
+      (await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token } })).json.error.code,
+    ).toBe("ACCOUNT_PAUSED");
+    expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401); // an open session stops at once
+
+    const u = await createTeacher();
+    await requestLink(u.email);
+    const token2 = await latestToken(u.email, "magic_link");
+    await env.DB.prepare("UPDATE tenants SET status = 'suspended' WHERE id = ?").bind(u.tenantId).run();
+    expect(
+      (await call("/api/auth/sign-in-link/consume", { method: "POST", body: { token: token2 } })).json.error
+        .code,
+    ).toBe("ACCOUNT_PAUSED");
   });
 
-  it("upgrades an old, weaker password hash at sign in", async () => {
-    const t = await createTeacher();
-    const weak =
-      "$argon2id$v=19$m=4096,t=1,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    // Replace with a real weak hash of the same password.
-    const { argon2idAsync } = await import("@noble/hashes/argon2.js");
-    const salt = new Uint8Array(16).fill(7);
-    const raw = await argon2idAsync(t.password, salt, { m: 4096, t: 1, p: 1, dkLen: 32 });
-    const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u)).replace(/=+$/, "");
-    const stored = `$argon2id$v=19$m=4096,t=1,p=1$${b64(salt)}$${b64(raw)}`;
-    expect(stored).not.toBe(weak);
-    await env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(stored, t.userId).run();
-    const res = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    expect(res.status).toBe(200);
-    const row = await env.DB.prepare("SELECT password_hash FROM users WHERE id = ?")
-      .bind(t.userId)
-      .first<{ password_hash: string }>();
-    expect(row?.password_hash).toContain("m=19456,t=2,p=1");
-  });
-
-  it("refuses a disabled account", async () => {
+  it("does not send a link to a disabled account", async () => {
     const t = await createTeacher();
     await env.DB.prepare("UPDATE users SET disabled_at = ? WHERE id = ?")
       .bind(new Date().toISOString(), t.userId)
       .run();
-    const res = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    expect(res.json.error.code).toBe("ACCOUNT_PAUSED");
-    // and an existing session stops working at once
-    expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
+    const before = (await kinds(t.email)).length;
+    await requestLink(t.email);
+    expect((await kinds(t.email)).length).toBe(before);
   });
 
-  it("refuses a teacher whose tenant is paused", async () => {
+  it("has no password sign in any more", async () => {
     const t = await createTeacher();
-    await env.DB.prepare("UPDATE tenants SET status = 'suspended' WHERE id = ?").bind(t.tenantId).run();
-    const res = await call("/api/auth/sign-in", {
+    for (const path of [
+      "/api/auth/sign-in",
+      "/api/auth/password/forgot",
+      "/api/auth/password/reset",
+      "/api/auth/password/change",
+    ]) {
+      expect(
+        (await call(path, { method: "POST", cookie: t.cookie, body: { email: t.email, password: "x" } }))
+          .status,
+      ).toBe(404);
+    }
+  });
+});
+
+describe("emails are sent after the answer", () => {
+  it("hands the sending to waitUntil, so the time it takes cannot show who has an account", async () => {
+    const t = await createTeacher();
+    const before = (await emailsTo(t.email)).length;
+    const pending: Promise<unknown>[] = [];
+    const known = await call("/api/auth/sign-in-link/request", {
       method: "POST",
-      body: { email: t.email, password: t.password },
+      waitUntil: pending,
+      body: { email: t.email },
     });
-    expect(res.json.error.code).toBe("ACCOUNT_PAUSED");
+    expect(known.status).toBe(202);
+    expect(pending.length).toBe(1);
+    await Promise.all(pending);
+    expect((await emailsTo(t.email)).length).toBe(before + 1);
+
+    const nothing: Promise<unknown>[] = [];
+    await call("/api/auth/sign-in-link/request", {
+      method: "POST",
+      waitUntil: nothing,
+      body: { email: uniqueEmail() },
+    });
+    expect(nothing.length).toBe(0);
+  });
+
+  it("a failing email service does not turn into an error for the person", async () => {
+    const t = await createTeacher();
+    const pending: Promise<unknown>[] = [];
+    const res = await call("/api/auth/sign-in-link/request", {
+      method: "POST",
+      waitUntil: pending,
+      env: { EMAIL_MODE: "cloudflare" }, // not available yet: sending will fail
+      body: { email: t.email },
+    });
+    expect(res.status).toBe(202);
+    await expect(Promise.all(pending)).resolves.toBeDefined(); // the failure is logged, not thrown
   });
 });
 
 describe("bot check (Turnstile)", () => {
   const strict = { TURNSTILE_SECRET: "test-secret" };
 
-  it("is required when a secret is set", async () => {
-    const res = await call("/api/auth/sign-in", {
+  it("is required when a secret is set, on sign up and on asking for a link", async () => {
+    const link = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       env: strict,
-      body: { email: uniqueEmail(), password: "x" },
+      body: { email: uniqueEmail() },
     });
-    expect(res.status).toBe(400);
-    expect(res.json.error.code).toBe("CAPTCHA_FAILED");
+    expect(link.json.error.code).toBe("CAPTCHA_FAILED");
+    const up = await call("/api/auth/sign-up", {
+      method: "POST",
+      env: strict,
+      body: { name: "A", email: uniqueEmail() },
+    });
+    expect(up.json.error.code).toBe("CAPTCHA_FAILED");
   });
 
   it("passes when the answer is good and fails when it is not", async () => {
     turnstileAnswer.success = true;
-    const good = await call("/api/auth/sign-in", {
+    const good = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       env: strict,
-      body: { email: uniqueEmail(), password: "x", captcha: "tok" },
+      body: { email: uniqueEmail(), captcha: "tok" },
     });
-    expect(good.json.error.code).toBe("INVALID_CREDENTIALS"); // got past the bot check
+    expect(good.status).toBe(202);
     turnstileAnswer.success = false;
-    const bad = await call("/api/auth/sign-in", {
+    const bad = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       env: strict,
-      body: { email: uniqueEmail(), password: "x", captcha: "tok" },
+      body: { email: uniqueEmail(), captcha: "tok" },
     });
     expect(bad.json.error.code).toBe("CAPTCHA_FAILED");
     turnstileAnswer.success = true;
   });
 
   it("cannot be switched off by leaving the secret out in staging or production", async () => {
-    const res = await call("/api/auth/sign-in", {
+    const res = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       env: {
         ENVIRONMENT: "production",
@@ -443,14 +408,15 @@ describe("bot check (Turnstile)", () => {
         APP_URL: "https://x.workers.dev",
         EMAIL_MODE: "cloudflare",
       },
-      body: { email: uniqueEmail(), password: "x" },
+      body: { email: uniqueEmail() },
     });
     expect(res.status).toBe(500);
   });
 });
 
-describe("safe defaults in production", () => {
-  it("refuses dev email mode", async () => {
+describe("safe defaults", () => {
+  it("dev email mode is refused in production (nothing is stored or sent)", async () => {
+    const email = uniqueEmail();
     const res = await call("/api/auth/sign-up", {
       method: "POST",
       env: {
@@ -460,14 +426,14 @@ describe("safe defaults in production", () => {
         TURNSTILE_SECRET: "s",
         APP_URL: "https://x.workers.dev",
       },
-      body: { name: "A", email: uniqueEmail(), password: GOOD_PASSWORD, captcha: "ok" },
+      body: { name: "A", email, captcha: "ok" },
     });
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(202); // same answer as always
+    expect(await emailsTo(email)).toEqual([]); // but no email was written
   });
 
   it("does not show the dev outbox outside local and test", async () => {
-    const res = await call("/api/dev/outbox", { env: { ENVIRONMENT: "staging" } });
-    expect(res.status).toBe(404);
+    expect((await call("/api/dev/outbox", { env: { ENVIRONMENT: "staging" } })).status).toBe(404);
   });
 
   it("builds email links from APP_URL, not from the Host header", async () => {
@@ -475,7 +441,7 @@ describe("safe defaults in production", () => {
     await call("/api/auth/sign-up", {
       method: "POST",
       headers: { host: "evil.example", "x-forwarded-host": "evil.example" },
-      body: { name: "A", email, password: GOOD_PASSWORD },
+      body: { name: "A", email },
     });
     const mail = (await emailsTo(email))[0]!;
     expect(mail.body_text).toContain("https://lms.test/verify-email?token=");
@@ -497,9 +463,9 @@ describe("sessions", () => {
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
   });
 
-  it("ends after being idle too long", async () => {
+  it("ends after being idle too long (teachers: 7 days)", async () => {
     const t = await createTeacher();
-    const old = new Date(Date.now() - 8 * 86_400_000).toISOString(); // teachers: 7 days idle
+    const old = new Date(Date.now() - 8 * 86_400_000).toISOString();
     await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE user_id = ?").bind(old, t.userId).run();
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
   });
@@ -514,10 +480,7 @@ describe("sessions", () => {
 
   it("lists devices, marks the current one, and can end another one", async () => {
     const t = await createTeacher();
-    const second = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
+    const second = await signInWithLink(t.email);
     const list = await call("/api/auth/sessions", { cookie: t.cookie });
     expect(list.json.sessions.length).toBe(2);
     expect(list.json.sessions.filter((s: { current: boolean }) => s.current).length).toBe(1);
@@ -525,7 +488,7 @@ describe("sessions", () => {
     expect(
       (await call(`/api/auth/sessions/${other.id}`, { method: "DELETE", cookie: t.cookie })).status,
     ).toBe(200);
-    expect((await call("/api/me", { cookie: second.cookie })).status).toBe(401);
+    expect((await call("/api/me", { cookie: second })).status).toBe(401);
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(200);
   });
 
@@ -533,221 +496,60 @@ describe("sessions", () => {
     const a = await createTeacher();
     const b = await createTeacher();
     const listB = await call("/api/auth/sessions", { cookie: b.cookie });
-    const res = await call(`/api/auth/sessions/${listB.json.sessions[0].id}`, {
-      method: "DELETE",
-      cookie: a.cookie,
-    });
-    expect(res.status).toBe(404);
+    expect(
+      (await call(`/api/auth/sessions/${listB.json.sessions[0].id}`, { method: "DELETE", cookie: a.cookie }))
+        .status,
+    ).toBe(404);
     expect((await call("/api/me", { cookie: b.cookie })).status).toBe(200);
   });
 
   it("can end every session at once", async () => {
     const t = await createTeacher();
-    const second = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
+    const second = await signInWithLink(t.email);
     await call("/api/auth/sign-out-everywhere", { method: "POST", cookie: t.cookie });
     expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
-    expect((await call("/api/me", { cookie: second.cookie })).status).toBe(401);
-  });
-});
-
-describe("reset password", () => {
-  it("says the same thing for known and unknown emails, and only mails known ones", async () => {
-    const t = await createTeacher();
-    const known = await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const unknownEmail = uniqueEmail();
-    const unknown = await call("/api/auth/password/forgot", {
-      method: "POST",
-      body: { email: unknownEmail },
-    });
-    expect(known.status).toBe(202);
-    expect(unknown.status).toBe(202);
-    expect(known.json).toEqual(unknown.json);
-    expect((await emailsTo(t.email)).some((e) => e.kind === "password_reset")).toBe(true);
-    expect(await emailsTo(unknownEmail)).toEqual([]);
-  });
-
-  it("sets a new password, ends all sessions, and works only once", async () => {
-    const t = await createTeacher();
-    await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const token = await latestToken(t.email, "password_reset");
-    const newPassword = "a-brand-new-password-7";
-    const res = await call("/api/auth/password/reset", {
-      method: "POST",
-      body: { token, password: newPassword },
-    });
-    expect(res.status).toBe(200);
-    expect((await call("/api/me", { cookie: t.cookie })).status).toBe(401);
-    expect(
-      (await call("/api/auth/sign-in", { method: "POST", body: { email: t.email, password: t.password } }))
-        .status,
-    ).toBe(401);
-    expect(
-      (await call("/api/auth/sign-in", { method: "POST", body: { email: t.email, password: newPassword } }))
-        .status,
-    ).toBe(200);
-    const again = await call("/api/auth/password/reset", {
-      method: "POST",
-      body: { token, password: "another-password-88" },
-    });
-    expect(again.status).toBe(410);
-  });
-
-  it("keeps the link alive when the new password is refused", async () => {
-    const t = await createTeacher();
-    await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const token = await latestToken(t.email, "password_reset");
-    pwnedPasswords.add("leaked-password-123");
-    const weak = await call("/api/auth/password/reset", {
-      method: "POST",
-      body: { token, password: "leaked-password-123" },
-    });
-    expect(weak.status).toBe(400);
-    const ok = await call("/api/auth/password/reset", {
-      method: "POST",
-      body: { token, password: "a-fine-new-password-5" },
-    });
-    expect(ok.status).toBe(200);
-  });
-
-  it("a newer reset link replaces the older one", async () => {
-    const t = await createTeacher();
-    await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const first = await latestToken(t.email, "password_reset");
-    await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const second = await latestToken(t.email, "password_reset");
-    expect(second).not.toBe(first);
-    expect(
-      (
-        await call("/api/auth/password/reset", {
-          method: "POST",
-          body: { token: first, password: "a-fine-new-password-5" },
-        })
-      ).status,
-    ).toBe(410);
-    expect(
-      (
-        await call("/api/auth/password/reset", {
-          method: "POST",
-          body: { token: second, password: "a-fine-new-password-5" },
-        })
-      ).status,
-    ).toBe(200);
-  });
-
-  it("limits reset requests for one email", async () => {
-    const t = await createTeacher();
-    for (let i = 0; i < 6; i++)
-      await call("/api/auth/password/forgot", { method: "POST", body: { email: t.email } });
-    const mails = (await emailsTo(t.email)).filter((e) => e.kind === "password_reset");
-    expect(mails.length).toBe(3);
-  });
-});
-
-describe("change password", () => {
-  it("needs the current password", async () => {
-    const t = await createTeacher();
-    const res = await call("/api/auth/password/change", {
-      method: "POST",
-      cookie: t.cookie,
-      body: { currentPassword: "wrong-password-1", newPassword: "a-fine-new-password-5" },
-    });
-    expect(res.status).toBe(400);
-    expect(res.json.error.fields.currentPassword).toBeDefined();
-  });
-
-  it("signs out other devices but keeps this one", async () => {
-    const t = await createTeacher();
-    const other = await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: t.password },
-    });
-    const res = await call("/api/auth/password/change", {
-      method: "POST",
-      cookie: t.cookie,
-      body: { currentPassword: t.password, newPassword: "a-fine-new-password-5" },
-    });
-    expect(res.status).toBe(200);
-    expect((await call("/api/me", { cookie: t.cookie })).status).toBe(200);
-    expect((await call("/api/me", { cookie: other.cookie })).status).toBe(401);
-  });
-});
-
-describe("magic link", () => {
-  it("signs a confirmed person in once, and only mails known confirmed addresses", async () => {
-    const t = await createTeacher();
-    const unknown = uniqueEmail();
-    const a = await call("/api/auth/magic-link/request", { method: "POST", body: { email: t.email } });
-    const b = await call("/api/auth/magic-link/request", { method: "POST", body: { email: unknown } });
-    expect(a.status).toBe(202);
-    expect(b.json).toEqual(a.json);
-    expect(await emailsTo(unknown)).toEqual([]);
-
-    const token = await latestToken(t.email, "magic_link");
-    const ok = await call("/api/auth/magic-link/consume", { method: "POST", body: { token } });
-    expect(ok.status).toBe(200);
-    expect((await call("/api/me", { cookie: ok.cookie })).status).toBe(200);
-    expect((await call("/api/auth/magic-link/consume", { method: "POST", body: { token } })).status).toBe(
-      410,
-    );
-  });
-
-  it("does not mail an address that has not confirmed its email", async () => {
-    const email = uniqueEmail();
-    await signUp(email);
-    await call("/api/auth/magic-link/request", { method: "POST", body: { email } });
-    expect((await emailsTo(email)).some((e) => e.kind === "magic_link")).toBe(false);
-  });
-
-  it("expires after its short life", async () => {
-    const t = await createTeacher();
-    await call("/api/auth/magic-link/request", { method: "POST", body: { email: t.email } });
-    const token = await latestToken(t.email, "magic_link");
-    await env.DB.prepare(
-      "UPDATE auth_tokens SET expires_at = '2000-01-01T00:00:00.000Z' WHERE email = ? AND kind = 'magic_link'",
-    )
-      .bind(t.email)
-      .run();
-    expect((await call("/api/auth/magic-link/consume", { method: "POST", body: { token } })).status).toBe(
-      410,
-    );
+    expect((await call("/api/me", { cookie: second })).status).toBe(401);
   });
 });
 
 describe("CSRF and audit", () => {
-  it("refuses a sign in from a page on another site", async () => {
-    const res = await call("/api/auth/sign-in", {
+  it("refuses a request from a page on another site", async () => {
+    const res = await call("/api/auth/sign-in-link/request", {
       method: "POST",
       noClientHeader: true,
       headers: { origin: "https://evil.example", "sec-fetch-site": "cross-site" },
-      body: { email: "a@example.com", password: "x" },
+      body: { email: "a@example.com" },
     });
     expect(res.status).toBe(403);
   });
 
-  it("writes an audit row for sign up, sign in and failed sign in, without secrets", async () => {
+  it("writes an audit row for sign up, confirm and sign in, without secrets or the full email", async () => {
     const t = await createTeacher();
-    await call("/api/auth/sign-in", {
-      method: "POST",
-      body: { email: t.email, password: "wrong-password-1" },
-    });
-    const rows = await env.DB.prepare("SELECT action, meta, ip_hash FROM audit_log WHERE actor_user_id = ?")
+    await signInWithLink(t.email);
+    const rows = await env.DB.prepare("SELECT action, meta FROM audit_log WHERE actor_user_id = ?")
       .bind(t.userId)
-      .all<{ action: string; meta: string | null; ip_hash: string | null }>();
+      .all<{ action: string; meta: string | null }>();
     const actions = rows.results.map((r) => r.action);
-    expect(actions).toContain("auth.sign_up");
-    expect(actions).toContain("auth.email_verified");
-    expect(actions).toContain("auth.sign_in_failed");
-    const dump = JSON.stringify(rows.results);
-    expect(dump).not.toContain(t.email);
-    expect(dump).not.toContain(t.password);
+    expect(actions).toEqual(
+      expect.arrayContaining(["auth.sign_up", "auth.email_verified", "auth.sign_in_link"]),
+    );
+    expect(JSON.stringify(rows.results)).not.toContain(t.email);
   });
 
   it("cannot be changed or deleted", async () => {
     await createTeacher();
     await expect(env.DB.prepare("UPDATE audit_log SET action = 'x'").run()).rejects.toThrow(/append only/);
     await expect(env.DB.prepare("DELETE FROM audit_log").run()).rejects.toThrow(/append only/);
+  });
+
+  it("keeps counters by keyed hash, never by raw email or IP address", async () => {
+    const email = uniqueEmail();
+    const ip = "203.0.113.77";
+    await requestLink(email, ip);
+    const keys = await env.DB.prepare("SELECT key FROM rate_limits").all<{ key: string }>();
+    for (const k of keys.results) {
+      expect(k.key).not.toContain(email);
+      expect(k.key).not.toContain(ip);
+    }
   });
 });

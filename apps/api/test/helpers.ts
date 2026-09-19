@@ -9,36 +9,19 @@ let counter = 0;
 export const uniqueEmail = (prefix = "user") => `${prefix}.${Date.now()}.${counter++}@example.com`;
 export const randomIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${1 + Math.floor(Math.random() * 250)}`;
-export const GOOD_PASSWORD = "correct-horse-battery-9";
 
-// ---- fake outside world: "Have I Been Pwned" and Turnstile, so tests never use the network
-export const pwnedPasswords = new Set<string>();
+// ---- fake outside world: Turnstile, so tests never use the network
 export const turnstileAnswer = { success: true };
-
-async function sha1Upper(value: string) {
-  const d = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(d), (b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .toUpperCase();
-}
 
 vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
   const url = String(input instanceof Request ? input.url : input);
-  if (url.includes("pwnedpasswords.com/range/")) {
-    const prefix = url.split("/range/")[1]!;
-    const lines: string[] = [];
-    for (const p of pwnedPasswords) {
-      const h = await sha1Upper(p);
-      if (h.startsWith(prefix)) lines.push(`${h.slice(5)}:42`);
-    }
-    lines.push("0000000000000000000000000000000000000:0"); // padding line, count 0
-    return new Response(lines.join("\r\n"));
-  }
   if (url.includes("challenges.cloudflare.com")) return Response.json(turnstileAnswer);
   throw new Error(`Unexpected network call in test: ${url}`);
 });
 
 export interface CallOptions {
+  /** Pass a list to receive the work the app hands to waitUntil (like the real runtime does). */
+  waitUntil?: Promise<unknown>[];
   method?: string;
   body?: unknown;
   cookie?: string;
@@ -68,6 +51,12 @@ export async function call(path: string, opts: CallOptions = {}): Promise<CallRe
     `https://lms.test${path}`,
     { method, headers, body: opts.body === undefined ? undefined : JSON.stringify(opts.body) },
     { ...env, ...opts.env },
+    opts.waitUntil
+      ? ({
+          waitUntil: (p: Promise<unknown>) => void opts.waitUntil!.push(p),
+          passThroughOnException() {},
+        } as unknown as ExecutionContext)
+      : undefined,
   );
   const text = await res.text();
   const setCookie = res.headers.get("set-cookie");
@@ -107,7 +96,6 @@ export async function latestToken(email: string, kind: string): Promise<string> 
 
 export interface Person {
   email: string;
-  password: string;
   cookie: string;
   userId: string;
   tenantId: string;
@@ -118,7 +106,7 @@ export async function createTeacher(name = "Test Teacher"): Promise<Person> {
   const email = uniqueEmail("teacher");
   const up = await call("/api/auth/sign-up", {
     method: "POST",
-    body: { name, email, password: GOOD_PASSWORD },
+    body: { name, email },
   });
   if (up.status !== 202) throw new Error(`sign up failed: ${JSON.stringify(up.json)}`);
   const verified = await call("/api/auth/verify-email", {
@@ -129,11 +117,23 @@ export async function createTeacher(name = "Test Teacher"): Promise<Person> {
   const me = await call("/api/me", { cookie: verified.cookie });
   return {
     email,
-    password: GOOD_PASSWORD,
     cookie: verified.cookie,
     userId: me.json.user.id,
     tenantId: me.json.memberships[0].tenantId,
   };
+}
+
+/** Signs an existing, confirmed person in with an email link and returns the session cookie. */
+export async function signInWithLink(email: string, ip?: string): Promise<string> {
+  const req = await call("/api/auth/sign-in-link/request", { method: "POST", ip, body: { email } });
+  if (req.status !== 202) throw new Error(`link request failed: ${JSON.stringify(req.json)}`);
+  const res = await call("/api/auth/sign-in-link/consume", {
+    method: "POST",
+    ip,
+    body: { token: await latestToken(email, "magic_link") },
+  });
+  if (!res.cookie) throw new Error(`no session from link: ${JSON.stringify(res.json)}`);
+  return res.cookie;
 }
 
 /** A student invited by `teacher` who accepted the invite. */
@@ -153,7 +153,6 @@ export async function createStudent(teacher: Person, name = "Test Student"): Pro
   const me = await call("/api/me", { cookie: accepted.cookie });
   return {
     email,
-    password: "",
     cookie: accepted.cookie,
     userId: me.json.user.id,
     tenantId: teacher.tenantId,

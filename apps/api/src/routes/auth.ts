@@ -1,27 +1,13 @@
 import {
-  changePasswordBody,
   consumeLinkBody,
   emailOnlyBody,
-  resetPasswordBody,
-  signInBody,
   signUpBody,
   tokenBody,
   type MeResponse,
   type SessionInfo,
 } from "@lms/shared";
 import { Hono } from "hono";
-import {
-  changePassword,
-  consumeMagicLink,
-  forgotPassword,
-  login,
-  makeCtx,
-  requestMagicLink,
-  resendVerification,
-  resetPassword,
-  signUp,
-  verifyEmail,
-} from "../auth/service";
+import { consumeSignInLink, makeCtx, requestSignInLink, signUp, verifyEmail } from "../auth/service";
 import { clearSessionCookie, setSessionCookie } from "../auth/session";
 import type { AppBindings } from "../env";
 import { AppError } from "../lib/errors";
@@ -50,47 +36,17 @@ auth.post("/auth/verify-email", async (c) => {
   return c.json({ ok: true });
 });
 
-auth.post("/auth/verify-email/resend", async (c) => {
+auth.post("/auth/sign-in-link/request", async (c) => {
   const body = await parseBody(c, emailOnlyBody);
   const ctx = await makeCtx(c);
   await verifyTurnstile(c.env, body.captcha, ctx.ip);
-  await resendVerification(ctx, body.email);
+  await requestSignInLink(ctx, body.email);
   return accepted(c);
 });
 
-auth.post("/auth/sign-in", async (c) => {
-  const body = await parseBody(c, signInBody);
-  const ctx = await makeCtx(c);
-  await verifyTurnstile(c.env, body.captcha, ctx.ip);
-  setSessionCookie(c, await login(ctx, body));
-  return c.json({ ok: true });
-});
-
-auth.post("/auth/password/forgot", async (c) => {
-  const body = await parseBody(c, emailOnlyBody);
-  const ctx = await makeCtx(c);
-  await verifyTurnstile(c.env, body.captcha, ctx.ip);
-  await forgotPassword(ctx, body.email);
-  return accepted(c);
-});
-
-auth.post("/auth/password/reset", async (c) => {
-  const body = await parseBody(c, resetPasswordBody);
-  await resetPassword(await makeCtx(c), body.token, body.password);
-  return c.json({ ok: true });
-});
-
-auth.post("/auth/magic-link/request", async (c) => {
-  const body = await parseBody(c, emailOnlyBody);
-  const ctx = await makeCtx(c);
-  await verifyTurnstile(c.env, body.captcha, ctx.ip);
-  await requestMagicLink(ctx, body.email);
-  return accepted(c);
-});
-
-auth.post("/auth/magic-link/consume", async (c) => {
+auth.post("/auth/sign-in-link/consume", async (c) => {
   const body = await parseBody(c, consumeLinkBody);
-  setSessionCookie(c, await consumeMagicLink(await makeCtx(c), body.token, body.trustDevice ?? false));
+  setSessionCookie(c, await consumeSignInLink(await makeCtx(c), body.token, body.trustDevice ?? false));
   return c.json({ ok: true });
 });
 
@@ -125,12 +81,6 @@ auth.post("/auth/sign-out-everywhere", requireAuth, async (c) => {
     auditStatement(c.env.DB, { action: "auth.sign_out_everywhere", actorUserId: actor.userId }),
   ]);
   clearSessionCookie(c);
-  return c.json({ ok: true });
-});
-
-auth.post("/auth/password/change", requireAuth, async (c) => {
-  const body = await parseBody(c, changePasswordBody);
-  await changePassword(await makeCtx(c), actorOf(c), body.currentPassword, body.newPassword);
   return c.json({ ok: true });
 });
 

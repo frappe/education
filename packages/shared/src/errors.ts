@@ -15,8 +15,6 @@ export const ERROR_CODES = {
   INTERNAL: { status: 500, message: "Something went wrong on our side. Please try again." },
 
   // Sign in
-  INVALID_CREDENTIALS: { status: 401, message: "The email or password is not correct." },
-  ACCOUNT_LOCKED: { status: 429, message: "Too many wrong tries. Please wait 15 minutes and try again." },
   LINK_EXPIRED: { status: 410, message: "This link is no longer valid. Please ask for a new one." },
   EMAIL_NOT_VERIFIED: { status: 403, message: "Please check your email and confirm your address first." },
   CAPTCHA_FAILED: { status: 400, message: "We could not check that you are a person. Please try again." },
