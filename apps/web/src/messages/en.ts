@@ -246,7 +246,7 @@ export const en = {
     title: "Student",
     save: "Save",
     saved: "Saved.",
-    note: "Private note",
+    note: "Quick reminder",
     noteHint: "Only you can see this. The student never sees it.",
     profile: "Profile",
     backToStudents: "Back to students",
@@ -414,6 +414,21 @@ export const en = {
     attended: "Attended",
     absent: "Absent",
     empty: "No attendance saved yet.",
+  },
+  notes: {
+    title: "Notes",
+    intro:
+      "Write about progress, attitude, strengths and what to work on. Notes are kept and cannot be edited.",
+    write: "New note",
+    who: "Who can see this note",
+    studentCanSee: "Student can see",
+    private: "Only me",
+    add: "Add note",
+    added: "Note added.",
+    changed: "The note is now private.",
+    makePrivate: "Make private",
+    empty: "No notes yet",
+    emptyText: "Your notes about this student will show here.",
   },
 } as const;
 
