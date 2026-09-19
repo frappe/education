@@ -159,3 +159,33 @@ export async function createStudent(teacher: Person, name = "Test Student"): Pro
     tenantId: teacher.tenantId,
   };
 }
+
+// ---------------------------------------------------------------- M2 helpers
+
+export const validCourse = (over: Record<string, unknown> = {}) => ({
+  name: "English A1",
+  description: "Beginner class",
+  pricePerLesson: 150000,
+  startDate: "2026-10-01",
+  endDate: "2026-12-31",
+  maxStudents: 10,
+  ...over,
+});
+
+/** Creates a course for this teacher and returns it. */
+export async function createCourse(teacher: Person, over: Record<string, unknown> = {}) {
+  const res = await call("/api/courses", { method: "POST", cookie: teacher.cookie, body: validCourse(over) });
+  if (res.status !== 201) throw new Error(`create course failed: ${JSON.stringify(res.json)}`);
+  return res.json.course as { id: string; version: number; status: string; name: string };
+}
+
+/** Adds a student profile (no invite) and returns it. */
+export async function addStudent(teacher: Person, over: Record<string, unknown> = {}) {
+  const res = await call("/api/students", {
+    method: "POST",
+    cookie: teacher.cookie,
+    body: { name: "Mai", email: uniqueEmail("kid"), ...over },
+  });
+  if (res.status !== 201) throw new Error(`add student failed: ${JSON.stringify(res.json)}`);
+  return res.json.student as { id: string; email: string; version: number; name: string };
+}

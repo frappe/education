@@ -20,6 +20,32 @@ export const router = createRouter({
     { path: "/magic-link", component: () => import("@/pages/MagicLinkPage.vue") },
     { path: "/accept-invite", component: () => import("@/pages/AcceptInvitePage.vue") },
     { path: "/devices", component: () => import("@/pages/DevicesPage.vue"), meta: { requiresAuth: true } },
+    { path: "/courses", component: () => import("@/pages/CoursesPage.vue"), meta: { requiresTeacher: true } },
+    {
+      path: "/courses/new",
+      component: () => import("@/pages/CourseFormPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/courses/:id",
+      component: () => import("@/pages/CourseFormPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/students",
+      component: () => import("@/pages/StudentsPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/students/import",
+      component: () => import("@/pages/StudentImportPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/students/:id",
+      component: () => import("@/pages/StudentDetailPage.vue"),
+      meta: { requiresTeacher: true },
+    },
     { path: "/dev/outbox", component: () => import("@/pages/DevOutboxPage.vue") },
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],

@@ -42,10 +42,19 @@ describe("data access rules", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("never builds SQL by joining strings", () => {
-    const offenders = files
-      .filter((f) => /\.prepare\(\s*(`[^`]*\$\{|"[^"]*"\s*\+|'[^']*'\s*\+)/.test(f.text))
-      .map((f) => f.path);
+  it("never builds SQL by joining strings (only a few fixed, named pieces are allowed)", () => {
+    // `${COLUMNS}` and `${where}` are constants written in the same file. `${placeholders(n)}` only
+    // makes "?,?,?". No text from a request can reach these.
+    const SAFE = /^(COLUMNS|where|placeholders\(chunk\.length\))$/;
+    const offenders: string[] = [];
+    for (const f of files) {
+      for (const match of f.text.matchAll(/\.prepare\(\s*`([^`]*)`/g)) {
+        for (const expr of match[1]!.matchAll(/\$\{([^}]*)\}/g)) {
+          if (!SAFE.test(expr[1]!.trim())) offenders.push(`${f.path}: \${${expr[1]}}`);
+        }
+      }
+      if (/\.prepare\(\s*("[^"]*"|'[^']*')\s*\+/.test(f.text)) offenders.push(`${f.path}: string +`);
+    }
     expect(offenders).toEqual([]);
   });
 

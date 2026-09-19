@@ -8,9 +8,11 @@ import { csrfProtection } from "./middleware/csrf";
 import { requestId } from "./middleware/request-id";
 import { securityHeaders } from "./middleware/security-headers";
 import { auth } from "./routes/auth";
+import { courses } from "./routes/courses";
 import { dev } from "./routes/dev";
 import { health } from "./routes/health";
 import { invites } from "./routes/invites";
+import { students } from "./routes/students";
 
 export function createApp() {
   const app = new OpenAPIHono<AppBindings>({
@@ -29,6 +31,8 @@ export function createApp() {
   api.route("/", health);
   api.route("/", auth);
   api.route("/", invites);
+  api.route("/", courses);
+  api.route("/", students);
   api.route("/", dev);
   app.route("/api", api);
 

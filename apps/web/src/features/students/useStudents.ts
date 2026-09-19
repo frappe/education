@@ -1,0 +1,185 @@
+import {
+  addStudentBody,
+  importStudentsBody,
+  updateStudentBody,
+  type ImportResult,
+  type StudentInfo,
+} from "@lms/shared";
+import { onMounted, ref, watch } from "vue";
+import { api } from "@/api/client";
+import { useForm } from "@/features/forms/useForm";
+import { parseStudentCsv, type CsvStudent } from "./parseCsv";
+
+interface StudentPage {
+  students: StudentInfo[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export function useStudentList() {
+  const data = ref<StudentPage>({ students: [], total: 0, page: 1, pageSize: 50 });
+  const search = ref("");
+  const page = ref(1);
+  const showArchived = ref(false);
+  const loading = ref(true);
+  const error = ref<string | null>(null);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let latest = 0;
+
+  async function load() {
+    const mine = ++latest; // an older, slower answer must not replace a newer one
+    const q = new URLSearchParams({ page: String(page.value) });
+    if (search.value.trim()) q.set("search", search.value.trim());
+    if (showArchived.value) q.set("archived", "1");
+    try {
+      const res = await api<StudentPage>(`/students?${q}`);
+      if (mine === latest) {
+        data.value = res;
+        error.value = null;
+      }
+    } catch (err) {
+      if (mine === latest)
+        error.value = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+    } finally {
+      if (mine === latest) loading.value = false;
+    }
+  }
+
+  // Search waits a moment after typing stops, and always starts again from page 1.
+  watch(search, () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      page.value = 1;
+      void load();
+    }, 300);
+  });
+  watch([page, showArchived], () => void load());
+
+  const form = useForm(
+    { name: "", email: "", phone: "", invite: false },
+    {
+      schema: addStudentBody,
+      toPayload: (v) => ({ ...v, phone: v.phone.trim() || undefined }),
+      submit: async (v) => {
+        await api("/students", { method: "POST", body: { ...v, phone: v.phone.trim() || undefined } });
+        form.values.name = "";
+        form.values.email = "";
+        form.values.phone = "";
+        await load();
+      },
+    },
+  );
+
+  onMounted(load);
+  return { data, search, page, showArchived, loading, error, form, load };
+}
+
+export function useStudentDetail(id: string) {
+  const student = ref<StudentInfo | null>(null);
+  const loading = ref(true);
+  const notFound = ref(false);
+  const saved = ref(false);
+
+  const form = useForm(
+    { name: "", phone: "", teacherNote: "" },
+    {
+      schema: () => updateStudentBody,
+      toPayload: (v) => ({ ...v, version: student.value?.version ?? 1 }),
+      submit: async (v) => {
+        saved.value = false;
+        const res = await api<{ student: StudentInfo }>(`/students/${id}`, {
+          method: "PUT",
+          body: { ...v, version: student.value?.version },
+        });
+        fill(res.student);
+        saved.value = true;
+      },
+    },
+  );
+
+  function fill(s: StudentInfo) {
+    student.value = s;
+    form.values.name = s.name;
+    form.values.phone = s.phone;
+    form.values.teacherNote = s.teacherNote;
+  }
+
+  async function load() {
+    try {
+      fill((await api<{ student: StudentInfo }>(`/students/${id}`)).student);
+    } catch {
+      notFound.value = true;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function setArchived(archived: boolean) {
+    const res = await api<{ student: StudentInfo }>(`/students/${id}/${archived ? "archive" : "restore"}`, {
+      method: "POST",
+      body: {},
+    });
+    fill(res.student);
+  }
+
+  async function invite() {
+    if (!student.value) return;
+    await api("/invites", { method: "POST", body: { name: student.value.name, email: student.value.email } });
+    await load();
+  }
+
+  onMounted(load);
+  return { student, form, loading, notFound, saved, setArchived, invite };
+}
+
+export type ImportStep = "input" | "preview" | "done";
+
+/** Import in three steps: give the list, check it, then create. Nothing is created before the person agrees. */
+export function useCsvImport() {
+  const text = ref("");
+  const step = ref<ImportStep>("input");
+  const rows = ref<CsvStudent[]>([]);
+  const result = ref<ImportResult | null>(null);
+  const problem = ref<"empty" | "no_email_column" | "too_many" | null>(null);
+  const error = ref<string | null>(null);
+  const busy = ref(false);
+
+  async function readFile(file: File) {
+    text.value = await file.text();
+  }
+
+  async function run(dryRun: boolean) {
+    busy.value = true;
+    error.value = null;
+    try {
+      const body = importStudentsBody.parse({ rows: rows.value, dryRun });
+      result.value = await api<ImportResult>("/students/import", { method: "POST", body });
+      step.value = dryRun ? "preview" : "done";
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+    } finally {
+      busy.value = false;
+    }
+  }
+
+  async function check() {
+    const parsed = parseStudentCsv(text.value);
+    problem.value = parsed.problem ?? (parsed.rows.length > 200 ? "too_many" : null);
+    if (problem.value) return;
+    rows.value = parsed.rows;
+    await run(true);
+  }
+
+  const confirm = () => run(false);
+  function reset() {
+    text.value = "";
+    rows.value = [];
+    result.value = null;
+    problem.value = null;
+    error.value = null;
+    step.value = "input";
+  }
+
+  return { text, step, rows, result, problem, error, busy, readFile, check, confirm, reset };
+}

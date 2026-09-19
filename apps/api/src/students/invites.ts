@@ -1,5 +1,5 @@
 import type { InviteInfo } from "@lms/shared";
-import { teacherMembership, type Actor } from "../auth/actor";
+import { requireTeacherTenant, type Actor } from "../auth/actor";
 import { openSession, sendMail, type Ctx } from "../auth/service";
 import type { NewSession } from "../auth/session";
 import { auditStatement } from "../audit";
@@ -29,17 +29,11 @@ import { hit } from "../security/rate-limit";
 import { hmacHex } from "../lib/crypto";
 import { hmacKey } from "../lib/config";
 
-const INVITES_PER_DAY = 50;
+export const INVITES_PER_DAY = 50;
 const INVITE_DAYS = 7;
 
-function teacherOf(actor: Actor): { tenantId: string } {
-  const m = teacherMembership(actor);
-  if (!m) throw new AppError("FORBIDDEN");
-  return { tenantId: m.tenantId };
-}
-
 /** Makes a new invite link (older ones stop working) and emails it. */
-async function issueInvite(
+export async function issueInvite(
   ctx: Ctx,
   actor: Actor,
   tenantId: string,
@@ -79,7 +73,7 @@ export async function inviteStudent(
   input: { name: string; email: string },
 ): Promise<void> {
   const db = ctx.env.DB;
-  const { tenantId } = teacherOf(actor);
+  const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "create", { tenantId });
   // A teacher must prove their own email first, so the platform cannot be used to mail strangers.
   if (!actor.emailVerified) throw new AppError("EMAIL_NOT_VERIFIED");
@@ -105,7 +99,7 @@ export async function inviteStudent(
 
 export async function resendInvite(ctx: Ctx, actor: Actor, studentId: string): Promise<void> {
   const db = ctx.env.DB;
-  const { tenantId } = teacherOf(actor);
+  const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "update", { tenantId });
   if (!actor.emailVerified) throw new AppError("EMAIL_NOT_VERIFIED");
   // The tenant id is part of the lookup, so another teacher's student is simply "not found".
@@ -117,7 +111,7 @@ export async function resendInvite(ctx: Ctx, actor: Actor, studentId: string): P
 
 export async function revokeInvite(ctx: Ctx, actor: Actor, studentId: string): Promise<void> {
   const db = ctx.env.DB;
-  const { tenantId } = teacherOf(actor);
+  const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "update", { tenantId });
   const student = await findStudent(db, tenantId, studentId);
   if (!student || student.status !== "invited") throw new AppError("NOT_FOUND");
@@ -135,7 +129,7 @@ export async function revokeInvite(ctx: Ctx, actor: Actor, studentId: string): P
 }
 
 export async function invitesOf(ctx: Ctx, actor: Actor): Promise<InviteInfo[]> {
-  const { tenantId } = teacherOf(actor);
+  const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "read", { tenantId });
   const now = Date.now();
   return (await listInvites(ctx.env.DB, tenantId)).map((r) => ({

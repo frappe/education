@@ -11,7 +11,13 @@ import { ApiError } from "@/api/client";
  */
 export function useForm<T extends Record<string, unknown>>(
   initial: T,
-  options: { schema?: ZodType<unknown>; submit: (values: T) => Promise<void> },
+  options: {
+    /** A schema, or a function that picks one (for forms that create or edit). */
+    schema?: ZodType<unknown> | (() => ZodType<unknown>);
+    /** Turns what is typed (text boxes give text) into what the server expects, before checking. */
+    toPayload?: (values: T) => unknown;
+    submit: (values: T) => Promise<void>;
+  },
 ) {
   const values = reactive({ ...initial }) as T;
   const errors = ref<Record<string, string>>({});
@@ -27,7 +33,8 @@ export function useForm<T extends Record<string, unknown>>(
     errorCode.value = null;
 
     if (options.schema) {
-      const result = options.schema.safeParse(values);
+      const schema = typeof options.schema === "function" ? options.schema() : options.schema;
+      const result = schema.safeParse(options.toPayload ? options.toPayload(values as T) : values);
       if (!result.success) {
         for (const issue of result.error.issues) errors.value[String(issue.path[0] ?? "_")] ??= issue.message;
         return;

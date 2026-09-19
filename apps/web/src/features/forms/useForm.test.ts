@@ -70,6 +70,28 @@ describe("useForm", () => {
     expect(form.submitting.value).toBe(false);
   });
 
+  it("checks the converted payload when toPayload is given (text boxes give text)", async () => {
+    const numeric = z.object({
+      price: z.number("Please enter a number.").int("Please enter a whole number."),
+    });
+    const form = useForm(
+      { price: "12.5" },
+      {
+        schema: numeric,
+        toPayload: (v) => ({ price: v.price === "" ? undefined : Number(v.price) }),
+        submit: async () => {},
+      },
+    );
+    await form.submit();
+    expect(form.errors.value.price).toBe("Please enter a whole number.");
+    form.values.price = "";
+    await form.submit();
+    expect(form.errors.value.price).toBe("Please enter a number.");
+    form.values.price = "150000";
+    await form.submit();
+    expect(form.errors.value).toEqual({});
+  });
+
   it("gives a friendly message for an unexpected error", async () => {
     const form = useForm(
       { a: "1" },

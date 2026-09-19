@@ -25,6 +25,10 @@ async function signOut() {
 <template>
   <AppPage v-if="session.me" :title="`${t.hello} ${session.me.user.name}`">
     <AppAlert v-if="!session.me.user.emailVerified" kind="info">{{ t.unconfirmed }}</AppAlert>
+    <nav v-if="session.isTeacher" class="flex flex-wrap gap-4" :aria-label="t.manage">
+      <AppLink to="/courses">{{ messages.nav.courses }}</AppLink>
+      <AppLink to="/students">{{ messages.nav.students }}</AppLink>
+    </nav>
     <InvitePanel v-if="session.isTeacher" />
     <p v-else>{{ t.studentHome }}</p>
     <div class="flex flex-wrap gap-4">
