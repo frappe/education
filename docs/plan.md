@@ -79,7 +79,7 @@ Browser (Vue SPA, PWA)
 Cloudflare edge: WAF managed rules, Bot management/Turnstile, Rate limiting rules, TLS Full (strict), HSTS
    ▼
 Worker "api"  ── Workers Static Assets (SPA) + Hono API (/api/*)
-   ├─ D1  (dữ liệu chính, Drizzle ORM, migrations)
+   ├─ D1  (dữ liệu chính, SQL có tham số trong repositories, migrations)
    ├─ R2  (file: tài liệu, bài nộp, audio, PDF hóa đơn, backup)
    ├─ Queues: email, notify (+ DLQ)      ── consumer: cùng Worker
    ├─ Cron Triggers: nhắc deadline, bản nháp hóa đơn tháng, dọn dẹp, backup
@@ -107,7 +107,7 @@ Một Worker phục vụ cả SPA lẫn API để **same-origin**: cookie `HttpO
 ### 2.3 Cấu trúc repo (monorepo pnpm)
 
 ```
-apps/api        Worker: Hono + Zod (zod-openapi) + Drizzle. modules/ theo domain (auth, courses, lessons, attendance, assignments, submissions, grading, invoices, notifications, files, admin)
+apps/api        Worker: Hono + Zod + SQL có tham số trong `repos/` (chưa dùng ORM; request schema dùng chung nằm ở `packages/shared`). modules/ theo domain (auth, courses, lessons, attendance, assignments, submissions, grading, invoices, notifications, files, admin)
 apps/web        Vue 3 + Vite + Tailwind + Pinia. features/<domain>/{api,model,composables} tách khỏi ui/
 packages/shared Zod schema, kiểu dùng chung, ma trận quyền, mã lỗi, message catalog (MVP: English)
 docs/           pvd.md, sad.md (chuyển từ root), plan.md, threat-model.md, api (OpenAPI sinh tự động)
@@ -199,7 +199,7 @@ Ma trận quyền (nguồn duy nhất ở `packages/shared`, dùng cả cho serv
 |---|---|
 | A01 Kiểm soát truy cập | Lớp policy tập trung `can(actor, action, resource)`; repository **bắt buộc** nhận `tenantId`/`actor`, không có đường truy vấn trần. Học sinh chỉ đi qua join ghi danh. Test tự sinh: mọi route × vai trò × sở hữu ⇒ mã trạng thái mong đợi. Suite chống IDOR chéo tenant chạy ở CI |
 | A02 Mật mã | TLS Full (strict), TLS ≥ 1.2, HSTS preload. Argon2id. Token (session, magic link, invite, reset) ngẫu nhiên 256-bit, chỉ lưu hash, dùng một lần khi cần, so sánh hằng thời gian |
-| A03 Injection/XSS | Drizzle tham số hoá, cấm ghép chuỗi SQL. Zod xác thực mọi input (body, query, params, header). Rich text: lưu văn bản/markdown, render qua sanitizer (DOMPurify). CSP nghiêm ngặt, không `unsafe-inline` |
+| A03 Injection/XSS | Mọi truy vấn D1 dùng `prepare().bind()` có tham số, cấm ghép chuỗi SQL, chỉ một danh sách module cho phép (`repos/`, audit, rate-limit, health...) được gọi `prepare()`; test `architecture.test.ts` giữ quy tắc này và cấm ghép chuỗi SQL. Zod xác thực mọi input (body, query, params, header). Rich text: lưu văn bản/markdown, render qua sanitizer (DOMPurify). CSP nghiêm ngặt, không `unsafe-inline` |
 | A04 Thiết kế | Threat model STRIDE ở M0 (`docs/threat-model.md`), cập nhật mỗi milestone |
 | A05 Cấu hình | Header: CSP, HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` (tắt micro, camera, định vị), COOP. Tách env; API token Cloudflare theo đúng quyền tối thiểu |
 | A06 Thành phần | Lockfile, Renovate/Dependabot, `pnpm audit`, GitHub Actions ghim theo SHA |

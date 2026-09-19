@@ -34,6 +34,13 @@ pnpm dev                                  # builds the web app, then runs the Wo
 pnpm dev:web                              # optional: Vite dev server with hot reload (proxies /api)
 ```
 
+Open http://localhost:8787. Emails are not sent. Read them (with the confirm and sign in links) at
+http://localhost:8787/dev/outbox, which only works on your own computer.
+
+Locally there is no client address, so all requests count as one address. If you get locked out while testing
+(5 wrong passwords), clear the counters:
+`pnpm --filter @lms/api exec wrangler d1 execute DB --local --command "DELETE FROM rate_limits"`.
+
 ```bash
 pnpm test        # API tests run inside the Workers runtime
 pnpm typecheck
