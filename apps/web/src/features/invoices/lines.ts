@@ -9,6 +9,8 @@ export interface LineRow {
   description: string;
   quantity: string;
   unitPrice: string;
+  /** The line came from lessons: the quantity is a number of lessons and the price is for one lesson. */
+  perLesson: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export const newRow = (over: Partial<LineRow> = {}): LineRow => ({
   description: "",
   quantity: "1",
   unitPrice: "",
+  perLesson: false,
   ...over,
 });
 
@@ -37,6 +40,7 @@ export const rowsOf = (lines: InvoiceLine[]): LineRow[] =>
       description: l.description,
       quantity: String(l.quantity),
       unitPrice: String(l.unitPrice),
+      perLesson: l.courseId !== null,
     }),
   );
 

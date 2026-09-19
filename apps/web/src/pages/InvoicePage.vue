@@ -7,7 +7,7 @@ import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels
 import { formatVnd } from "@/features/format";
 import { amountOf, parseMoney } from "@/features/invoices/lines";
 import { periodLabel } from "@/features/invoices/period";
-import type { SheetData } from "@/features/invoices/sheet";
+import { sheetOf, type SheetData } from "@/features/invoices/sheet";
 import { useInvoice, useLessonPicker } from "@/features/invoices/useInvoices";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -44,7 +44,7 @@ const isDraft = computed(() => d.value?.status === "draft");
 const sheet = computed<SheetData | null>(() => {
   const v = d.value;
   if (!v) return null;
-  if (v.status !== "draft") return v;
+  if (v.status !== "draft") return sheetOf(v);
   const saved = new Map(v.lines.map((l) => [l.id, l]));
   return {
     ...v,
@@ -57,6 +57,7 @@ const sheet = computed<SheetData | null>(() => {
         unitPrice: Number.isFinite(parseMoney(r.unitPrice)) ? parseMoney(r.unitPrice) : 0,
         amount: amountOf(r),
         dates: old && old.quantity === quantity ? old.dates : [],
+        perLesson: r.perLesson,
       };
     }),
     total: inv.total.value,
@@ -160,10 +161,18 @@ const canSend = computed(
                     <AppInput v-model="r.description" :label="t.lineText" />
                   </div>
                   <div class="sm:col-span-3">
-                    <AppInput v-model="r.quantity" :label="t.lineQuantity" inputmode="numeric" />
+                    <AppInput
+                      v-model="r.quantity"
+                      :label="r.perLesson ? t.lineLessons : t.lineQuantity"
+                      inputmode="numeric"
+                    />
                   </div>
                   <div class="sm:col-span-5">
-                    <AppInput v-model="r.unitPrice" :label="t.linePrice" inputmode="numeric" />
+                    <AppInput
+                      v-model="r.unitPrice"
+                      :label="r.perLesson ? t.linePerLesson : t.linePrice"
+                      inputmode="numeric"
+                    />
                   </div>
                   <div class="flex items-end justify-between gap-2 sm:col-span-4">
                     <div>

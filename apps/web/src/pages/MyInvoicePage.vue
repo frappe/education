@@ -3,6 +3,7 @@ import { useRoute } from "vue-router";
 import InvoiceSheet from "@/components/InvoiceSheet.vue";
 import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels";
 import { periodLabel } from "@/features/invoices/period";
+import { sheetOf } from "@/features/invoices/sheet";
 import { useMyInvoice } from "@/features/invoices/useInvoices";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -32,6 +33,6 @@ const print = () => window.print();
     </template>
     <AppLoading v-if="loading" :label="messages.common.loading" />
     <AppAlert v-else-if="notFound" kind="error">{{ t.notFound }}</AppAlert>
-    <InvoiceSheet v-else-if="invoice" :data="invoice" />
+    <InvoiceSheet v-else-if="invoice" :data="sheetOf(invoice)" />
   </AppPage>
 </template>

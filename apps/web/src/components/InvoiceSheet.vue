@@ -54,35 +54,72 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
       </div>
     </dl>
 
-    <AppTable>
-      <thead>
-        <tr>
-          <th>{{ t.description }}</th>
-          <th class="text-right">{{ t.quantity }}</th>
-          <th class="text-right">{{ t.price }}</th>
-          <th class="text-right">{{ t.amount }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(l, i) in data.lines" :key="i">
-          <td>
-            <p class="font-medium">{{ l.description }}</p>
-            <p v-if="l.dates.length" class="text-xs text-base-content/60">
-              {{ fill(t.lessonDays, { days: days(l.dates) }) }}
-            </p>
-          </td>
-          <td class="text-right">{{ l.quantity }}</td>
-          <td class="whitespace-nowrap text-right">{{ formatVnd(l.unitPrice) }}</td>
-          <td class="whitespace-nowrap text-right">{{ formatVnd(l.amount) }}</td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr class="text-base font-semibold">
-          <td colspan="3" class="text-right">{{ t.total }}</td>
-          <td class="whitespace-nowrap text-right text-lg">{{ formatVnd(data.total) }}</td>
-        </tr>
-      </tfoot>
-    </AppTable>
+    <!-- A small screen shows each line as a block, so nothing has to be scrolled sideways. -->
+    <ul class="divide-y divide-base-300 border-y border-base-300 sm:hidden">
+      <li v-for="(l, i) in data.lines" :key="i" class="flex flex-col gap-1 py-3">
+        <div class="flex items-start justify-between gap-3">
+          <p class="font-medium">{{ l.description }}</p>
+          <p class="whitespace-nowrap font-medium">{{ formatVnd(l.amount) }}</p>
+        </div>
+        <p v-if="l.dates.length" class="text-sm text-base-content/70">
+          {{ fill(t.lessonDays, { days: days(l.dates) }) }}
+        </p>
+        <p class="text-sm text-base-content/60">
+          <template v-if="l.perLesson"
+            >{{ l.quantity === 1 ? t.lessonOne : fill(t.lessonMany, { n: l.quantity }) }} ×
+            {{ formatVnd(l.unitPrice) }} {{ t.perLesson }}</template
+          >
+          <template v-else>{{ l.quantity }} × {{ formatVnd(l.unitPrice) }}</template>
+        </p>
+      </li>
+      <li class="flex items-center justify-between gap-3 py-3 font-semibold">
+        <span>{{ t.total }}</span>
+        <span class="text-lg">{{ formatVnd(data.total) }}</span>
+      </li>
+    </ul>
+
+    <div class="hidden sm:block">
+      <AppTable>
+        <thead>
+          <tr>
+            <th class="min-w-44">{{ t.description }}</th>
+            <th class="text-right">{{ t.howMany }}</th>
+            <th class="text-right">{{ t.price }}</th>
+            <th class="text-right">{{ t.amount }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(l, i) in data.lines" :key="i">
+            <td>
+              <p class="font-medium">{{ l.description }}</p>
+              <p v-if="l.dates.length" class="text-sm text-base-content/70">
+                {{ fill(t.lessonDays, { days: days(l.dates) }) }}
+              </p>
+            </td>
+            <td class="whitespace-nowrap text-right">
+              {{
+                l.perLesson
+                  ? l.quantity === 1
+                    ? t.lessonOne
+                    : fill(t.lessonMany, { n: l.quantity })
+                  : l.quantity
+              }}
+            </td>
+            <td class="whitespace-nowrap text-right">
+              {{ formatVnd(l.unitPrice) }}
+              <span v-if="l.perLesson" class="block text-xs text-base-content/60">{{ t.perLesson }}</span>
+            </td>
+            <td class="whitespace-nowrap text-right">{{ formatVnd(l.amount) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="text-base font-semibold">
+            <td colspan="3" class="text-right">{{ t.total }}</td>
+            <td class="whitespace-nowrap text-right text-lg">{{ formatVnd(data.total) }}</td>
+          </tr>
+        </tfoot>
+      </AppTable>
+    </div>
 
     <p v-if="data.status === 'paid' && data.paidAt" class="mt-4 text-sm text-success">
       {{ fill(t.paidOn, { date: formatWhen(data.paidAt) }) }}

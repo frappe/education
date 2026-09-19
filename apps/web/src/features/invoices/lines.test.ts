@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { amountOf, linesPayload, lineIsValid, newRow, parseMoney, sameAsSaved, totalOf } from "./lines";
 import { periodLabel, shiftPeriod } from "./period";
+import { sheetOf } from "./sheet";
+import { rowsOf } from "./lines";
 
 describe("reading money", () => {
   it("accepts separators between digits and a minus sign", () => {
@@ -61,5 +63,22 @@ describe("months", () => {
   });
   it("writes a month in words", () => {
     expect(periodLabel("2026-09")).toBe("September 2026");
+  });
+});
+
+describe("lines made from lessons", () => {
+  const line = (courseId: string | null) => ({
+    id: "l_1",
+    courseId,
+    description: "A",
+    quantity: 3,
+    unitPrice: 150000,
+    amount: 450000,
+    dates: ["2026-09-01"],
+  });
+  it("tells which lines are counted in lessons, in the form and on the receipt", () => {
+    expect(rowsOf([line("c_1"), line(null)]).map((r) => r.perLesson)).toEqual([true, false]);
+    const inv = { lines: [line("c_1"), line(null)] } as unknown as Parameters<typeof sheetOf>[0];
+    expect(sheetOf(inv).lines.map((l) => l.perLesson)).toEqual([true, false]);
   });
 });
