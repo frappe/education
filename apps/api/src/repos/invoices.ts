@@ -284,7 +284,7 @@ export const myInvoices = async (db: D1Database, userId: string) =>
     await db
       .prepare(
         `SELECT i.id, i.tenant_id, i.student_id, s.name AS student_name, i.period, i.number, i.status, i.total, i.sent_at,
-           i.paid_at, t.name AS teacher_name
+           i.paid_at, i.issued, t.name AS teacher_name
          ${MINE} ORDER BY i.period DESC, i.sent_at DESC, i.id`,
       )
       .bind(userId)
@@ -299,6 +299,7 @@ export const myInvoices = async (db: D1Database, userId: string) =>
         total: number;
         sent_at: string | null;
         paid_at: string | null;
+        issued: string | null;
         teacher_name: string;
       }>()
   ).results;

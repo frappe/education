@@ -23,6 +23,7 @@ type Invoice = {
   id: string;
   studentId: string;
   studentName: string;
+  teacherName: string;
   period: string;
   number: string | null;
   status: string;
@@ -432,6 +433,7 @@ describe("sending a receipt", () => {
       .run();
     const sent = await open(t, d.Hoa!.id);
     expect(sent.payee).toMatchObject({ payeeName: "Lan Tran", bankAccount: "0011", bankName: "VCB" });
+    expect(sent.teacherName).toBe("Lan Tran"); // the name to pay is who the receipt is from
     expect(sent.studentName).toBe("Hoa");
   });
 

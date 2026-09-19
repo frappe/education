@@ -93,6 +93,10 @@ function linesFromLessons(rows: BillableRow[]): StoredLine[] {
 
 const totalOf = (lines: StoredLine[]) => lines.reduce((sum, l) => sum + l.amount, 0);
 
+/** Who the receipt is from: the name the teacher wants students to pay, else the name of their classroom. */
+const senderOf = (r: { payee_name: string; teacher_name: string | null }) =>
+  r.payee_name || r.teacher_name || "";
+
 const paymentOf = (r: PaymentRow): PaymentDetails => ({
   payeeName: r.payee_name,
   payeePhone: r.payee_phone,
@@ -134,7 +138,7 @@ function toInfo(r: InvoiceRow, zone: string, attendanceChanged: boolean): Invoic
     id: r.id,
     studentId: r.student_id,
     studentName: issued?.studentName ?? r.student_name,
-    teacherName: issued?.teacherName ?? r.teacher_name ?? "",
+    teacherName: issued?.teacherName ?? senderOf(r),
     period: r.period,
     number: r.number,
     status: r.status,
@@ -407,7 +411,7 @@ export async function invoiceSend(ctx: Ctx, actor: Actor, id: string, version: n
     });
   }
   const issued: Issued = {
-    teacherName: current.teacher_name ?? actor.name,
+    teacherName: senderOf(current) || actor.name,
     studentName: current.student_name,
     payee: paymentOf(current),
   };
@@ -550,7 +554,7 @@ export async function myInvoiceList(ctx: Ctx, actor: Actor): Promise<MyInvoiceIt
     total: r.total,
     sentAt: r.sent_at,
     paidAt: r.paid_at,
-    teacherName: r.teacher_name,
+    teacherName: parseIssued(r.issued)?.teacherName ?? r.teacher_name,
   }));
 }
 

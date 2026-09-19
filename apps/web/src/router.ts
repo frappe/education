@@ -74,6 +74,26 @@ export const router = createRouter({
       meta: { requiresTeacher: true },
     },
     {
+      path: "/invoices",
+      component: () => import("@/pages/InvoicesPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/invoices/:id",
+      component: () => import("@/pages/InvoicePage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
+      path: "/my/invoices",
+      component: () => import("@/pages/MyInvoicesPage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/my/invoices/:id",
+      component: () => import("@/pages/MyInvoicePage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/my/courses",
       component: () => import("@/pages/MyCoursesPage.vue"),
       meta: { requiresAuth: true },

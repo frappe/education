@@ -35,8 +35,12 @@ async function signOut() {
         <AppNavItem to="/courses" icon="book">{{ t.courses }}</AppNavItem>
         <AppNavItem to="/students" icon="users">{{ t.students }}</AppNavItem>
         <AppNavItem to="/schedule" icon="calendar">{{ t.schedule }}</AppNavItem>
+        <AppNavItem to="/invoices" icon="invoice">{{ t.invoices }}</AppNavItem>
       </template>
-      <AppNavItem v-if="session.isStudent" to="/my/courses" icon="book">{{ t.myCourses }}</AppNavItem>
+      <template v-if="session.isStudent">
+        <AppNavItem to="/my/courses" icon="book">{{ t.myCourses }}</AppNavItem>
+        <AppNavItem to="/my/invoices" icon="invoice">{{ t.myInvoices }}</AppNavItem>
+      </template>
       <AppNavItem to="/devices" icon="devices">{{ t.devices }}</AppNavItem>
     </template>
     <template #footer>
