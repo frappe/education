@@ -728,9 +728,28 @@ const lineFields = {
     .max(1_000_000_000, "This price is too high."),
 };
 export const invoiceLineInput = z.object(lineFields);
-export const LIMITS_INVOICE = { maxLines: 30 } as const;
+export const LIMITS_INVOICE = { maxLines: 30, maxLessons: 200 } as const;
 
-export const createInvoiceBody = z.object({ studentId: z.string().min(1).max(40), period });
+const lessonIds = z
+  .array(z.string().min(1).max(64))
+  .max(LIMITS_INVOICE.maxLessons, "There are too many lessons.");
+
+/**
+ * A receipt for the lessons the teacher picked. The month it is filed under comes from the latest lesson.
+ * With no lessons, the teacher must say the month (an empty receipt to fill in by hand).
+ */
+export const createInvoiceBody = z
+  .object({
+    studentId: z.string().min(1).max(40),
+    lessonIds: lessonIds.default([]),
+    period: period.optional(),
+  })
+  .refine((v) => v.lessonIds.length > 0 || v.period !== undefined, {
+    message: "Please choose at least one lesson.",
+    path: ["lessonIds"],
+  });
+/** Which lessons a draft is made from. It replaces the lines that came from lessons and keeps the lines added by hand. */
+export const setInvoiceLessonsBody = z.object({ lessonIds, version: z.number().int().min(1) });
 export const generateInvoicesBody = z.object({ period });
 export const updateInvoiceBody = z.object({
   lines: z.array(invoiceLineInput).max(LIMITS_INVOICE.maxLines, "There are too many lines."),
@@ -748,7 +767,7 @@ export const voidInvoiceBody = z.object({
   version: z.number().int().min(1),
 });
 
-export type CreateInvoiceBody = z.infer<typeof createInvoiceBody>;
+export type CreateInvoiceBody = z.input<typeof createInvoiceBody>;
 export type UpdateInvoiceBody = z.infer<typeof updateInvoiceBody>;
 
 export interface InvoiceLine {
@@ -813,3 +832,25 @@ export interface InvoiceListResult {
 /** What a student sees: only receipts that were sent. */
 export type MyInvoiceItem = Omit<InvoiceListItem, "version"> & { teacherName: string };
 export type MyInvoiceDetail = Omit<InvoiceInfo, "attendanceChanged">;
+
+/** A student who has attended lessons that are not on any receipt yet. */
+export interface UnbilledStudent {
+  studentId: string;
+  name: string;
+  lessons: number;
+  /** What those lessons cost. */
+  amount: number;
+}
+
+/** A lesson a student attended. `inThisReceipt` is true when the draft being changed already has it. */
+export interface UnbilledLesson {
+  lessonId: string;
+  courseId: string;
+  courseName: string;
+  title: string;
+  /** In the teacher's time zone. */
+  date: string;
+  startTime: string;
+  price: number;
+  inThisReceipt: boolean;
+}

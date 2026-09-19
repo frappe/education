@@ -21,7 +21,12 @@ import AppTable from "@/ui/AppTable.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
 const t = messages.invoices;
-const list = useInvoiceList({ created: t.created, nothing: t.nothing, paymentSaved: t.paymentSaved });
+const list = useInvoiceList({
+  created: t.created,
+  createdOne: t.createdOne,
+  nothing: t.nothing,
+  paymentSaved: t.paymentSaved,
+});
 const paying = ref(false);
 function openPayment() {
   list.openPayment();
@@ -35,6 +40,9 @@ async function savePayment() {
 <template>
   <AppPage :title="t.title" :subtitle="t.subtitle">
     <template #actions>
+      <RouterLink to="/invoices/new" class="btn btn-primary min-h-11 gap-2 font-medium"
+        ><AppIcon name="plus" :size="16" />{{ t.newReceipt }}</RouterLink
+      >
       <AppButton variant="secondary" @click="openPayment"
         ><AppIcon name="edit" :size="16" />{{ t.payment }}</AppButton
       >
@@ -71,9 +79,7 @@ async function savePayment() {
           <span>{{
             list.data.value.missing === 1 ? t.missingOne : fill(t.missing, { n: list.data.value.missing })
           }}</span>
-          <AppButton compact :loading="list.busy.value" @click="list.generate"
-            ><AppIcon name="plus" :size="16" />{{ t.create }}</AppButton
-          >
+          <AppButton compact :loading="list.busy.value" @click="list.generate">{{ t.create }}</AppButton>
         </div>
       </AppAlert>
 

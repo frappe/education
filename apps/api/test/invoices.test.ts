@@ -68,6 +68,8 @@ const save = (t: Person, inv: Invoice, over: Record<string, unknown> = {}) =>
       ...over,
     },
   });
+const put = (t: Person, path: string, body: unknown = {}) =>
+  call(`/api/${path}`, { method: "PUT", cookie: t.cookie, body });
 const send = (t: Person, inv: { id: string; version: number }) =>
   post(t, `invoices/${inv.id}/send`, { version: inv.version });
 
@@ -218,14 +220,17 @@ describe("making draft receipts from the attendance", () => {
     expect((await listOf(t)).missing).toBe(0);
   });
 
-  it("makes a draft for one student, also with no lessons, once for each month", async () => {
+  it("makes an empty draft for one student to fill in by hand, and refuses when there is neither a lesson nor a month", async () => {
     const t = await createTeacher();
     const kid = await addOne(t, "Mai");
     const res = await post(t, "invoices", { studentId: kid.id, period: MONTH });
     expect(res.status).toBe(201);
-    expect(res.json.invoice).toMatchObject({ status: "draft", total: 0, lines: [] });
-    expect((await post(t, "invoices", { studentId: kid.id, period: MONTH })).status).toBe(409);
+    expect(res.json.invoice).toMatchObject({ status: "draft", total: 0, lines: [], period: MONTH });
+    expect((await post(t, "invoices", { studentId: kid.id, period: MONTH })).status).toBe(201); // more than one is fine
     expect((await post(t, "invoices", { studentId: "nobody", period: MONTH })).status).toBe(404);
+    const none = await post(t, "invoices", { studentId: kid.id });
+    expect(none.status).toBe(400);
+    expect(none.json.error.fields).toHaveProperty("lessonIds");
   });
 
   it("refuses a month that is not a month", async () => {
@@ -317,7 +322,7 @@ describe("changing a draft", () => {
     expect((await open(t, inv.id)).version).toBe(1); // nothing was saved
   });
 
-  it("works out the lines from the attendance again and keeps the lines the teacher added", async () => {
+  it("changes the lessons of a draft: the lines from lessons are worked out again, and the lines added by hand stay", async () => {
     const { t, nam, lessons } = await setup();
     const inv = (await drafts(t)).Nam!;
     await save(t, inv, {
@@ -328,13 +333,23 @@ describe("changing a draft", () => {
     });
     await mark(t, lessons[2]!.id, [{ studentId: nam.studentId, status: "attended" }]);
     const now = await open(t, inv.id);
-    const res = await post(t, `invoices/${inv.id}/refresh`, { version: now.version });
+    const res = await put(t, `invoices/${inv.id}/lessons`, {
+      version: now.version,
+      lessonIds: [lessons[0]!.id, lessons[1]!.id, lessons[2]!.id],
+    });
+    expect(res.status, JSON.stringify(res.json)).toBe(200);
     const lines = res.json.invoice.lines as Line[];
     expect(lines.map((l) => [l.description, l.quantity, l.unitPrice])).toEqual([
       ["English A1", 3, 100_000],
       ["Book", 1, 30_000],
     ]);
     expect(res.json.invoice.total).toBe(330_000);
+    // No lessons at all: only the line added by hand is left.
+    const none = await put(t, `invoices/${inv.id}/lessons`, {
+      version: res.json.invoice.version,
+      lessonIds: [],
+    });
+    expect(none.json.invoice.lines.map((l: Line) => l.description)).toEqual(["Book"]);
   });
 
   it("can be deleted, but only while it is a draft", async () => {
@@ -515,27 +530,243 @@ describe("paid, not paid and cancelled", () => {
     ).toBe("void");
   });
 
-  it("warns when the attendance changed after the receipt was sent, and does not change the receipt", async () => {
+  it("warns when a lesson on a sent receipt is no longer attended, and does not change the receipt", async () => {
     const { t, nam, lessons } = await setup();
     const d = await drafts(t);
     await send(t, d.Nam!);
     expect((await open(t, d.Nam!.id)).attendanceChanged).toBe(false);
+    // A lesson attended later is simply not on this receipt: nothing to warn about.
     await mark(t, lessons[2]!.id, [{ studentId: nam.studentId, status: "attended" }]);
+    expect((await open(t, d.Nam!.id)).attendanceChanged).toBe(false);
+    // A lesson that is on the receipt turns into an absence: warn.
+    await mark(t, lessons[0]!.id, [{ studentId: nam.studentId, status: "absent" }]);
     const now = await open(t, d.Nam!.id);
     expect(now.attendanceChanged).toBe(true);
     expect(now.total).toBe(200_000);
-    // A line the teacher changed by hand is not part of this check.
-    await mark(t, lessons[2]!.id, [{ studentId: nam.studentId, status: "absent" }]);
+    await mark(t, lessons[0]!.id, [{ studentId: nam.studentId, status: "attended" }]);
     expect((await open(t, d.Nam!.id)).attendanceChanged).toBe(false);
-    // A cancelled receipt has nothing to warn about.
+    // A lesson that was cancelled afterwards: warn too. A cancelled receipt has nothing to warn about.
+    await env.DB.prepare("UPDATE lessons SET status = 'cancelled' WHERE id = ?").bind(lessons[1]!.id).run();
+    expect((await open(t, d.Nam!.id)).attendanceChanged).toBe(true);
     const cancelled = await post(t, `invoices/${d.Nam!.id}/void`, {
       version: (await open(t, d.Nam!.id)).version,
       reason: "x",
     });
     expect(cancelled.status).toBe(200);
-    await mark(t, lessons[3]!.id, [{ studentId: nam.studentId, status: "attended" }]);
     expect((await open(t, d.Nam!.id)).attendanceChanged).toBe(false);
   });
+});
+
+describe("choosing the lessons of a receipt", () => {
+  const create = (t: Person, studentId: string, lessonIds: string[], over: Record<string, unknown> = {}) =>
+    post(t, "invoices", { studentId, lessonIds, ...over });
+  const ids = (l: { id: string }[], ...n: number[]) => n.map((i) => l[i]!.id);
+
+  it("makes a receipt for only the lessons that were picked, and the rest can go on another receipt", async () => {
+    const { t, hoa, lessons } = await setup();
+    const first = await create(t, hoa.studentId, ids(lessons, 0, 1));
+    expect(first.status, JSON.stringify(first.json)).toBe(201);
+    expect(first.json.invoice).toMatchObject({ total: 200_000, period: MONTH });
+    expect(first.json.invoice.lines[0]).toMatchObject({ quantity: 2, dates: ["2020-01-06", "2020-01-13"] });
+    const second = await create(t, hoa.studentId, ids(lessons, 2, 3));
+    expect(second.status).toBe(201);
+    expect(second.json.invoice.lines[0].dates).toEqual(["2020-01-20", "2020-01-27"]);
+    // Two receipts in one month for the same student, each with its own number.
+    expect((await send(t, first.json.invoice)).json.invoice.number).toBe("INV-202001-0001");
+    expect((await send(t, second.json.invoice)).json.invoice.number).toBe("INV-202001-0002");
+  });
+
+  it("files the receipt under the month of the latest lesson", async () => {
+    const { t, course, hoa, lessons } = await setup();
+    const feb = (await lessonsOf(t, course.id, { date: "2020-02-03", repeatWeeks: 1 }))[0]!;
+    await mark(t, feb.id, [{ studentId: hoa.studentId, status: "attended" }]);
+    const res = await create(t, hoa.studentId, [lessons[3]!.id, feb.id]);
+    expect(res.json.invoice).toMatchObject({ period: "2020-02", total: 200_000 });
+    expect((await listOf(t, "2020-02")).invoices.map((i) => i.id)).toEqual([res.json.invoice.id]);
+  });
+
+  it("refuses a lesson that is on another receipt, was not attended, was cancelled, or does not exist, and makes nothing", async () => {
+    const { t, hoa, nam, lessons } = await setup();
+    await create(t, hoa.studentId, ids(lessons, 0));
+    const before = await count("SELECT COUNT(*) AS n FROM invoices WHERE tenant_id = ?", t.tenantId);
+    await env.DB.prepare("UPDATE lessons SET status = 'cancelled' WHERE id = ?").bind(lessons[1]!.id).run();
+    const bad: [string, string, string[]][] = [
+      ["already on a receipt", hoa.studentId, ids(lessons, 0, 2)],
+      ["absent", nam.studentId, ids(lessons, 3)],
+      ["cancelled", hoa.studentId, ids(lessons, 1)],
+      ["not a lesson", hoa.studentId, ["nope"]],
+      ["a lesson of another teacher", hoa.studentId, [(await otherLesson()).id]],
+    ];
+    for (const [label, studentId, lessonIds] of bad) {
+      const res = await create(t, studentId, lessonIds);
+      expect(res.status, label).toBe(409);
+    }
+    expect(await count("SELECT COUNT(*) AS n FROM invoices WHERE tenant_id = ?", t.tenantId)).toBe(before);
+  });
+
+  it("two receipts asked for the same lessons at the same moment: only one is made", async () => {
+    const { t, hoa, lessons } = await setup();
+    const [a, b] = await Promise.all([
+      create(t, hoa.studentId, ids(lessons, 0, 1)),
+      create(t, hoa.studentId, ids(lessons, 1, 2)),
+    ]);
+    expect([a.status, b.status].sort()).toEqual([201, 409]);
+    expect(await count("SELECT COUNT(*) AS n FROM invoices WHERE tenant_id = ?", t.tenantId)).toBe(1);
+  });
+
+  it("a lesson is free again when its draft is deleted or its receipt is cancelled", async () => {
+    const { t, hoa, lessons } = await setup();
+    const one = (await create(t, hoa.studentId, ids(lessons, 0))).json.invoice as Invoice;
+    expect((await create(t, hoa.studentId, ids(lessons, 0))).status).toBe(409);
+    await call(`/api/invoices/${one.id}`, { method: "DELETE", cookie: t.cookie, body: { version: 1 } });
+    const two = (await create(t, hoa.studentId, ids(lessons, 0))).json.invoice as Invoice;
+    await send(t, two);
+    expect((await create(t, hoa.studentId, ids(lessons, 0))).status).toBe(409); // sent: still taken
+    await post(t, `invoices/${two.id}/void`, { version: 2, reason: "x" });
+    expect((await create(t, hoa.studentId, ids(lessons, 0))).status).toBe(201);
+  });
+
+  it("changing the quantity of a line by hand does not free its lessons", async () => {
+    const { t, hoa, lessons } = await setup();
+    const inv = (await create(t, hoa.studentId, ids(lessons, 0, 1))).json.invoice as Invoice;
+    const saved = await save(t, inv, {
+      lines: [{ id: inv.lines[0]!.id, description: "English A1", quantity: 1, unitPrice: 100_000 }],
+    });
+    expect(saved.json.invoice.lines[0].dates).toEqual([]); // the days no longer match the quantity
+    expect((await create(t, hoa.studentId, ids(lessons, 0))).status).toBe(409);
+    expect((await create(t, hoa.studentId, ids(lessons, 1))).status).toBe(409);
+  });
+
+  it("removing a line frees its lessons", async () => {
+    const { t, hoa, lessons } = await setup();
+    const inv = (await create(t, hoa.studentId, ids(lessons, 0, 1))).json.invoice as Invoice;
+    await save(t, inv, { lines: [{ description: "Book", quantity: 1, unitPrice: 5000 }] });
+    expect((await create(t, hoa.studentId, ids(lessons, 0, 1))).status).toBe(201);
+  });
+
+  it("the next 'create receipts' takes only the lessons that are not on a receipt yet", async () => {
+    const { t, hoa, lessons } = await setup();
+    await create(t, hoa.studentId, ids(lessons, 0, 1));
+    expect((await listOf(t)).missing).toBe(2); // Hoa still has two lessons, and Nam has two
+    expect((await generate(t)).json).toEqual({ created: 2 });
+    const d = await drafts(t); // (no more to make now)
+    expect(d.Hoa).toBeDefined();
+    const all = (await listOf(t)).invoices;
+    expect(all).toHaveLength(3);
+    expect(
+      all
+        .filter((i) => i.studentName === "Hoa")
+        .map((i) => i.total)
+        .sort(),
+    ).toEqual([200_000, 200_000]);
+    expect((await listOf(t)).missing).toBe(0);
+    expect((await generate(t)).json).toEqual({ created: 0 });
+  });
+
+  it("a draft can be changed to other lessons, but not to lessons on another receipt, and not after it was sent", async () => {
+    const { t, hoa, lessons } = await setup();
+    const a = (await create(t, hoa.studentId, ids(lessons, 0, 1))).json.invoice as Invoice;
+    const b = (await create(t, hoa.studentId, ids(lessons, 2))).json.invoice as Invoice;
+    const clash = await put(t, `invoices/${b.id}/lessons`, { version: 1, lessonIds: ids(lessons, 1, 2) });
+    expect(clash.status).toBe(409);
+    expect((await open(t, b.id)).version).toBe(1); // nothing changed
+    const own = await put(t, `invoices/${a.id}/lessons`, { version: 1, lessonIds: ids(lessons, 0, 3) });
+    expect(own.status, JSON.stringify(own.json)).toBe(200);
+    expect(own.json.invoice.lines[0].dates).toEqual(["2020-01-06", "2020-01-27"]);
+    expect((await put(t, `invoices/${a.id}/lessons`, { version: 1, lessonIds: [] })).status).toBe(409); // old version
+    await send(t, { id: a.id, version: 2 });
+    const locked = await put(t, `invoices/${a.id}/lessons`, { version: 3, lessonIds: ids(lessons, 0) });
+    expect(locked.status).toBe(409);
+    expect(locked.json.error.code).toBe("INVOICE_LOCKED");
+  });
+
+  it("two drafts changed to the same lesson at the same moment: only one gets it", async () => {
+    const { t, hoa, lessons } = await setup();
+    const a = (await create(t, hoa.studentId, ids(lessons, 0))).json.invoice as Invoice;
+    const b = (await create(t, hoa.studentId, ids(lessons, 1))).json.invoice as Invoice;
+    const [x, y] = await Promise.all([
+      put(t, `invoices/${a.id}/lessons`, { version: 1, lessonIds: ids(lessons, 2) }),
+      put(t, `invoices/${b.id}/lessons`, { version: 1, lessonIds: ids(lessons, 2) }),
+    ]);
+    expect([x.status, y.status].sort()).toEqual([200, 409]);
+  });
+
+  it("lists the students with lessons that are on no receipt, and what they owe", async () => {
+    const { t, hoa, lessons } = await setup();
+    const students = async () =>
+      (await call("/api/invoices/unbilled", { cookie: t.cookie })).json.students as {
+        name: string;
+        lessons: number;
+        amount: number;
+      }[];
+    expect(await students()).toEqual([
+      expect.objectContaining({ name: "Hoa", lessons: 4, amount: 400_000 }),
+      expect.objectContaining({ name: "Nam", lessons: 2, amount: 200_000 }),
+    ]);
+    await create(t, hoa.studentId, ids(lessons, 0, 1, 2, 3));
+    expect((await students()).map((s) => s.name)).toEqual(["Nam"]);
+    const other = await createTeacher("Other");
+    expect((await call("/api/invoices/unbilled", { cookie: other.cookie })).json.students).toEqual([]);
+  });
+
+  it("lists the lessons of one student with their day, time and price, and marks the ones on the draft being changed", async () => {
+    const { t, hoa, nam, lessons } = await setup();
+    const listFor = async (studentId: string, invoiceId?: string) =>
+      (
+        await call(
+          `/api/invoices/lessons?studentId=${studentId}${invoiceId ? `&invoiceId=${invoiceId}` : ""}`,
+          {
+            cookie: t.cookie,
+          },
+        )
+      ).json.lessons as {
+        lessonId: string;
+        date: string;
+        startTime: string;
+        price: number;
+        inThisReceipt: boolean;
+        courseName: string;
+      }[];
+    const all = await listFor(hoa.studentId);
+    expect(all.map((l) => [l.date, l.startTime, l.price, l.courseName])).toEqual([
+      ["2020-01-06", "18:30", 100_000, "English A1"],
+      ["2020-01-13", "18:30", 100_000, "English A1"],
+      ["2020-01-20", "18:30", 100_000, "English A1"],
+      ["2020-01-27", "18:30", 100_000, "English A1"],
+    ]);
+    expect((await listFor(nam.studentId)).map((l) => l.date)).toEqual(["2020-01-06", "2020-01-13"]);
+    const inv = (await create(t, hoa.studentId, ids(lessons, 0, 1))).json.invoice as Invoice;
+    expect((await listFor(hoa.studentId)).map((l) => l.date)).toEqual(["2020-01-20", "2020-01-27"]);
+    const withOwn = await listFor(hoa.studentId, inv.id);
+    expect(withOwn.map((l) => [l.date, l.inThisReceipt])).toEqual([
+      ["2020-01-06", true],
+      ["2020-01-13", true],
+      ["2020-01-20", false],
+      ["2020-01-27", false],
+    ]);
+    // A receipt of another student, another teacher's student, and a missing student.
+    expect(
+      (
+        await call(`/api/invoices/lessons?studentId=${nam.studentId}&invoiceId=${inv.id}`, {
+          cookie: t.cookie,
+        })
+      ).status,
+    ).toBe(404);
+    const other = await createTeacher("Other");
+    expect(
+      (await call(`/api/invoices/lessons?studentId=${hoa.studentId}`, { cookie: other.cookie })).status,
+    ).toBe(404);
+    expect((await call("/api/invoices/lessons", { cookie: t.cookie })).status).toBe(400);
+  });
+
+  async function otherLesson() {
+    const o = await createTeacher("Someone");
+    const course = await createCourse(o, { maxStudents: null });
+    const kid = await joinedKid(o, course.id, "Zed");
+    const l = (await lessonsOf(o, course.id, { repeatWeeks: 1 }))[0]!;
+    await mark(o, l.id, [{ studentId: kid.studentId, status: "attended" }]);
+    return l;
+  }
 });
 
 describe("payment details", () => {
@@ -653,6 +884,9 @@ describe("what the student sees", () => {
       ["GET", "/api/invoices?period=2020-01"],
       ["POST", "/api/invoices/generate", { period: MONTH }],
       ["GET", `/api/invoices/${d.Hoa!.id}`],
+      ["GET", "/api/invoices/unbilled"],
+      ["GET", `/api/invoices/lessons?studentId=${d.Hoa!.studentId}`],
+      ["PUT", `/api/invoices/${d.Hoa!.id}/lessons`, { version: 1, lessonIds: [] }],
       ["POST", `/api/invoices/${d.Hoa!.id}/send`, { version: 1 }],
       ["PUT", "/api/payment-details", {}],
       ["GET", "/api/payment-details"],
@@ -676,7 +910,7 @@ describe("one teacher never reaches another teacher's receipts", () => {
       ["GET", `/api/invoices/${id}`],
       ["PUT", `/api/invoices/${id}`, { lines: [], note: "", dueDate: null, version: 1 }],
       ["DELETE", `/api/invoices/${id}`, { version: 1 }],
-      ["POST", `/api/invoices/${id}/refresh`, { version: 1 }],
+      ["PUT", `/api/invoices/${id}/lessons`, { version: 1, lessonIds: [] }],
       ["POST", `/api/invoices/${id}/send`, { version: 1 }],
       ["POST", `/api/invoices/${id}/paid`, { version: 1 }],
       ["POST", `/api/invoices/${id}/unpaid`, { version: 1 }],

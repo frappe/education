@@ -7,6 +7,8 @@ import type {
   MyInvoiceItem,
   PaymentDetails,
   PaymentDetailsBody,
+  UnbilledLesson,
+  UnbilledStudent,
   UpdateInvoiceBody,
 } from "@lms/shared";
 import { requireTeacherTenant, type Actor } from "../auth/actor";
@@ -17,7 +19,6 @@ import { appUrl } from "../lib/config";
 import { localToUtc, utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
 import {
-  billableLessons,
   deleteDraftStatement,
   findInvoice,
   findMyInvoice,
@@ -26,10 +27,13 @@ import {
   myInvoices,
   paidStatement,
   paymentDetailsOf,
+  pickLessons,
   sendStatement,
   setPaymentDetailsStatement,
   studentInTenant,
-  studentsWithoutInvoice,
+  stillAttended,
+  studentsWithUnbilled,
+  unbilledStudents,
   unpaidStatement,
   updateDraftStatement,
   voidedOfPeriod,
@@ -40,7 +44,7 @@ import {
 } from "../repos/invoices";
 import { tenantTimezone } from "../repos/lessons";
 
-/** A line as it is kept in the database. `at` holds the start (UTC) of each lesson behind the line. */
+/** A line as it is kept in the database. `lessons` are the lessons behind the line (with their start, UTC). */
 interface StoredLine {
   id: string;
   courseId: string | null;
@@ -48,7 +52,7 @@ interface StoredLine {
   quantity: number;
   unitPrice: number;
   amount: number;
-  at: string[];
+  lessons: { id: string; at: string }[];
 }
 
 const conflictText = "This receipt was changed since you opened it. Please open it again.";
@@ -57,7 +61,12 @@ const lineId = () => `l_${crypto.randomUUID().replaceAll("-", "").slice(0, 10)}`
 const parseLines = (text: string): StoredLine[] => {
   try {
     const v: unknown = JSON.parse(text);
-    return Array.isArray(v) ? (v as StoredLine[]) : [];
+    if (!Array.isArray(v)) return [];
+    // Lines made before the teacher could pick lessons only know the start of each lesson.
+    return (v as (StoredLine & { at?: string[] })[]).map((l) => ({
+      ...l,
+      lessons: l.lessons ?? (l.at ?? []).map((at) => ({ id: "", at })),
+    }));
   } catch {
     return [];
   }
@@ -81,11 +90,11 @@ function linesFromLessons(rows: BillableRow[]): StoredLine[] {
       quantity: 0,
       unitPrice: r.price,
       amount: 0,
-      at: [],
+      lessons: [],
     };
     line.quantity += 1;
     line.amount = line.quantity * line.unitPrice;
-    line.at.push(r.starts_at);
+    line.lessons.push({ id: r.lesson_id, at: r.starts_at });
     byCourse.set(r.course_id, line);
   }
   return [...byCourse.values()];
@@ -127,7 +136,8 @@ function shapeLines(lines: StoredLine[], zone: string): InvoiceLine[] {
     quantity: l.quantity,
     unitPrice: l.unitPrice,
     amount: l.amount,
-    dates: (l.at ?? []).map((iso) => utcToLocal(iso, zone).date),
+    // The days are shown only while they match the quantity (the teacher may have changed the quantity by hand).
+    dates: l.lessons.length === l.quantity ? l.lessons.map((x) => utcToLocal(x.at, zone).date) : [],
   }));
 }
 
@@ -157,23 +167,15 @@ function toInfo(r: InvoiceRow, zone: string, attendanceChanged: boolean): Invoic
 }
 
 /**
- * True when a receipt that was sent was built from lessons and the attendance of those lessons is different now
- * (a lesson was added or removed). Lines the teacher changed by hand are left out of this check.
+ * True when a receipt that was sent has a lesson that the student no longer attended (the attendance was changed, or the
+ * lesson was cancelled). Lessons the student attended later are simply not on this receipt, so they do not count.
  */
-async function attendanceChanged(ctx: Ctx, r: InvoiceRow, zone: string): Promise<boolean> {
+async function attendanceChanged(ctx: Ctx, r: InvoiceRow): Promise<boolean> {
   if (r.status !== "sent" && r.status !== "paid") return false;
-  const lines = parseLines(r.lines).filter((l) => l.courseId !== null && l.at?.length > 0);
-  if (lines.length === 0) return false;
-  const { from, to } = monthBounds(r.period, zone);
-  const now = await billableLessons(ctx.env.DB, r.tenant_id, from, to, r.student_id);
-  return lines.some((l) => {
-    const current = now
-      .filter((x) => x.course_id === l.courseId)
-      .map((x) => x.starts_at)
-      .sort();
-    const then = [...l.at].sort();
-    return current.length !== then.length || current.some((v, i) => v !== then[i]);
-  });
+  const ids = parseLines(r.lines).flatMap((l) => l.lessons.map((x) => x.id).filter((id) => id !== ""));
+  if (ids.length === 0) return false;
+  const still = await stillAttended(ctx.env.DB, r.tenant_id, r.student_id, ids);
+  return ids.some((id) => !still.has(id));
 }
 
 async function invoiceOf(ctx: Ctx, tenantId: string, id: string): Promise<InvoiceRow> {
@@ -185,7 +187,7 @@ async function invoiceOf(ctx: Ctx, tenantId: string, id: string): Promise<Invoic
 async function infoOf(ctx: Ctx, tenantId: string, id: string): Promise<InvoiceInfo> {
   const r = await invoiceOf(ctx, tenantId, id);
   const zone = await tenantTimezone(ctx.env.DB, tenantId);
-  return toInfo(r, zone, await attendanceChanged(ctx, r, zone));
+  return toInfo(r, zone, await attendanceChanged(ctx, r));
 }
 
 // ------------------------------------------------------------------- lists
@@ -210,29 +212,43 @@ export async function invoiceList(ctx: Ctx, actor: Actor, period: string): Promi
   const [rows, cancelled, missing] = await Promise.all([
     invoicesOfPeriod(ctx.env.DB, tenantId, period),
     voidedOfPeriod(ctx.env.DB, tenantId, period),
-    studentsWithoutInvoice(ctx.env.DB, tenantId, period, from, to),
+    studentsWithUnbilled(ctx.env.DB, tenantId, from, to),
   ]);
   return { period, invoices: rows.map(map), cancelled: cancelled.map(map), missing };
 }
 
 // ----------------------------------------------------------------- creating
 
-/** Makes a draft for every student who attended a paid lesson this month and has no receipt yet. */
+/** The month a receipt is filed under: the month (teacher's time zone) of a moment. */
+const periodOf = (iso: string, zone: string) => utcToLocal(iso, zone).date.slice(0, 7);
+
+/**
+ * Makes a draft for every student who attended paid lessons this month that are on no receipt yet. The draft has
+ * all of those lessons. Lessons that are already on a receipt are left alone.
+ */
 export async function generate(ctx: Ctx, actor: Actor, period: string): Promise<{ created: number }> {
   const db = ctx.env.DB;
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "invoice", "create", { tenantId });
   const zone = await tenantTimezone(db, tenantId);
   const { from, to } = monthBounds(period, zone);
-  const rows = await billableLessons(db, tenantId, from, to, null);
+  const rows = await pickLessons(db, {
+    tenantId,
+    fromUtc: from,
+    toUtc: to,
+    studentId: null,
+    lessonIds: null,
+    selfInvoice: null,
+    limit: 20000,
+  });
   const byStudent = new Map<string, BillableRow[]>();
   for (const r of rows) byStudent.set(r.student_id, [...(byStudent.get(r.student_id) ?? []), r]);
   const drafts = [...byStudent.entries()].map(([studentId, list]) => {
     const lines = linesFromLessons(list);
-    return { id: crypto.randomUUID(), studentId, lines, total: totalOf(lines) };
+    return { id: crypto.randomUUID(), studentId, period, lines, total: totalOf(lines) };
   });
   if (drafts.length === 0) return { created: 0 };
-  const res = await insertDraftsStatement(db, { tenantId, userId: actor.userId, period, drafts }).run();
+  const res = await insertDraftsStatement(db, { tenantId, userId: actor.userId, drafts }).run();
   const created = res.meta.changes ?? 0;
   await audit(db, {
     action: "invoice.generated",
@@ -246,26 +262,50 @@ export async function generate(ctx: Ctx, actor: Actor, period: string): Promise<
   return { created };
 }
 
-/** A draft for one student, even if they have no lessons yet (the teacher can add lines by hand). */
+const cannotBill = () =>
+  new AppError("CONFLICT", {
+    message:
+      "Some of these lessons cannot be charged. They may already be on another receipt, or the student did not attend them. Please choose the lessons again.",
+  });
+
+/** The lessons the teacher picked for a student, checked one by one. */
+async function pickedRows(ctx: Ctx, tenantId: string, studentId: string, ids: string[], self: string | null) {
+  const wanted = [...new Set(ids)];
+  if (wanted.length === 0) return [];
+  const rows = await pickLessons(ctx.env.DB, {
+    tenantId,
+    fromUtc: null,
+    toUtc: null,
+    studentId,
+    lessonIds: wanted,
+    selfInvoice: self,
+    limit: wanted.length,
+  });
+  if (rows.length !== wanted.length) throw cannotBill();
+  return rows;
+}
+
+/**
+ * A draft for the lessons the teacher picked. It is filed under the month of the latest lesson. With no lessons it is
+ * an empty draft for the month the teacher gave, to fill in by hand.
+ */
 export async function createOne(ctx: Ctx, actor: Actor, body: CreateInvoiceBody): Promise<InvoiceInfo> {
   const db = ctx.env.DB;
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "invoice", "create", { tenantId });
+  if (!(await studentInTenant(db, tenantId, body.studentId))) throw new AppError("NOT_FOUND");
   const zone = await tenantTimezone(db, tenantId);
-  const { from, to } = monthBounds(body.period, zone);
-  const lines = linesFromLessons(await billableLessons(db, tenantId, from, to, body.studentId));
+  const rows = await pickedRows(ctx, tenantId, body.studentId, body.lessonIds ?? [], null);
+  const latest = rows.reduce((m, r) => (r.starts_at > m ? r.starts_at : m), "");
+  const period = latest ? periodOf(latest, zone) : body.period!;
+  const lines = linesFromLessons(rows);
   const id = crypto.randomUUID();
   const res = await insertDraftsStatement(db, {
     tenantId,
     userId: actor.userId,
-    period: body.period,
-    drafts: [{ id, studentId: body.studentId, lines, total: totalOf(lines) }],
+    drafts: [{ id, studentId: body.studentId, period, lines, total: totalOf(lines) }],
   }).run();
-  if (!res.meta.changes) {
-    // Either no such student in this teacher's list, or the student already has a receipt for the month.
-    if (!(await studentInTenant(db, tenantId, body.studentId))) throw new AppError("NOT_FOUND");
-    throw new AppError("CONFLICT", { message: "This student already has a receipt for this month." });
-  }
+  if (!res.meta.changes) throw cannotBill(); // a lesson went onto another receipt a moment ago
   await audit(db, {
     action: "invoice.created",
     actorUserId: actor.userId,
@@ -273,8 +313,67 @@ export async function createOne(ctx: Ctx, actor: Actor, body: CreateInvoiceBody)
     targetType: "invoice",
     targetId: id,
     ipHash: ctx.ipHash,
+    meta: { lessons: rows.length },
   });
   return infoOf(ctx, tenantId, id);
+}
+
+const localLesson = (iso: string, zone: string) => utcToLocal(iso, zone);
+
+/** Students with lessons that are on no receipt yet. */
+export async function unbilledList(ctx: Ctx, actor: Actor): Promise<UnbilledStudent[]> {
+  const tenantId = requireTeacherTenant(actor);
+  authorize(actor, "invoice", "read", { tenantId });
+  return (await unbilledStudents(ctx.env.DB, tenantId)).map((r) => ({
+    studentId: r.student_id,
+    name: r.name,
+    lessons: r.lessons,
+    amount: r.amount,
+  }));
+}
+
+/**
+ * The lessons of one student that can go on a receipt. With `invoiceId` (a draft), the lessons of that draft are in the
+ * list too and are marked.
+ */
+export async function unbilledLessons(
+  ctx: Ctx,
+  actor: Actor,
+  studentId: string,
+  invoiceId: string | null,
+): Promise<UnbilledLesson[]> {
+  const tenantId = requireTeacherTenant(actor);
+  authorize(actor, "invoice", "read", { tenantId });
+  if (!(await studentInTenant(ctx.env.DB, tenantId, studentId))) throw new AppError("NOT_FOUND");
+  let mine = new Set<string>();
+  if (invoiceId) {
+    const inv = await invoiceOf(ctx, tenantId, invoiceId);
+    if (inv.student_id !== studentId) throw new AppError("NOT_FOUND");
+    mine = new Set(parseLines(inv.lines).flatMap((l) => l.lessons.map((x) => x.id)));
+  }
+  const zone = await tenantTimezone(ctx.env.DB, tenantId);
+  const rows = await pickLessons(ctx.env.DB, {
+    tenantId,
+    fromUtc: null,
+    toUtc: null,
+    studentId,
+    lessonIds: null,
+    selfInvoice: invoiceId,
+    limit: 500,
+  });
+  return rows.map((r) => {
+    const at = localLesson(r.starts_at, zone);
+    return {
+      lessonId: r.lesson_id,
+      courseId: r.course_id,
+      courseName: r.course_name,
+      title: r.lesson_title,
+      date: at.date,
+      startTime: at.time,
+      price: r.price,
+      inThisReceipt: mine.has(r.lesson_id),
+    };
+  });
 }
 
 // --------------------------------------------------------------- one receipt
@@ -316,7 +415,7 @@ export async function invoiceUpdate(
       quantity: l.quantity,
       unitPrice: l.unitPrice,
       amount: l.quantity * l.unitPrice,
-      at: old && old.quantity === l.quantity ? old.at : [],
+      lessons: old ? old.lessons : [], // the lessons stay on this receipt, so they cannot be charged again
     };
   });
   const total = totalOf(lines);
@@ -336,29 +435,28 @@ export async function invoiceUpdate(
   return infoOf(ctx, tenantId, id);
 }
 
-/** Works the lines out from the attendance again. Lines the teacher added by hand stay. */
-export async function invoiceRefresh(
+/**
+ * Changes which lessons a draft is made from. The lines that came from lessons are worked out again (with today's prices);
+ * the lines the teacher added by hand stay. Choosing the same lessons again works the lines out from the attendance again.
+ */
+export async function invoiceSetLessons(
   ctx: Ctx,
   actor: Actor,
   id: string,
-  version: number,
+  body: { lessonIds: string[]; version: number },
 ): Promise<InvoiceInfo> {
   const db = ctx.env.DB;
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "invoice", "update", { tenantId });
   const current = await invoiceOf(ctx, tenantId, id);
   lockedIf(current);
-  if (current.version !== version) throw new AppError("CONFLICT", { message: conflictText });
-  const zone = await tenantTimezone(db, tenantId);
-  const { from, to } = monthBounds(current.period, zone);
-  const lines = [
-    ...linesFromLessons(await billableLessons(db, tenantId, from, to, current.student_id)),
-    ...parseLines(current.lines).filter((l) => l.courseId === null),
-  ];
+  if (current.version !== body.version) throw new AppError("CONFLICT", { message: conflictText });
+  const rows = await pickedRows(ctx, tenantId, current.student_id, body.lessonIds, id);
+  const lines = [...linesFromLessons(rows), ...parseLines(current.lines).filter((l) => l.courseId === null)];
   const changed = await updateDraftStatement(db, {
     tenantId,
     id,
-    version,
+    version: body.version,
     lines,
     total: totalOf(lines),
     note: current.note,

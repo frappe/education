@@ -4,6 +4,8 @@ import type {
   MyInvoiceDetail,
   MyInvoiceItem,
   PaymentDetails,
+  UnbilledLesson,
+  UnbilledStudent,
   UpdateInvoiceBody,
 } from "@lms/shared";
 import { computed, onMounted, reactive, ref, watch } from "vue";
@@ -23,7 +25,12 @@ const emptyPayment = (): PaymentDetails => ({
 });
 
 /** The receipts of one month, and the teacher's payment details. Logic only. */
-export function useInvoiceList(text: { created: string; nothing: string; paymentSaved: string }) {
+export function useInvoiceList(text: {
+  created: string;
+  createdOne: string;
+  nothing: string;
+  paymentSaved: string;
+}) {
   const toast = useToast();
   const period = ref(currentPeriod());
   const data = ref<InvoiceListResult | null>(null);
@@ -69,7 +76,13 @@ export function useInvoiceList(text: { created: string; nothing: string; payment
         method: "POST",
         body: { period: period.value },
       });
-      toast.success(res.created > 0 ? text.created.replace("{n}", String(res.created)) : text.nothing);
+      toast.success(
+        res.created === 0
+          ? text.nothing
+          : res.created === 1
+            ? text.createdOne
+            : text.created.replace("{n}", String(res.created)),
+      );
       await load();
     } catch (err) {
       error.value = messageOf(err);
@@ -137,7 +150,7 @@ export function useInvoice(
     paid: string;
     unpaid: string;
     voided: string;
-    refreshed: string;
+    lessonsSaved: string;
     deleted: string;
   },
   onDeleted: () => void,
@@ -211,7 +224,8 @@ export function useInvoice(
       } satisfies UpdateInvoiceBody,
       text.saved,
     );
-  const refresh = () => run("/refresh", "POST", { version: version() }, text.refreshed);
+  const setLessons = (lessonIds: string[]) =>
+    run("/lessons", "PUT", { lessonIds, version: version() }, text.lessonsSaved);
   const send = () => run("/send", "POST", { version: version() }, text.sent);
   const markPaid = () => run("/paid", "POST", { version: version() }, text.paid);
   const markUnpaid = () => run("/unpaid", "POST", { version: version() }, text.unpaid);
@@ -245,7 +259,7 @@ export function useInvoice(
     addRow,
     removeRow,
     save,
-    refresh,
+    setLessons,
     send,
     markPaid,
     markUnpaid,
@@ -286,4 +300,78 @@ export function useMyInvoice(id: string) {
     }
   });
   return { invoice, loading, notFound };
+}
+
+/**
+ * The lessons of one student that can go on a receipt, and which of them are ticked. Used to make a new receipt
+ * (all ticked to start with) and to change the lessons of a draft (the ones on it are ticked). Logic only.
+ */
+export function useLessonPicker() {
+  const lessons = ref<UnbilledLesson[]>([]);
+  const chosen = ref<string[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  async function load(studentId: string, invoiceId: string | null, tickAll: boolean) {
+    loading.value = true;
+    error.value = null;
+    lessons.value = [];
+    chosen.value = [];
+    try {
+      const q = `studentId=${encodeURIComponent(studentId)}${invoiceId ? `&invoiceId=${encodeURIComponent(invoiceId)}` : ""}`;
+      lessons.value = (await api<{ lessons: UnbilledLesson[] }>(`/invoices/lessons?${q}`)).lessons;
+      chosen.value = lessons.value.filter((l) => tickAll || l.inThisReceipt).map((l) => l.lessonId);
+    } catch (err) {
+      error.value = messageOf(err);
+    } finally {
+      loading.value = false;
+    }
+  }
+  const total = computed(() =>
+    lessons.value.filter((l) => chosen.value.includes(l.lessonId)).reduce((sum, l) => sum + l.price, 0),
+  );
+  const tickAll = () => (chosen.value = lessons.value.map((l) => l.lessonId));
+  const untick = () => (chosen.value = []);
+  return { lessons, chosen, loading, error, total, load, tickAll, untick };
+}
+
+/** Making a new receipt: pick a student, then their lessons. Logic only. */
+export function useNewInvoice(onCreated: (id: string) => void) {
+  const students = ref<UnbilledStudent[]>([]);
+  const studentId = ref("");
+  const loading = ref(true);
+  const busy = ref(false);
+  const error = ref<string | null>(null);
+  const picker = useLessonPicker();
+
+  onMounted(async () => {
+    try {
+      students.value = (await api<{ students: UnbilledStudent[] }>("/invoices/unbilled")).students;
+    } catch (err) {
+      error.value = messageOf(err);
+    } finally {
+      loading.value = false;
+    }
+  });
+  watch(studentId, (id) => {
+    if (id) void picker.load(id, null, true);
+    else picker.lessons.value = [];
+  });
+
+  async function create() {
+    if (busy.value || picker.chosen.value.length === 0) return;
+    busy.value = true;
+    error.value = null;
+    try {
+      const res = await api<{ invoice: InvoiceInfo }>("/invoices", {
+        method: "POST",
+        body: { studentId: studentId.value, lessonIds: picker.chosen.value },
+      });
+      onCreated(res.invoice.id);
+    } catch (err) {
+      error.value = messageOf(err);
+      busy.value = false;
+    }
+  }
+  return { students, studentId, loading, busy, error, picker, create };
 }

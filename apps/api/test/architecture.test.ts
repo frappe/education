@@ -43,10 +43,10 @@ describe("data access rules", () => {
   });
 
   it("never builds SQL by joining strings (only a few fixed, named pieces are allowed)", () => {
-    // `${COLUMNS}`, `${where}`, `${ACTIVE_SEATS}`, `${TARGETED}`, `${VISIBLE}`, `${FROM}`, `${MINE}`, `${COURSE_FROM}`, `${COURSE_COLUMNS}` and `${onTime}` are constants written in the repos. `${placeholders(n)}` only
+    // `${COLUMNS}`, `${where}`, `${ACTIVE_SEATS}`, `${TARGETED}`, `${VISIBLE}`, `${FROM}`, `${MINE}`, `${BILLED_PICK}`, `${BILLED_ANY}`, `${TAKEN_ON_INSERT}`, `${TAKEN_ON_UPDATE}`, `${COURSE_FROM}`, `${COURSE_COLUMNS}` and `${onTime}` are constants written in the repos. `${placeholders(n)}` only
     // makes "?,?,?". No text from a request can reach these.
     const SAFE =
-      /^(COLUMNS|where|ACTIVE_SEATS|TARGETED|VISIBLE|FROM|MINE|COURSE_FROM|COURSE_COLUMNS|onTime|placeholders\((chunk|ids)\.length\))$/;
+      /^(COLUMNS|where|ACTIVE_SEATS|TARGETED|VISIBLE|FROM|MINE|BILLED_PICK|BILLED_ANY|TAKEN_ON_INSERT|TAKEN_ON_UPDATE|COURSE_FROM|COURSE_COLUMNS|onTime|placeholders\((chunk|ids)\.length\))$/;
     const offenders: string[] = [];
     for (const f of files) {
       for (const match of f.text.matchAll(/\.prepare\(\s*`([^`]*)`/g)) {

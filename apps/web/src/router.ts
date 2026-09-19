@@ -79,6 +79,11 @@ export const router = createRouter({
       meta: { requiresTeacher: true },
     },
     {
+      path: "/invoices/new",
+      component: () => import("@/pages/InvoiceNewPage.vue"),
+      meta: { requiresTeacher: true },
+    },
+    {
       path: "/invoices/:id",
       component: () => import("@/pages/InvoicePage.vue"),
       meta: { requiresTeacher: true },

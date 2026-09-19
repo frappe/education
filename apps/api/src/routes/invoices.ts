@@ -2,6 +2,7 @@ import {
   createInvoiceBody,
   generateInvoicesBody,
   invoiceVersionBody,
+  setInvoiceLessonsBody,
   paymentDetailsBody,
   period,
   updateInvoiceBody,
@@ -18,13 +19,15 @@ import {
   invoiceGet,
   invoiceList,
   invoicePaid,
-  invoiceRefresh,
+  invoiceSetLessons,
   invoiceSend,
   invoiceUnpaid,
   invoiceUpdate,
   invoiceVoid,
   paymentGet,
   paymentSet,
+  unbilledList,
+  unbilledLessons,
 } from "../invoices/service";
 import { actorOf, requireTeacher } from "../middleware/auth";
 import { parseBody } from "./helpers";
@@ -35,6 +38,20 @@ export const invoices = new Hono<AppBindings>();
 invoices.get("/invoices", requireTeacher, async (c) => {
   const q = z.object({ period }).parse(c.req.query()); // a bad month becomes a normal VALIDATION_FAILED error
   return c.json(await invoiceList(await makeCtx(c), actorOf(c), q.period));
+});
+
+// These two come before "/invoices/:id" so that the names "unbilled" and "lessons" are not taken for an id.
+invoices.get("/invoices/unbilled", requireTeacher, async (c) => {
+  return c.json({ students: await unbilledList(await makeCtx(c), actorOf(c)) });
+});
+
+invoices.get("/invoices/lessons", requireTeacher, async (c) => {
+  const q = z
+    .object({ studentId: z.string().min(1).max(40), invoiceId: z.string().min(1).max(40).optional() })
+    .parse(c.req.query());
+  return c.json({
+    lessons: await unbilledLessons(await makeCtx(c), actorOf(c), q.studentId, q.invoiceId ?? null),
+  });
 });
 
 invoices.post("/invoices/generate", requireTeacher, async (c) => {
@@ -62,11 +79,9 @@ invoices.delete("/invoices/:id", requireTeacher, async (c) => {
   return c.json({ ok: true });
 });
 
-invoices.post("/invoices/:id/refresh", requireTeacher, async (c) => {
-  const body = await parseBody(c, invoiceVersionBody);
-  return c.json({
-    invoice: await invoiceRefresh(await makeCtx(c), actorOf(c), c.req.param("id"), body.version),
-  });
+invoices.put("/invoices/:id/lessons", requireTeacher, async (c) => {
+  const body = await parseBody(c, setInvoiceLessonsBody);
+  return c.json({ invoice: await invoiceSetLessons(await makeCtx(c), actorOf(c), c.req.param("id"), body) });
 });
 
 invoices.post("/invoices/:id/send", requireTeacher, async (c) => {

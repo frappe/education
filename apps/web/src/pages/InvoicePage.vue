@@ -2,12 +2,13 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import InvoiceSheet from "@/components/InvoiceSheet.vue";
+import LessonPicker from "@/components/LessonPicker.vue";
 import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels";
 import { formatVnd } from "@/features/format";
 import { amountOf, parseMoney } from "@/features/invoices/lines";
 import { periodLabel } from "@/features/invoices/period";
 import type { SheetData } from "@/features/invoices/sheet";
-import { useInvoice } from "@/features/invoices/useInvoices";
+import { useInvoice, useLessonPicker } from "@/features/invoices/useInvoices";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -31,7 +32,7 @@ const inv = useInvoice(
     paid: t.paidDone,
     unpaid: t.unpaidDone,
     voided: t.voided,
-    refreshed: t.refreshed,
+    lessonsSaved: t.lessonsSaved,
     deleted: t.deleted,
   },
   () => router.replace("/invoices"),
@@ -66,7 +67,7 @@ const sheet = computed<SheetData | null>(() => {
 
 const print = () => window.print();
 
-type Ask = null | "send" | "refresh" | "cancel" | "delete";
+type Ask = null | "send" | "cancel" | "delete";
 const asking = ref<Ask>(null);
 const open = computed({
   get: () => asking.value !== null,
@@ -79,7 +80,6 @@ async function confirm() {
   const what = asking.value;
   asking.value = null;
   if (what === "send") await inv.send();
-  else if (what === "refresh") await inv.refresh();
   else if (what === "delete") await inv.remove();
   else if (what === "cancel") {
     await inv.cancel(reason.value.trim());
@@ -87,23 +87,26 @@ async function confirm() {
   }
 }
 const askTitle = computed(
-  () =>
-    ({ send: t.sendTitle, refresh: t.refreshTitle, cancel: t.cancelTitle, delete: t.deleteTitle })[
-      asking.value ?? "send"
-    ],
+  () => ({ send: t.sendTitle, cancel: t.cancelTitle, delete: t.deleteTitle })[asking.value ?? "send"],
 );
 const askText = computed(
-  () =>
-    ({ send: t.sendText, refresh: t.refreshText, cancel: t.cancelText, delete: t.deleteText })[
-      asking.value ?? "send"
-    ],
+  () => ({ send: t.sendText, cancel: t.cancelText, delete: t.deleteText })[asking.value ?? "send"],
 );
 const askYes = computed(
-  () =>
-    ({ send: t.sendYes, refresh: t.refresh, cancel: t.cancelYes, delete: t.deleteYes })[
-      asking.value ?? "send"
-    ],
+  () => ({ send: t.sendYes, cancel: t.cancelYes, delete: t.deleteYes })[asking.value ?? "send"],
 );
+// Choosing the lessons of a draft.
+const picking = ref(false);
+const picker = useLessonPicker();
+async function openPicker() {
+  picking.value = true;
+  await picker.load(d.value!.studentId, d.value!.id, false);
+}
+async function useLessons() {
+  picking.value = false;
+  await inv.setLessons(picker.chosen.value);
+}
+
 const canSend = computed(
   () =>
     isDraft.value &&
@@ -212,9 +215,13 @@ const canSend = computed(
                 ><AppIcon name="send" :size="16" />{{ t.send }}</AppButton
               >
               <p v-if="inv.dirty.value" class="text-xs text-base-content/60">{{ t.saveFirst }}</p>
-              <AppButton variant="ghost" compact :disabled="inv.busy.value" @click="asking = 'refresh'">{{
-                t.fromAttendance
-              }}</AppButton>
+              <AppButton
+                variant="secondary"
+                compact
+                :disabled="inv.busy.value || inv.dirty.value"
+                @click="openPicker"
+                ><AppIcon name="attendance" :size="16" />{{ t.chooseLessonsButton }}</AppButton
+              >
               <AppButton variant="ghost" compact :disabled="inv.busy.value" @click="asking = 'delete'"
                 ><AppIcon name="trash" :size="16" />{{ t.delete }}</AppButton
               >
@@ -239,6 +246,24 @@ const canSend = computed(
         </div>
       </div>
     </template>
+
+    <AppModal v-model="picking" :title="t.chooseLessonsTitle" :close-label="messages.common.close">
+      <p class="text-sm text-base-content/70">{{ t.chooseLessonsHelp }}</p>
+      <AppAlert v-if="picker.error.value" kind="error">{{ picker.error.value }}</AppAlert>
+      <AppLoading v-if="picker.loading.value" :label="messages.common.loading" />
+      <LessonPicker
+        v-else
+        v-model="picker.chosen.value"
+        :lessons="picker.lessons.value"
+        :total="picker.total.value"
+        @all="picker.tickAll"
+        @none="picker.untick"
+      />
+      <template #actions>
+        <AppButton variant="ghost" @click="picking = false">{{ messages.common.cancel }}</AppButton>
+        <AppButton :disabled="picker.loading.value" @click="useLessons">{{ t.lessonsSave }}</AppButton>
+      </template>
+    </AppModal>
 
     <AppModal v-model="open" :title="askTitle" :close-label="messages.common.close">
       <p>{{ askText }}</p>
