@@ -16,9 +16,9 @@ const VISIBLE = `FROM assignments a
   WHERE a.status IN ('published', 'closed')
     AND (a.target_mode = 'all' OR EXISTS (SELECT 1 FROM assignment_targets g WHERE g.assignment_id = a.id AND g.student_id = s.id))`;
 
-const COLUMNS = `a.id, a.tenant_id, a.course_id, c.name AS course_name, a.type, a.title, a.instructions, a.questions,
+const COLUMNS = `a.id, a.tenant_id, a.course_id, c.name AS course_name, a.title, a.instructions, a.questions,
   a.links, a.due_at, a.allow_late, a.max_score, a.status AS assignment_status, t.timezone, s.id AS student_id,
-  sub.status AS sub_status, sub.text_answer, sub.link_url, sub.answers, sub.submitted_at, sub.is_late, sub.score,
+  sub.status AS sub_status, sub.responses, sub.question_points, sub.submitted_at, sub.is_late, sub.score,
   sub.feedback, x.until_at`;
 
 export interface MyWorkRow {
@@ -26,7 +26,6 @@ export interface MyWorkRow {
   tenant_id: string;
   course_id: string;
   course_name: string;
-  type: "multiple_choice" | "essay" | "speaking";
   title: string;
   instructions: string;
   questions: string;
@@ -38,9 +37,10 @@ export interface MyWorkRow {
   timezone: string;
   student_id: string;
   sub_status: "drafted" | "submitted" | "graded" | "returned" | "revision_requested" | null;
-  text_answer: string | null;
-  link_url: string | null;
-  answers: string | null;
+  /** JSON: what the student answered, one entry for each question. */
+  responses: string | null;
+  /** JSON: the points of each question so far. */
+  question_points: string | null;
   submitted_at: string | null;
   is_late: number | null;
   score: number | null;
@@ -109,6 +109,10 @@ export async function publishedMaterials(db: D1Database, tenantId: string, cours
  * it is this student (found from the user id), the work is published, and the time is not up (unless late
  * work is allowed or the teacher gave this student more time). An answer that was already handed in
  * (or scored) is left alone. `meta.changes` is 0 when any check fails.
+ *
+ * `status` is "drafted" for a draft. For a hand-in it is "submitted" (the teacher scores some questions) or
+ * "returned" (the system scored every question, so the student gets the result at once); then `points` and
+ * `score` are the points the system gave.
  */
 export const saveAnswerStatement = (
   db: D1Database,
@@ -118,10 +122,10 @@ export const saveAnswerStatement = (
     tenantId: string;
     studentId: string;
     assignmentId: string;
-    handIn: boolean;
-    text: string;
-    link: string | null;
-    answers: number[];
+    status: "drafted" | "submitted" | "returned";
+    responses: unknown[];
+    points: Record<string, number>;
+    score: number | null;
   },
 ): D1PreparedStatement => {
   const now = nowIso();
@@ -130,28 +134,33 @@ export const saveAnswerStatement = (
     WHERE x.assignment_id = a.id AND x.student_id = s.id AND x.until_at >= ?6))`;
   return db
     .prepare(
-      `INSERT INTO submissions (id, tenant_id, assignment_id, student_id, status, text_answer, link_url, answers,
-         submitted_at, is_late, created_at, updated_at)
-       SELECT ?1, a.tenant_id, a.id, s.id, CASE WHEN ?2 = 1 THEN 'submitted' ELSE 'drafted' END, ?3, ?4, ?5,
-         CASE WHEN ?2 = 1 THEN ?6 END, CASE WHEN ?2 = 1 AND NOT ${onTime} THEN 1 ELSE 0 END, ?6, ?6
+      `INSERT INTO submissions (id, tenant_id, assignment_id, student_id, status, responses, question_points, score,
+         submitted_at, graded_at, returned_at, is_late, created_at, updated_at)
+       SELECT ?1, a.tenant_id, a.id, s.id, ?2, ?3, ?4, ?5,
+         CASE WHEN ?2 != 'drafted' THEN ?6 END, CASE WHEN ?2 = 'returned' THEN ?6 END, CASE WHEN ?2 = 'returned' THEN ?6 END,
+         CASE WHEN ?2 != 'drafted' AND NOT ${onTime} THEN 1 ELSE 0 END, ?6, ?6
        FROM assignments a JOIN students s ON s.tenant_id = a.tenant_id AND s.id = ?7 AND s.user_id = ?8 AND s.status != 'archived'
        WHERE a.tenant_id = ?9 AND a.id = ?10 AND a.status = 'published' AND (a.allow_late = 1 OR ${onTime})
        ON CONFLICT (assignment_id, student_id) DO UPDATE SET
-         status = CASE WHEN ?2 = 1 THEN 'submitted' ELSE submissions.status END,
-         text_answer = excluded.text_answer, link_url = excluded.link_url, answers = excluded.answers,
-         submitted_at = CASE WHEN ?2 = 1 THEN excluded.submitted_at ELSE submissions.submitted_at END,
-         is_late = CASE WHEN ?2 = 1 THEN excluded.is_late ELSE submissions.is_late END,
+         status = CASE WHEN ?2 != 'drafted' THEN ?2 ELSE submissions.status END,
+         responses = excluded.responses,
+         question_points = CASE WHEN ?2 != 'drafted' THEN excluded.question_points ELSE submissions.question_points END,
+         score = CASE WHEN ?2 != 'drafted' THEN excluded.score ELSE submissions.score END,
+         submitted_at = CASE WHEN ?2 != 'drafted' THEN excluded.submitted_at ELSE submissions.submitted_at END,
+         graded_at = CASE WHEN ?2 != 'drafted' THEN excluded.graded_at ELSE submissions.graded_at END,
+         returned_at = CASE WHEN ?2 != 'drafted' THEN excluded.returned_at ELSE submissions.returned_at END,
+         is_late = CASE WHEN ?2 != 'drafted' THEN excluded.is_late ELSE submissions.is_late END,
          revision_count = submissions.revision_count
-           + CASE WHEN ?2 = 1 AND submissions.status = 'revision_requested' THEN 1 ELSE 0 END,
+           + CASE WHEN ?2 != 'drafted' AND submissions.status = 'revision_requested' THEN 1 ELSE 0 END,
          version = submissions.version + 1, updated_at = excluded.updated_at
        WHERE submissions.status IN ('drafted', 'revision_requested')`,
     )
     .bind(
       o.id,
-      o.handIn ? 1 : 0,
-      o.text,
-      o.link,
-      JSON.stringify(o.answers),
+      o.status,
+      JSON.stringify(o.responses),
+      JSON.stringify(o.points),
+      o.score,
       now,
       o.studentId,
       o.userId,

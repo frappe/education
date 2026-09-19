@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
-import { submissionText, submissionTone, typeText } from "@/components/homeworkLabels";
+import { kindText, submissionText, submissionTone } from "@/components/homeworkLabels";
 import { formatWhen, hostOf } from "@/features/format";
 import { scoreText } from "@/features/homework/dates";
 import { useGrading } from "@/features/homework/useHomework";
@@ -36,6 +36,9 @@ async function send() {
   reason.value = "";
 }
 const canReturn = computed(() => d.value?.status === "graded" && !g.dirty.value);
+const answerOf = (qid: string) => d.value?.answers.find((a) => a.questionId === qid);
+const info = (qid: string) => d.value?.perQuestion.find((p) => p.questionId === qid);
+
 /** One line of the history in plain words. */
 function historyText(h: { by: string; oldScore: number | null; newScore: number | null }): string {
   const max = d.value?.assignment.maxScore ?? 0;
@@ -69,74 +72,98 @@ const stateNote = computed(() => {
     :back-label="t.back"
   >
     <template v-if="d" #actions>
-      <AppBadge>{{ typeText[d.assignment.type] }}</AppBadge>
       <AppBadge :tone="submissionTone[d.status]">{{ submissionText[d.status] }}</AppBadge>
       <AppBadge v-if="d.isLate" tone="error">{{ t.late }}</AppBadge>
     </template>
 
     <AppLoading v-if="g.loading.value" :label="messages.common.loading" />
     <AppAlert v-else-if="g.notFound.value" kind="error">{{ t.notFound }}</AppAlert>
-    <div v-else-if="d" class="grid gap-6 lg:grid-cols-5">
-      <div class="flex min-w-0 flex-col gap-6 lg:col-span-3">
-        <AppCard :title="t.yourAnswer">
-          <p class="text-sm text-base-content/60">
-            {{ t.handedInAt }}: {{ formatWhen(d.submittedAt)
-            }}<template v-if="d.revisionCount > 0">
-              · {{ fill(t.tryN, { n: d.revisionCount + 1 }) }}</template
-            >
-          </p>
+    <div v-else-if="d" class="grid gap-6 lg:grid-cols-3">
+      <div class="flex min-w-0 flex-col gap-6 lg:col-span-2">
+        <p class="text-sm text-base-content/60">
+          {{ t.handedInAt }}: {{ formatWhen(d.submittedAt)
+          }}<template v-if="d.revisionCount > 0"> · {{ fill(t.tryN, { n: d.revisionCount + 1 }) }}</template>
+        </p>
 
-          <template v-if="d.assignment.type === 'multiple_choice'">
-            <ol class="flex flex-col gap-4">
-              <li v-for="(q, qi) in d.assignment.questions" :key="qi" class="flex flex-col gap-2">
-                <p class="font-medium">{{ qi + 1 }}. {{ q.text }}</p>
-                <ul class="flex flex-col gap-1">
-                  <li
-                    v-for="(o, oi) in q.options"
-                    :key="oi"
-                    class="rounded-field border px-3 py-2 text-sm"
-                    :class="
-                      d.answer.answers[qi] === oi
-                        ? 'border-primary bg-primary/10 font-medium'
-                        : 'border-base-300'
-                    "
-                  >
-                    {{ o }}
-                  </li>
-                </ul>
-                <p v-if="(d.answer.answers[qi] ?? -1) === -1" class="text-sm text-base-content/60">
-                  {{ t.notAnswered }}
-                </p>
-              </li>
-            </ol>
-          </template>
-          <template v-else>
-            <div v-if="d.answer.linkUrl" class="rounded-field bg-base-200 p-3">
+        <AppCard v-for="(q, qi) in d.assignment.questions" :key="q.id">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
               <p class="text-sm text-base-content/60">
-                {{ d.assignment.type === "speaking" ? t.videoLink : t.link }}
+                {{ fill(messages.homework.questionN, { n: qi + 1 }) }} · {{ kindText[q.kind] }}
               </p>
+              <p class="mt-1 font-medium">{{ q.text }}</p>
+            </div>
+            <div class="flex items-end gap-2">
+              <div class="w-28">
+                <AppInput
+                  v-model="g.points[q.id]!"
+                  :label="fill(t.pointsOf, { max: q.points })"
+                  inputmode="decimal"
+                />
+              </div>
+            </div>
+          </div>
+
+          <template v-if="q.kind === 'choice'">
+            <ul class="flex flex-col gap-1">
+              <li
+                v-for="(o, oi) in q.options"
+                :key="oi"
+                class="flex items-center gap-2 rounded-field border px-3 py-2 text-sm"
+                :class="
+                  answerOf(q.id)?.choice === oi
+                    ? 'border-primary bg-primary/10 font-medium'
+                    : 'border-base-300'
+                "
+              >
+                <span class="flex-1">{{ o }}</span>
+                <AppBadge v-if="q.correct === oi" tone="success">{{ t.correctMark }}</AppBadge>
+              </li>
+            </ul>
+            <p v-if="answerOf(q.id)?.choice == null" class="text-sm text-base-content/60">
+              {{ t.notAnswered }}
+            </p>
+          </template>
+          <template v-else-if="q.kind === 'speaking'">
+            <div v-if="answerOf(q.id)?.link" class="rounded-field bg-base-200 p-3">
+              <p class="text-sm text-base-content/60">{{ t.videoLink }}</p>
               <a
-                :href="d.answer.linkUrl"
+                :href="answerOf(q.id)!.link!"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="link link-primary inline-flex items-center gap-1 break-all"
               >
-                <AppIcon :name="d.assignment.type === 'speaking' ? 'video' : 'link'" :size="16" />{{
-                  d.answer.linkUrl
-                }}
+                <AppIcon name="video" :size="16" />{{ answerOf(q.id)!.link }}
               </a>
-              <p class="text-xs text-base-content/60">{{ hostOf(d.answer.linkUrl) }}</p>
+              <p class="text-xs text-base-content/60">{{ hostOf(answerOf(q.id)!.link!) }}</p>
             </div>
-            <div v-if="d.answer.textAnswer">
-              <p v-if="d.assignment.type === 'speaking'" class="text-sm text-base-content/60">
-                {{ t.noteFromStudent }}
-              </p>
-              <p class="whitespace-pre-wrap break-words">{{ d.answer.textAnswer }}</p>
+            <div v-if="answerOf(q.id)?.text">
+              <p class="text-sm text-base-content/60">{{ t.noteFromStudent }}</p>
+              <p class="whitespace-pre-wrap break-words">{{ answerOf(q.id)!.text }}</p>
             </div>
-            <p v-if="!d.answer.linkUrl && !d.answer.textAnswer" class="text-base-content/60">
-              {{ t.noAnswer }}
+          </template>
+          <template v-else>
+            <p
+              v-if="answerOf(q.id)?.text"
+              class="whitespace-pre-wrap break-words rounded-field bg-base-200 p-3"
+            >
+              {{ answerOf(q.id)!.text }}
+            </p>
+            <p v-else class="text-sm text-base-content/60">{{ t.noAnswer }}</p>
+            <p v-if="q.kind === 'short' && q.accepted.length" class="text-sm text-base-content/60">
+              {{ fill(messages.homework.correctIs, { answer: q.accepted.join(" / ") }) }}
             </p>
           </template>
+
+          <p class="flex items-center gap-2 text-sm">
+            <template v-if="info(q.id)?.auto">
+              <AppBadge :tone="info(q.id)?.correct ? 'success' : 'error'">{{
+                info(q.id)?.correct ? t.correct : t.incorrect
+              }}</AppBadge>
+              <span class="text-base-content/60">{{ messages.homework.scoredBySystem }}</span>
+            </template>
+            <span v-else class="text-base-content/60">{{ messages.homework.scoredByYou }}</span>
+          </p>
         </AppCard>
 
         <AppCard :title="t.history" flush>
@@ -154,24 +181,22 @@ const stateNote = computed(() => {
         </AppCard>
       </div>
 
-      <div class="flex min-w-0 flex-col gap-6 lg:col-span-2">
-        <AppCard
-          :title="t.scoreLabel.replace('{max}', String(d.assignment.maxScore))"
-          :description="stateNote"
-        >
+      <div class="flex min-w-0 flex-col gap-6">
+        <AppCard class="lg:sticky lg:top-6" :title="t.totalTitle" :description="stateNote">
           <AppAlert v-if="g.error.value" kind="error">{{ g.error.value }}</AppAlert>
-          <AppInput
-            v-model="g.score.value"
-            :label="messages.homework.score"
-            inputmode="decimal"
-            :hint="t.scoreHint"
-          />
+          <p class="text-3xl font-semibold text-primary">
+            {{ scoreText(g.complete.value ? g.total.value : null, d.assignment.maxScore) }}
+          </p>
+          <p v-if="!g.complete.value" class="text-sm text-base-content/60">{{ t.pointsMissing }}</p>
           <AppTextarea v-model="g.feedback.value" :label="t.feedback" :rows="5" :hint="t.feedbackHint" />
           <p v-if="g.dirty.value" class="text-sm text-warning">{{ t.unsaved }}</p>
           <div class="flex flex-wrap gap-2">
-            <AppButton :loading="g.busy.value" :disabled="!g.dirty.value" @click="g.save">{{
-              t.save
-            }}</AppButton>
+            <AppButton
+              :loading="g.busy.value"
+              :disabled="!g.dirty.value || !g.complete.value"
+              @click="g.save"
+              >{{ t.save }}</AppButton
+            >
             <AppButton variant="secondary" :disabled="!canReturn || g.busy.value" @click="g.giveBack"
               ><AppIcon name="send" :size="16" />{{ t.giveBack }}</AppButton
             >

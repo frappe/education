@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { assignmentStatusText, assignmentStatusTone, typeIcon, typeText } from "@/components/homeworkLabels";
+import { assignmentStatusText, assignmentStatusTone, summaryLine } from "@/components/homeworkLabels";
 import { formatWhen } from "@/features/format";
 import { useCourseHomework } from "@/features/homework/useHomework";
 import { fill } from "@/features/text";
@@ -37,12 +37,13 @@ const newHomework = () => router.push(`/courses/${props.courseId}/homework/new`)
           class="flex flex-wrap items-center gap-4 px-5 py-4 hover:bg-base-200/60"
         >
           <span class="grid size-11 shrink-0 place-items-center rounded-field bg-primary/10 text-primary">
-            <AppIcon :name="typeIcon[a.type]" :size="22" />
+            <AppIcon name="attendance" :size="22" />
           </span>
           <span class="min-w-0 flex-1 basis-56">
             <span class="block truncate font-medium">{{ a.title }}</span>
             <span class="block text-sm text-base-content/60">
-              {{ typeText[a.type] }} · {{ a.dueAt ? `${t.due} ${formatWhen(a.dueAt)}` : t.noDue }}
+              {{ summaryLine(a.questions.length, a.maxScore) }} ·
+              {{ a.dueAt ? `${t.due} ${formatWhen(a.dueAt)}` : t.noDue }}
             </span>
           </span>
           <span v-if="a.status !== 'draft'" class="text-sm text-base-content/70">

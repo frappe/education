@@ -1,4 +1,5 @@
 import type {
+  AnswerItem,
   ExtensionBody,
   GradeBody,
   QueueItem,
@@ -12,9 +13,10 @@ import type { Ctx } from "../auth/service";
 import { audit } from "../audit";
 import { AppError } from "../lib/errors";
 import { nowIso } from "../lib/time";
+import { gradeAuto } from "../lib/grade";
 import { localToUtc } from "../lib/zone";
 import { authorize } from "../policy";
-import { findAssignment, parseList, targetIds } from "../repos/assignments";
+import { findAssignment, parseList, parsePoints, questionsOf, targetIds } from "../repos/assignments";
 import {
   clearExtensionStatement,
   findSubmission,
@@ -69,6 +71,17 @@ async function detailOf(
   const sub = s ?? (await submissionOf(ctx, tenantId, assignmentId, studentId));
   const zone = await tenantTimezone(ctx.env.DB, tenantId);
   const ids = a.target_mode === "selected" ? await targetIds(ctx.env.DB, tenantId, assignmentId) : [];
+  const questions = questionsOf(a);
+  const answers = questions.map(
+    (q) =>
+      parseList<AnswerItem>(sub.responses).find((r) => r.questionId === q.id) ?? {
+        questionId: q.id,
+        choice: null,
+        text: "",
+        link: null,
+      },
+  );
+  const auto = gradeAuto(questions, answers);
   return {
     assignment: toAssignmentInfo(a, zone, ids),
     studentId: sub.student_id,
@@ -77,7 +90,13 @@ async function detailOf(
     isLate: sub.is_late === 1,
     submittedAt: sub.submitted_at,
     revisionCount: sub.revision_count,
-    answer: { textAnswer: sub.text_answer, linkUrl: sub.link_url, answers: parseList<number>(sub.answers) },
+    answers,
+    points: parsePoints(sub.question_points),
+    perQuestion: questions.map((q) => ({
+      questionId: q.id,
+      auto: !auto.manualIds.includes(q.id),
+      correct: auto.manualIds.includes(q.id) ? null : (auto.correct[q.id] ?? false),
+    })),
     score: sub.score,
     feedback: sub.feedback,
     version: sub.version,
@@ -116,20 +135,35 @@ export async function grade(
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "submission", "grade", { tenantId });
   const a = await assignmentOf(ctx, tenantId, assignmentId);
-  if (body.score > a.max_score) {
-    throw new AppError("VALIDATION_FAILED", {
-      fields: { score: `The most for this work is ${a.max_score}.` },
-    });
-  }
   const current = await submissionOf(ctx, tenantId, assignmentId, studentId);
   if (current.version !== body.version) throw new AppError("CONFLICT", { message: conflictText });
+
+  // The points of every question: what the teacher gave, or what the system gave for the ones it scored.
+  const questions = questionsOf(a);
+  const stored = parsePoints(current.question_points);
+  const fail = (message: string): never => {
+    throw new AppError("VALIDATION_FAILED", { fields: { points: message } });
+  };
+  for (const key of Object.keys(body.points)) {
+    if (!questions.some((q) => q.id === key))
+      fail("One of the points is not for a question of this homework.");
+  }
+  const points: Record<string, number> = {};
+  questions.forEach((q, i) => {
+    const given = body.points[q.id] ?? stored[q.id];
+    if (given === undefined) fail(`Question ${i + 1}: please give points.`);
+    if (given! > q.points) fail(`Question ${i + 1}: the most is ${q.points}.`);
+    points[q.id] = given!;
+  });
+  const score = Object.values(points).reduce((sum, p) => sum + p, 0);
 
   const changed = await gradeStatement(db, {
     tenantId,
     assignmentId,
     studentId,
     version: body.version,
-    score: body.score,
+    score,
+    points,
     feedback: body.feedback,
     graderId: actor.userId,
   }).run();

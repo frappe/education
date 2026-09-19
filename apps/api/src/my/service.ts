@@ -1,20 +1,25 @@
-import type {
-  AnswerBody,
-  MyCourseDetail,
-  MyCourseInfo,
-  MyWorkDetail,
-  MyWorkItem,
-  SubmissionStatus,
+import {
+  isAutoQuestion,
+  type AnswerBody,
+  type AnswerItem,
+  type MyCourseDetail,
+  type MyCourseInfo,
+  type MyWorkDetail,
+  type MyWorkItem,
+  type QuestionInfo,
+  type QuestionResult,
+  type SubmissionStatus,
 } from "@lms/shared";
 import type { Actor } from "../auth/actor";
 import type { Ctx } from "../auth/service";
 import { audit } from "../audit";
+import { correctAnswerText, gradeAuto } from "../lib/grade";
 import { AppError } from "../lib/errors";
 import { uuidv7 } from "../lib/id";
 import { nowIso } from "../lib/time";
 import { utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
-import { linksOf, parseList, questionsOf } from "../repos/assignments";
+import { linksOf, parseList, parsePoints, questionsOf } from "../repos/assignments";
 import { lessonsOfCourse } from "../repos/lessons";
 import {
   findMyCourse,
@@ -46,7 +51,7 @@ function toItem(r: MyWorkRow): MyWorkItem {
     courseId: r.course_id,
     courseName: r.course_name,
     title: r.title,
-    type: r.type,
+    questionCount: questionsOf(r).length,
     assignmentStatus: r.assignment_status,
     dueAt: due,
     dueDate: local?.date ?? null,
@@ -56,13 +61,52 @@ function toItem(r: MyWorkRow): MyWorkItem {
     status: (r.sub_status ?? "not_started") as SubmissionStatus,
     isLate: r.is_late === 1,
     submittedAt: r.submitted_at,
-    // A score stays hidden until the teacher returns the work.
+    // The total stays hidden until the work is scored (returned).
     score: r.sub_status === "returned" ? r.score : null,
+  };
+}
+
+/** The saved answers, one entry for each question, in the order of the questions. */
+function answersOf(r: Pick<MyWorkRow, "responses" | "questions">): AnswerItem[] {
+  const saved = new Map(parseList<AnswerItem>(r.responses ?? "[]").map((a) => [a.questionId, a]));
+  return questionsOf(r).map(
+    (q) => saved.get(q.id) ?? { questionId: q.id, choice: null, text: "", link: null },
+  );
+}
+
+/** How it went, for a student who handed in. The teacher's points only show once the work was returned. */
+function resultsOf(r: MyWorkRow, questions: QuestionInfo[], answers: AnswerItem[]): MyWorkDetail["results"] {
+  const auto = gradeAuto(questions, answers);
+  const saved = parsePoints(r.question_points);
+  const returned = r.sub_status === "returned";
+  const perQuestion: QuestionResult[] = questions.map((q) => {
+    if (isAutoQuestion(q)) {
+      return {
+        questionId: q.id,
+        correct: auto.correct[q.id] ?? false,
+        awarded: saved[q.id] ?? auto.points[q.id] ?? 0,
+        correctAnswer: correctAnswerText(q),
+      };
+    }
+    return {
+      questionId: q.id,
+      correct: null,
+      awarded: returned ? (saved[q.id] ?? null) : null,
+      correctAnswer: null,
+    };
+  });
+  return {
+    perQuestion,
+    autoAwarded: auto.autoAwarded,
+    autoMax: auto.autoMax,
+    waitingForTeacher: returned ? 0 : auto.manualIds.length,
   };
 }
 
 function toDetail(r: MyWorkRow, now: string): MyWorkDetail {
   const item = toItem(r);
+  const questions = questionsOf(r);
+  const answers = answersOf(r);
   const handedIn = r.sub_status === "submitted" || r.sub_status === "graded" || r.sub_status === "returned";
   const timeUp = item.dueAt !== null && item.dueAt < now && !item.allowLate;
   const blocked = handedIn
@@ -75,13 +119,17 @@ function toDetail(r: MyWorkRow, now: string): MyWorkDetail {
   return {
     ...item,
     instructions: r.instructions,
-    questions: questionsOf(r),
+    // The correct answers are never sent while the student can still change their work.
+    questions: questions.map((q) => ({
+      id: q.id,
+      kind: q.kind,
+      text: q.text,
+      points: q.points,
+      options: q.options,
+    })),
     links: linksOf(r),
-    answer: {
-      textAnswer: r.text_answer ?? "",
-      linkUrl: r.link_url,
-      answers: parseList<number>(r.answers ?? "[]"),
-    },
+    answers,
+    results: handedIn ? resultsOf(r, questions, answers) : null,
     // The teacher's words show with a returned score, or as the reason for a new try. Never before.
     feedback: r.sub_status === "returned" || r.sub_status === "revision_requested" ? (r.feedback ?? "") : "",
     canEdit: blocked === null,
@@ -105,31 +153,42 @@ export async function workGet(ctx: Ctx, actor: Actor, id: string): Promise<MyWor
 }
 
 /**
- * Checks what the student wrote against the kind of work, and keeps only the parts that belong to it.
- * A draft may be incomplete. Handing in needs a real answer.
+ * Checks what the student wrote against each question and keeps only the parts that belong to its kind.
+ * Returns one entry for each question, in order. A draft may be incomplete; handing in needs every question answered.
  */
-function shapeAnswer(row: MyWorkRow, body: AnswerBody, handIn: boolean): AnswerBody {
-  const questions = questionsOf(row);
-  const fail = (field: string, message: string): never => {
-    throw new AppError("VALIDATION_FAILED", { fields: { [field]: message } });
+function shapeAnswers(questions: QuestionInfo[], body: AnswerBody, handIn: boolean): AnswerItem[] {
+  const fail = (message: string): never => {
+    throw new AppError("VALIDATION_FAILED", { fields: { answers: message } });
   };
-  if (row.type === "multiple_choice") {
-    if (body.answers.length !== questions.length) fail("answers", "Please answer each question.");
-    body.answers.forEach((a, i) => {
-      if (a < -1 || a >= questions[i]!.options.length)
-        fail("answers", "One of the answers is not on the list.");
-      if (handIn && a === -1) fail("answers", "Please answer every question before you hand in.");
-    });
-    return { textAnswer: "", linkUrl: null, answers: body.answers };
+  const byId = new Map<string, AnswerItem>();
+  for (const a of body.answers) {
+    if (byId.has(a.questionId) || !questions.some((q) => q.id === a.questionId)) {
+      fail("One of the answers is not for a question of this homework, or is there twice.");
+    }
+    byId.set(a.questionId, a);
   }
-  if (row.type === "speaking") {
-    if (body.textAnswer.length > 2000) fail("textAnswer", "This note is too long.");
-    if (handIn && !body.linkUrl) fail("linkUrl", "Please add the link to your video.");
-    return { textAnswer: body.textAnswer.trim(), linkUrl: body.linkUrl, answers: [] };
-  }
-  if (handIn && body.textAnswer.trim() === "" && !body.linkUrl)
-    fail("textAnswer", "Please write your answer.");
-  return { textAnswer: body.textAnswer.trim(), linkUrl: body.linkUrl, answers: [] };
+  return questions.map((q, i) => {
+    const a = byId.get(q.id) ?? { questionId: q.id, choice: null, text: "", link: null };
+    const n = `Question ${i + 1}: `;
+    const text = a.text.trim();
+    if (q.kind === "choice") {
+      if (a.choice !== null && a.choice >= q.options.length) fail(`${n}this answer is not on the list.`);
+      if (handIn && a.choice === null) fail(`${n}please choose an answer.`);
+      return { questionId: q.id, choice: a.choice, text: "", link: null };
+    }
+    if (q.kind === "short") {
+      if (text.length > 500) fail(`${n}this answer is too long.`);
+      if (handIn && text === "") fail(`${n}please write your answer.`);
+      return { questionId: q.id, choice: null, text, link: null };
+    }
+    if (q.kind === "written") {
+      if (handIn && text === "") fail(`${n}please write your answer.`);
+      return { questionId: q.id, choice: null, text, link: null };
+    }
+    if (text.length > 2000) fail(`${n}this note is too long.`);
+    if (handIn && !a.link) fail(`${n}please add the link to your video.`);
+    return { questionId: q.id, choice: null, text, link: a.link };
+  });
 }
 
 async function save(
@@ -142,7 +201,13 @@ async function save(
   const db = ctx.env.DB;
   const row = await loadWork(ctx, actor, id);
   authorize(actor, "submission", row.sub_status ? "update" : "create", own(actor, row.tenant_id));
-  const shaped = shapeAnswer(row, body, handIn);
+  const questions = questionsOf(row);
+  const answers = shapeAnswers(questions, body, handIn);
+
+  // The system scores the questions that have a correct answer at the moment the work is handed in.
+  // When there is nothing left for the teacher, the student gets the result at once.
+  const auto = handIn ? gradeAuto(questions, answers) : null;
+  const allAuto = auto !== null && auto.manualIds.length === 0;
 
   const res = await saveAnswerStatement(db, {
     id: uuidv7(),
@@ -150,10 +215,10 @@ async function save(
     tenantId: row.tenant_id,
     studentId: row.student_id,
     assignmentId: row.id,
-    handIn,
-    text: shaped.textAnswer,
-    link: shaped.linkUrl,
-    answers: shaped.answers,
+    status: !handIn ? "drafted" : allAuto ? "returned" : "submitted",
+    responses: answers,
+    points: auto?.points ?? {},
+    score: allAuto ? auto.autoAwarded : null,
   }).run();
 
   if (!res.meta.changes) {
@@ -173,6 +238,7 @@ async function save(
       targetType: "assignment",
       targetId: id,
       ipHash: ctx.ipHash,
+      meta: { scored_by_system: allAuto },
     });
   }
   return toDetail((await findMyWork(db, actor.userId, id))!, nowIso());

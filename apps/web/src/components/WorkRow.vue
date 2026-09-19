@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { MyWorkItem } from "@lms/shared";
 import { computed } from "vue";
-import { typeIcon, typeText } from "@/components/homeworkLabels";
+import { summaryLine } from "@/components/homeworkLabels";
 import { dueWords, isOverdue, scoreText } from "@/features/homework/dates";
 import { messages } from "@/messages";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -35,12 +35,13 @@ const label = computed(() => {
     class="flex flex-wrap items-center gap-4 px-5 py-4 hover:bg-base-200/60"
   >
     <span class="grid size-11 shrink-0 place-items-center rounded-field bg-primary/10 text-primary">
-      <AppIcon :name="typeIcon[item.type]" :size="22" />
+      <AppIcon name="attendance" :size="22" />
     </span>
     <span class="min-w-0 flex-1 basis-56">
       <span class="block truncate font-medium">{{ item.title }}</span>
       <span class="block truncate text-sm text-base-content/60">
-        {{ typeText[item.type] }}<template v-if="showCourse"> · {{ item.courseName }}</template>
+        {{ summaryLine(item.questionCount, item.maxScore)
+        }}<template v-if="showCourse"> · {{ item.courseName }}</template>
       </span>
     </span>
     <span

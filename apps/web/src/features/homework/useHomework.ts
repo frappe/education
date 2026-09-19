@@ -6,10 +6,11 @@ import {
   type EnrollmentInfo,
   type GradeBody,
   type MaterialInfo,
+  type QuestionKind,
   type SubmissionDetail,
   type SubmissionRow,
 } from "@lms/shared";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { messageOf, statusOf } from "@/features/errors";
 import { useForm } from "@/features/forms/useForm";
@@ -98,24 +99,67 @@ export function useMaterials(courseId: string, text: { added: string; saved: str
 
 // ------------------------------------------------------------------ the form
 
-type Kind = "essay" | "speaking" | "multiple_choice";
+/** One question as it is typed. Numbers are kept as text until they are sent. */
+interface QuestionValues {
+  id?: string;
+  kind: QuestionKind;
+  text: string;
+  points: string;
+  options: string[];
+  correct: number | null;
+  accepted: string[];
+}
 interface Values extends Record<string, unknown> {
-  type: Kind;
   title: string;
   instructions: string;
   dueDate: string;
   dueTime: string;
   allowLate: boolean;
-  maxScore: string;
   targetMode: "all" | "selected";
   studentIds: string[];
-  questions: { text: string; options: string[] }[];
+  questions: QuestionValues[];
   links: { title: string; url: string }[];
 }
 
-const emptyQuestion = () => ({ text: "", options: ["", ""] });
+/** A new empty question of this kind. Questions the teacher scores by hand start at 5 points, the others at 1. */
+export const newQuestion = (kind: QuestionKind): QuestionValues => ({
+  kind,
+  text: "",
+  points: kind === "written" || kind === "speaking" ? "5" : "1",
+  options: kind === "choice" ? ["", ""] : [],
+  correct: null,
+  accepted: kind === "short" ? [""] : [],
+});
 
-/** Make or change one piece of work. Logic only. */
+const blank = (v: string) => v.trim() === "";
+
+/** What is sent for one typed question. Empty answers are left out, and the correct answer follows its answer. */
+export function questionPayload(q: QuestionValues) {
+  const keep = q.options.map((o, i) => ({ o, i })).filter((x) => !blank(x.o));
+  return {
+    ...(q.id ? { id: q.id } : {}),
+    kind: q.kind,
+    text: q.text,
+    points: blank(q.points) ? undefined : Number(q.points.replace(",", ".")),
+    options: q.kind === "choice" ? keep.map((x) => x.o) : [],
+    correct:
+      q.kind === "choice" && q.correct !== null
+        ? keep.findIndex((x) => x.i === q.correct) >= 0
+          ? keep.findIndex((x) => x.i === q.correct)
+          : null
+        : null,
+    accepted: q.kind === "short" ? q.accepted.filter((x) => !blank(x)) : [],
+  };
+}
+
+/** The points of all questions together, for the number shown next to the questions. */
+export const totalOf = (questions: QuestionValues[]): number =>
+  questions.reduce((sum, q) => {
+    const n = Number(q.points.replace(",", "."));
+    return sum + (Number.isFinite(n) && n > 0 ? n : 0);
+  }, 0);
+
+/** Make or change one homework. Logic only. */
 export function useAssignmentForm(
   courseId: string | undefined,
   id: string | undefined,
@@ -128,19 +172,14 @@ export function useAssignmentForm(
   const owner = ref<string | undefined>(courseId);
 
   const payload = (v: Values) => ({
-    type: v.type,
     title: v.title,
     instructions: v.instructions,
-    questions:
-      v.type === "multiple_choice"
-        ? v.questions.map((q) => ({ text: q.text, options: q.options.filter((o) => o.trim() !== "") }))
-        : [],
+    questions: v.questions.map(questionPayload),
     links: v.links.filter((l) => l.title.trim() !== "" || l.url.trim() !== ""),
     // A day with no time means the usual time. No day means no due date at all.
     dueDate: v.dueDate || null,
     dueTime: v.dueDate ? v.dueTime || "18:00" : null,
     allowLate: v.allowLate,
-    maxScore: v.maxScore.trim() === "" ? undefined : Number(v.maxScore),
     targetMode: v.targetMode,
     studentIds: v.targetMode === "selected" ? v.studentIds : [],
     ...(assignment.value ? { version: assignment.value.version } : {}),
@@ -148,16 +187,14 @@ export function useAssignmentForm(
 
   const form = useForm<Values>(
     {
-      type: "essay",
       title: "",
       instructions: "",
       dueDate: "",
       dueTime: "",
       allowLate: false,
-      maxScore: "10",
       targetMode: "all",
       studentIds: [],
-      questions: [emptyQuestion()],
+      questions: [newQuestion("written")],
       links: [],
     },
     {
@@ -199,18 +236,22 @@ export function useAssignmentForm(
         assignment.value = a;
         owner.value = a.courseId;
         Object.assign(form.values, {
-          type: a.type,
           title: a.title,
           instructions: a.instructions,
           dueDate: a.dueDate ?? "",
           dueTime: a.dueTime ?? "",
           allowLate: a.allowLate,
-          maxScore: String(a.maxScore),
           targetMode: a.targetMode,
           studentIds: [...a.studentIds],
-          questions: a.questions.length
-            ? a.questions.map((q) => ({ text: q.text, options: [...q.options] }))
-            : [emptyQuestion()],
+          questions: a.questions.map((q) => ({
+            id: q.id,
+            kind: q.kind,
+            text: q.text,
+            points: String(q.points),
+            options: [...q.options],
+            correct: q.correct,
+            accepted: q.kind === "short" && q.accepted.length === 0 ? [""] : [...q.accepted],
+          })),
           links: a.links.map((l) => ({ ...l })),
         });
       }
@@ -222,12 +263,26 @@ export function useAssignmentForm(
     }
   });
 
-  const addQuestion = () => form.values.questions.push(emptyQuestion());
+  const q = (i: number) => form.values.questions[i]!;
+  const addQuestion = (kind: QuestionKind) => form.values.questions.push(newQuestion(kind));
   const removeQuestion = (i: number) => form.values.questions.splice(i, 1);
-  const addOption = (q: number) =>
-    form.values.questions[q]!.options.length < 6 && form.values.questions[q]!.options.push("");
-  const removeOption = (q: number, o: number) =>
-    form.values.questions[q]!.options.length > 2 && form.values.questions[q]!.options.splice(o, 1);
+  /** Changing the kind clears what only belongs to the old kind. */
+  function setKind(i: number, kind: QuestionKind) {
+    const old = q(i);
+    const fresh = newQuestion(kind);
+    Object.assign(old, { kind, options: fresh.options, correct: null, accepted: fresh.accepted });
+  }
+  const addOption = (i: number) => q(i).options.length < 6 && q(i).options.push("");
+  function removeOption(i: number, o: number) {
+    const question = q(i);
+    if (question.options.length <= 2) return;
+    question.options.splice(o, 1);
+    if (question.correct === o) question.correct = null;
+    else if (question.correct !== null && question.correct > o) question.correct -= 1;
+  }
+  const setCorrect = (i: number, o: number | null) => (q(i).correct = o);
+  const addAccepted = (i: number) => q(i).accepted.length < 10 && q(i).accepted.push("");
+  const removeAccepted = (i: number, a: number) => q(i).accepted.splice(a, 1);
   const addLink = () => form.values.links.length < 10 && form.values.links.push({ title: "", url: "" });
   const removeLink = (i: number) => form.values.links.splice(i, 1);
   const toggleStudent = (sid: string) => {
@@ -236,8 +291,9 @@ export function useAssignmentForm(
     if (at >= 0) list.splice(at, 1);
     else list.push(sid);
   };
-  /** The kind of work cannot change once it was published. */
-  const kindLocked = computed(() => assignment.value !== null && assignment.value.status !== "draft");
+  const total = computed(() => totalOf(form.values.questions));
+  /** Students started: only the words of the questions can change. */
+  const wordsOnly = computed(() => (assignment.value?.counts.handedIn ?? 0) > 0);
 
   return {
     form,
@@ -245,11 +301,16 @@ export function useAssignmentForm(
     loading,
     notFound,
     students,
-    kindLocked,
+    total,
+    wordsOnly,
     addQuestion,
     removeQuestion,
+    setKind,
     addOption,
     removeOption,
+    setCorrect,
+    addAccepted,
+    removeAccepted,
     addLink,
     removeLink,
     toggleStudent,
@@ -320,7 +381,7 @@ export function useAssignmentPage(
 
 // ---------------------------------------------------------------- grading
 
-/** Scoring one answer. Logic only. */
+/** Scoring one answer, question by question. Logic only. */
 export function useGrading(
   assignmentId: string,
   studentId: string,
@@ -332,13 +393,16 @@ export function useGrading(
   const notFound = ref(false);
   const busy = ref(false);
   const error = ref<string | null>(null);
-  const score = ref("");
+  /** The points typed for each question (by question id). */
+  const points = reactive<Record<string, string>>({});
   const feedback = ref("");
   const base = `/assignments/${assignmentId}/submissions/${studentId}`;
 
   function take(d: SubmissionDetail) {
     detail.value = d;
-    score.value = d.score === null ? "" : String(d.score);
+    for (const key of Object.keys(points)) delete points[key];
+    for (const q of d.assignment.questions)
+      points[q.id] = d.points[q.id] === undefined ? "" : String(d.points[q.id]);
     feedback.value = d.feedback;
   }
 
@@ -367,23 +431,53 @@ export function useGrading(
     }
   }
 
-  const number = () => (score.value.trim() === "" ? Number.NaN : Number(score.value.replace(",", ".")));
-  const save = () =>
-    run(
+  const num = (v: string) => Number(v.replace(",", "."));
+  const total = computed(() =>
+    (detail.value?.assignment.questions ?? []).reduce(
+      (sum, q) => sum + (points[q.id]?.trim() ? num(points[q.id]!) || 0 : 0),
+      0,
+    ),
+  );
+  /** Every question has points, so a score can be saved. */
+  const complete = computed(() =>
+    (detail.value?.assignment.questions ?? []).every((q) => (points[q.id] ?? "").trim() !== ""),
+  );
+  const save = () => {
+    const given: Record<string, number> = {};
+    for (const q of detail.value?.assignment.questions ?? [])
+      if ((points[q.id] ?? "").trim() !== "") given[q.id] = num(points[q.id]!);
+    return run(
       "/grade",
       "PUT",
-      { score: number(), feedback: feedback.value, version: detail.value!.version } satisfies GradeBody,
+      { points: given, feedback: feedback.value, version: detail.value!.version } satisfies GradeBody,
       text.saved,
     );
+  };
   const giveBack = () => run("/return", "POST", { version: detail.value!.version }, text.returned);
   const askAgain = (reason: string) =>
     run("/request-revision", "POST", { feedback: reason, version: detail.value!.version }, text.again);
-  /** The score or feedback on screen is different from what is saved. */
-  const dirty = computed(
-    () =>
-      detail.value !== null &&
-      (score.value !== (detail.value.score === null ? "" : String(detail.value.score)) ||
-        feedback.value !== detail.value.feedback),
-  );
-  return { detail, loading, notFound, busy, error, score, feedback, save, giveBack, askAgain, dirty };
+  /** What is on screen is different from what is saved. */
+  const dirty = computed(() => {
+    const d = detail.value;
+    if (!d) return false;
+    if (feedback.value !== d.feedback) return true;
+    return d.assignment.questions.some(
+      (q) => (points[q.id] ?? "") !== (d.points[q.id] === undefined ? "" : String(d.points[q.id])),
+    );
+  });
+  return {
+    detail,
+    loading,
+    notFound,
+    busy,
+    error,
+    points,
+    feedback,
+    total,
+    complete,
+    save,
+    giveBack,
+    askAgain,
+    dirty,
+  };
 }

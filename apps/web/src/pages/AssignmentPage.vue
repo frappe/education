@@ -4,9 +4,10 @@ import { useRoute, useRouter } from "vue-router";
 import {
   assignmentStatusText,
   assignmentStatusTone,
+  kindText,
   submissionText,
   submissionTone,
-  typeText,
+  summaryLine,
 } from "@/components/homeworkLabels";
 import { formatWhen, hostOf } from "@/features/format";
 import { scoreText } from "@/features/homework/dates";
@@ -70,7 +71,7 @@ const canDelete = computed(
     :back-label="t.backToCourse"
   >
     <template v-if="a" #actions>
-      <AppBadge>{{ typeText[a.type] }}</AppBadge>
+      <AppBadge>{{ summaryLine(a.questions.length, a.maxScore) }}</AppBadge>
       <AppBadge :tone="assignmentStatusTone[a.status]">{{ assignmentStatusText[a.status] }}</AppBadge>
       <AppButton v-if="a.status !== 'published'" compact @click="p.publish"
         ><AppIcon name="send" :size="16" />{{ a.status === "closed" ? t.reopen : t.publish }}</AppButton
@@ -87,12 +88,41 @@ const canDelete = computed(
     <template v-else-if="a">
       <AppCard>
         <p v-if="a.instructions" class="whitespace-pre-wrap break-words">{{ a.instructions }}</p>
-        <ul v-if="a.questions.length" class="flex flex-col gap-2 text-sm">
-          <li v-for="(q, i) in a.questions" :key="i" class="rounded-field bg-base-200 px-3 py-2">
-            <span class="font-medium">{{ i + 1 }}. {{ q.text }}</span>
-            <span class="block text-base-content/60">{{ q.options.join(" · ") }}</span>
+        <ol class="flex flex-col gap-2 text-sm">
+          <li v-for="(q, i) in a.questions" :key="q.id" class="rounded-field bg-base-200 px-3 py-2">
+            <span class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-medium">{{ i + 1 }}. {{ q.text }}</span>
+              <span class="flex items-center gap-2 text-base-content/60">
+                {{ kindText[q.kind] }} ·
+                {{ q.points === 1 ? t.pointsOne : fill(t.pointsTotal, { n: q.points }) }}
+                <AppBadge
+                  :tone="
+                    (q.kind === 'choice' && q.correct !== null) || (q.kind === 'short' && q.accepted.length)
+                      ? 'success'
+                      : 'neutral'
+                  "
+                >
+                  {{
+                    (q.kind === "choice" && q.correct !== null) || (q.kind === "short" && q.accepted.length)
+                      ? t.scoredBySystem
+                      : t.scoredByYou
+                  }}
+                </AppBadge>
+              </span>
+            </span>
+            <span v-if="q.kind === 'choice'" class="mt-1 block text-base-content/70">
+              <template v-for="(o, oi) in q.options" :key="oi"
+                ><span :class="{ 'font-semibold text-success': q.correct === oi }">{{ o }}</span
+                ><span v-if="oi < q.options.length - 1"> · </span></template
+              >
+            </span>
+            <span
+              v-else-if="q.kind === 'short' && q.accepted.length"
+              class="mt-1 block text-base-content/70"
+              >{{ fill(t.correctIs, { answer: q.accepted.join(" / ") }) }}</span
+            >
           </li>
-        </ul>
+        </ol>
         <ul v-if="a.links.length" class="flex flex-col gap-1">
           <li v-for="l in a.links" :key="l.url">
             <a
@@ -113,7 +143,6 @@ const canDelete = computed(
             }}</span
           >
           <span v-if="a.allowLate">{{ t.lateOk }}</span>
-          <span>{{ t.maxScore }}: {{ a.maxScore }}</span>
           <span>{{ a.targetMode === "all" ? t.forAll : t.forSome }}</span>
         </p>
       </AppCard>

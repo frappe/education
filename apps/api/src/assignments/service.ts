@@ -3,12 +3,14 @@ import type {
   CreateAssignmentBody,
   MaterialBody,
   MaterialInfo,
+  QuestionInfo,
   UpdateAssignmentBody,
 } from "@lms/shared";
 import { requireTeacherTenant, type Actor } from "../auth/actor";
 import type { Ctx } from "../auth/service";
 import { audit } from "../audit";
 import { AppError } from "../lib/errors";
+import { summaryKind, totalPoints } from "../lib/grade";
 import { uuidv7 } from "../lib/id";
 import { localToUtc, utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
@@ -44,7 +46,6 @@ export function toAssignmentInfo(r: AssignmentRow, zone: string, studentIds: str
     id: r.id,
     courseId: r.course_id,
     courseName: r.course_name,
-    type: r.type,
     title: r.title,
     instructions: r.instructions,
     questions: questionsOf(r),
@@ -84,15 +85,33 @@ async function checkChosen(ctx: Ctx, tenantId: string, courseId: string, ids: st
   }
 }
 
-const writeOf = (body: CreateAssignmentBody, zone: string) => ({
-  type: body.type,
+/** Gives every new question an id, and keeps the ids of the ones that were already there. */
+export function withIds(input: CreateAssignmentBody["questions"]): QuestionInfo[] {
+  return input.map((q) => ({
+    id: q.id ?? `q_${crypto.randomUUID().slice(0, 8)}`,
+    kind: q.kind,
+    text: q.text,
+    points: q.points,
+    options: q.kind === "choice" ? q.options : [],
+    correct: q.kind === "choice" ? q.correct : null,
+    accepted: q.kind === "short" ? q.accepted.filter((x) => x.trim() !== "") : [],
+  }));
+}
+
+/** The same questions in the same order, apart from the words of the question. */
+const sameExceptWording = (a: QuestionInfo[], b: QuestionInfo[]) =>
+  a.length === b.length &&
+  a.every((q, i) => JSON.stringify({ ...q, text: "" }) === JSON.stringify({ ...b[i]!, text: "" }));
+
+const writeOf = (body: CreateAssignmentBody, questions: QuestionInfo[], zone: string) => ({
+  type: summaryKind(questions),
   title: body.title,
   instructions: body.instructions,
-  questions: body.questions,
+  questions,
   links: body.links,
   dueAt: body.dueDate && body.dueTime ? localToUtc(body.dueDate, body.dueTime, zone) : null,
   allowLate: body.allowLate,
-  maxScore: body.maxScore,
+  maxScore: totalPoints(questions),
   targetMode: body.targetMode,
 });
 
@@ -129,7 +148,12 @@ export async function createAssignment(
   const id = uuidv7();
   const zone = await tenantTimezone(db, tenantId);
   const [made] = await db.batch([
-    insertAssignmentStatement(db, { id, tenantId, courseId, ...writeOf(body, zone) }),
+    insertAssignmentStatement(db, {
+      id,
+      tenantId,
+      courseId,
+      ...writeOf(body, withIds(body.questions), zone),
+    }),
     ...(body.targetMode === "selected" ? [insertTargetsStatement(db, tenantId, id, body.studentIds)] : []),
   ]);
   if (!made?.meta.changes) throw new AppError("CONFLICT");
@@ -140,7 +164,7 @@ export async function createAssignment(
     targetType: "assignment",
     targetId: id,
     ipHash: ctx.ipHash,
-    meta: { type: body.type },
+    meta: { questions: body.questions.length },
   });
   return present(ctx, tenantId, id);
 }
@@ -156,15 +180,12 @@ export async function updateAssignment(
   authorize(actor, "assignment", "update", { tenantId });
   const current = await load(ctx, tenantId, id);
   if (current.version !== body.version) throw new AppError("CONFLICT");
-  if (current.status !== "draft" && current.type !== body.type) {
-    throw new AppError("CONFLICT", { message: "The kind of work cannot change after it was published." });
-  }
-  if (
-    JSON.stringify(questionsOf(current)) !== JSON.stringify(body.questions) &&
-    (await hasSubmissions(db, tenantId, id))
-  ) {
+  const questions = withIds(body.questions);
+  // Once students started answering, only the wording of a question may change. The kind, the points, the
+  // answers and the correct answer stay, because the answers and scores that exist depend on them.
+  if (!sameExceptWording(questionsOf(current), questions) && (await hasSubmissions(db, tenantId, id))) {
     throw new AppError("CONFLICT", {
-      message: "The questions cannot change after students started answering.",
+      message: "Students already started, so only the wording of the questions can change.",
     });
   }
   if (body.targetMode === "selected") await checkChosen(ctx, tenantId, current.course_id, body.studentIds);
@@ -172,7 +193,7 @@ export async function updateAssignment(
   const zone = await tenantTimezone(db, tenantId);
   const next = body.version + 1;
   const [changed] = await db.batch([
-    updateAssignmentStatement(db, { tenantId, id, version: body.version, ...writeOf(body, zone) }),
+    updateAssignmentStatement(db, { tenantId, id, version: body.version, ...writeOf(body, questions, zone) }),
     clearTargetsStatement(db, tenantId, id, next),
     ...(body.targetMode === "selected"
       ? [insertTargetsAfterUpdateStatement(db, tenantId, id, next, body.studentIds)]

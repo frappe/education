@@ -46,6 +46,15 @@ export const parseList = <T>(text: string): T[] => {
     return [];
   }
 };
+/** A JSON object of points by question id. A missing or broken one is empty. */
+export const parsePoints = (text: string | null): Record<string, number> => {
+  try {
+    const v: unknown = JSON.parse(text ?? "{}");
+    return v !== null && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, number>) : {};
+  } catch {
+    return {};
+  }
+};
 export const questionsOf = (r: Pick<AssignmentRow, "questions">) => parseList<QuestionInfo>(r.questions);
 export const linksOf = (r: Pick<AssignmentRow, "links">) => parseList<LinkInfo>(r.links);
 
@@ -88,6 +97,7 @@ export async function enrolledAmong(db: D1Database, tenantId: string, courseId: 
 }
 
 export interface AssignmentWrite {
+  /** A summary derived from the questions. Nothing depends on it. */
   type: string;
   title: string;
   instructions: string;
@@ -146,7 +156,7 @@ export const insertTargetsStatement = (
 
 /**
  * Saves changes only if nobody changed the assignment since the person opened it (same version).
- * The kind of work cannot change once it was published. `meta.changes` is 0 when a check fails.
+ * `meta.changes` is 0 when the version is old.
  */
 export const updateAssignmentStatement = (
   db: D1Database,
@@ -156,7 +166,7 @@ export const updateAssignmentStatement = (
     .prepare(
       `UPDATE assignments SET type = ?1, title = ?2, instructions = ?3, questions = ?4, links = ?5, due_at = ?6,
          allow_late = ?7, max_score = ?8, target_mode = ?9, version = version + 1, updated_at = ?10
-       WHERE tenant_id = ?11 AND id = ?12 AND version = ?13 AND (status = 'draft' OR type = ?1)`,
+       WHERE tenant_id = ?11 AND id = ?12 AND version = ?13`,
     )
     .bind(
       o.type,

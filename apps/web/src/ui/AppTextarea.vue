@@ -3,6 +3,8 @@ import { useId } from "vue";
 
 defineProps<{
   disabled?: boolean;
+  /** Can be read and copied but not changed, and keeps the normal text color. */
+  readonly?: boolean;
   label: string;
   error?: string;
   hint?: string;
@@ -20,6 +22,7 @@ const id = useId();
       v-model="model"
       :rows="rows ?? 4"
       :disabled="disabled"
+      :readonly="readonly"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       class="textarea w-full"

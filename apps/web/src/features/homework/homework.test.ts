@@ -1,6 +1,7 @@
 import type { MyWorkItem } from "@lms/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createAutosave } from "../my/autosave";
+import { newQuestion, questionPayload, totalOf } from "./useHomework";
 import { dueWords, groupWork, isOverdue, scoreText } from "./dates";
 
 const NOW = new Date("2026-10-05T12:00:00.000Z");
@@ -45,7 +46,7 @@ const work = (over: Partial<MyWorkItem>): MyWorkItem => ({
   courseId: "c",
   courseName: "English",
   title: "A",
-  type: "essay",
+  questionCount: 1,
   assignmentStatus: "published",
   dueAt: null,
   dueDate: null,
@@ -152,5 +153,63 @@ describe("createAutosave", () => {
     await vi.advanceTimersByTimeAsync(50);
     await done;
     expect(save).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("questionPayload", () => {
+  const q = (over: Record<string, unknown> = {}) => ({ ...newQuestion("choice"), text: "Q", ...over });
+
+  it("leaves out empty answers and moves the correct answer with its answer", () => {
+    const p = questionPayload(q({ options: ["a", "", "c", "  ", "e"], correct: 4 }));
+    expect(p.options).toEqual(["a", "c", "e"]);
+    expect(p.correct).toBe(2); // "e" was the fifth, and is now the third
+  });
+
+  it("has no correct answer when the marked answer was empty, or none was marked", () => {
+    expect(questionPayload(q({ options: ["a", "", "c"], correct: 1 })).correct).toBeNull();
+    expect(questionPayload(q({ options: ["a", "b"], correct: null })).correct).toBeNull();
+    expect(questionPayload(q({ options: ["a", "b"], correct: 0 })).correct).toBe(0);
+  });
+
+  it("only sends what belongs to the kind of question", () => {
+    const short = questionPayload({
+      ...newQuestion("short"),
+      text: "S",
+      accepted: ["went", " ", "gone"],
+      options: ["x"],
+      correct: 0,
+    });
+    expect(short).toMatchObject({ kind: "short", options: [], correct: null, accepted: ["went", "gone"] });
+    const written = questionPayload({
+      ...newQuestion("written"),
+      text: "W",
+      accepted: ["x"],
+      options: ["y"],
+      correct: 0,
+    });
+    expect(written).toMatchObject({ options: [], correct: null, accepted: [] });
+  });
+
+  it("reads points typed with a comma, keeps the id, and leaves empty points for the check to refuse", () => {
+    expect(questionPayload(q({ points: "1,5" })).points).toBe(1.5);
+    expect(questionPayload(q({ points: "" })).points).toBeUndefined();
+    expect(questionPayload(q({ id: "q_abc" })).id).toBe("q_abc");
+    expect("id" in questionPayload(q())).toBe(false);
+  });
+
+  it("starts each kind with sensible points and fields", () => {
+    expect(newQuestion("choice")).toMatchObject({ points: "1", options: ["", ""], accepted: [] });
+    expect(newQuestion("short")).toMatchObject({ points: "1", options: [], accepted: [""] });
+    expect(newQuestion("written").points).toBe("5");
+    expect(newQuestion("speaking").points).toBe("5");
+  });
+});
+
+describe("totalOf", () => {
+  it("adds up the points, also halves, and ignores what is not a number", () => {
+    const one = (points: string) => ({ ...newQuestion("written"), points });
+    expect(totalOf([one("5"), one("1,5"), one("2.5")])).toBe(9);
+    expect(totalOf([one(""), one("abc"), one("-3"), one("2")])).toBe(2);
+    expect(totalOf([])).toBe(0);
   });
 });

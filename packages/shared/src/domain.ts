@@ -12,7 +12,6 @@ export const COURSE_STATUSES = ["draft", "active", "archived"] as const;
 export const ENROLLMENT_STATUSES = ["pending", "active", "completed", "dropped"] as const;
 export const INVITE_STATUSES = ["sent", "accepted", "expired", "revoked"] as const;
 export const LESSON_STATUSES = ["scheduled", "held", "cancelled"] as const;
-export const ASSIGNMENT_TYPES = ["multiple_choice", "essay", "speaking"] as const;
 export const ASSIGNMENT_STATUSES = ["draft", "published", "closed"] as const;
 export const SUBMISSION_STATUSES = [
   "not_started",

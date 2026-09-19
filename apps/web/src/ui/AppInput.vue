@@ -3,6 +3,8 @@ import { useId } from "vue";
 
 defineProps<{
   disabled?: boolean;
+  /** Can be read and copied but not changed, and keeps the normal text color. */
+  readonly?: boolean;
   label: string;
   type?: "text" | "email" | "number" | "date" | "time" | "tel" | "url";
   autocomplete?: string;
@@ -26,6 +28,7 @@ const id = useId();
       :inputmode="inputmode"
       :placeholder="placeholder"
       :disabled="disabled"
+      :readonly="readonly"
       :aria-invalid="error ? true : undefined"
       :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined"
       class="input min-h-11 w-full"

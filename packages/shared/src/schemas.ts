@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ASSIGNMENT_TYPES, ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
+import { ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
  * Request shapes shared by the API (which checks them) and the web app (which uses the
@@ -373,53 +373,109 @@ export interface MaterialInfo {
   createdAt: string;
 }
 
-const question = z.object({
-  text: z.string().trim().min(1, "Please write the question.").max(500, "This question is too long."),
-  options: z
-    .array(z.string().trim().min(1, "Please write the answer.").max(200, "This answer is too long."))
-    .min(2, "Add at least 2 answers.")
-    .max(6, "Use at most 6 answers."),
-});
-export type QuestionInfo = z.infer<typeof question>;
-
-const linkItem = z.object({ title: linkTitle, url: httpsLink });
-export type LinkInfo = z.infer<typeof linkItem>;
-
 const hhmm = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please use the time format HH:mm, for example 18:30.");
+const linkItem = z.object({ title: linkTitle, url: httpsLink });
+export type LinkInfo = z.infer<typeof linkItem>;
+
+/** Points are whole numbers or halves. */
+const points = z
+  .number("Please enter the points.")
+  .min(0.5, "Use at least 0.5 point.")
+  .max(100, "Use at most 100 points for one question.")
+  .refine((v) => Number.isInteger(v * 2), "Use whole numbers or halves, for example 2 or 1.5.");
+
+export const QUESTION_KINDS = ["choice", "short", "written", "speaking"] as const;
+export type QuestionKind = (typeof QUESTION_KINDS)[number];
+
+/**
+ * One question of a homework. A homework is a list of these, and the kinds can be mixed:
+ *  - choice:   the student picks one answer. With a correct answer set, the system scores it.
+ *  - short:    the student types a short answer. With accepted answers set, the system scores it
+ *              (spaces and capital letters do not matter).
+ *  - written:  the student writes a longer answer. The teacher scores it.
+ *  - speaking: the student adds a link to a video. The teacher scores it.
+ */
+const questionInput = z.object({
+  /** Kept when a question is edited. A new question gets one from the server. */
+  id: z.string().min(1).max(40).optional(),
+  kind: z.enum(QUESTION_KINDS),
+  text: z.string().trim().max(1000, "This question is too long."),
+  points,
+  options: z
+    .array(z.string().trim().max(200, "This answer is too long."))
+    .max(6, "Use at most 6 answers.")
+    .default([]),
+  /** The number of the correct answer (0 is the first). Empty: the teacher scores it by hand. */
+  correct: z.number().int().min(0).max(5).nullable().default(null),
+  accepted: z
+    .array(z.string().trim().max(200, "This answer is too long."))
+    .max(10, "Use at most 10 answers.")
+    .default([]),
+});
+
+export interface QuestionInfo {
+  id: string;
+  kind: QuestionKind;
+  text: string;
+  points: number;
+  options: string[];
+  correct: number | null;
+  accepted: string[];
+}
+
+/** Does the system score this question by itself? */
+export const isAutoQuestion = (q: Pick<QuestionInfo, "kind" | "correct" | "accepted">): boolean =>
+  (q.kind === "choice" && q.correct !== null) || (q.kind === "short" && q.accepted.length > 0);
 
 export const assignmentFields = z
   .object({
-    type: z.enum(ASSIGNMENT_TYPES),
     title: z.string().trim().min(1, "Please enter a title.").max(150, "This title is too long."),
     instructions: z.string().trim().max(5000, "This text is too long.").default(""),
-    questions: z.array(question).max(50, "Use at most 50 questions.").default([]),
+    questions: z.array(questionInput).min(1, "Add at least 1 question.").max(50, "Use at most 50 questions."),
     links: z.array(linkItem).max(10, "Use at most 10 links.").default([]),
     /** Due day and time, in the teacher's time zone. Both, or neither. */
     dueDate: isoDate.nullable().default(null),
     dueTime: hhmm.nullable().default(null),
     allowLate: z.boolean().default(false),
-    maxScore: z
-      .number("Please enter a number.")
-      .int("Please enter a whole number.")
-      .min(1, "Use at least 1.")
-      .max(100, "Use at most 100.")
-      .default(10),
     targetMode: z.enum(["all", "selected"]).default("all"),
     studentIds: z.array(z.string().min(1).max(64)).max(200, "Choose at most 200 students.").default([]),
   })
   .superRefine((v, ctx) => {
     const add = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
-    if (v.type === "multiple_choice" && v.questions.length === 0)
-      add("questions", "Add at least 1 question.");
-    if (v.type !== "multiple_choice" && v.questions.length > 0)
-      add("questions", "Only multiple choice work has questions.");
     if ((v.dueDate === null) !== (v.dueTime === null)) {
       add(v.dueDate === null ? "dueDate" : "dueTime", "Please choose both the day and the time, or neither.");
     }
     if (v.targetMode === "selected" && v.studentIds.length === 0)
       add("studentIds", "Choose at least 1 student.");
+    let total = 0;
+    const ids = new Set<string>();
+    v.questions.forEach((q, i) => {
+      const n = `Question ${i + 1}: `;
+      total += q.points;
+      if (q.id) {
+        if (ids.has(q.id)) add("questions", `${n}this question is in the list twice.`);
+        ids.add(q.id);
+      }
+      if (q.text.trim() === "") add("questions", `${n}please write the question.`);
+      if (q.kind === "choice") {
+        if (q.options.length < 2) add("questions", `${n}add at least 2 answers.`);
+        if (q.options.some((o) => o.trim() === ""))
+          add("questions", `${n}please write every answer, or remove the empty ones.`);
+        if (q.correct !== null && q.correct >= q.options.length)
+          add("questions", `${n}the correct answer is not on the list.`);
+      } else if (q.options.length > 0 || q.correct !== null) {
+        add("questions", `${n}only multiple choice questions have answers to choose from.`);
+      }
+      if (q.kind === "short") {
+        if (q.accepted.some((a) => a.trim() === ""))
+          add("questions", `${n}please write every accepted answer, or remove the empty ones.`);
+      } else if (q.accepted.length > 0) {
+        add("questions", `${n}only short answer questions have accepted answers.`);
+      }
+    });
+    if (total > 1000) add("questions", "The points of all questions together can be at most 1000.");
   });
 
 export const createAssignmentBody = assignmentFields;
@@ -431,7 +487,6 @@ export interface AssignmentInfo {
   id: string;
   courseId: string;
   courseName: string;
-  type: "multiple_choice" | "essay" | "speaking";
   title: string;
   instructions: string;
   questions: QuestionInfo[];
@@ -440,6 +495,7 @@ export interface AssignmentInfo {
   dueTime: string | null;
   dueAt: string | null;
   allowLate: boolean;
+  /** The points of all questions together. */
   maxScore: number;
   targetMode: "all" | "selected";
   /** Only for target_mode "selected". */
@@ -452,15 +508,18 @@ export interface AssignmentInfo {
 
 // ------------------------------------------------------- the student's side (M3)
 
-/** What a student writes for a piece of work. Which parts matter depends on the kind of work. */
-export const answerBody = z.object({
-  /** Essay text, or a short note with a speaking link. */
-  textAnswer: z.string().max(10000, "This text is too long.").default(""),
-  /** Speaking: the link to the video. Essay: an optional link. */
-  linkUrl: httpsLink.nullable().default(null),
-  /** Multiple choice: the chosen answer of each question (0 is the first), -1 when not answered. */
-  answers: z.array(z.number().int().min(-1).max(5)).max(50).default([]),
+/** What a student wrote for one question. Which part matters depends on the kind of question. */
+export const answerItem = z.object({
+  questionId: z.string().min(1).max(40),
+  /** choice: the chosen answer (0 is the first). */
+  choice: z.number().int().min(0).max(5).nullable().default(null),
+  /** short and written: the text. speaking: an optional note. */
+  text: z.string().max(10000, "This text is too long.").default(""),
+  /** speaking: the link to the video. */
+  link: httpsLink.nullable().default(null),
 });
+export const answerBody = z.object({ answers: z.array(answerItem).max(50).default([]) });
+export type AnswerItem = z.infer<typeof answerItem>;
 export type AnswerBody = z.infer<typeof answerBody>;
 
 export type SubmissionStatus =
@@ -471,7 +530,7 @@ export interface MyWorkItem {
   courseId: string;
   courseName: string;
   title: string;
-  type: "multiple_choice" | "essay" | "speaking";
+  questionCount: number;
   /** "closed": the teacher stopped taking work. */
   assignmentStatus: "published" | "closed";
   /** The due time that counts for this student (more time from the teacher is included). */
@@ -483,16 +542,45 @@ export interface MyWorkItem {
   status: SubmissionStatus;
   isLate: boolean;
   submittedAt: string | null;
-  /** Only when the teacher returned the work. */
+  /** Only when the work is scored (returned). */
   score: number | null;
+}
+
+/** A question as a student sees it. The correct answer is not in it. */
+export interface MyQuestion {
+  id: string;
+  kind: QuestionKind;
+  text: string;
+  points: number;
+  options: string[];
+}
+
+/** How one question went. Shown after the student handed in. */
+export interface QuestionResult {
+  questionId: string;
+  /** true or false when the system scored it, null when the teacher scores it. */
+  correct: boolean | null;
+  /** The points. For a question the teacher scores, only when the work was returned. */
+  awarded: number | null;
+  /** The correct answer, for a question the system scored. */
+  correctAnswer: string | null;
 }
 
 export interface MyWorkDetail extends MyWorkItem {
   instructions: string;
-  questions: QuestionInfo[];
+  questions: MyQuestion[];
   links: LinkInfo[];
-  /** What the student saved or handed in so far. */
-  answer: AnswerBody;
+  /** What the student saved or handed in so far, one entry for each question. */
+  answers: AnswerItem[];
+  /** How it went, shown once the work is handed in. */
+  results: {
+    perQuestion: QuestionResult[];
+    /** Points from the questions the system scored, and the most those could give. */
+    autoAwarded: number;
+    autoMax: number;
+    /** How many questions the teacher still has to score. */
+    waitingForTeacher: number;
+  } | null;
   /** The teacher's words: with a score when returned, or the reason when asked to do it again. */
   feedback: string;
   canEdit: boolean;
@@ -527,16 +615,16 @@ export interface MyCourseDetail {
 
 // ------------------------------------------------------------ grading (M3)
 
-/** A score in steps of 0.5. The most it can be is checked against the work. */
 const scoreValue = z
   .number("Please enter a score.")
   .min(0, "The score cannot be below 0.")
-  .max(1000, "This score is too high.")
+  .max(100, "This score is too high.")
   .refine((v) => Number.isInteger(v * 2), "Use whole numbers or halves, for example 7 or 7.5.");
 const feedbackText = z.string().trim().max(5000, "This text is too long.");
 
 export const gradeBody = z.object({
-  score: scoreValue,
+  /** The points for each question (by question id). The ones the system scored can be left out. */
+  points: z.record(z.string().max(40), scoreValue),
   feedback: feedbackText.default(""),
   /** The version the teacher was looking at. If the student changed the answer since, the save is refused. */
   version: z.number().int().min(1),
@@ -573,7 +661,11 @@ export interface SubmissionDetail {
   isLate: boolean;
   submittedAt: string | null;
   revisionCount: number;
-  answer: AnswerBody;
+  answers: AnswerItem[];
+  /** The points of each question so far: from the system for the questions it scored, from the teacher for the rest. */
+  points: Record<string, number>;
+  /** Which questions the system scored (and how it went). */
+  perQuestion: { questionId: string; auto: boolean; correct: boolean | null }[];
   score: number | null;
   feedback: string;
   version: number;
