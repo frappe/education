@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LIMITS } from "./domain";
+import { ATTENDANCE_STATUSES, LIMITS, type AttendanceStatus } from "./domain";
 
 /**
  * Request shapes shared by the API (which checks them) and the web app (which uses the
@@ -51,7 +51,7 @@ export interface InviteInfo {
 
 // ------------------------------------------------------------- courses and students (M2)
 
-const isoDate = z
+export const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Please use the date format YYYY-MM-DD.")
   .refine(
@@ -233,4 +233,115 @@ export interface EnrollOutcome {
 export interface EnrollResult {
   results: EnrollOutcome[];
   enrolled: number;
+}
+
+// ------------------------------------------------------------- lessons and attendance (M2)
+
+/** A link people open in a new tab. Only http and https: nothing that runs code. */
+const onlineUrl = z
+  .string()
+  .trim()
+  .max(LIMITS.maxLinkLength, "This link is too long.")
+  // http or https, then a host (no spaces, and no "name:password@" in front of it), then anything after.
+  .regex(/^https?:\/\/[^\s/?#@]+([/?#]\S*)?$/i, "Please enter a link that starts with http:// or https://");
+
+export const lessonFields = z.object({
+  title: z.string().trim().max(100, "This title is too long.").default(""),
+  /** The day, in the teacher's time zone. */
+  date: isoDate,
+  /** The start time, in the teacher's time zone. */
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Please use the time format HH:mm, for example 18:30."),
+  durationMinutes: z
+    .number("Please enter a number.")
+    .int("Please enter a whole number.")
+    .min(15, "A lesson is at least 15 minutes.")
+    .max(480, "A lesson is at most 8 hours."),
+  place: z.string().trim().max(200, "This text is too long.").default(""),
+  onlineUrl: onlineUrl.nullable().default(null),
+});
+
+/** "this": only this lesson. "following": this lesson and the next ones made with it. */
+const scope = z.enum(["this", "following"]).default("this");
+
+export const createLessonsBody = lessonFields.extend({
+  /** How many weeks in a row, counting the first lesson. 1 means a single lesson. */
+  repeatWeeks: z
+    .number()
+    .int()
+    .min(1, "Use at least 1.")
+    .max(LIMITS.maxRepeatWeeks, `You can repeat up to ${LIMITS.maxRepeatWeeks} weeks at a time.`)
+    .default(1),
+});
+export const updateLessonBody = lessonFields.extend({ version: z.number().int().min(1), scope });
+export const cancelLessonBody = z.object({ scope });
+
+export const attendanceBody = z.object({
+  records: z
+    .array(
+      z.object({
+        studentId: z.string().min(1).max(64),
+        status: z.enum(ATTENDANCE_STATUSES),
+      }),
+    )
+    .min(1, "Please add at least one student.")
+    .max(1000),
+});
+
+export type CreateLessonsBody = z.infer<typeof createLessonsBody>;
+export type UpdateLessonBody = z.infer<typeof updateLessonBody>;
+export type CancelLessonBody = z.infer<typeof cancelLessonBody>;
+export type AttendanceBody = z.infer<typeof attendanceBody>;
+export type LessonScope = "this" | "following";
+
+export interface LessonInfo {
+  id: string;
+  courseId: string;
+  courseName: string;
+  /** Set when the lesson was made with "repeat every week". */
+  seriesId: string | null;
+  title: string;
+  /** Local date and times in the teacher's time zone, ready to show. */
+  date: string;
+  startTime: string;
+  endTime: string;
+  /** The same moments in UTC. */
+  startsAt: string;
+  endsAt: string;
+  place: string;
+  onlineUrl: string | null;
+  status: "scheduled" | "held" | "cancelled";
+  version: number;
+}
+
+export interface AttendanceEntry {
+  studentId: string;
+  name: string;
+  status: AttendanceStatus;
+  /** false: nothing was saved yet, "attended" is only the starting choice. */
+  saved: boolean;
+  /** false: the student is no longer in the course, kept only because their mark was saved. */
+  inCourse: boolean;
+  /** The student joined the course after this lesson was over, so the starting choice is "absent". */
+  joinedAfter: boolean;
+}
+
+export interface AttendanceSheet {
+  lesson: LessonInfo;
+  students: AttendanceEntry[];
+}
+
+export interface StudentAttendanceInfo {
+  attended: number;
+  absent: number;
+  /** Newest first, at most 30. */
+  recent: {
+    lessonId: string;
+    courseName: string;
+    title: string;
+    date: string;
+    startTime: string;
+    status: AttendanceStatus;
+  }[];
 }

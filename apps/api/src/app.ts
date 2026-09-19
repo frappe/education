@@ -14,6 +14,7 @@ import { enrollments } from "./routes/enrollments";
 import { google } from "./routes/google";
 import { health } from "./routes/health";
 import { invites } from "./routes/invites";
+import { lessons } from "./routes/lessons";
 import { students } from "./routes/students";
 
 export function createApp() {
@@ -37,6 +38,7 @@ export function createApp() {
   api.route("/", courses);
   api.route("/", students);
   api.route("/", enrollments);
+  api.route("/", lessons);
   api.route("/", dev);
   app.route("/api", api);
 

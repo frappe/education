@@ -41,4 +41,7 @@ export const LIMITS = {
   sessionIdleDays: 7,
   sessionMaxDays: 90,
   anonymousFeedbackMinResponses: 3,
+  /** Most lessons one course can have, and most a single "repeat every week" can make. */
+  maxLessonsPerCourse: 500,
+  maxRepeatWeeks: 52,
 } as const;
