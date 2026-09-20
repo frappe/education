@@ -23,6 +23,7 @@ export const en = {
     pageOf: "Page {page} of {pages}",
   },
   google: {
+    unavailable: "Signing in is not available right now. Please try again later.",
     continue: "Continue with Google",
     or: "or",
   },

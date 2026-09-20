@@ -10,6 +10,7 @@ export const ERROR_CODES = {
   FORBIDDEN: { status: 403, message: "You do not have permission to do this." },
   NOT_FOUND: { status: 404, message: "We could not find what you are looking for." },
   CONFLICT: { status: 409, message: "This was changed by someone else. Please refresh and try again." },
+  TOO_LARGE: { status: 413, message: "This is too big to send. Please send less at a time." },
   ORIGIN_NOT_ALLOWED: { status: 403, message: "This request is not allowed." },
   RATE_LIMITED: { status: 429, message: "Too many tries. Please wait a moment and try again." },
   INTERNAL: { status: 500, message: "Something went wrong on our side. Please try again." },

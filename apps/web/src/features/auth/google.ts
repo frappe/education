@@ -1,5 +1,5 @@
 import { ERROR_CODES } from "@lms/shared";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { api } from "@/api/client";
 
 export type GoogleIntent = "sign-in" | "sign-up" | "invite";
@@ -24,18 +24,32 @@ export function errorFromAddress(code: unknown): string | null {
   return ERROR_CODES[(known ? code : "INTERNAL") as keyof typeof ERROR_CODES].message;
 }
 
-const available = ref<boolean | null>(null);
-
-/** Whether Google sign in is set up on this server. Asked once, so the buttons are hidden when it is off. */
-export function useGoogleAvailable() {
-  if (available.value === null) {
-    available.value = false;
-    api<{ google: boolean }>("/auth/options")
-      .then((r) => (available.value = r.google))
-      .catch(() => (available.value = false));
-  }
-  return available;
+interface SignInOptions {
+  google: boolean;
+  emailLink: boolean;
 }
+const options = ref<SignInOptions | null>(null);
+
+/**
+ * What ways to sign in this server has set up. Asked once. Until the answer comes, nothing is offered, so a form that
+ * would not work is never shown.
+ */
+export function useSignInOptions() {
+  if (options.value === null) {
+    api<SignInOptions>("/auth/options")
+      .then((r) => (options.value = { google: r.google, emailLink: r.emailLink }))
+      .catch(() => (options.value = { google: false, emailLink: false }));
+  }
+  return {
+    google: computed(() => options.value?.google === true),
+    emailLink: computed(() => options.value?.emailLink === true),
+    /** Answered, and there is no way to sign in. Something is not set up on the server. */
+    none: computed(() => options.value !== null && !options.value.google && !options.value.emailLink),
+  };
+}
+
+/** Whether Google sign in is set up on this server. */
+export const useGoogleAvailable = () => useSignInOptions().google;
 
 /** The code the local stand-in page hands back (only the local server accepts it). */
 export function devGoogleCode(email: string, name: string): string {

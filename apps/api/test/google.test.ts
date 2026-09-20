@@ -37,14 +37,14 @@ afterEach(() => {
 
 describe("Google sign in: the trip", () => {
   it("is only offered when Google is set up", async () => {
-    expect((await call("/api/auth/options")).json).toEqual({ google: true });
+    expect((await call("/api/auth/options")).json).toMatchObject({ google: true });
     const off = { GOOGLE_CLIENT_ID: undefined, GOOGLE_CLIENT_SECRET: undefined };
-    expect((await call("/api/auth/options", { env: off })).json).toEqual({ google: false });
+    expect((await call("/api/auth/options", { env: off })).json).toMatchObject({ google: false });
     expect((await call("/api/auth/google/start", { env: off })).status).toBe(404);
     expect((await call("/api/auth/google/callback?code=x&state=y", { env: off })).status).toBe(404);
     // one of the two settings is not enough
     const half = await call("/api/auth/options", { env: { GOOGLE_CLIENT_SECRET: undefined } });
-    expect(half.json).toEqual({ google: false });
+    expect(half.json).toMatchObject({ google: false });
   });
 
   it("sends the person to Google with a state, a nonce, and the code check (PKCE)", async () => {
@@ -642,7 +642,7 @@ describe("the local stand-in for Google", () => {
         HMAC_KEY: "k".repeat(32),
         APP_URL: "https://x.example",
       };
-      expect((await call("/api/auth/options", { env: settings })).json).toEqual({ google: false });
+      expect((await call("/api/auth/options", { env: settings })).json).toMatchObject({ google: false });
       expect((await call("/api/auth/google/start", { env: settings })).status).toBe(404);
       // and a made-up code cannot be used to sign in
       const cb = await call(`/api/auth/google/callback?code=${devGoogleCode("a@b.co", "A")}&state=x`, {

@@ -11,6 +11,7 @@ import { randomToken, sha256Base64Url, timingSafeEqual } from "../lib/crypto";
 import { AppError } from "../lib/errors";
 import { isTokenValid } from "../repos/tokens";
 import { hit } from "../security/rate-limit";
+import { emailLinkAvailable } from "../security/turnstile";
 
 /**
  * "Continue with Google". Two browser trips: /start sends the person to Google, and Google sends
@@ -49,7 +50,9 @@ function fail(c: { redirect: (to: string) => Response }, error: unknown, invite?
   return c.redirect(target);
 }
 
-google.get("/auth/options", (c) => c.json({ google: googleClient(c.env) !== null }));
+google.get("/auth/options", (c) =>
+  c.json({ google: googleClient(c.env) !== null, emailLink: emailLinkAvailable(c.env) }),
+);
 
 google.get("/auth/google/start", async (c) => {
   const client = googleClient(c.env);

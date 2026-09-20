@@ -32,3 +32,9 @@ export async function verifyTurnstile(env: Env, token: string | undefined, ip: s
   }
   if (!ok) throw new AppError("CAPTCHA_FAILED");
 }
+
+/**
+ * True when sign in and sign up by an email link can work: the bot check is set up (or this is a local or test run).
+ * When it is not, the screens hide those forms instead of showing a form that always fails.
+ */
+export const emailLinkAvailable = (env: Env): boolean => isLocalOrTest(env) || Boolean(env.TURNSTILE_SECRET);

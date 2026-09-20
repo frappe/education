@@ -11,7 +11,9 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "lint": "prettier --check apps packages .github/workflows/lms-ci.yml package.json tsconfig.base.json"
+    "lint": "prettier --check apps packages scripts .github/workflows/lms-ci.yml package.json tsconfig.base.json",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "preflight": "node scripts/preflight-production.mjs"
   },
   "devDependencies": {
     "prettier": "^3.9.8"

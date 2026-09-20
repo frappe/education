@@ -67,10 +67,20 @@
     },
     "production": {
       "name": "ptv-lms",
+      // Once an hour: reminders for work that is due soon, the next lessons of repeats with no end date, and clean up.
+      // Without this, none of those would ever run.
+      "triggers": { "crons": ["0 * * * *"] },
       "vars": {
         "ENVIRONMENT": "production",
-        "EMAIL_MODE": "dev",
-        "APP_URL": "REPLACE_WITH_PRODUCTION_URL",
+        // Real email through an SMTP server. The account and its password are secrets (docs/production.md).
+        // "dev" is refused in production.
+        "EMAIL_MODE": "smtp",
+        "SMTP_HOST": "smtp.gmail.com",
+        "SMTP_PORT": "465",
+        "SMTP_FROM_NAME": "LMS",
+        // Must be the address people use. It goes into email links and into the Google redirect address.
+        "APP_URL": "https://ptv-lms.luongtamanh2.workers.dev",
+        // Not a secret. Google sign in stays off until GOOGLE_CLIENT_SECRET is also set.
         "GOOGLE_CLIENT_ID": "1007469535016-vhgeueo74sp7s8cjs33eocshnajvdgme.apps.googleusercontent.com",
       },
       "d1_databases": [

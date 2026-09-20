@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 import DevEmailHint from "@/components/DevEmailHint.vue";
 import GoogleButton from "@/components/GoogleButton.vue";
 import { authApi } from "@/features/auth/api";
-import { errorFromAddress, useGoogleAvailable } from "@/features/auth/google";
+import { errorFromAddress, useSignInOptions } from "@/features/auth/google";
 import { useForm } from "@/features/forms/useForm";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -20,7 +20,7 @@ import AppTurnstile from "@/ui/AppTurnstile.vue";
 
 const t = messages.signIn;
 const route = useRoute();
-const googleOn = useGoogleAvailable();
+const { google: googleOn, emailLink: emailOn, none } = useSignInOptions();
 const keep = ref(true);
 const problem = errorFromAddress(route.query.error);
 const done = ref(false);
@@ -57,12 +57,13 @@ const form = useForm(
     </template>
     <template v-else>
       <AppAlert v-if="problem" kind="error">{{ problem }}</AppAlert>
+      <AppAlert v-if="none" kind="warning">{{ messages.google.unavailable }}</AppAlert>
       <template v-if="googleOn">
         <GoogleButton intent="sign-in" :keep="keep" />
         <p class="-mt-2 text-center text-sm text-base-content/60">{{ t.students }}</p>
-        <AppDivider>{{ messages.google.or }}</AppDivider>
+        <AppDivider v-if="emailOn">{{ messages.google.or }}</AppDivider>
       </template>
-      <form class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
+      <form v-if="emailOn" class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
         <AppAlert v-if="form.formError.value" kind="error">{{ form.formError.value }}</AppAlert>
         <AppInput
           v-model="form.values.email"

@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { bodyLimit } from "hono/body-limit";
 import { ZodError } from "zod";
 import { ERROR_CODES } from "@lms/shared";
 import type { AppBindings } from "./env";
@@ -22,6 +23,9 @@ import { my } from "./routes/my";
 import { notifications } from "./routes/notifications";
 import { students } from "./routes/students";
 
+/** The most a request can carry. */
+export const MAX_REQUEST_BYTES = 512 * 1024;
+
 export function createApp() {
   const app = new OpenAPIHono<AppBindings>({
     // Input that fails validation becomes a normal VALIDATION_FAILED error.
@@ -33,6 +37,15 @@ export function createApp() {
   app.use("*", requestId);
   app.use("*", securityHeaders);
   app.use("/api/*", csrfProtection);
+  // Nothing the app sends is bigger than a few thousand characters, except a homework or a list of students to import.
+  // A bigger request is refused before it is read, so nobody can fill the memory of the server.
+  app.use(
+    "/api/*",
+    bodyLimit({
+      maxSize: MAX_REQUEST_BYTES,
+      onError: (c) => c.json(errorBody(new AppError("TOO_LARGE"), c.get("requestId")), 413),
+    }),
+  );
   app.use("/api/*", loadActor);
 
   const api = new OpenAPIHono<AppBindings>();

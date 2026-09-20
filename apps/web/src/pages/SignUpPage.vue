@@ -4,7 +4,7 @@ import { ref } from "vue";
 import DevEmailHint from "@/components/DevEmailHint.vue";
 import GoogleButton from "@/components/GoogleButton.vue";
 import { authApi } from "@/features/auth/api";
-import { useGoogleAvailable } from "@/features/auth/google";
+import { useSignInOptions } from "@/features/auth/google";
 import { useForm } from "@/features/forms/useForm";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -18,7 +18,7 @@ import AppTurnstile from "@/ui/AppTurnstile.vue";
 
 const t = messages.signUp;
 const c = messages.common;
-const googleOn = useGoogleAvailable();
+const { google: googleOn, emailLink: emailOn, none } = useSignInOptions();
 const done = ref(false);
 const captcha = ref("");
 const turnstile = ref<InstanceType<typeof AppTurnstile>>();
@@ -52,11 +52,12 @@ const form = useForm(
       <DevEmailHint />
     </template>
     <template v-else>
+      <AppAlert v-if="none" kind="warning">{{ messages.google.unavailable }}</AppAlert>
       <template v-if="googleOn">
         <GoogleButton intent="sign-up" />
-        <AppDivider>{{ t.orEmail }}</AppDivider>
+        <AppDivider v-if="emailOn">{{ t.orEmail }}</AppDivider>
       </template>
-      <form class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
+      <form v-if="emailOn" class="flex flex-col gap-4" novalidate @submit.prevent="form.submit">
         <AppAlert v-if="form.formError.value" kind="error">{{ form.formError.value }}</AppAlert>
         <AppInput
           v-model="form.values.name"

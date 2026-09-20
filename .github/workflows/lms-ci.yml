@@ -29,6 +29,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      # The check that stops a unsafe production setting (the tests of that check).
+      - run: pnpm test:scripts
       - run: pnpm build
       # Fails the build on a known high severity problem in a dependency.
       - run: pnpm audit --audit-level high
@@ -50,6 +52,8 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @lms/web build
+        env:
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       # Database changes go first. Migrations are backward compatible, so the old Worker still works.
       - run: pnpm --filter @lms/api exec wrangler d1 migrations apply DB --env staging --remote
         env:
@@ -76,6 +80,18 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @lms/web build
+        env:
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
+      # Stops here when the settings are not safe: a placeholder, the test outbox for email, no schedule, no secrets...
+      - run: node scripts/preflight-production.mjs --secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # The restore point: if the change goes wrong, the data can be put back to this moment (D1 Time Travel).
+      - run: pnpm --filter @lms/api exec wrangler d1 time-travel info DB --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - run: pnpm --filter @lms/api exec wrangler d1 migrations apply DB --env production --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -84,3 +100,8 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # After the deploy: the site answers, the database answers, the security headers are there, nothing is open.
+      - name: Check the live site
+        run: bash scripts/smoke.sh "$PRODUCTION_URL" --production
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
