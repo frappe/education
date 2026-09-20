@@ -1,5 +1,7 @@
 import { VN_BANKS, isAccountNumber, isBin, type BankInfo } from "@lms/shared";
 import type {
+  CourseInfo,
+  InvoiceDiscount,
   InvoiceInfo,
   InvoiceListResult,
   MyInvoiceDetail,
@@ -184,6 +186,9 @@ export function useInvoice(
     voided: string;
     lessonsSaved: string;
     deleted: string;
+    /** "Discount" and "Discount {value}%": the words of a discount line on the receipt. */
+    discount: string;
+    discountPercent: string;
   },
   onDeleted: () => void,
 ) {
@@ -194,6 +199,7 @@ export function useInvoice(
   const busy = ref(false);
   const error = ref<string | null>(null);
   const rows = ref<LineRow[]>([]);
+  const courses = ref<{ id: string; name: string; price: number }[]>([]);
   const note = ref("");
   const dueDate = ref("");
 
@@ -206,6 +212,12 @@ export function useInvoice(
   onMounted(async () => {
     try {
       take((await api<{ invoice: InvoiceInfo }>(`/invoices/${id}`)).invoice);
+      try {
+        const list = (await api<{ courses: CourseInfo[] }>("/courses")).courses;
+        courses.value = list.map((c) => ({ id: c.id, name: c.name, price: c.pricePerLesson }));
+      } catch {
+        /* the lines that are already there still work */
+      }
     } catch (err) {
       if (statusOf(err) === 404) notFound.value = true;
       else error.value = messageOf(err);
@@ -241,7 +253,37 @@ export function useInvoice(
   });
   const version = () => invoice.value!.version;
 
-  const addRow = () => rows.value.push(newRow());
+  /** New rows go above the discount, which is always the last line. */
+  const addRow = () => {
+    const at = rows.value.findIndex((r) => r.kind === "discount");
+    rows.value.splice(at === -1 ? rows.value.length : at, 0, newRow());
+  };
+  const hasDiscount = computed(() => rows.value.some((r) => r.kind === "discount"));
+  const addDiscount = () => {
+    if (!hasDiscount.value) rows.value.push(newRow({ kind: "discount" }));
+  };
+  const OTHER = "other";
+  /** The choice in "What is it for": a course, "other", or nothing yet. */
+  const choiceOf = (r: LineRow) => (r.kind === "course" ? r.courseId : r.kind === "other" ? OTHER : "");
+  function choose(r: LineRow, value: string) {
+    if (r.courseLocked) return;
+    if (value === "")
+      Object.assign(r, { kind: "", courseId: "", description: "", unitPrice: "", quantity: "1" });
+    else if (value === OTHER)
+      Object.assign(r, { kind: "other", courseId: "", description: "", unitPrice: "", quantity: "1" });
+    else {
+      const course = courses.value.find((c) => c.id === value);
+      Object.assign(r, {
+        kind: "course",
+        courseId: value,
+        description: course?.name ?? r.description,
+        unitPrice: String(course?.price ?? ""),
+        quantity: "1",
+      });
+    }
+  }
+  const discountText = (d: InvoiceDiscount) =>
+    d.type === "percent" ? text.discountPercent.replace("{value}", String(d.value)) : text.discount;
   const removeRow = (key: number) => (rows.value = rows.value.filter((r) => r.key !== key));
 
   const save = () =>
@@ -249,7 +291,7 @@ export function useInvoice(
       "",
       "PUT",
       {
-        lines: linesPayload(rows.value),
+        lines: linesPayload(rows.value, discountText),
         note: note.value.trim(),
         dueDate: dueDate.value || null,
         version: version(),
@@ -283,9 +325,15 @@ export function useInvoice(
     busy,
     error,
     rows,
+    courses,
     note,
     dueDate,
     total,
+    hasDiscount,
+    addDiscount,
+    choiceOf,
+    choose,
+    OTHER,
     linesValid,
     dirty,
     addRow,

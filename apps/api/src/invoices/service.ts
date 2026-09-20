@@ -3,6 +3,7 @@ import type {
   InvoiceInfo,
   InvoiceSummary,
   InvoiceLine,
+  InvoiceDiscount,
   InvoiceListResult,
   MyInvoiceDetail,
   MyInvoiceItem,
@@ -34,6 +35,7 @@ import {
   sendStatement,
   setPaymentDetailsStatement,
   studentInTenant,
+  ownCourseIds,
   stillAttended,
   studentsWithUnbilled,
   unbilledStudents,
@@ -57,6 +59,8 @@ interface StoredLine {
   unitPrice: number;
   amount: number;
   lessons: { id: string; at: string }[];
+  /** A discount line: `unitPrice` and `amount` are worked out from the other lines. */
+  discount?: InvoiceDiscount | null;
 }
 
 const conflictText = "This receipt was changed since you opened it. Please open it again.";
@@ -106,6 +110,20 @@ function linesFromLessons(rows: BillableRow[]): StoredLine[] {
 
 const totalOf = (lines: StoredLine[]) => lines.reduce((sum, l) => sum + l.amount, 0);
 
+/**
+ * Works out the amount of each discount line from the lines that are not discounts (a percentage is of their sum,
+ * rounded to a whole VND). This is done here, so what the teacher sees on screen is never trusted for money.
+ */
+function settleDiscounts(lines: StoredLine[]): StoredLine[] {
+  const base = lines.filter((l) => !l.discount).reduce((sum, l) => sum + l.amount, 0);
+  return lines.map((l) => {
+    if (!l.discount) return l;
+    const off =
+      l.discount.type === "percent" ? Math.round((base * l.discount.value) / 100) : l.discount.value;
+    return { ...l, quantity: 1, unitPrice: -off, amount: -off, courseId: null, lessons: [] };
+  });
+}
+
 /** Who the receipt is from: the name the teacher wants students to pay, else the name of their classroom. */
 const senderOf = (r: { payee_name: string; teacher_name: string | null }) =>
   r.payee_name || r.teacher_name || "";
@@ -153,6 +171,7 @@ function shapeLines(lines: StoredLine[], zone: string): InvoiceLine[] {
     amount: l.amount,
     // The days are shown only while they match the quantity (the teacher may have changed the quantity by hand).
     dates: l.lessons.length === l.quantity ? l.lessons.map((x) => utcToLocal(x.at, zone).date) : [],
+    discount: l.discount ?? null,
   }));
 }
 
@@ -419,20 +438,30 @@ export async function invoiceUpdate(
   // A line that already exists keeps the lessons behind it, as long as its quantity did not change.
   const before = new Map(parseLines(current.lines).map((l) => [l.id, l]));
   const used = new Set<string>();
-  const lines: StoredLine[] = body.lines.map((l) => {
+  const made = body.lines.map((l) => {
     const old = l.id !== undefined && !used.has(l.id) ? before.get(l.id) : undefined;
     const lineIdNow = old ? old.id : lineId();
     used.add(lineIdNow);
+    // A line that already has a course keeps it. Any other line may name one of the teacher's courses.
     return {
       id: lineIdNow,
-      courseId: old?.courseId ?? null,
+      courseId: l.discount ? null : old?.courseId != null ? old.courseId : (l.courseId ?? null),
       description: l.description,
-      quantity: l.quantity,
+      quantity: l.discount ? 1 : l.quantity,
       unitPrice: l.unitPrice,
-      amount: l.quantity * l.unitPrice,
-      lessons: old ? old.lessons : [], // the lessons stay on this receipt, so they cannot be charged again
-    };
+      amount: l.discount ? 0 : l.quantity * l.unitPrice,
+      lessons: old && !l.discount ? old.lessons : [], // the lessons stay on this receipt, so they cannot be charged again
+      discount: l.discount ?? null,
+    } satisfies StoredLine;
   });
+  const asked = made.filter(
+    (l, i) => l.courseId !== null && l.courseId !== before.get(body.lines[i]!.id ?? "")?.courseId,
+  );
+  const own = await ownCourseIds(db, tenantId, [...new Set(asked.map((l) => l.courseId!))]);
+  if (asked.some((l) => !own.has(l.courseId!))) {
+    throw new AppError("VALIDATION_FAILED", { fields: { lines: "Please choose one of your courses." } });
+  }
+  const lines = settleDiscounts(made);
   const total = totalOf(lines);
   if (total < 0) {
     throw new AppError("VALIDATION_FAILED", { fields: { lines: "The total cannot be below 0." } });
@@ -467,7 +496,10 @@ export async function invoiceSetLessons(
   lockedIf(current);
   if (current.version !== body.version) throw new AppError("CONFLICT", { message: conflictText });
   const rows = await pickedRows(ctx, tenantId, current.student_id, body.lessonIds, id);
-  const lines = [...linesFromLessons(rows), ...parseLines(current.lines).filter((l) => l.courseId === null)];
+  const lines = settleDiscounts([
+    ...linesFromLessons(rows),
+    ...parseLines(current.lines).filter((l) => l.lessons.length === 0),
+  ]);
   const changed = await updateDraftStatement(db, {
     tenantId,
     id,

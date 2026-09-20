@@ -18,6 +18,7 @@ type Line = {
   unitPrice: number;
   amount: number;
   dates: string[];
+  discount: { type: string; value: number } | null;
 };
 type Invoice = {
   id: string;
@@ -289,6 +290,151 @@ describe("changing a draft", () => {
     expect(saved).toMatchObject({ total: 410_000, note: "Thank you!", dueDate: "2020-02-10", version: 2 });
     expect(saved.lines[0]!.dates).toHaveLength(4); // same quantity: the lessons behind it are kept
     expect(saved.lines[1]!.courseId).toBeNull();
+  });
+
+  it("works out a discount itself, from the other lines: a percentage or a fixed amount", async () => {
+    const { t } = await setup();
+    const inv = (await drafts(t)).Hoa!; // 4 lessons x 100.000 = 400.000
+    const base = { id: inv.lines[0]!.id, description: "English A1", quantity: 4, unitPrice: 100_000 };
+    const book = { description: "Book", quantity: 1, unitPrice: 60_000 };
+    const percent = await save(t, inv, {
+      lines: [
+        base,
+        book,
+        // what the screen sent for the price and quantity is not trusted
+        {
+          description: "Discount 10%",
+          quantity: 7,
+          unitPrice: 123,
+          discount: { type: "percent", value: 10 },
+        },
+      ],
+    });
+    expect(percent.status, JSON.stringify(percent.json)).toBe(200);
+    const a = percent.json.invoice as Invoice;
+    expect(a.lines[2]).toMatchObject({ quantity: 1, unitPrice: -46_000, amount: -46_000, courseId: null });
+    expect(a.lines[2]!.discount).toEqual({ type: "percent", value: 10 });
+    expect(a.total).toBe(414_000);
+    expect(a.lines[0]!.discount).toBeNull();
+
+    const fixed = await save(t, a, {
+      lines: [
+        base,
+        book,
+        {
+          id: a.lines[2]!.id,
+          description: "Discount",
+          quantity: 1,
+          unitPrice: 0,
+          discount: { type: "fixed", value: 50_000 },
+        },
+      ],
+    });
+    expect(fixed.json.invoice.total).toBe(410_000);
+    expect(fixed.json.invoice.lines[2]).toMatchObject({
+      amount: -50_000,
+      discount: { type: "fixed", value: 50_000 },
+    });
+
+    // A percentage is rounded to a whole VND.
+    const odd = await save(t, fixed.json.invoice, {
+      lines: [
+        { ...base, quantity: 1, unitPrice: 100_005 },
+        { description: "Discount 33%", quantity: 1, unitPrice: 0, discount: { type: "percent", value: 33 } },
+      ],
+    });
+    expect(odd.json.invoice.lines[1].amount).toBe(-33_002); // 33001.65, rounded
+    expect(odd.json.invoice.total).toBe(67_003);
+  });
+
+  it("refuses a discount that is more than 100 percent, or takes the total below 0", async () => {
+    const { t } = await setup();
+    const inv = (await drafts(t)).Hoa!;
+    const base = { id: inv.lines[0]!.id, description: "English A1", quantity: 4, unitPrice: 100_000 };
+    const off = (discount: unknown) => ({ description: "Discount", quantity: 1, unitPrice: 0, discount });
+    for (const [label, discount] of [
+      ["101 percent", { type: "percent", value: 101 }],
+      ["0 percent", { type: "percent", value: 0 }],
+      ["a fixed discount of more than the total", { type: "fixed", value: 400_001 }],
+      ["a discount with decimals", { type: "fixed", value: 10.5 }],
+      ["an unknown type", { type: "cash", value: 5 }],
+    ] as [string, unknown][]) {
+      expect((await save(t, inv, { lines: [base, off(discount)] })).status, label).toBe(400);
+    }
+    expect(
+      (await save(t, inv, { lines: [base, off({ type: "percent", value: 100 })] })).json.invoice.total,
+    ).toBe(0);
+  });
+
+  it("keeps the discount right when the lessons change", async () => {
+    const { t, lessons } = await setup();
+    const inv = (await drafts(t)).Hoa!; // 4 lessons
+    const saved = await save(t, inv, {
+      lines: [
+        { id: inv.lines[0]!.id, description: "English A1", quantity: 4, unitPrice: 100_000 },
+        { description: "Discount 10%", quantity: 1, unitPrice: 0, discount: { type: "percent", value: 10 } },
+      ],
+    });
+    expect(saved.json.invoice.total).toBe(360_000);
+    const res = await put(t, `invoices/${inv.id}/lessons`, {
+      version: saved.json.invoice.version,
+      lessonIds: [lessons[0]!.id, lessons[1]!.id],
+    });
+    expect(res.status, JSON.stringify(res.json)).toBe(200);
+    expect(res.json.invoice.lines.map((l: Line) => l.amount)).toEqual([200_000, -20_000]);
+    expect(res.json.invoice.total).toBe(180_000);
+  });
+
+  it("lets a line name one of the teacher's courses, but not the course of somebody else", async () => {
+    const { t, course } = await setup();
+    const other = await createTeacher("Mai Pham");
+    const foreign = await createCourse(other, { pricePerLesson: 1, maxStudents: null });
+    const inv = (await drafts(t)).Hoa!;
+    const keep = { id: inv.lines[0]!.id, description: "English A1", quantity: 4, unitPrice: 100_000 };
+    const mine = await save(t, inv, {
+      lines: [keep, { description: "Extra class", quantity: 2, unitPrice: 90_000, courseId: course.id }],
+    });
+    expect(mine.status, JSON.stringify(mine.json)).toBe(200);
+    expect(mine.json.invoice.lines[1]).toMatchObject({ courseId: course.id, amount: 180_000, dates: [] });
+    // A line that has a course keeps it when it is saved again, whatever the screen sends.
+    const again = await save(t, mine.json.invoice, {
+      lines: [
+        keep,
+        { id: mine.json.invoice.lines[1].id, description: "Book", quantity: 1, unitPrice: 5, courseId: null },
+      ],
+    });
+    expect(again.json.invoice.lines[1].courseId).toBe(course.id);
+    // A line with no course may get one (and a new line may name one).
+    const plain = await save(t, again.json.invoice, {
+      lines: [keep, { description: "Book", quantity: 1, unitPrice: 5 }],
+    });
+    expect(plain.json.invoice.lines[1].courseId).toBeNull();
+    const named = await save(t, plain.json.invoice, {
+      lines: [
+        keep,
+        {
+          id: plain.json.invoice.lines[1].id,
+          description: "Extra",
+          quantity: 1,
+          unitPrice: 5,
+          courseId: course.id,
+        },
+      ],
+    });
+    expect(named.json.invoice.lines[1].courseId).toBe(course.id);
+
+    const now = named.json.invoice as Invoice;
+    const stolen = await save(t, now, {
+      lines: [keep, { description: "Extra class", quantity: 1, unitPrice: 1, courseId: foreign.id }],
+    });
+    expect(stolen.status).toBe(400);
+    const unknown = await save(t, now, {
+      lines: [keep, { description: "Extra class", quantity: 1, unitPrice: 1, courseId: "nope" }],
+    });
+    expect(unknown.status).toBe(400);
+    // The course behind a line made from lessons cannot be changed from outside.
+    const moved = await save(t, now, { lines: [{ ...keep, courseId: null }] });
+    expect(moved.json.invoice.lines[0].courseId).toBe(course.id);
   });
 
   it("forgets the lessons behind a line when its quantity is changed", async () => {

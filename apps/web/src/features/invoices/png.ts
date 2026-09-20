@@ -1,17 +1,15 @@
 import { formatDay, formatVnd, formatWhen } from "@/features/format";
-import { periodLabel } from "./period";
+import { periodShort } from "./period";
 import { qrModules, qrTextOf } from "./qr";
 import { hasPaymentInfo, type SheetData } from "./sheet";
 
 /** The words on the picture. They come from the message catalog, so nothing is written here. */
 export interface PngLabels {
   receipt: string;
-  receiptVi: string;
+  /** "Học phí tháng {month}" */
+  title: string;
   number: string;
   draftNumber: string;
-  from: string;
-  to: string;
-  month: string;
   sentOn: string;
   due: string;
   description: string;
@@ -34,7 +32,7 @@ export interface PngLabels {
   bank: string;
   account: string;
   holder: string;
-  scan: string;
+  payCode: string;
   notTax: string;
 }
 
@@ -116,20 +114,17 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
 
   // --- heading
   y += 34;
-  text(t.receipt, PAD, { size: 36, weight: 700 });
+  text(t.title.replace("{month}", periodShort(data.period)), PAD, { size: 36, weight: 700 });
   text(data.number ?? t.draftNumber, right, { size: 24, weight: 700 }, "right");
   y += 28;
-  text(t.receiptVi, PAD, { size: 18, color: MUTED });
+  text(t.receipt, PAD, { size: 18, color: MUTED });
   if (data.status === "paid") text(t.stampPaid, right, { size: 18, weight: 700, color: GREEN }, "right");
   y += 26;
   rule(y);
   y += 12;
 
-  // --- who, when
+  // --- when
   const facts: [string, string][] = [
-    [t.from, data.teacherName],
-    [t.to, data.studentName],
-    [t.month, periodLabel(data.period)],
     ...(data.sentAt ? ([[t.sentOn, formatWhen(data.sentAt)]] as [string, string][]) : []),
     ...(data.dueDate ? ([[t.due, formatDay(data.dueDate)]] as [string, string][]) : []),
   ];
@@ -172,8 +167,10 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
     const bottom = y;
     y = top + 8 + 26;
     const many = l.quantity === 1 ? t.lessonOne : t.lessonMany.replace("{n}", String(l.quantity));
-    text(l.perLesson ? many : String(l.quantity), cols.howMany, { size: 18 }, "right");
-    text(formatVnd(l.unitPrice), cols.price, { size: 18 }, "right");
+    if (!l.discount) {
+      text(l.perLesson ? many : String(l.quantity), cols.howMany, { size: 18 }, "right");
+      text(formatVnd(l.unitPrice), cols.price, { size: 18 }, "right");
+    }
     if (l.perLesson) {
       y += 20;
       text(t.perLesson, cols.price, { size: 13, color: MUTED }, "right");
@@ -212,40 +209,49 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
     const boxTop = y;
     const qrSize = 300;
     const noteW = WIDTH - 2 * PAD - 2 * 24;
-    let boxBottom = boxTop + 24 + qrSize + 44;
-    if (p.paymentNote) {
-      ctx.font = font({ size: 16 });
-      boxBottom += wrap(ctx, p.paymentNote, noteW).length * 22 + 8;
-    }
-    boxBottom += 20;
+    const qrTop = boxTop + 24 + 40;
+    // Under the code: the bank, the account number (big) and the name of the holder, as banks show them.
+    const under: [string, Style][] = [
+      ...(p.bankName ? ([[p.bankName, { size: 22, weight: 700 }]] as [string, Style][]) : []),
+      ...(p.bankAccount ? ([[p.bankAccount, { size: 32, weight: 700 }]] as [string, Style][]) : []),
+      ...(p.bankHolder
+        ? ([[p.bankHolder.toUpperCase(), { size: 20, color: MUTED }]] as [string, Style][])
+        : []),
+    ];
+    const noteLines = p.paymentNote ? ((ctx.font = font({ size: 16 })), wrap(ctx, p.paymentNote, noteW)) : [];
+    let last = qrTop + qrSize;
+    const gaps = [38, 42, 30];
+    const placed = under.map(([, style], i) => (last += style.size >= 32 ? 44 : (gaps[i] ?? 30)));
+    if (noteLines.length) last += 14;
+    const noteBaselines = noteLines.map(() => (last += 24));
+    const boxBottom = last + 30;
     if (paint) {
       ctx.fillStyle = BOX;
       ctx.beginPath();
       ctx.roundRect(PAD, boxTop, WIDTH - 2 * PAD, boxBottom - boxTop, 14);
       ctx.fill();
       const qx = (WIDTH - qrSize) / 2;
-      const qy = boxTop + 24;
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(qx, qy, qrSize, qrSize);
+      ctx.fillRect(qx, qrTop, qrSize, qrSize);
       const cell = Math.floor(qrSize / (qr.length + 6));
       const drawn = cell * qr.length;
       const ox = qx + Math.floor((qrSize - drawn) / 2);
-      const oy = qy + Math.floor((qrSize - drawn) / 2);
+      const oy = qrTop + Math.floor((qrSize - drawn) / 2);
       ctx.fillStyle = "#000000";
       for (let r = 0; r < qr.length; r++)
         for (let c = 0; c < qr.length; c++)
           if (qr[r]![c]) ctx.fillRect(ox + c * cell, oy + r * cell, cell, cell);
     }
-    y = boxTop + 24 + qrSize + 28;
-    text(t.scan, WIDTH / 2, { size: 16, color: MUTED }, "center");
-    if (p.paymentNote) {
-      y += 8;
-      ctx.font = font({ size: 16 });
-      for (const line of wrap(ctx, p.paymentNote, noteW)) {
-        y += 22;
-        text(line, WIDTH / 2, { size: 16, color: MUTED }, "center");
-      }
-    }
+    y = boxTop + 24 + 22;
+    text(t.payCode.toUpperCase(), WIDTH / 2, { size: 20, weight: 700, color: GREEN }, "center");
+    under.forEach(([value, style], i) => {
+      y = placed[i]!;
+      text(value, WIDTH / 2, style, "center");
+    });
+    noteLines.forEach((line, i) => {
+      y = noteBaselines[i]!;
+      text(line, WIDTH / 2, { size: 16, color: MUTED }, "center");
+    });
     y = boxBottom;
   } else if (data.status === "sent" && hasPaymentInfo(p)) {
     y += 30;

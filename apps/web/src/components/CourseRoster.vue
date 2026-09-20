@@ -12,6 +12,7 @@ import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
 import AppEmpty from "@/ui/AppEmpty.vue";
 import AppInput from "@/ui/AppInput.vue";
+import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppLink from "@/ui/AppLink.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppProgress from "@/ui/AppProgress.vue";
@@ -120,7 +121,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
             v-if="editing === s.studentId"
             class="flex flex-wrap items-end gap-2 rounded-field bg-base-200 p-3"
           >
-            <AppInput v-model="priceText" :label="t.price" inputmode="numeric" :hint="t.useCoursePrice" />
+            <AppMoneyInput v-model="priceText" :label="t.price" :hint="t.useCoursePrice" />
             <AppButton @click="savePrice(s.studentId, s.status === 'pending' ? 'active' : s.status)">{{
               t.savePrice
             }}</AppButton>
@@ -159,7 +160,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
             </label>
           </li>
         </ul>
-        <AppInput v-model="add.price.value" :label="t.ownPriceLabel" inputmode="numeric" />
+        <AppMoneyInput v-model="add.price.value" :label="t.ownPriceLabel" />
         <div>
           <AppButton :disabled="add.selected.value.size === 0" :loading="add.busy.value" @click="add.add">
             {{ fill(t.addSelected, { n: add.selected.value.size }) }}

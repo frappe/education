@@ -18,6 +18,11 @@ export function qrTextOf(data: SheetData): string | null {
   return qrTextFor(data, data.number);
 }
 
+/** The text of the QR on a draft, to look at before sending. The number of the receipt is not known yet, so it has no transfer message. */
+export function draftQrText(data: SheetData): string | null {
+  return data.status === "draft" ? qrTextFor(data, "") : null;
+}
+
 /** True when the receipt will get a payment QR once it is sent (used to tell the teacher, on a draft). */
 export function willHaveQr(data: SheetData): boolean {
   return data.status === "draft" && qrTextFor(data, "DRAFT") !== null;

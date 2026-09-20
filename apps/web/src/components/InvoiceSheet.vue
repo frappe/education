@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { formatDay, formatVnd, formatWhen } from "@/features/format";
-import { periodLabel } from "@/features/invoices/period";
-import { qrModules, qrPath, qrTextOf, willHaveQr } from "@/features/invoices/qr";
+import { periodShort } from "@/features/invoices/period";
+import { draftQrText, qrModules, qrPath, qrTextOf, willHaveQr } from "@/features/invoices/qr";
 import { hasPaymentInfo, type SheetData } from "@/features/invoices/sheet";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -10,18 +10,23 @@ import AppBadge from "@/ui/AppBadge.vue";
 import AppTable from "@/ui/AppTable.vue";
 
 // The fee receipt as a paper page. It is the part that is printed.
-const props = defineProps<{ data: SheetData }>();
+const props = defineProps<{
+  data: SheetData;
+  /** A draft that is saved: show its payment QR code, so the teacher can check it before sending. */
+  qrPreview?: boolean;
+}>();
 const t = messages.invoices;
 const pay = computed(() => props.data.payee);
 // A receipt that waits for payment shows the QR code. The bank details are written out only when no code can be made.
 const qr = computed(() => {
-  const text = qrTextOf(props.data);
+  const text =
+    props.qrPreview && props.data.status === "draft" ? draftQrText(props.data) : qrTextOf(props.data);
   if (!text) return null;
   const modules = qrModules(text);
   return { size: modules.length, path: qrPath(modules) };
 });
 const showPay = computed(() => !qr.value && props.data.status === "sent" && hasPaymentInfo(pay.value));
-const qrComing = computed(() => willHaveQr(props.data));
+const qrComing = computed(() => !qr.value && willHaveQr(props.data));
 const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).join(", ");
 </script>
 
@@ -29,8 +34,10 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
   <article class="print-area @container rounded-box border border-base-300 bg-base-100 p-6 md:p-10">
     <header class="flex flex-wrap items-start justify-between gap-4 border-b border-base-300 pb-6">
       <div>
-        <h2 class="text-2xl font-semibold tracking-tight">{{ t.receipt }}</h2>
-        <p class="text-base-content/60">{{ t.receiptVi }}</p>
+        <h2 class="text-2xl font-semibold tracking-tight">
+          {{ fill(t.receiptTitle, { month: periodShort(data.period) }) }}
+        </h2>
+        <p class="text-base-content/60">{{ t.receipt }}</p>
       </div>
       <div class="text-right">
         <p class="text-sm text-base-content/60">{{ t.receiptNo }}</p>
@@ -40,19 +47,7 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
       </div>
     </header>
 
-    <dl class="grid gap-x-8 gap-y-4 py-6 sm:grid-cols-2">
-      <div>
-        <dt class="text-sm text-base-content/60">{{ t.from }}</dt>
-        <dd class="font-medium">{{ data.teacherName }}</dd>
-      </div>
-      <div>
-        <dt class="text-sm text-base-content/60">{{ t.to }}</dt>
-        <dd class="font-medium">{{ data.studentName }}</dd>
-      </div>
-      <div>
-        <dt class="text-sm text-base-content/60">{{ t.month }}</dt>
-        <dd class="font-medium">{{ periodLabel(data.period) }}</dd>
-      </div>
+    <dl v-if="data.sentAt || data.dueDate" class="grid gap-x-8 gap-y-4 py-6 sm:grid-cols-2">
       <div v-if="data.sentAt">
         <dt class="text-sm text-base-content/60">{{ t.sentOn }}</dt>
         <dd class="font-medium">{{ formatWhen(data.sentAt) }}</dd>
@@ -62,6 +57,7 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
         <dd class="font-medium">{{ formatDay(data.dueDate) }}</dd>
       </div>
     </dl>
+    <div v-else class="h-6"></div>
 
     <!-- A narrow receipt (small screen or narrow column) shows each line as a block, so nothing has to be scrolled sideways. -->
     <ul class="divide-y divide-base-300 border-y border-base-300 @2xl:hidden">
@@ -73,7 +69,7 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
         <p v-if="l.dates.length" class="text-sm text-base-content/70">
           {{ fill(t.lessonDays, { days: days(l.dates) }) }}
         </p>
-        <p class="text-sm text-base-content/60">
+        <p v-if="!l.discount" class="text-sm text-base-content/60">
           <template v-if="l.perLesson"
             >{{ l.quantity === 1 ? t.lessonOne : fill(t.lessonMany, { n: l.quantity }) }} ×
             {{ formatVnd(l.unitPrice) }} {{ t.perLesson }}</template
@@ -106,16 +102,14 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
               </p>
             </td>
             <td class="whitespace-nowrap text-right">
-              {{
-                l.perLesson
-                  ? l.quantity === 1
-                    ? t.lessonOne
-                    : fill(t.lessonMany, { n: l.quantity })
-                  : l.quantity
-              }}
+              <template v-if="l.discount"></template>
+              <template v-else-if="l.perLesson">{{
+                l.quantity === 1 ? t.lessonOne : fill(t.lessonMany, { n: l.quantity })
+              }}</template>
+              <template v-else>{{ l.quantity }}</template>
             </td>
             <td class="whitespace-nowrap text-right">
-              {{ formatVnd(l.unitPrice) }}
+              <template v-if="!l.discount">{{ formatVnd(l.unitPrice) }}</template>
               <span v-if="l.perLesson" class="block text-xs text-base-content/60">{{ t.perLesson }}</span>
             </td>
             <td class="whitespace-nowrap text-right">{{ formatVnd(l.amount) }}</td>
@@ -141,8 +135,11 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
 
     <section
       v-if="qr"
-      class="mt-6 flex flex-col items-center gap-2 rounded-field bg-base-200 p-4 print:bg-transparent"
+      class="mt-6 flex flex-col items-center gap-1 rounded-field bg-base-200 p-4 print:bg-transparent"
     >
+      <p class="text-sm text-base-content/60">{{ t.amountToPay }}</p>
+      <p class="mb-3 text-2xl font-semibold">{{ formatVnd(data.total) }}</p>
+      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-success">{{ t.payCode }}</h3>
       <svg
         :viewBox="`-3 -3 ${qr.size + 6} ${qr.size + 6}`"
         class="size-56 max-w-full rounded-field"
@@ -153,9 +150,14 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
         <rect x="-3" y="-3" :width="qr.size + 6" :height="qr.size + 6" class="fill-white" />
         <path :d="qr.path" class="fill-black" />
       </svg>
-      <p class="text-sm text-base-content/70">{{ t.scan }}</p>
-      <p v-if="pay.paymentNote" class="whitespace-pre-wrap break-words text-center text-sm">
+      <p v-if="pay.bankName" class="mt-3 text-lg font-semibold">{{ pay.bankName }}</p>
+      <p v-if="pay.bankAccount" class="text-2xl font-bold tracking-widest">{{ pay.bankAccount }}</p>
+      <p v-if="pay.bankHolder" class="uppercase text-base-content/70">{{ pay.bankHolder }}</p>
+      <p v-if="pay.paymentNote" class="mt-2 whitespace-pre-wrap break-words text-center text-sm">
         {{ pay.paymentNote }}
+      </p>
+      <p v-if="data.status === 'draft'" class="mt-2 text-center text-xs text-base-content/60">
+        {{ t.qrPreviewNote }}
       </p>
     </section>
     <p v-else-if="qrComing" class="mt-6 rounded-field bg-base-200 p-4 text-sm text-base-content/70">

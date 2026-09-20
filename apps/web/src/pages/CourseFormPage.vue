@@ -15,6 +15,7 @@ import AppCard from "@/ui/AppCard.vue";
 import AppCheckbox from "@/ui/AppCheckbox.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
+import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
 import AppTabs from "@/ui/AppTabs.vue";
@@ -91,11 +92,9 @@ const statusText = {
                 :error="form.errors.value.description"
               />
             </div>
-            <AppInput
+            <AppMoneyInput
               v-model="form.values.pricePerLesson"
               :label="t.price"
-              type="text"
-              inputmode="numeric"
               :hint="t.priceHint"
               :error="form.errors.value.pricePerLesson"
             />

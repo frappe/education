@@ -5,7 +5,7 @@ import InvoiceSheet from "@/components/InvoiceSheet.vue";
 import LessonPicker from "@/components/LessonPicker.vue";
 import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels";
 import { formatVnd } from "@/features/format";
-import { amountOf, parseMoney } from "@/features/invoices/lines";
+import { amountsOf, parseMoney } from "@/features/invoices/lines";
 import { downloadReceiptPng, type PngLabels } from "@/features/invoices/png";
 import { periodLabel } from "@/features/invoices/period";
 import { sheetOf, type SheetData } from "@/features/invoices/sheet";
@@ -19,8 +19,10 @@ import AppCard from "@/ui/AppCard.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppModal from "@/ui/AppModal.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppSelect from "@/ui/AppSelect.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
 const t = messages.invoices;
@@ -37,11 +39,27 @@ const inv = useInvoice(
     voided: t.voided,
     lessonsSaved: t.lessonsSaved,
     deleted: t.deleted,
+    discount: t.discountLine,
+    discountPercent: t.discountPercentLine,
   },
   () => router.replace("/invoices"),
 );
 const d = computed(() => inv.invoice.value);
 const isDraft = computed(() => d.value?.status === "draft");
+
+// The choices of "What is it for": the teacher's courses, and "Other cost". A saved line keeps its own course in the list.
+const whatOptions = (r: (typeof inv.rows.value)[number]) => {
+  const list = inv.courses.value.map((c) => ({ value: c.id, label: c.name }));
+  if (r.courseId !== "" && !list.some((c) => c.value === r.courseId)) {
+    list.unshift({ value: r.courseId, label: r.description });
+  }
+  return [...list, { value: inv.OTHER, label: t.otherCost }];
+};
+const discountTypes = [
+  { value: "percent", label: t.discountPercent },
+  { value: "fixed", label: t.discountFixed },
+];
+const amounts = computed(() => amountsOf(inv.rows.value));
 
 /** What the printed receipt shows: for a draft, what is typed now. */
 const sheet = computed<SheetData | null>(() => {
@@ -49,19 +67,47 @@ const sheet = computed<SheetData | null>(() => {
   if (!v) return null;
   if (v.status !== "draft") return sheetOf(v);
   const saved = new Map(v.lines.map((l) => [l.id, l]));
+  const money = amounts.value;
   return {
     ...v,
-    lines: inv.rows.value.map((r) => {
+    lines: inv.rows.value.flatMap((r, i): SheetData["lines"] => {
+      if (r.kind === "") return [];
       const old = r.id ? saved.get(r.id) : undefined;
-      const quantity = parseMoney(r.quantity);
-      return {
-        description: r.description,
-        quantity: Number.isFinite(quantity) ? quantity : 0,
-        unitPrice: Number.isFinite(parseMoney(r.unitPrice)) ? parseMoney(r.unitPrice) : 0,
-        amount: amountOf(r),
-        dates: old && old.quantity === quantity ? old.dates : [],
-        perLesson: r.perLesson,
-      };
+      const quantity = r.kind === "course" ? parseMoney(r.quantity) : 1;
+      const amount = money[i] ?? 0;
+      if (r.kind === "discount") {
+        const value = parseMoney(r.discountValue);
+        return [
+          {
+            description:
+              r.discountType === "percent"
+                ? t.discountPercentLine.replace("{value}", String(value))
+                : t.discountLine,
+            quantity: 1,
+            unitPrice: amount,
+            amount,
+            dates: [],
+            perLesson: false,
+            discount: true,
+          },
+        ];
+      }
+      return [
+        {
+          description: r.description,
+          quantity: Number.isFinite(quantity) ? quantity : 0,
+          unitPrice:
+            r.kind === "other"
+              ? amount
+              : Number.isFinite(parseMoney(r.unitPrice))
+                ? parseMoney(r.unitPrice)
+                : 0,
+          amount,
+          dates: r.kind === "course" && old && old.quantity === quantity ? old.dates : [],
+          perLesson: r.kind === "course",
+          discount: false,
+        },
+      ];
     }),
     total: inv.total.value,
     note: inv.note.value,
@@ -72,12 +118,9 @@ const sheet = computed<SheetData | null>(() => {
 // The receipt as a picture (PNG), with the payment QR code when it is sent and has the bank details.
 const pngLabels: PngLabels = {
   receipt: t.receipt,
-  receiptVi: t.receiptVi,
+  title: t.receiptTitle,
   number: t.receiptNo,
   draftNumber: t.draftNumber,
-  from: t.from,
-  to: t.to,
-  month: t.month,
   sentOn: t.sentOn,
   due: t.due,
   description: t.description,
@@ -98,7 +141,7 @@ const pngLabels: PngLabels = {
   bank: t.bank,
   account: t.account,
   holder: t.holder,
-  scan: t.scan,
+  payCode: t.payCode,
   notTax: t.notTax,
 };
 const makingPng = ref(false);
@@ -203,57 +246,111 @@ const canSend = computed(
               <p v-if="inv.rows.value.length === 0" class="text-sm text-base-content/60">{{ t.noLines }}</p>
               <ul class="flex flex-col gap-4">
                 <li
-                  v-for="r in inv.rows.value"
+                  v-for="(r, i) in inv.rows.value"
                   :key="r.key"
                   class="grid gap-3 rounded-field border border-base-300 p-3 sm:grid-cols-12"
                 >
-                  <div class="sm:col-span-12">
-                    <AppInput v-model="r.description" :label="t.lineText" />
-                  </div>
-                  <div class="sm:col-span-3">
-                    <AppInput
-                      v-model="r.quantity"
-                      :label="r.perLesson ? t.lineLessons : t.lineQuantity"
-                      inputmode="numeric"
-                    />
-                  </div>
-                  <div class="sm:col-span-5">
-                    <AppInput
-                      v-model="r.unitPrice"
-                      :label="r.perLesson ? t.linePerLesson : t.linePrice"
-                      inputmode="numeric"
-                    />
-                  </div>
-                  <div class="flex items-end justify-between gap-2 sm:col-span-4">
-                    <div>
-                      <p class="text-sm font-medium">{{ t.lineAmount }}</p>
-                      <p class="min-h-11 content-center font-semibold">{{ formatVnd(amountOf(r)) }}</p>
+                  <template v-if="r.kind === 'discount'">
+                    <div class="sm:col-span-4">
+                      <AppSelect
+                        v-model="r.discountType"
+                        :label="t.discountType"
+                        :options="discountTypes"
+                        required
+                      />
                     </div>
-                    <button
-                      type="button"
-                      class="btn btn-square btn-ghost"
-                      :aria-label="t.removeLine"
-                      @click="inv.removeRow(r.key)"
-                    >
-                      <AppIcon name="trash" :size="18" />
-                    </button>
-                  </div>
+                    <div class="sm:col-span-4">
+                      <AppInput
+                        v-if="r.discountType === 'percent'"
+                        v-model="r.discountValue"
+                        :label="t.discountPercentLabel"
+                        inputmode="numeric"
+                      />
+                      <AppMoneyInput v-else v-model="r.discountValue" :label="t.discountFixedLabel" />
+                    </div>
+                    <div class="flex items-end justify-between gap-2 sm:col-span-4">
+                      <div>
+                        <p class="text-sm font-medium">{{ t.lineAmount }}</p>
+                        <p class="min-h-11 content-center whitespace-nowrap font-semibold">
+                          {{ formatVnd(amounts[i] ?? 0) }}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-square btn-ghost"
+                        :aria-label="t.removeLine"
+                        @click="inv.removeRow(r.key)"
+                      >
+                        <AppIcon name="trash" :size="18" />
+                      </button>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="flex items-end gap-2 sm:col-span-12">
+                      <div class="min-w-0 flex-1">
+                        <AppSelect
+                          :model-value="inv.choiceOf(r)"
+                          :label="t.lineText"
+                          :options="whatOptions(r)"
+                          :placeholder="t.chooseWhat"
+                          :disabled="r.courseLocked"
+                          @update:model-value="inv.choose(r, $event)"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-square btn-ghost"
+                        :aria-label="t.removeLine"
+                        @click="inv.removeRow(r.key)"
+                      >
+                        <AppIcon name="trash" :size="18" />
+                      </button>
+                    </div>
+                    <template v-if="r.kind === 'course'">
+                      <div class="sm:col-span-3">
+                        <AppInput v-model="r.quantity" :label="t.lineLessons" inputmode="numeric" />
+                      </div>
+                      <div class="sm:col-span-5">
+                        <AppMoneyInput v-model="r.unitPrice" :label="t.linePerLesson" />
+                      </div>
+                      <div class="sm:col-span-4">
+                        <p class="text-sm font-medium">{{ t.lineAmount }}</p>
+                        <p class="min-h-11 content-center font-semibold">{{ formatVnd(amounts[i] ?? 0) }}</p>
+                      </div>
+                    </template>
+                    <template v-else-if="r.kind === 'other'">
+                      <div class="sm:col-span-7">
+                        <AppInput v-model="r.description" :label="t.otherText" />
+                      </div>
+                      <div class="sm:col-span-5">
+                        <AppMoneyInput v-model="r.unitPrice" :label="t.otherAmount" negative />
+                      </div>
+                    </template>
+                  </template>
                 </li>
               </ul>
               <div class="flex flex-wrap items-center justify-between gap-3">
-                <AppButton variant="secondary" compact @click="inv.addRow"
-                  ><AppIcon name="plus" :size="16" />{{ t.addLine }}</AppButton
-                >
+                <div class="flex flex-wrap gap-2">
+                  <AppButton variant="secondary" compact @click="inv.addRow"
+                    ><AppIcon name="plus" :size="16" />{{ t.addLine }}</AppButton
+                  >
+                  <AppButton
+                    v-if="!inv.hasDiscount.value"
+                    variant="secondary"
+                    compact
+                    @click="inv.addDiscount"
+                    ><AppIcon name="plus" :size="16" />{{ t.addDiscount }}</AppButton
+                  >
+                </div>
                 <p class="text-lg font-semibold">{{ t.total }}: {{ formatVnd(inv.total.value) }}</p>
               </div>
-              <p class="text-xs text-base-content/60">{{ t.priceHint }}</p>
               <p v-if="!inv.linesValid.value" class="text-sm text-warning">{{ t.fixLines }}</p>
               <AppTextarea v-model="inv.note.value" :label="t.noteLabel" :rows="3" />
               <AppInput v-model="inv.dueDate.value" :label="t.dueLabel" type="date" />
             </AppCard>
             <div>
               <h2 class="mb-3 font-semibold">{{ t.preview }}</h2>
-              <InvoiceSheet :data="sheet" />
+              <InvoiceSheet :data="sheet" :qr-preview="!inv.dirty.value" />
             </div>
           </template>
           <InvoiceSheet v-else :data="sheet" />

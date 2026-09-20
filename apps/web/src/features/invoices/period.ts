@@ -14,3 +14,9 @@ export const periodLabel = (period: string): string =>
   new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }).format(
     new Date(`${period}-01T00:00:00Z`),
   );
+
+/** "2026-09" as "09/2026". */
+export const periodShort = (period: string): string => {
+  const [y, m] = period.split("-");
+  return `${m}/${y}`;
+};

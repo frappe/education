@@ -10,6 +10,8 @@ export interface SheetData {
   lines: (Pick<InvoiceLine, "description" | "quantity" | "unitPrice" | "amount" | "dates"> & {
     /** A line made from lessons: the quantity is a number of lessons and the price is for one lesson. */
     perLesson: boolean;
+    /** A discount: the amount is below 0 and there is no quantity or price to show. */
+    discount: boolean;
   })[];
   total: number;
   note: string;
@@ -25,5 +27,5 @@ export const hasPaymentInfo = (p: PaymentDetails): boolean => Object.values(p).s
 /** A receipt from the server, ready to show. A line with a course is made from lessons. */
 export const sheetOf = (inv: InvoiceInfo | MyInvoiceDetail): SheetData => ({
   ...inv,
-  lines: inv.lines.map((l) => ({ ...l, perLesson: l.courseId !== null })),
+  lines: inv.lines.map((l) => ({ ...l, perLesson: l.courseId !== null, discount: l.discount !== null })),
 });

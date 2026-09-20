@@ -742,14 +742,33 @@ const lineFields = {
     .int("Please enter a whole number.")
     .min(1, "Use at least 1.")
     .max(1000, "This is too many."),
-  /** A discount is a minus number. */
+  /** A minus number takes money off. */
   unitPrice: z
     .number("Please enter a number.")
     .int("Please enter a whole number.")
     .min(-1_000_000_000, "This price is too low.")
     .max(1_000_000_000, "This price is too high."),
+  /** The course a line is for. Only for a line that is not made from lessons; the server checks that it is the teacher's. */
+  courseId: z.string().min(1).max(40).nullable().optional(),
+  /** A discount line. The server works out its amount from the other lines, so the price sent here is not used. */
+  discount: z
+    .object({
+      type: z.enum(["percent", "fixed"]),
+      value: z
+        .number("Please enter a number.")
+        .int("Please enter a whole number.")
+        .min(1, "Use at least 1.")
+        .max(1_000_000_000, "This is too much."),
+    })
+    .refine((d) => d.type !== "percent" || d.value <= 100, {
+      message: "A percentage cannot be more than 100.",
+      path: ["value"],
+    })
+    .nullable()
+    .optional(),
 };
 export const invoiceLineInput = z.object(lineFields);
+export type InvoiceDiscount = { type: "percent" | "fixed"; value: number };
 export const LIMITS_INVOICE = { maxLines: 30, maxLessons: 200 } as const;
 
 const lessonIds = z
@@ -803,6 +822,8 @@ export interface InvoiceLine {
   amount: number;
   /** The days of the lessons behind this line, in the teacher's time zone. Empty for a line the teacher added. */
   dates: string[];
+  /** Set for a discount line: the amount is worked out from the other lines. */
+  discount: InvoiceDiscount | null;
 }
 
 export interface InvoiceInfo {

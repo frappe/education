@@ -7,6 +7,7 @@ defineProps<{
   placeholder?: string;
   /** No empty choice at the top: one of the options is always chosen. */
   required?: boolean;
+  disabled?: boolean;
   error?: string;
 }>();
 const model = defineModel<string>({ default: "" });
@@ -19,6 +20,7 @@ const id = useId();
     <select
       :id="id"
       v-model="model"
+      :disabled="disabled"
       :aria-invalid="error ? true : undefined"
       class="select min-h-11 w-full"
       :class="{ 'select-error': error }"

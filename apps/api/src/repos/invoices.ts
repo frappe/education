@@ -200,6 +200,16 @@ export async function stillAttended(
   return new Set(res.results.map((r) => r.id));
 }
 
+/** Of these course ids, the ones that belong to this teacher. */
+export async function ownCourseIds(db: D1Database, tenantId: string, ids: string[]) {
+  if (ids.length === 0) return new Set<string>();
+  const res = await db
+    .prepare(`SELECT id FROM courses WHERE tenant_id = ?1 AND id IN (SELECT value FROM json_each(?2))`)
+    .bind(tenantId, JSON.stringify(ids))
+    .all<{ id: string }>();
+  return new Set(res.results.map((r) => r.id));
+}
+
 /**
  * True (in SQL) when a list of lines (JSON) has a lesson that is already on another receipt of the student that is
  * not cancelled. Used to make the database itself refuse to bill a lesson twice, even when two requests arrive at once.
