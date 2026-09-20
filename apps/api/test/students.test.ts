@@ -146,7 +146,7 @@ describe("list, search and pages", () => {
     for (const name of ["bao", "Anh", "Chi"]) await addStudent(t, { name });
     const res = await list(t.cookie);
     expect(res.json.students.map((s: { name: string }) => s.name)).toEqual(["Anh", "bao", "Chi"]);
-    expect(res.json).toMatchObject({ total: 3, page: 1, pageSize: 50 });
+    expect(res.json).toMatchObject({ total: 3, page: 1, pageSize: 10 });
   });
 
   it("searches by name or email, ignoring case", async () => {
@@ -169,20 +169,29 @@ describe("list, search and pages", () => {
     expect((await list(t.cookie, `?search=${encodeURIComponent("' OR 1=1 --")}`)).json.total).toBe(0);
   });
 
-  it("splits into pages of 50", async () => {
+  it("splits into pages of 10, and can give a whole list (up to 100) when a screen needs one", async () => {
     const t = await createTeacher();
     const rows = Array.from({ length: 55 }, (_, i) => ({
       name: `Kid ${String(i).padStart(2, "0")}`,
       email: uniqueEmail(`p${i}`),
     }));
     await call("/api/students/import", { method: "POST", cookie: t.cookie, body: { rows, dryRun: false } });
-    const p1 = await list(t.cookie, "?page=1");
-    const p2 = await list(t.cookie, "?page=2");
-    expect(p1.json.students.length).toBe(50);
-    expect(p2.json.students.length).toBe(5);
-    expect(p1.json.total).toBe(55);
+    const names = async (query: string) =>
+      ((await list(t.cookie, query)).json.students as { name: string }[]).map((s) => s.name);
+    expect((await names("?page=1")).length).toBe(10);
+    expect((await names("?page=1"))[0]).toBe("Kid 00");
+    expect(await names("?page=6")).toEqual(["Kid 50", "Kid 51", "Kid 52", "Kid 53", "Kid 54"]);
+    expect(await names("?page=7")).toEqual([]);
+    expect((await list(t.cookie, "?page=1")).json).toMatchObject({ total: 55, page: 1, pageSize: 10 });
     expect((await list(t.cookie, "?page=abc")).json.page).toBe(1);
     expect((await list(t.cookie, "?page=-4")).json.page).toBe(1);
+    // A screen that needs the whole list asks for a bigger page, but never more than 100.
+    expect((await names("?pageSize=100")).length).toBe(55);
+    expect((await list(t.cookie, "?pageSize=100")).json.pageSize).toBe(100);
+    expect((await list(t.cookie, "?pageSize=5000")).json.pageSize).toBe(100);
+    expect((await names("?pageSize=3&page=2")).length).toBe(3);
+    expect((await list(t.cookie, "?pageSize=0")).json.pageSize).toBe(1);
+    expect((await list(t.cookie, "?pageSize=abc")).json.pageSize).toBe(10);
   });
 
   describe("the status filter", () => {
@@ -237,7 +246,7 @@ describe("list, search and pages", () => {
       expect(await ids(t, "?status=all&search=ba")).toEqual([invitedId]);
       expect(await ids(t, "?status=joined&search=ba")).toEqual([]);
       const p2 = await list(t.cookie, "?status=all&page=2");
-      expect(p2.json).toMatchObject({ students: [], total: 4, page: 2, pageSize: 50 });
+      expect(p2.json).toMatchObject({ students: [], total: 4, page: 2, pageSize: 10 });
       const other = await createTeacher();
       expect(await ids(other, "?status=all")).toEqual([]);
     });

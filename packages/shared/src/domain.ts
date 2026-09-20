@@ -40,6 +40,10 @@ export const LIMITS = {
   sessionIdleDays: 7,
   sessionMaxDays: 90,
   anonymousFeedbackMinResponses: 3,
+  /** How many rows a table or list shows on one page. */
+  pageSize: 10,
+  /** The most a screen can ask for at once when it needs a whole list (for example to choose students). */
+  maxPageSize: 100,
   /** Most lessons one course can have, and most a single "repeat" can make at once. */
   maxLessonsPerCourse: 500,
   maxLessonsAtOnce: 104,

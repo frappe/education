@@ -13,6 +13,7 @@ import { formatWhen, hostOf } from "@/features/format";
 import { scoreText } from "@/features/homework/dates";
 import { useAssignmentPage } from "@/features/homework/useHomework";
 import { useToast } from "@/features/toast/useToast";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -26,6 +27,7 @@ import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppTable from "@/ui/AppTable.vue";
 
 const t = messages.homework;
@@ -43,6 +45,7 @@ const p = useAssignmentPage(id, {
   acceptNone: t.acceptNone,
 });
 const a = computed(() => p.assignment.value);
+const rowsPaging = usePaging(() => p.rows.value);
 
 // More time for one student
 const extendFor = ref<string | null>(null);
@@ -191,7 +194,7 @@ const deleteWords = computed(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="r in p.rows.value" :key="r.studentId">
+            <tr v-for="r in rowsPaging.shown.value" :key="r.studentId">
               <td>
                 <span class="flex items-center gap-3">
                   <AppAvatar :name="r.studentName" size="sm" />
@@ -229,6 +232,7 @@ const deleteWords = computed(() => {
             </tr>
           </tbody>
         </AppTable>
+        <AppPager v-model:page="rowsPaging.page.value" :pages="rowsPaging.pages.value" />
       </AppCard>
     </template>
 

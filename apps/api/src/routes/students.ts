@@ -18,11 +18,13 @@ export const students = new Hono<AppBindings>();
 
 students.get("/students", requireTeacher, async (c) => {
   const page = Number.parseInt(c.req.query("page") ?? "1", 10);
+  const pageSize = Number.parseInt(c.req.query("pageSize") ?? "", 10);
   const result = await studentList(await makeCtx(c), actorOf(c), {
     search: c.req.query("search") ?? "",
     // An unknown word is the same as no word: the students who are not archived.
     filter: STUDENT_FILTERS.find((f) => f === c.req.query("status")) ?? "current",
     page: Number.isFinite(page) ? page : 1,
+    ...(Number.isFinite(pageSize) ? { pageSize } : {}),
   });
   return c.json(result);
 });

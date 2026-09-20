@@ -1,4 +1,4 @@
-import { createCourseBody, updateCourseBody, type CourseInfo, type StudentInfo } from "@lms/shared";
+import { createCourseBody, LIMITS, updateCourseBody, type CourseInfo, type StudentInfo } from "@lms/shared";
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
@@ -136,7 +136,9 @@ export function useCourseForm(
   async function loadStudents() {
     try {
       for (let page = 1; page <= 10; page++) {
-        const res = await api<{ students: StudentInfo[]; total: number }>(`/students?page=${page}`);
+        const res = await api<{ students: StudentInfo[]; total: number }>(
+          `/students?page=${page}&pageSize=${LIMITS.maxPageSize}`,
+        );
         students.value.push(...res.students.map((x) => ({ id: x.id, name: x.name, email: x.email })));
         if (students.value.length >= res.total || res.students.length === 0) break;
       }

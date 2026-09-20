@@ -1,4 +1,5 @@
 import {
+  LIMITS,
   MAX_IMPORT_ROWS,
   addStudentBody,
   type AddStudentBody,
@@ -28,8 +29,6 @@ import {
 import { invitesInLastDay } from "../repos/tokens";
 import { INVITES_PER_DAY, issueInvite } from "./invites";
 
-const PAGE_SIZE = 50;
-
 export const toStudentInfo = (r: StudentListRow): StudentInfo => ({
   id: r.id,
   name: r.name,
@@ -51,18 +50,19 @@ async function load(ctx: Ctx, tenantId: string, id: string): Promise<StudentList
 export async function studentList(
   ctx: Ctx,
   actor: Actor,
-  q: { search: string; filter: StudentFilter; page: number },
+  q: { search: string; filter: StudentFilter; page: number; pageSize?: number },
 ): Promise<{ students: StudentInfo[]; total: number; page: number; pageSize: number }> {
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "read", { tenantId });
   const page = Math.max(1, q.page);
+  const pageSize = Math.min(LIMITS.maxPageSize, Math.max(1, q.pageSize ?? LIMITS.pageSize));
   const { rows, total } = await listStudents(ctx.env.DB, tenantId, {
     search: q.search.trim().slice(0, 100),
     filter: q.filter,
-    limit: PAGE_SIZE,
-    offset: (page - 1) * PAGE_SIZE,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
   });
-  return { students: rows.map(toStudentInfo), total, page, pageSize: PAGE_SIZE };
+  return { students: rows.map(toStudentInfo), total, page, pageSize };
 }
 
 export async function studentGet(ctx: Ctx, actor: Actor, id: string): Promise<StudentInfo> {

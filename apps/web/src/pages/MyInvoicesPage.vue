@@ -3,6 +3,7 @@ import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels
 import { formatVnd } from "@/features/format";
 import { periodLabel } from "@/features/invoices/period";
 import { useMyInvoices } from "@/features/invoices/useInvoices";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -11,9 +12,11 @@ import AppCard from "@/ui/AppCard.vue";
 import AppEmpty from "@/ui/AppEmpty.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const t = messages.invoices;
 const { invoices, unpaid, loading, error } = useMyInvoices();
+const paging = usePaging(invoices);
 </script>
 
 <template>
@@ -29,7 +32,7 @@ const { invoices, unpaid, loading, error } = useMyInvoices();
       }}</AppAlert>
       <AppCard flush>
         <ul class="divide-y divide-base-300">
-          <li v-for="i in invoices" :key="i.id">
+          <li v-for="i in paging.shown.value" :key="i.id">
             <RouterLink
               :to="`/my/invoices/${i.id}`"
               class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-base-200/60"
@@ -47,6 +50,7 @@ const { invoices, unpaid, loading, error } = useMyInvoices();
             </RouterLink>
           </li>
         </ul>
+        <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
       </AppCard>
     </template>
   </AppPage>

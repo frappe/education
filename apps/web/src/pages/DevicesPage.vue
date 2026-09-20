@@ -4,6 +4,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { authApi } from "@/features/auth/api";
 import { useSession } from "@/features/auth/session";
+import { usePaging } from "@/features/paging";
 import { useToast } from "@/features/toast/useToast";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -14,12 +15,14 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const t = messages.devices;
 const router = useRouter();
 const session = useSession();
 const toast = useToast();
 const sessions = ref<SessionInfo[]>([]);
+const paging = usePaging(sessions);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -68,7 +71,7 @@ onMounted(load);
     <AppCard v-else-if="sessions.length === 0"><AppEmpty icon="devices" :title="t.empty" /></AppCard>
     <AppCard v-else flush>
       <ul class="divide-y divide-base-300">
-        <li v-for="s in sessions" :key="s.id" class="flex flex-wrap items-center gap-4 px-5 py-4">
+        <li v-for="s in paging.shown.value" :key="s.id" class="flex flex-wrap items-center gap-4 px-5 py-4">
           <span class="grid size-11 place-items-center rounded-field bg-base-200 text-base-content/70">
             <AppIcon :name="isPhone(s.userAgent) ? 'mobile' : 'devices'" :size="22" />
           </span>
@@ -80,6 +83,7 @@ onMounted(load);
           <AppButton variant="secondary" compact @click="end(s)">{{ t.signOut }}</AppButton>
         </li>
       </ul>
+      <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
     </AppCard>
   </AppPage>
 </template>

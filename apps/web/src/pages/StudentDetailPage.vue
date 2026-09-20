@@ -18,6 +18,7 @@ import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppStat from "@/ui/AppStat.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
@@ -133,28 +134,7 @@ async function sendInvite() {
                 }}</AppBadge>
               </li>
             </ul>
-            <div
-              v-if="attendance.pages.value > 1"
-              class="flex items-center justify-between gap-3 border-t border-base-300 px-5 py-3"
-            >
-              <AppButton
-                variant="ghost"
-                compact
-                :disabled="attendance.page.value <= 1"
-                @click="attendance.page.value--"
-                >{{ messages.students.previous }}</AppButton
-              >
-              <span class="text-sm text-base-content/60">{{
-                fill(messages.students.pageOf, { page: attendance.page.value, pages: attendance.pages.value })
-              }}</span>
-              <AppButton
-                variant="ghost"
-                compact
-                :disabled="attendance.page.value >= attendance.pages.value"
-                @click="attendance.page.value++"
-                >{{ messages.students.next }}</AppButton
-              >
-            </div>
+            <AppPager v-model:page="attendance.page.value" :pages="attendance.pages.value" />
           </template>
         </AppCard>
       </div>

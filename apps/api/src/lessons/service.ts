@@ -1,12 +1,13 @@
-import type {
-  AttendanceBody,
-  AttendanceSheet,
-  CancelLessonBody,
-  CreateLessonsBody,
-  LessonInfo,
-  ScheduleLesson,
-  StudentAttendanceInfo,
-  UpdateLessonBody,
+import {
+  LIMITS,
+  type AttendanceBody,
+  type AttendanceSheet,
+  type CancelLessonBody,
+  type CreateLessonsBody,
+  type LessonInfo,
+  type ScheduleLesson,
+  type StudentAttendanceInfo,
+  type UpdateLessonBody,
 } from "@lms/shared";
 import { requireTeacherTenant, type Actor } from "../auth/actor";
 import type { Ctx } from "../auth/service";
@@ -397,7 +398,7 @@ export async function saveAttendance(
 }
 
 /** How many marks one page of a student's attendance shows. */
-export const ATTENDANCE_PAGE_SIZE = 10;
+export const ATTENDANCE_PAGE_SIZE = LIMITS.pageSize;
 
 export async function studentAttendance(
   ctx: Ctx,

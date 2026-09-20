@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useCourseList } from "@/features/courses/useCourses";
 import { formatDay, formatVnd } from "@/features/format";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -12,12 +13,14 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppProgress from "@/ui/AppProgress.vue";
 import AppSelect from "@/ui/AppSelect.vue";
 
 const t = messages.courses;
 const router = useRouter();
 const { courses, shown, loading, status, error } = useCourseList();
+const paging = usePaging(shown, { resetOn: status });
 const filters = computed(() => [
   { value: "active", label: t.statusActive },
   { value: "draft", label: t.statusDraft },
@@ -53,7 +56,7 @@ const statusTone = { draft: "warning", active: "success", archived: "neutral" } 
     </div>
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <RouterLink
-        v-for="c in shown"
+        v-for="c in paging.shown.value"
         :key="c.id"
         :to="`/courses/${c.id}`"
         class="group flex flex-col gap-4 rounded-box border border-base-300 bg-base-100 p-5 transition hover:border-primary/50 hover:shadow-sm"
@@ -94,5 +97,6 @@ const statusTone = { draft: "warning", active: "success", archived: "neutral" } 
         </div>
       </RouterLink>
     </div>
+    <AppPager v-if="!loading" v-model:page="paging.page.value" :pages="paging.pages.value" plain />
   </AppPage>
 </template>

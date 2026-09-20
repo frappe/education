@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { kindIcon, kindText } from "@/components/homeworkLabels";
 import { useAssignmentForm } from "@/features/homework/useHomework";
 import { goBack } from "@/features/navigation/back";
+import { usePaging } from "@/features/paging";
 import { useToast } from "@/features/toast/useToast";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -16,6 +17,7 @@ import AppCheckbox from "@/ui/AppCheckbox.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppPage from "@/ui/AppPage.vue";
 import AppSegmented from "@/ui/AppSegmented.vue";
 import AppSelect from "@/ui/AppSelect.vue";
@@ -32,6 +34,8 @@ const f = useAssignmentForm(courseId.value, id.value, (a) => {
   toast.success(id.value ? t.saved : t.created);
   void router.replace(`/assignments/${a.id}`);
 });
+// The students to choose from, ten on a page. The ticks of every page count.
+const studentsPaging = usePaging(() => f.students.value);
 const v = f.form.values;
 const err = f.form.errors;
 const who = [
@@ -239,7 +243,11 @@ const backTo = computed(() =>
           <AppAlert v-if="err.studentIds" kind="error">{{ err.studentIds }}</AppAlert>
           <p v-if="f.students.value.length === 0" class="text-base-content/60">{{ t.noStudents }}</p>
           <ul v-else class="flex flex-col gap-1">
-            <li v-for="s in f.students.value" :key="s.studentId" class="flex min-h-11 items-center gap-3">
+            <li
+              v-for="s in studentsPaging.shown.value"
+              :key="s.studentId"
+              class="flex min-h-11 items-center gap-3"
+            >
               <input
                 :id="`t-${s.studentId}`"
                 type="checkbox"
@@ -252,6 +260,7 @@ const backTo = computed(() =>
               </label>
             </li>
           </ul>
+          <AppPager v-model:page="studentsPaging.page.value" :pages="studentsPaging.pages.value" plain />
         </template>
       </AppCard>
 

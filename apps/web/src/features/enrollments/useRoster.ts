@@ -1,4 +1,4 @@
-import type { EnrollResult, EnrollmentInfo, StudentInfo } from "@lms/shared";
+import { LIMITS, type EnrollResult, type EnrollmentInfo, type StudentInfo } from "@lms/shared";
 import { computed, onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 
@@ -62,7 +62,7 @@ export function useAddStudents(courseId: string, roster: () => EnrollmentInfo[],
 
   async function load() {
     const mine = ++latest;
-    const q = new URLSearchParams();
+    const q = new URLSearchParams({ pageSize: String(LIMITS.maxPageSize) }); // a whole list to choose from
     if (search.value.trim()) q.set("search", search.value.trim());
     try {
       const res = await api<{ students: StudentInfo[] }>(`/students?${q}`);

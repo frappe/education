@@ -6,6 +6,7 @@ import { formatWhen, hostOf } from "@/features/format";
 import { scoreText } from "@/features/homework/dates";
 import { useGrading } from "@/features/homework/useHomework";
 import { fill } from "@/features/text";
+import { usePaging } from "@/features/paging";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -16,6 +17,7 @@ import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
 const t = messages.grading;
@@ -27,6 +29,7 @@ const g = useGrading(assignmentId, String(route.params.studentId), {
   again: t.asked,
 });
 const d = computed(() => g.detail.value);
+const historyPaging = usePaging(() => d.value?.history ?? []);
 
 const asking = ref(false);
 const reason = ref("");
@@ -183,7 +186,7 @@ const stateNote = computed(() => {
           <p v-if="d.history.length === 0" class="p-5 text-sm text-base-content/60">{{ t.noHistory }}</p>
           <ul v-else class="divide-y divide-base-300">
             <li
-              v-for="(h, i) in d.history"
+              v-for="(h, i) in historyPaging.shown.value"
               :key="i"
               class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
             >
@@ -191,6 +194,7 @@ const stateNote = computed(() => {
               <span class="text-base-content/60">{{ formatWhen(h.at) }}</span>
             </li>
           </ul>
+          <AppPager v-model:page="historyPaging.page.value" :pages="historyPaging.pages.value" />
         </AppCard>
       </div>
 

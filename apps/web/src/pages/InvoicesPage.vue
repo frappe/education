@@ -4,6 +4,7 @@ import { invoiceStatusText, invoiceStatusTone } from "@/components/invoiceLabels
 import { formatVnd } from "@/features/format";
 import { useInvoiceList } from "@/features/invoices/useInvoices";
 import { periodLabel } from "@/features/invoices/period";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -15,6 +16,7 @@ import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppPage from "@/ui/AppPage.vue";
 import AppSelect from "@/ui/AppSelect.vue";
 import AppStat from "@/ui/AppStat.vue";
@@ -28,6 +30,9 @@ const list = useInvoiceList({
   nothing: t.nothing,
   paymentSaved: t.paymentSaved,
 });
+// Ten receipts on a page, and the same for the cancelled ones. A new month starts again from page 1.
+const received = usePaging(() => list.data.value?.invoices ?? [], { resetOn: list.period });
+const cancelled = usePaging(() => list.data.value?.cancelled ?? [], { resetOn: list.period });
 const paying = ref(false);
 const bankOptions = computed(() => [
   ...list.banks.map((b) => ({ value: b.bin, label: b.name })),
@@ -106,7 +111,7 @@ async function savePayment() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="i in list.data.value.invoices" :key="i.id" class="hover:bg-base-200/60">
+            <tr v-for="i in received.shown.value" :key="i.id" class="hover:bg-base-200/60">
               <td class="font-medium">{{ i.studentName }}</td>
               <td class="whitespace-nowrap">{{ i.number ?? t.draftNumber }}</td>
               <td class="whitespace-nowrap text-right">{{ formatVnd(i.total) }}</td>
@@ -119,12 +124,13 @@ async function savePayment() {
             </tr>
           </tbody>
         </AppTable>
+        <AppPager v-model:page="received.page.value" :pages="received.pages.value" />
       </AppCard>
 
       <AppCard v-if="list.data.value.cancelled.length > 0" :title="t.cancelledTitle" flush>
         <ul class="divide-y divide-base-300">
           <li
-            v-for="i in list.data.value.cancelled"
+            v-for="i in cancelled.shown.value"
             :key="i.id"
             class="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
           >
@@ -132,6 +138,7 @@ async function savePayment() {
             <RouterLink :to="`/invoices/${i.id}`" class="link link-primary">{{ t.open }}</RouterLink>
           </li>
         </ul>
+        <AppPager v-model:page="cancelled.page.value" :pages="cancelled.pages.value" />
       </AppCard>
     </template>
 

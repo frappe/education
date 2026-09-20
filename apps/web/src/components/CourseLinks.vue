@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { hostOf } from "@/features/format";
 import { useMaterials } from "@/features/homework/useHomework";
+import { usePaging } from "@/features/paging";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -11,10 +12,12 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const props = defineProps<{ courseId: string }>();
 const t = messages.links;
 const m = useMaterials(props.courseId, { added: t.added, saved: t.saved, removed: t.removed });
+const paging = usePaging(m.items);
 </script>
 
 <template>
@@ -50,7 +53,7 @@ const m = useMaterials(props.courseId, { added: t.added, saved: t.saved, removed
       <div v-if="m.loading.value" class="p-5"><AppLoading :label="messages.common.loading" :rows="2" /></div>
       <AppEmpty v-else-if="m.items.value.length === 0" icon="link" :title="t.empty" :text="t.emptyText" />
       <ul v-else class="divide-y divide-base-300">
-        <li v-for="l in m.items.value" :key="l.id" class="flex flex-wrap items-center gap-3 px-5 py-3">
+        <li v-for="l in paging.shown.value" :key="l.id" class="flex flex-wrap items-center gap-3 px-5 py-3">
           <span
             class="grid size-10 shrink-0 place-items-center rounded-field bg-base-200 text-base-content/70"
           >
@@ -73,6 +76,7 @@ const m = useMaterials(props.courseId, { added: t.added, saved: t.saved, removed
           <AppButton variant="ghost" compact @click="m.remove(l.id)">{{ t.remove }}</AppButton>
         </li>
       </ul>
+      <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
     </AppCard>
   </div>
 </template>

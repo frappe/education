@@ -5,6 +5,7 @@ import type { AssignmentInfo } from "@lms/shared";
 import { assignmentStatusText, assignmentStatusTone, summaryLine } from "@/components/homeworkLabels";
 import { formatWhen } from "@/features/format";
 import { useCourseHomework } from "@/features/homework/useHomework";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -15,11 +16,13 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const props = defineProps<{ courseId: string }>();
 const t = messages.homework;
 const router = useRouter();
 const { items, loading, error, remove } = useCourseHomework(props.courseId, { deleted: t.deleted });
+const paging = usePaging(items);
 const newHomework = () => router.push(`/courses/${props.courseId}/homework/new`);
 
 // Deleting asks first, and says what will happen.
@@ -52,7 +55,7 @@ async function confirmDelete() {
       <AppButton @click="newHomework"><AppIcon name="plus" :size="18" />{{ t.new }}</AppButton>
     </AppEmpty>
     <ul v-else class="divide-y divide-base-300">
-      <li v-for="a in items" :key="a.id" class="flex items-center hover:bg-base-200/60">
+      <li v-for="a in paging.shown.value" :key="a.id" class="flex items-center hover:bg-base-200/60">
         <RouterLink
           :to="`/assignments/${a.id}`"
           class="flex min-w-0 flex-1 flex-wrap items-center gap-4 px-5 py-4"
@@ -85,6 +88,7 @@ async function confirmDelete() {
         </button>
       </li>
     </ul>
+    <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
   </AppCard>
 
   <AppModal

@@ -66,6 +66,17 @@ describe("frontend architecture (plan 5.2)", () => {
     expect(bad).toEqual([]);
   });
 
+  it("every table has pages (ten rows on a page), except the lines of a receipt, which is one document", () => {
+    const bad = [...files(path.join(root, "pages")), ...files(path.join(root, "components"))]
+      .filter((f) => f.endsWith(".vue") && !f.endsWith("InvoiceSheet.vue"))
+      .filter((f) => {
+        const text = readFileSync(f, "utf8");
+        return text.includes("<AppTable") && !text.includes("<AppPager");
+      })
+      .map((f) => path.relative(root, f));
+    expect(bad).toEqual([]);
+  });
+
   it("no screen uses an inline style (the page security policy blocks them): use classes", () => {
     const bad = files(root)
       .filter((f) => f.endsWith(".vue"))

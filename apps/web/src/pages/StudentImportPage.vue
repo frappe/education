@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { fill } from "@/features/text";
+import { usePaging } from "@/features/paging";
 import { downloadSampleStudents } from "@/features/students/sample";
 import { useCsvImport } from "@/features/students/useStudents";
 import { messages } from "@/messages";
@@ -11,6 +12,7 @@ import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppTable from "@/ui/AppTable.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
 
@@ -27,6 +29,7 @@ const problemText = computed(() =>
         ? t.problemTooMany
         : null,
 );
+const paging = usePaging(() => imp.result.value?.rows ?? []);
 const okCount = computed(() => imp.result.value?.rows.filter((r) => r.result === "new").length ?? 0);
 const skipped = computed(() => (imp.result.value?.rows.length ?? 0) - okCount.value);
 const resultText = {
@@ -106,7 +109,7 @@ const steps = computed(() => ({ input: 1, preview: 2, done: 3 })[imp.step.value]
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in imp.result.value.rows" :key="r.row">
+          <tr v-for="r in paging.shown.value" :key="r.row">
             <td class="text-base-content/60">{{ r.row }}</td>
             <td>{{ imp.rows.value[r.row - 1]?.name || "-" }}</td>
             <td>{{ imp.rows.value[r.row - 1]?.email || "-" }}</td>
@@ -119,6 +122,7 @@ const steps = computed(() => ({ input: 1, preview: 2, done: 3 })[imp.step.value]
           </tr>
         </tbody>
       </AppTable>
+      <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
       <div class="flex flex-wrap items-center gap-3 border-t border-base-300 p-5">
         <p v-if="okCount === 0" class="flex-1 text-base-content/70">{{ t.nothingNew }}</p>
         <AppButton v-if="okCount > 0" :loading="imp.busy.value" @click="imp.confirm">{{

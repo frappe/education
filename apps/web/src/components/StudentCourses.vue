@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { describeEnroll } from "@/features/enrollments/describe";
 import { useStudentCourses } from "@/features/enrollments/useStudentCourses";
 import { formatVnd } from "@/features/format";
+import { usePaging } from "@/features/paging";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppBadge from "@/ui/AppBadge.vue";
@@ -11,12 +12,14 @@ import AppCard from "@/ui/AppCard.vue";
 import AppEmpty from "@/ui/AppEmpty.vue";
 import AppLink from "@/ui/AppLink.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppSelect from "@/ui/AppSelect.vue";
 
 const props = defineProps<{ studentId: string; archived: boolean }>();
 const t = messages.studentCourses;
 const r = messages.roster;
 const { courses, available, chosen, loading, busy, error, result, add } = useStudentCourses(props.studentId);
+const paging = usePaging(courses);
 
 const statusText = {
   active: r.statusActive,
@@ -35,7 +38,7 @@ const summary = computed(() => (result.value ? describeEnroll(result.value, r) :
     <div v-if="loading" class="p-5"><AppLoading :label="messages.common.loading" :rows="2" /></div>
     <AppEmpty v-else-if="courses.length === 0" icon="book" :title="t.empty" />
     <ul v-else class="divide-y divide-base-300">
-      <li v-for="c in courses" :key="c.courseId" class="flex items-center gap-3 px-5 py-3">
+      <li v-for="c in paging.shown.value" :key="c.courseId" class="flex items-center gap-3 px-5 py-3">
         <div class="min-w-0 flex-1">
           <AppLink :to="`/courses/${c.courseId}`">{{ c.courseName }}</AppLink>
           <p class="text-sm text-base-content/60">
@@ -49,6 +52,7 @@ const summary = computed(() => (result.value ? describeEnroll(result.value, r) :
         <AppBadge :tone="statusTone[c.status]">{{ statusText[c.status] }}</AppBadge>
       </li>
     </ul>
+    <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
 
     <div v-if="!archived && !loading" class="flex flex-col gap-3 border-t border-base-300 p-5">
       <AppAlert v-if="summary" :kind="result?.enrolled ? 'success' : 'info'">{{ summary }}</AppAlert>

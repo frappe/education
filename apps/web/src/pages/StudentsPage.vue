@@ -17,6 +17,7 @@ import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppSelect from "@/ui/AppSelect.vue";
 
 const t = messages.students;
@@ -108,14 +109,7 @@ const accessTone = { joined: "success", invited: "info", not_invited: "neutral" 
           </RouterLink>
         </li>
       </ul>
-      <div
-        v-if="pages > 1"
-        class="flex items-center justify-between gap-3 border-t border-base-300 px-5 py-3"
-      >
-        <AppButton variant="ghost" compact :disabled="page <= 1" @click="page--">{{ t.previous }}</AppButton>
-        <span class="text-sm text-base-content/60">{{ fill(t.pageOf, { page, pages }) }}</span>
-        <AppButton variant="ghost" compact :disabled="page >= pages" @click="page++">{{ t.next }}</AppButton>
-      </div>
+      <AppPager v-model:page="page" :pages="pages" />
     </AppCard>
 
     <AppModal v-model="adding" :title="t.addTitle" :close-label="messages.common.close">

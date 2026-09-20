@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { lessonLabel } from "@/features/lessons/status";
 import type { LessonInfo } from "@lms/shared";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import LessonFields from "@/components/LessonFields.vue";
 import { useCourseLessons } from "@/features/lessons/useLessons";
+import { usePaging } from "@/features/paging";
 import { formatDayShort } from "@/features/format";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -15,6 +16,7 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
+import AppPager from "@/ui/AppPager.vue";
 import { useRouter } from "vue-router";
 
 const props = defineProps<{ courseId: string }>();
@@ -24,6 +26,14 @@ const router = useRouter();
 const { loading, error, form, cancel, restore, parts } = useCourseLessons(props.courseId, {
   added: (n) => (n === 1 ? t.addedOne : fill(t.added, { n })),
 });
+
+// Ten lessons a page, in the lessons to come and in the earlier ones (each has its own pages).
+const upcomingPaging = usePaging(() => parts.value.upcoming);
+const pastPaging = usePaging(() => parts.value.past);
+const groups = computed(() => [
+  { key: "upcoming", title: t.upcoming, paging: upcomingPaging },
+  { key: "past", title: t.past, paging: pastPaging },
+]);
 
 const cancelledText = (n: number) => (n === 1 ? t.cancelled : fill(t.cancelledMany, { n }));
 const statusText = {
@@ -70,21 +80,15 @@ async function doCancel(scope: "this" | "following") {
 
     <AppAlert v-if="error" kind="error">{{ error }}</AppAlert>
     <AppLoading v-if="loading" :label="messages.common.loading" />
-    <AppCard v-else-if="parts.upcoming.length === 0 && parts.past.length === 0">
+    <AppCard v-else-if="upcomingPaging.total.value === 0 && pastPaging.total.value === 0">
       <AppEmpty icon="calendar" :title="t.empty" :text="t.emptyText" />
     </AppCard>
 
-    <template
-      v-for="group in [
-        { key: 'upcoming', title: t.upcoming, list: parts.upcoming },
-        { key: 'past', title: t.past, list: parts.past },
-      ]"
-      :key="group.key"
-    >
-      <AppCard v-if="group.list.length" :title="group.title" flush>
+    <template v-for="group in groups" :key="group.key">
+      <AppCard v-if="group.paging.total.value" :title="group.title" flush>
         <ul class="divide-y divide-base-300">
           <li
-            v-for="l in group.list"
+            v-for="l in group.paging.shown.value"
             :key="l.id"
             class="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3"
           >
@@ -146,6 +150,7 @@ async function doCancel(scope: "this" | "following") {
             </div>
           </li>
         </ul>
+        <AppPager v-model:page="group.paging.page.value" :pages="group.paging.pages.value" />
       </AppCard>
     </template>
 

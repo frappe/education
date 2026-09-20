@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { describeEnroll } from "@/features/enrollments/describe";
 import { useAddStudents, useRoster } from "@/features/enrollments/useRoster";
 import { formatVnd } from "@/features/format";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -16,6 +17,7 @@ import AppInput from "@/ui/AppInput.vue";
 import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppLink from "@/ui/AppLink.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppProgress from "@/ui/AppProgress.vue";
 
 const props = defineProps<{ courseId: string; pricePerLesson: number; maxStudents: number | null }>();
@@ -35,6 +37,8 @@ const add = useAddStudents(
   },
 );
 
+const rosterPaging = usePaging(() => roster.students.value);
+const candidatePaging = usePaging(() => add.shown.value, { resetOn: () => add.search.value });
 const statusText = {
   active: t.statusActive,
   completed: t.statusCompleted,
@@ -87,7 +91,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
         :text="t.emptyText"
       />
       <ul v-else class="divide-y divide-base-300">
-        <li v-for="s in roster.students.value" :key="s.studentId" class="flex flex-col gap-3 px-5 py-4">
+        <li v-for="s in rosterPaging.shown.value" :key="s.studentId" class="flex flex-col gap-3 px-5 py-4">
           <div class="flex flex-wrap items-center gap-3">
             <AppAvatar :name="s.studentName" />
             <div class="min-w-0 flex-1 basis-40">
@@ -140,6 +144,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
           </div>
         </li>
       </ul>
+      <AppPager v-model:page="rosterPaging.page.value" :pages="rosterPaging.pages.value" />
     </AppCard>
 
     <AppCard v-if="adding" :title="t.addTitle">
@@ -156,7 +161,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
           <AppButton variant="ghost" compact @click="add.selectAllShown">{{ t.selectAll }}</AppButton>
         </div>
         <ul class="flex flex-col gap-1">
-          <li v-for="s in add.shown.value" :key="s.id" class="flex min-h-11 items-center gap-3">
+          <li v-for="s in candidatePaging.shown.value" :key="s.id" class="flex min-h-11 items-center gap-3">
             <input
               :id="`pick-${s.id}`"
               type="checkbox"
@@ -172,6 +177,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
             </label>
           </li>
         </ul>
+        <AppPager v-model:page="candidatePaging.page.value" :pages="candidatePaging.pages.value" plain />
         <AppMoneyInput v-model="add.price.value" :label="t.ownPriceLabel" />
         <div class="flex flex-wrap justify-end gap-2">
           <AppButton variant="ghost" @click="adding = false">{{ messages.common.cancel }}</AppButton>

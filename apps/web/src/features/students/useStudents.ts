@@ -6,7 +6,7 @@ import {
   type StudentInfo,
 } from "@lms/shared";
 import type { CourseInfo, EnrollResult } from "@lms/shared";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
 import { useQueryRef } from "@/features/navigation/back";
@@ -26,7 +26,12 @@ export function useStudentList() {
   const data = ref<StudentPage>({ students: [], total: 0, page: 1, pageSize: 50 });
   // The search and the status stay in the address, so coming back to the list shows it as it was.
   const search = useQueryRef("search", "");
-  const page = ref(1);
+  // The page stays in the address too (?page=3).
+  const pageText = useQueryRef("page", "1", (v) => /^[1-9]\d{0,5}$/.test(v));
+  const page = computed({
+    get: () => Number(pageText.value),
+    set: (v: number) => (pageText.value = String(v)),
+  });
   // "" is every status, the archived ones too.
   const status = useQueryRef("status", "", (v) => (STATUS_FILTERS as readonly string[]).includes(v));
   const loading = ref(true);

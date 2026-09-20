@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { formatDayLong } from "@/features/format";
 import { useAttendance } from "@/features/lessons/useAttendance";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -14,12 +15,15 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 import AppSegmented from "@/ui/AppSegmented.vue";
 import AppStat from "@/ui/AppStat.vue";
 
 const t = messages.attendance;
 const route = useRoute();
 const a = useAttendance(String(route.params.id));
+// Ten students a page. The marks of all pages are saved together.
+const paging = usePaging(() => a.students.value);
 
 const lesson = computed(() => a.sheet.value?.lesson ?? null);
 const title = computed(() => lesson.value?.title || lesson.value?.courseName || t.title);
@@ -88,7 +92,7 @@ const options = [
         />
         <ul v-else class="divide-y divide-base-300">
           <li
-            v-for="s in a.students.value"
+            v-for="s in paging.shown.value"
             :key="s.studentId"
             class="flex flex-wrap items-center gap-3 px-5 py-3"
           >
@@ -109,6 +113,7 @@ const options = [
             />
           </li>
         </ul>
+        <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" />
       </AppCard>
 
       <div

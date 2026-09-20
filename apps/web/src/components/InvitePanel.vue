@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useInvites } from "@/features/invites/useInvites";
+import { usePaging } from "@/features/paging";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppAvatar from "@/ui/AppAvatar.vue";
@@ -9,10 +10,12 @@ import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const t = messages.invites;
 const justSent = ref(false);
 const { invites, loading, actionError, form, resend, cancel } = useInvites(() => (justSent.value = true));
+const paging = usePaging(invites);
 
 const stateText = { sent: t.stateSent, expired: t.stateExpired, revoked: t.stateRevoked } as const;
 const stateTone = { sent: "info", expired: "warning", revoked: "neutral" } as const;
@@ -39,7 +42,7 @@ const stateTone = { sent: "info", expired: "warning", revoked: "neutral" } as co
       <h3 class="text-sm font-semibold">{{ t.listTitle }}</h3>
       <AppAlert v-if="actionError" kind="error">{{ actionError }}</AppAlert>
       <ul class="flex flex-col gap-3">
-        <li v-for="invite in invites" :key="invite.studentId" class="flex items-center gap-3">
+        <li v-for="invite in paging.shown.value" :key="invite.studentId" class="flex items-center gap-3">
           <AppAvatar :name="invite.name" size="sm" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium">{{ invite.name }}</p>
@@ -69,6 +72,7 @@ const stateTone = { sent: "info", expired: "warning", revoked: "neutral" } as co
           </div>
         </li>
       </ul>
+      <AppPager v-model:page="paging.page.value" :pages="paging.pages.value" plain />
     </div>
     <p v-else-if="!loading" class="text-sm text-base-content/60">{{ t.empty }}</p>
   </AppCard>

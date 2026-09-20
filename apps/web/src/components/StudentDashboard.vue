@@ -2,6 +2,7 @@
 import WorkRow from "@/components/WorkRow.vue";
 import { useSession } from "@/features/auth/session";
 import { useMyHome } from "@/features/my/useMy";
+import { usePaging } from "@/features/paging";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -11,10 +12,17 @@ import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
+import AppPager from "@/ui/AppPager.vue";
 
 const t = messages.my;
 const session = useSession();
 const { groups, courses, unpaidReceipts, loading, error } = useMyHome();
+// Ten rows a page in each list.
+const againPaging = usePaging(() => groups.value.again);
+const todoPaging = usePaging(() => groups.value.todo);
+const waitingPaging = usePaging(() => groups.value.waiting);
+const donePaging = usePaging(() => groups.value.done);
+const coursesPaging = usePaging(courses);
 const firstName = () => session.me?.user.name.split(" ")[0] ?? "";
 const empty = () =>
   !loading.value &&
@@ -43,23 +51,27 @@ const empty = () =>
     <template v-else>
       <AppCard v-if="groups.again.length" :title="t.again" flush>
         <ul class="divide-y divide-base-300">
-          <li v-for="w in groups.again" :key="w.id"><WorkRow :item="w" show-course /></li>
+          <li v-for="w in againPaging.shown.value" :key="w.id"><WorkRow :item="w" show-course /></li>
         </ul>
+        <AppPager v-model:page="againPaging.page.value" :pages="againPaging.pages.value" />
       </AppCard>
       <AppCard v-if="groups.todo.length" :title="t.todo" flush>
         <ul class="divide-y divide-base-300">
-          <li v-for="w in groups.todo" :key="w.id"><WorkRow :item="w" show-course /></li>
+          <li v-for="w in todoPaging.shown.value" :key="w.id"><WorkRow :item="w" show-course /></li>
         </ul>
+        <AppPager v-model:page="todoPaging.page.value" :pages="todoPaging.pages.value" />
       </AppCard>
       <AppCard v-if="groups.waiting.length" :title="t.waiting" flush>
         <ul class="divide-y divide-base-300">
-          <li v-for="w in groups.waiting" :key="w.id"><WorkRow :item="w" show-course /></li>
+          <li v-for="w in waitingPaging.shown.value" :key="w.id"><WorkRow :item="w" show-course /></li>
         </ul>
+        <AppPager v-model:page="waitingPaging.page.value" :pages="waitingPaging.pages.value" />
       </AppCard>
       <AppCard v-if="groups.done.length" :title="t.done" flush>
         <ul class="divide-y divide-base-300">
-          <li v-for="w in groups.done" :key="w.id"><WorkRow :item="w" show-course /></li>
+          <li v-for="w in donePaging.shown.value" :key="w.id"><WorkRow :item="w" show-course /></li>
         </ul>
+        <AppPager v-model:page="donePaging.page.value" :pages="donePaging.pages.value" />
       </AppCard>
     </template>
 
@@ -69,7 +81,7 @@ const empty = () =>
       </template>
       <AppEmpty v-if="courses.length === 0" icon="book" :title="t.noCourses" :text="t.noCoursesText" />
       <ul v-else class="divide-y divide-base-300">
-        <li v-for="c in courses" :key="c.id">
+        <li v-for="c in coursesPaging.shown.value" :key="c.id">
           <RouterLink
             :to="`/my/courses/${c.id}`"
             class="flex flex-wrap items-center gap-4 px-5 py-4 hover:bg-base-200/60"
@@ -89,6 +101,7 @@ const empty = () =>
           </RouterLink>
         </li>
       </ul>
+      <AppPager v-model:page="coursesPaging.page.value" :pages="coursesPaging.pages.value" />
     </AppCard>
   </AppPage>
 </template>
