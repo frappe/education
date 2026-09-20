@@ -1,5 +1,7 @@
 # Deploy to Cloudflare
 
+For going live, security, backups and what to do when something breaks, read [production.md](production.md).
+
 Everything runs on Cloudflare with the free `*.workers.dev` address. No custom domain is needed.
 The **Workers Free** plan is enough for a small number of users. There are no passwords to hash and no Queues.
 Limits to watch on Free: 10 ms of CPU time per request and 100,000 requests a day. After the first deploy, look at the CPU time in the
@@ -28,15 +30,15 @@ The address is printed at the end, like `https://ptv-lms-staging.<your-account>.
 
 ## Settings needed before real people can sign in
 
-| Setting | Where | Why |
-|---|---|---|
-| `APP_URL` | `vars` in `apps/api/wrangler.jsonc` (per environment) | The address put in email links. Must start with `https://`. Never read from the request. |
-| `HMAC_KEY` | `wrangler secret put HMAC_KEY --env <env>` (long random text) | Hashes emails and IP addresses in counters and logs. The app refuses to run without it. |
-| `SMTP_USER`, `SMTP_PASS` | `wrangler secret put SMTP_USER --env <env>` and `wrangler secret put SMTP_PASS --env <env>` | The account that sends email, and its password. For Gmail: the address and an "App password" (needs 2-step verification, myaccount.google.com/apppasswords). See "Sending email" below. |
-| `GOOGLE_CLIENT_ID` | `vars` in `apps/api/wrangler.jsonc` (per environment) | Turns on "Continue with Google". Without it (and the secret) the Google buttons are hidden and email links are the only way in. See "Sign in with Google" below. |
-| `GOOGLE_CLIENT_SECRET` | `wrangler secret put GOOGLE_CLIENT_SECRET --env <env>` | Lets the server ask Google who signed in. |
-| `TURNSTILE_SECRET` | `wrangler secret put TURNSTILE_SECRET --env <env>` | Bot check on the server. The app refuses to run without it in staging and production. |
-| `VITE_TURNSTILE_SITE_KEY` | Set when building the web app (`VITE_TURNSTILE_SITE_KEY=... pnpm --filter @lms/web build`) | Shows the bot check on the forms. Create a Turnstile widget in the Cloudflare dashboard and allow the `workers.dev` address. |
+| Setting                   | Where                                                                                       | Why                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_URL`                 | `vars` in `apps/api/wrangler.jsonc` (per environment)                                       | The address put in email links. Must start with `https://`. Never read from the request.                                                                                                |
+| `HMAC_KEY`                | `wrangler secret put HMAC_KEY --env <env>` (long random text)                               | Hashes emails and IP addresses in counters and logs. The app refuses to run without it.                                                                                                 |
+| `SMTP_USER`, `SMTP_PASS`  | `wrangler secret put SMTP_USER --env <env>` and `wrangler secret put SMTP_PASS --env <env>` | The account that sends email, and its password. For Gmail: the address and an "App password" (needs 2-step verification, myaccount.google.com/apppasswords). See "Sending email" below. |
+| `GOOGLE_CLIENT_ID`        | `vars` in `apps/api/wrangler.jsonc` (per environment)                                       | Turns on "Continue with Google". Without it (and the secret) the Google buttons are hidden and email links are the only way in. See "Sign in with Google" below.                        |
+| `GOOGLE_CLIENT_SECRET`    | `wrangler secret put GOOGLE_CLIENT_SECRET --env <env>`                                      | Lets the server ask Google who signed in.                                                                                                                                               |
+| `TURNSTILE_SECRET`        | `wrangler secret put TURNSTILE_SECRET --env <env>`                                          | Bot check on the server. The app refuses to run without it in staging and production.                                                                                                   |
+| `VITE_TURNSTILE_SITE_KEY` | Set when building the web app (`VITE_TURNSTILE_SITE_KEY=... pnpm --filter @lms/web build`)  | Shows the bot check on the forms. Create a Turnstile widget in the Cloudflare dashboard and allow the `workers.dev` address.                                                            |
 
 ## Sign in with Google
 
@@ -50,13 +52,11 @@ Students and teachers can sign in with one click, so nobody has to wait for an e
 Who can get in does not change: a teacher creates their own account, and a student gets in **only with the exact email a teacher added and invited**. Locally, `GOOGLE_MODE=dev` (already set in `wrangler.jsonc`) shows a test page instead of Google; it is ignored on staging and production.
 Not yet tried on a real `workers.dev` address: check that Google accepts it on the consent screen.
 
-Email is still in dev mode (see `docs/spikes.md`). The dev outbox page is **not** available on staging or production
-(it can sign people in), and `EMAIL_MODE=dev` is refused in production. On staging, read a link with:
+On staging and production email goes through SMTP (see "Sending email" below). The dev outbox page is **not** available there
+(it could sign people in), `EMAIL_MODE=dev` is refused in production, and the description of the API is hidden in production.
+Only on your own computer, `EMAIL_MODE=dev` writes emails to a table you can read with `GET /api/dev/outbox`.
 
-```bash
-pnpm exec wrangler d1 execute DB --env staging --remote --command \
-  "SELECT to_email, kind, body_text FROM email_outbox ORDER BY created_at DESC LIMIT 5"
-```
+Without `TURNSTILE_SECRET` the forms for sign in and sign up by an email link are hidden (only Google is offered), because they cannot work without the bot check.
 
 Also add a Cloudflare **rate limiting rule** for `/api/*` (for example 120 requests per minute per IP). The app limits
 sensitive actions itself; this rule covers the rest.
