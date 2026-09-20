@@ -2,6 +2,7 @@
 import { lessonLabel } from "@/features/lessons/status";
 import type { LessonInfo } from "@lms/shared";
 import { ref } from "vue";
+import LessonFields from "@/components/LessonFields.vue";
 import { useCourseLessons } from "@/features/lessons/useLessons";
 import { formatDayShort } from "@/features/format";
 import { fill } from "@/features/text";
@@ -12,7 +13,6 @@ import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
 import AppEmpty from "@/ui/AppEmpty.vue";
 import AppIcon from "@/ui/AppIcon.vue";
-import AppInput from "@/ui/AppInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
 import AppModal from "@/ui/AppModal.vue";
 import { useRouter } from "vue-router";
@@ -59,37 +59,7 @@ async function doCancel(scope: "this" | "following") {
         <AppAlert v-if="form.formError.value" kind="error" class="md:col-span-2">{{
           form.formError.value
         }}</AppAlert>
-        <AppInput v-model="form.values.date" :label="t.date" type="date" :error="form.errors.value.date" />
-        <AppInput
-          v-model="form.values.startTime"
-          :label="t.startTime"
-          type="time"
-          :error="form.errors.value.startTime"
-        />
-        <AppInput
-          v-model="form.values.durationMinutes"
-          :label="t.duration"
-          inputmode="numeric"
-          :error="form.errors.value.durationMinutes"
-        />
-        <AppInput
-          v-model="form.values.repeatWeeks"
-          :label="t.repeat"
-          inputmode="numeric"
-          :hint="t.repeatHint"
-          :error="form.errors.value.repeatWeeks"
-        />
-        <AppInput v-model="form.values.title" :label="t.lessonTitle" :error="form.errors.value.title" />
-        <AppInput v-model="form.values.place" :label="t.place" :error="form.errors.value.place" />
-        <div class="md:col-span-2">
-          <AppInput
-            v-model="form.values.onlineUrl"
-            :label="t.online"
-            type="url"
-            :hint="t.onlineHint"
-            :error="form.errors.value.onlineUrl"
-          />
-        </div>
+        <LessonFields :values="form.values" :errors="form.errors.value" />
         <div class="md:col-span-2">
           <AppButton type="submit" :loading="form.submitting.value"
             ><AppIcon name="calendar-plus" :size="18" />{{ t.add }}</AppButton

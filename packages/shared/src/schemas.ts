@@ -316,6 +316,11 @@ export interface LessonInfo {
   version: number;
 }
 
+/** A lesson on the weekly schedule, with the names of the students who are in the course now. */
+export interface ScheduleLesson extends LessonInfo {
+  students: string[];
+}
+
 export interface AttendanceEntry {
   studentId: string;
   name: string;

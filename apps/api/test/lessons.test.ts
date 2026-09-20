@@ -295,6 +295,44 @@ describe("read lessons and the calendar", () => {
     expect(res.json.lessons.map((l: Lesson) => l.courseName)).toEqual(["English A1", "English B1"]);
   });
 
+  it("calendar: names the students who are in the course now, by name, and leaves out students who left or were archived", async () => {
+    const t = await createTeacher();
+    const c1 = await createCourse(t, { name: "English A1" });
+    const c2 = await createCourse(t, { name: "English B1" });
+    await create(t, c1.id, { date: "2026-02-02" });
+    await create(t, c2.id, { date: "2026-02-03" });
+    const [bao, anh, gone, archived, other] = [
+      await addStudent(t, { name: "Bao" }),
+      await addStudent(t, { name: "anh" }),
+      await addStudent(t, { name: "Left" }),
+      await addStudent(t, { name: "Archived" }),
+      await addStudent(t, { name: "Only B1" }),
+    ];
+    await enroll(t, c1.id, [bao.id, anh.id, gone.id, archived.id]);
+    await enroll(t, c2.id, [other.id]);
+    const drop = await call(`/api/courses/${c1.id}/students/${gone.id}`, {
+      method: "PUT",
+      cookie: t.cookie,
+      body: { status: "dropped", customPrice: null },
+    });
+    expect(drop.status, JSON.stringify(drop.json)).toBe(200);
+    await call(`/api/students/${archived.id}/archive`, { method: "POST", cookie: t.cookie });
+    const res = await call("/api/lessons?from=2026-02-01&to=2026-02-07", { cookie: t.cookie });
+    expect(res.json.lessons.map((l: Lesson & { students: string[] }) => [l.courseName, l.students])).toEqual([
+      ["English A1", ["anh", "Bao"]],
+      ["English B1", ["Only B1"]],
+    ]);
+    // A lesson of a course with nobody in it has an empty list, and another teacher sees none of these names.
+    const empty = await createCourse(t, { name: "Empty" });
+    await create(t, empty.id, { date: "2026-02-04" });
+    const again = await call("/api/lessons?from=2026-02-04&to=2026-02-04", { cookie: t.cookie });
+    expect(again.json.lessons[0].students).toEqual([]);
+    const b = await createTeacher();
+    expect(
+      (await call("/api/lessons?from=2026-02-01&to=2026-02-07", { cookie: b.cookie })).json.lessons,
+    ).toEqual([]);
+  });
+
   it("calendar: refuses a range that is missing, backwards, not real, or longer than 92 days", async () => {
     const t = await createTeacher();
     for (const q of [

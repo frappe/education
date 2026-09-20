@@ -14,6 +14,7 @@ import type {
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { messageOf, statusOf } from "@/features/errors";
+import { useQueryRef } from "@/features/navigation/back";
 import { useToast } from "@/features/toast/useToast";
 import { currentPeriod, shiftPeriod } from "./period";
 import { linesPayload, lineIsValid, newRow, rowsOf, sameAsSaved, totalOf, type LineRow } from "./lines";
@@ -36,7 +37,8 @@ export function useInvoiceList(text: {
   paymentSaved: string;
 }) {
   const toast = useToast();
-  const period = ref(currentPeriod());
+  // The month stays in the address, so coming back from a receipt shows the same month.
+  const period = useQueryRef("month", currentPeriod(), (v) => /^\d{4}-(0[1-9]|1[0-2])$/.test(v));
   const data = ref<InvoiceListResult | null>(null);
   const loading = ref(true);
   const busy = ref(false);

@@ -4,6 +4,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { kindIcon, kindText } from "@/components/homeworkLabels";
 import { useAssignmentForm } from "@/features/homework/useHomework";
+import { goBack } from "@/features/navigation/back";
 import { useToast } from "@/features/toast/useToast";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -256,7 +257,7 @@ const backTo = computed(() =>
 
       <div class="flex gap-3">
         <AppButton type="submit" :loading="f.form.submitting.value">{{ t.save }}</AppButton>
-        <AppButton variant="ghost" @click="router.push(backTo)">{{ messages.common.cancel }}</AppButton>
+        <AppButton variant="ghost" @click="goBack(router, backTo)">{{ messages.common.cancel }}</AppButton>
       </div>
     </form>
   </AppPage>

@@ -2,11 +2,12 @@ import { createCourseBody, updateCourseBody, type CourseInfo } from "@lms/shared
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
+import { useQueryFlag } from "@/features/navigation/back";
 
 export function useCourseList() {
   const courses = ref<CourseInfo[]>([]);
   const loading = ref(true);
-  const showArchived = ref(false);
+  const showArchived = useQueryFlag("archived");
   const error = ref<string | null>(null);
 
   async function load() {

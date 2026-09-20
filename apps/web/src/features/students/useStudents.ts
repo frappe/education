@@ -9,6 +9,7 @@ import type { CourseInfo, EnrollResult } from "@lms/shared";
 import { onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
+import { useQueryFlag, useQueryRef } from "@/features/navigation/back";
 import { parseStudentCsv, type CsvStudent } from "./parseCsv";
 
 interface StudentPage {
@@ -20,9 +21,10 @@ interface StudentPage {
 
 export function useStudentList() {
   const data = ref<StudentPage>({ students: [], total: 0, page: 1, pageSize: 50 });
-  const search = ref("");
+  // The search and the archived choice stay in the address, so coming back to the list shows it as it was.
+  const search = useQueryRef("search", "");
   const page = ref(1);
-  const showArchived = ref(false);
+  const showArchived = useQueryFlag("archived");
   const loading = ref(true);
   const error = ref<string | null>(null);
   let timer: ReturnType<typeof setTimeout> | undefined;

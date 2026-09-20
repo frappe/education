@@ -49,6 +49,23 @@ export async function lessonsBetween(db: D1Database, tenantId: string, fromIso: 
   return res.results;
 }
 
+/** The names of the students who are in each of these courses now (not archived), by name. */
+export async function activeStudentNames(db: D1Database, tenantId: string, courseIds: string[]) {
+  if (courseIds.length === 0) return new Map<string, string[]>();
+  const res = await db
+    .prepare(
+      `SELECT e.course_id, s.name FROM enrollments e JOIN students s ON s.id = e.student_id AND s.tenant_id = e.tenant_id
+       WHERE e.tenant_id = ?1 AND e.status = 'active' AND s.status != 'archived'
+         AND e.course_id IN (SELECT value FROM json_each(?2))
+       ORDER BY s.name COLLATE NOCASE, s.id`,
+    )
+    .bind(tenantId, JSON.stringify(courseIds))
+    .all<{ course_id: string; name: string }>();
+  const out = new Map<string, string[]>();
+  for (const r of res.results) out.set(r.course_id, [...(out.get(r.course_id) ?? []), r.name]);
+  return out;
+}
+
 /** Lessons made in one go, from this moment on, that can still be changed. */
 export async function seriesFrom(db: D1Database, tenantId: string, seriesId: string, fromStartsAt: string) {
   const res = await db

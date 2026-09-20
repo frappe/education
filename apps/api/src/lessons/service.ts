@@ -4,6 +4,7 @@ import type {
   CancelLessonBody,
   CreateLessonsBody,
   LessonInfo,
+  ScheduleLesson,
   StudentAttendanceInfo,
   UpdateLessonBody,
 } from "@lms/shared";
@@ -23,6 +24,7 @@ import {
 } from "../repos/attendance";
 import { findCourse } from "../repos/courses";
 import {
+  activeStudentNames,
   cancelLessonsStatement,
   findLesson,
   insertLessonsStatement,
@@ -81,7 +83,7 @@ export async function courseLessons(ctx: Ctx, actor: Actor, courseId: string): P
 }
 
 /** The calendar: all lessons from day `from` up to and including day `to`, in the teacher's time zone. */
-export async function calendar(ctx: Ctx, actor: Actor, from: string, to: string): Promise<LessonInfo[]> {
+export async function calendar(ctx: Ctx, actor: Actor, from: string, to: string): Promise<ScheduleLesson[]> {
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "lesson", "read", { tenantId });
   const zone = await tenantTimezone(ctx.env.DB, tenantId);
@@ -91,7 +93,8 @@ export async function calendar(ctx: Ctx, actor: Actor, from: string, to: string)
     localToUtc(from, "00:00", zone),
     localToUtc(addDays(to, 1), "00:00", zone),
   );
-  return infos(rows, zone);
+  const names = await activeStudentNames(ctx.env.DB, tenantId, [...new Set(rows.map((r) => r.course_id))]);
+  return infos(rows, zone).map((l) => ({ ...l, students: names.get(l.courseId) ?? [] }));
 }
 
 export async function lessonGet(ctx: Ctx, actor: Actor, id: string): Promise<LessonInfo> {

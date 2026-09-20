@@ -44,6 +44,32 @@ const options = [
       <AppAlert v-else-if="!a.isPast.value" kind="info">{{ t.notStarted }}</AppAlert>
       <AppAlert v-else kind="info">{{ t.hint }}</AppAlert>
 
+      <AppCard v-if="lesson.title || lesson.place || lesson.onlineUrl">
+        <dl class="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          <!-- The course is written here only when the title above is something else, so nothing is said twice. -->
+          <div v-if="lesson.title" class="min-w-0">
+            <dt class="text-sm text-base-content/60">{{ t.course }}</dt>
+            <dd class="font-medium">{{ lesson.courseName }}</dd>
+          </div>
+          <div v-if="lesson.place" class="min-w-0">
+            <dt class="text-sm text-base-content/60">{{ t.place }}</dt>
+            <dd class="break-words font-medium">{{ lesson.place }}</dd>
+          </div>
+          <div v-if="lesson.onlineUrl" class="min-w-0 sm:col-span-2">
+            <dt class="text-sm text-base-content/60">{{ t.onlineLink }}</dt>
+            <dd>
+              <a
+                :href="lesson.onlineUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link link-primary inline-flex max-w-full items-center gap-1 break-all font-medium"
+                ><AppIcon name="video" :size="16" class="shrink-0" />{{ lesson.onlineUrl }}</a
+              >
+            </dd>
+          </div>
+        </dl>
+      </AppCard>
+
       <div class="grid gap-4 sm:grid-cols-2">
         <AppStat :value="a.attended.value" :label="t.attended" icon="done" tone="secondary" />
         <AppStat :value="a.absent.value" :label="t.absent" icon="ban" tone="accent" />
