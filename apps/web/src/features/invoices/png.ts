@@ -1,7 +1,6 @@
-import { vietQrPayload } from "@lms/shared";
-import qrcode from "qrcode-generator";
 import { formatDay, formatVnd, formatWhen } from "@/features/format";
 import { periodLabel } from "./period";
+import { qrModules, qrTextOf } from "./qr";
 import { hasPaymentInfo, type SheetData } from "./sheet";
 
 /** The words on the picture. They come from the message catalog, so nothing is written here. */
@@ -48,26 +47,6 @@ const MUTED = "#6b7280";
 const LINE = "#e5e7eb";
 const BOX = "#f3f4f6";
 const GREEN = "#15803d";
-
-/** True when the receipt has to be paid and has what a payment QR needs. */
-export function qrTextOf(data: SheetData): string | null {
-  if (data.status !== "sent" || !data.number) return null;
-  return vietQrPayload({
-    bin: data.payee.bankBin,
-    account: data.payee.bankAccount,
-    amount: data.total,
-    message: data.number,
-  });
-}
-
-/** The dark squares of a QR code, or null when there is nothing to show. */
-export function qrModules(text: string): boolean[][] {
-  const qr = qrcode(0, "M");
-  qr.addData(text);
-  qr.make();
-  const n = qr.getModuleCount();
-  return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)));
-}
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -226,14 +205,52 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
     paragraph(data.note, PAD, WIDTH - 2 * PAD, { size: 18 }, 25);
   }
 
-  // --- how to pay: details on the left, the QR on the right
+  // --- payment: the QR code in the middle. Only when there is no QR do the bank details show as words.
   const p = data.payee;
-  // A receipt that is paid has nothing more to pay, so the payment box is left out.
-  if (data.status !== "paid" && (hasPaymentInfo(p) || qr)) {
+  if (qr) {
     y += 30;
     const boxTop = y;
-    const qrSize = qr ? 236 : 0;
-    const textW = WIDTH - 2 * PAD - 2 * 24 - (qr ? qrSize + 24 : 0);
+    const qrSize = 300;
+    const noteW = WIDTH - 2 * PAD - 2 * 24;
+    let boxBottom = boxTop + 24 + qrSize + 44;
+    if (p.paymentNote) {
+      ctx.font = font({ size: 16 });
+      boxBottom += wrap(ctx, p.paymentNote, noteW).length * 22 + 8;
+    }
+    boxBottom += 20;
+    if (paint) {
+      ctx.fillStyle = BOX;
+      ctx.beginPath();
+      ctx.roundRect(PAD, boxTop, WIDTH - 2 * PAD, boxBottom - boxTop, 14);
+      ctx.fill();
+      const qx = (WIDTH - qrSize) / 2;
+      const qy = boxTop + 24;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(qx, qy, qrSize, qrSize);
+      const cell = Math.floor(qrSize / (qr.length + 6));
+      const drawn = cell * qr.length;
+      const ox = qx + Math.floor((qrSize - drawn) / 2);
+      const oy = qy + Math.floor((qrSize - drawn) / 2);
+      ctx.fillStyle = "#000000";
+      for (let r = 0; r < qr.length; r++)
+        for (let c = 0; c < qr.length; c++)
+          if (qr[r]![c]) ctx.fillRect(ox + c * cell, oy + r * cell, cell, cell);
+    }
+    y = boxTop + 24 + qrSize + 28;
+    text(t.scan, WIDTH / 2, { size: 16, color: MUTED }, "center");
+    if (p.paymentNote) {
+      y += 8;
+      ctx.font = font({ size: 16 });
+      for (const line of wrap(ctx, p.paymentNote, noteW)) {
+        y += 22;
+        text(line, WIDTH / 2, { size: 16, color: MUTED }, "center");
+      }
+    }
+    y = boxBottom;
+  } else if (data.status === "sent" && hasPaymentInfo(p)) {
+    y += 30;
+    const boxTop = y;
+    const textW = WIDTH - 2 * PAD - 2 * 24;
     const rows = (
       [
         [t.payTo, p.payeeName, false],
@@ -264,10 +281,8 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
       return y;
     };
     drawing = false;
-    const textBottom = words(boxTop);
+    const boxBottom = words(boxTop) + 24;
     drawing = true;
-    const qrBottom = qr ? boxTop + 24 + qrSize + 40 : 0;
-    const boxBottom = Math.max(textBottom, qrBottom) + 24;
     if (paint) {
       ctx.fillStyle = BOX;
       ctx.beginPath();
@@ -275,24 +290,6 @@ function layout(ctx: Ctx, data: SheetData, t: PngLabels, qr: boolean[][] | null,
       ctx.fill();
     }
     words(boxTop);
-    if (qr && paint) {
-      const qx = right - 24 - qrSize;
-      const qy = boxTop + 24;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(qx, qy, qrSize, qrSize);
-      const cell = Math.floor(qrSize / (qr.length + 6));
-      const drawn = cell * qr.length;
-      const ox = qx + Math.floor((qrSize - drawn) / 2);
-      const oy = qy + Math.floor((qrSize - drawn) / 2);
-      ctx.fillStyle = "#000000";
-      for (let r = 0; r < qr.length; r++)
-        for (let c = 0; c < qr.length; c++)
-          if (qr[r]![c]) ctx.fillRect(ox + c * cell, oy + r * cell, cell, cell);
-      ctx.textAlign = "center";
-      ctx.font = font({ size: 14 });
-      ctx.fillStyle = MUTED;
-      ctx.fillText(t.scan, qx + qrSize / 2, qy + qrSize + 24);
-    }
     y = boxBottom;
   }
 

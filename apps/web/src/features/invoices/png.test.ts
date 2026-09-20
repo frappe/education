@@ -1,6 +1,6 @@
 import { vietQrPayload } from "@lms/shared";
 import { describe, expect, it } from "vitest";
-import { qrModules, qrTextOf } from "./png";
+import { qrModules, qrPath, qrTextOf, willHaveQr } from "./qr";
 import type { SheetData } from "./sheet";
 
 const receipt = (over: Partial<SheetData> = {}, payee: Partial<SheetData["payee"]> = {}): SheetData => ({
@@ -57,5 +57,28 @@ describe("the payment QR on a receipt picture", () => {
     // The three big squares in the corners are always dark at their edge.
     const n = modules.length;
     expect([modules[0]![0], modules[0]![n - 1], modules[n - 1]![0]]).toEqual([true, true, true]);
+  });
+});
+
+describe("the payment QR on the screen", () => {
+  it("draws one small square for each dark square of the code", () => {
+    const modules = qrModules(qrTextOf(receipt())!);
+    const dark = modules.flat().filter(Boolean).length;
+    const path = qrPath(modules);
+    expect(path.match(/M/g)).toHaveLength(dark);
+    expect(
+      qrPath([
+        [true, false],
+        [false, true],
+      ]),
+    ).toBe("M0 0h1v1h-1zM1 1h1v1h-1z");
+  });
+
+  it("tells the teacher on a draft that the code comes after sending, only when the bank details can make one", () => {
+    expect(willHaveQr(receipt({ status: "draft", number: null }))).toBe(true);
+    expect(willHaveQr(receipt({ status: "draft", number: null }, { bankBin: "" }))).toBe(false);
+    expect(willHaveQr(receipt({ status: "draft", number: null, total: 0 }))).toBe(false);
+    expect(willHaveQr(receipt({ status: "sent" }))).toBe(false);
+    expect(willHaveQr(receipt({ status: "paid" }))).toBe(false);
   });
 });

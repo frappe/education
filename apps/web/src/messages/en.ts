@@ -760,6 +760,8 @@ export const en = {
     downloadPng: "Download picture (PNG)",
     pngFailed: "We could not make the picture. Please try again.",
     scan: "Scan with your banking app",
+    qrAfterSend: "The payment QR code will show here after you send this receipt.",
+    qrAlt: "QR code to pay this receipt",
     bankHolder: "Account holder",
     paymentNote: "Other words for the student",
     paymentNoteHint: "For example: “Please pay before the 10th” or “You can also pay in cash.”",

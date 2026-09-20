@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { formatDay, formatVnd, formatWhen } from "@/features/format";
 import { periodLabel } from "@/features/invoices/period";
+import { qrModules, qrPath, qrTextOf, willHaveQr } from "@/features/invoices/qr";
 import { hasPaymentInfo, type SheetData } from "@/features/invoices/sheet";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -12,12 +13,20 @@ import AppTable from "@/ui/AppTable.vue";
 const props = defineProps<{ data: SheetData }>();
 const t = messages.invoices;
 const pay = computed(() => props.data.payee);
-const showPay = computed(() => hasPaymentInfo(pay.value));
+// A receipt that waits for payment shows the QR code. The bank details are written out only when no code can be made.
+const qr = computed(() => {
+  const text = qrTextOf(props.data);
+  if (!text) return null;
+  const modules = qrModules(text);
+  return { size: modules.length, path: qrPath(modules) };
+});
+const showPay = computed(() => !qr.value && props.data.status === "sent" && hasPaymentInfo(pay.value));
+const qrComing = computed(() => willHaveQr(props.data));
 const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).join(", ");
 </script>
 
 <template>
-  <article class="print-area rounded-box border border-base-300 bg-base-100 p-6 md:p-10">
+  <article class="print-area @container rounded-box border border-base-300 bg-base-100 p-6 md:p-10">
     <header class="flex flex-wrap items-start justify-between gap-4 border-b border-base-300 pb-6">
       <div>
         <h2 class="text-2xl font-semibold tracking-tight">{{ t.receipt }}</h2>
@@ -54,8 +63,8 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
       </div>
     </dl>
 
-    <!-- A small screen shows each line as a block, so nothing has to be scrolled sideways. -->
-    <ul class="divide-y divide-base-300 border-y border-base-300 sm:hidden">
+    <!-- A narrow receipt (small screen or narrow column) shows each line as a block, so nothing has to be scrolled sideways. -->
+    <ul class="divide-y divide-base-300 border-y border-base-300 @2xl:hidden">
       <li v-for="(l, i) in data.lines" :key="i" class="flex flex-col gap-1 py-3">
         <div class="flex items-start justify-between gap-3">
           <p class="font-medium">{{ l.description }}</p>
@@ -78,7 +87,7 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
       </li>
     </ul>
 
-    <div class="hidden sm:block">
+    <div class="hidden @2xl:block">
       <AppTable>
         <thead>
           <tr>
@@ -129,6 +138,29 @@ const days = (dates: string[]) => dates.map((d) => formatDay(d).slice(0, 5)).joi
       <h3 class="text-sm text-base-content/60">{{ t.noteTitle }}</h3>
       <p class="whitespace-pre-wrap break-words">{{ data.note }}</p>
     </section>
+
+    <section
+      v-if="qr"
+      class="mt-6 flex flex-col items-center gap-2 rounded-field bg-base-200 p-4 print:bg-transparent"
+    >
+      <svg
+        :viewBox="`-3 -3 ${qr.size + 6} ${qr.size + 6}`"
+        class="size-56 max-w-full rounded-field"
+        role="img"
+        :aria-label="t.qrAlt"
+        shape-rendering="crispEdges"
+      >
+        <rect x="-3" y="-3" :width="qr.size + 6" :height="qr.size + 6" class="fill-white" />
+        <path :d="qr.path" class="fill-black" />
+      </svg>
+      <p class="text-sm text-base-content/70">{{ t.scan }}</p>
+      <p v-if="pay.paymentNote" class="whitespace-pre-wrap break-words text-center text-sm">
+        {{ pay.paymentNote }}
+      </p>
+    </section>
+    <p v-else-if="qrComing" class="mt-6 rounded-field bg-base-200 p-4 text-sm text-base-content/70">
+      {{ t.qrAfterSend }}
+    </p>
 
     <section v-if="showPay" class="mt-6 rounded-field bg-base-200 p-4 print:bg-transparent print:p-0">
       <h3 class="mb-2 font-semibold">{{ t.howToPay }}</h3>
