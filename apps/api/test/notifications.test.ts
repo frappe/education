@@ -157,7 +157,6 @@ describe("the other events", () => {
           durationMinutes: 90,
           place: "",
           onlineUrl: null,
-          repeatWeeks: 1,
         },
       })
     ).json.lessons[0];

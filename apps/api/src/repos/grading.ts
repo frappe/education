@@ -176,7 +176,7 @@ export const setExtensionStatement = (
     .prepare(
       `INSERT INTO submission_extensions (assignment_id, student_id, tenant_id, until_at)
        SELECT a.id, s.id, a.tenant_id, ?1 FROM assignments a JOIN students s ON s.tenant_id = a.tenant_id
-       WHERE a.tenant_id = ?2 AND a.id = ?3 AND s.id = ?4
+       WHERE a.tenant_id = ?2 AND a.id = ?3 AND a.deleted_at IS NULL AND s.id = ?4
        ON CONFLICT (assignment_id, student_id) DO UPDATE SET until_at = excluded.until_at`,
     )
     .bind(o.untilAt, o.tenantId, o.assignmentId, o.studentId);
@@ -209,7 +209,7 @@ export async function queueOf(db: D1Database, tenantId: string): Promise<QueueRo
       `SELECT a.id AS assignment_id, a.title, a.course_id, c.name AS course_name, s.id AS student_id,
          s.name AS student_name, sub.submitted_at, sub.is_late
        FROM submissions sub
-       JOIN assignments a ON a.id = sub.assignment_id AND a.tenant_id = sub.tenant_id
+       JOIN assignments a ON a.id = sub.assignment_id AND a.tenant_id = sub.tenant_id AND a.deleted_at IS NULL
        JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id
        JOIN students s ON s.id = sub.student_id AND s.tenant_id = sub.tenant_id
        WHERE sub.tenant_id = ? AND sub.status = 'submitted'
@@ -267,7 +267,7 @@ export const regradeStatement = (
        WHERE submissions.id = json_extract(j.value, '$.id') AND submissions.version = json_extract(j.value, '$.version')
          AND submissions.tenant_id = ?6 AND submissions.assignment_id = ?7
          AND submissions.status IN ('submitted', 'graded', 'returned')
-         AND EXISTS (SELECT 1 FROM assignments a WHERE a.id = ?7 AND a.tenant_id = ?6 AND a.version = ?8)`,
+         AND EXISTS (SELECT 1 FROM assignments a WHERE a.id = ?7 AND a.tenant_id = ?6 AND a.version = ?8 AND a.deleted_at IS NULL)`,
     )
     .bind(
       o.questionId,

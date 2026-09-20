@@ -50,7 +50,7 @@ export const notifyWorkStatement = (
     .prepare(
       `INSERT INTO notifications (id, tenant_id, user_id, kind, title, body, link, created_at, dedupe_key)
        SELECT ${NEW_ID}, s.tenant_id, s.user_id, ?1, ?2 || a.title, c.name, '/my/work/' || a.id, ?3, ?4
-       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id
+       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND a.deleted_at IS NULL
          JOIN students s ON s.tenant_id = a.tenant_id AND s.id = ?5 AND s.user_id IS NOT NULL
        WHERE a.tenant_id = ?6 AND a.id = ?7
        ON CONFLICT DO NOTHING`,
@@ -67,7 +67,7 @@ export const notifyHandInStatement = (
       `INSERT INTO notifications (id, tenant_id, user_id, kind, title, body, link, created_at)
        SELECT ${NEW_ID}, m.tenant_id, m.user_id, 'work_handed_in', s.name || ' handed in work', a.title || ' · ' || c.name,
          '/assignments/' || a.id || '/students/' || s.id, ?1
-       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id
+       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND a.deleted_at IS NULL
          JOIN students s ON s.tenant_id = a.tenant_id AND s.id = ?2
          JOIN memberships m ON m.tenant_id = a.tenant_id AND m.role = 'teacher'
        WHERE a.tenant_id = ?3 AND a.id = ?4`,
@@ -88,7 +88,7 @@ export const notifyPublishedStatement = (
       `INSERT INTO notifications (id, tenant_id, user_id, kind, title, body, link, created_at, dedupe_key)
        SELECT ${NEW_ID}, a.tenant_id, s.user_id, 'homework_new', 'New homework: ' || a.title, c.name, '/my/work/' || a.id, ?1,
          'new:' || a.id
-       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id
+       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND a.deleted_at IS NULL
          JOIN enrollments e ON e.tenant_id = a.tenant_id AND e.course_id = a.course_id AND e.status = 'active'
          JOIN students s ON s.id = e.student_id AND s.tenant_id = a.tenant_id AND s.user_id IS NOT NULL AND s.status != 'archived'
        WHERE a.tenant_id = ?2 AND a.id = ?3 AND a.status = 'published'
@@ -111,7 +111,7 @@ export const notifyDueSoonStatement = (
       `INSERT INTO notifications (id, tenant_id, user_id, kind, title, body, link, created_at, dedupe_key)
        SELECT ${NEW_ID}, a.tenant_id, s.user_id, 'homework_due', 'Due soon: ' || a.title, c.name, '/my/work/' || a.id, ?1,
          'due:' || a.id
-       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND c.status != 'archived'
+       FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND c.status != 'archived' AND a.deleted_at IS NULL
          JOIN enrollments e ON e.tenant_id = a.tenant_id AND e.course_id = a.course_id AND e.status = 'active'
          JOIN students s ON s.id = e.student_id AND s.tenant_id = a.tenant_id AND s.user_id IS NOT NULL AND s.status != 'archived'
          LEFT JOIN submissions sub ON sub.assignment_id = a.id AND sub.student_id = s.id

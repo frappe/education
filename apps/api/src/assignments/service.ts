@@ -19,8 +19,8 @@ import {
   assignmentsOfCourse,
   clearTargetsStatement,
   closeStatement,
-  deleteDraftStatement,
-  deleteDraftTargetsStatement,
+  deleteAssignmentNotificationsStatement,
+  deleteAssignmentStatement,
   deleteMaterialStatement,
   enrolledAmong,
   findAssignment,
@@ -257,18 +257,17 @@ export const publishAssignment = (ctx: Ctx, actor: Actor, id: string) =>
 export const closeAssignment = (ctx: Ctx, actor: Actor, id: string) =>
   change(ctx, actor, id, "close", closeStatement, "Only published work can be closed.");
 
+/** The work is hidden for everyone, whatever its state (see `deleteAssignmentStatement`). The screen asks first. */
 export async function deleteAssignment(ctx: Ctx, actor: Actor, id: string): Promise<void> {
   const db = ctx.env.DB;
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "assignment", "delete", { tenantId });
-  await load(ctx, tenantId, id);
-  const [, res] = await db.batch([
-    deleteDraftTargetsStatement(db, tenantId, id),
-    deleteDraftStatement(db, tenantId, id),
+  const row = await load(ctx, tenantId, id);
+  const [res] = await db.batch([
+    deleteAssignmentStatement(db, tenantId, id),
+    deleteAssignmentNotificationsStatement(db, tenantId, id),
   ]);
-  if (!res?.meta.changes) {
-    throw new AppError("CONFLICT", { message: "Only a draft that nobody answered can be deleted." });
-  }
+  if (!res?.meta.changes) throw new AppError("NOT_FOUND");
   await audit(db, {
     action: "assignment.deleted",
     actorUserId: actor.userId,
@@ -276,6 +275,7 @@ export async function deleteAssignment(ctx: Ctx, actor: Actor, id: string): Prom
     targetType: "assignment",
     targetId: id,
     ipHash: ctx.ipHash,
+    meta: { status: row.status },
   });
 }
 

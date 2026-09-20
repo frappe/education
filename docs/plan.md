@@ -377,3 +377,11 @@ Thao tác này làm thay đổi cấu trúc repo nên sẽ xin xác nhận lại
 3. Bộ bảo mật: IDOR chéo tenant trả 404/403; upload file giả đuôi bị từ chối; link `javascript:`/`http` cho bài speaking bị từ chối; nộp sau deadline bị từ chối trừ khi được gia hạn; sai mật khẩu 6 lần bị khoá; header đúng snapshot; ZAP baseline không lỗi cao.
 4. Staging: `k6` đạt p95 < 500 ms, tạo hóa đơn 100 học sinh < 5 phút; kill Queue consumer rồi kiểm tra retry và DLQ; khôi phục D1 từ Time Travel thành công.
 5. Đối chiếu từng tiêu chí thành công trong PVD Mục 9 trước khi mở beta.
+
+
+## Cập nhật 2026-09-20: khoá học, buổi học lặp lại, xoá bài tập
+
+- **Lặp buổi học:** chọn "Không lặp", "Mỗi tuần" hoặc "2 tuần một lần"; buổi lặp đúng vào thứ của buổi đầu tiên. Có ngày dừng thì tạo đủ các buổi tới ngày đó (tối đa 104 buổi một lần). Không có ngày dừng thì lặp không kết thúc: ứng dụng luôn giữ sẵn các buổi của 26 tuần tới, và mỗi giờ một job (`lessons/jobs.ts`, bảng `lesson_series`) tạo thêm buổi mới, giống buổi cuối cùng của chuỗi. Huỷ "buổi này và các buổi sau", hoặc lưu trữ khoá học, thì chuỗi ngừng tạo buổi mới.
+- **Danh sách buổi học của khoá:** chỉ hiện buổi sắp tới và buổi kết thúc trong 3 ngày gần nhất.
+- **Khoá học mới:** có ô "Open this course" (mặc định đã chọn) và ô chọn nhiều học sinh để thêm ngay; không còn ô "Most students" trong form (khoá đã có giới hạn giữ nguyên giới hạn đó).
+- **Xoá bài tập:** xoá được mọi bài tập (nháp, đang mở, đã có bài nộp), sau khi xác nhận. Bài bị ẩn ở mọi nơi (`assignments.deleted_at`, xoá mềm); bài học sinh đã nộp và lịch sử điểm vẫn nằm trong cơ sở dữ liệu nhưng không ai thấy.

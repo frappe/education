@@ -11,6 +11,7 @@ import AppBadge from "@/ui/AppBadge.vue";
 import AppButton from "@/ui/AppButton.vue";
 import AppCard from "@/ui/AppCard.vue";
 import AppEmpty from "@/ui/AppEmpty.vue";
+import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppLink from "@/ui/AppLink.vue";
@@ -22,10 +23,13 @@ const emit = defineEmits<{ changed: [] }>();
 const t = messages.roster;
 
 const roster = useRoster(props.courseId, () => emit("changed"));
+// The list of students to add is closed until the teacher asks for it.
+const adding = ref(false);
 const add = useAddStudents(
   props.courseId,
   () => roster.students.value,
   () => {
+    adding.value = false;
     void roster.load();
     emit("changed");
   },
@@ -62,7 +66,15 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
 
 <template>
   <div class="flex flex-col gap-6">
+    <AppAlert v-if="summary && !adding" :kind="add.lastResult.value?.enrolled ? 'success' : 'info'">{{
+      summary
+    }}</AppAlert>
     <AppCard :title="t.title" :description="seats" flush>
+      <template #actions>
+        <AppButton v-if="!adding" compact @click="adding = true"
+          ><AppIcon name="user-plus" :size="16" />{{ t.addButton }}</AppButton
+        >
+      </template>
       <div v-if="maxStudents !== null" class="px-5 pt-4">
         <AppProgress :value="roster.activeCount.value" :max="maxStudents" :label="t.title" />
       </div>
@@ -130,7 +142,7 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
       </ul>
     </AppCard>
 
-    <AppCard :title="t.addTitle">
+    <AppCard v-if="adding" :title="t.addTitle">
       <AppAlert v-if="add.error.value" kind="error">{{ add.error.value }}</AppAlert>
       <AppAlert v-if="summary" :kind="add.lastResult.value?.enrolled ? 'success' : 'info'">{{
         summary
@@ -161,7 +173,8 @@ async function savePrice(id: string, status: "active" | "completed" | "dropped")
           </li>
         </ul>
         <AppMoneyInput v-model="add.price.value" :label="t.ownPriceLabel" />
-        <div>
+        <div class="flex flex-wrap justify-end gap-2">
+          <AppButton variant="ghost" @click="adding = false">{{ messages.common.cancel }}</AppButton>
           <AppButton :disabled="add.selected.value.size === 0" :loading="add.busy.value" @click="add.add">
             {{ fill(t.addSelected, { n: add.selected.value.size }) }}
           </AppButton>

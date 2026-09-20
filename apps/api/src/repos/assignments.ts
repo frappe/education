@@ -36,7 +36,7 @@ const COLUMNS = `a.id, a.tenant_id, a.course_id, c.name AS course_name, a.type, 
   (${TARGETED}) AS targeted,
   (SELECT COUNT(*) FROM submissions x WHERE x.assignment_id = a.id AND x.status IN ('submitted', 'graded', 'returned')) AS handed_in,
   (SELECT COUNT(*) FROM submissions x WHERE x.assignment_id = a.id AND x.status = 'submitted') AS to_grade
-  FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id`;
+  FROM assignments a JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND a.deleted_at IS NULL`;
 
 export const parseList = <T>(text: string): T[] => {
   try {
@@ -260,25 +260,32 @@ export const closeStatement = (db: D1Database, tenantId: string, id: string): D1
     )
     .bind(nowIso(), tenantId, id);
 
-/** Only a draft that nobody has answered can be deleted. Its chosen students go first, in the same batch. */
-export const deleteDraftTargetsStatement = (
+/**
+ * The teacher deletes a piece of work. It is hidden everywhere from now on: nobody can open it, and it is in no list.
+ * What the students handed in and the score history stay in the database (the history can never be erased).
+ */
+export const deleteAssignmentStatement = (
   db: D1Database,
   tenantId: string,
   id: string,
 ): D1PreparedStatement =>
   db
     .prepare(
-      `DELETE FROM assignment_targets WHERE tenant_id = ?1 AND assignment_id = ?2
-       AND EXISTS (SELECT 1 FROM assignments WHERE tenant_id = ?1 AND id = ?2 AND status = 'draft')
-       AND NOT EXISTS (SELECT 1 FROM submissions WHERE assignment_id = ?2)`,
+      `UPDATE assignments SET deleted_at = ?1, version = version + 1, updated_at = ?1
+       WHERE tenant_id = ?2 AND id = ?3 AND deleted_at IS NULL`,
     )
-    .bind(tenantId, id);
+    .bind(nowIso(), tenantId, id);
 
-export const deleteDraftStatement = (db: D1Database, tenantId: string, id: string): D1PreparedStatement =>
+/** The notifications that point to a deleted piece of work go away too, so nobody opens a page that is gone. */
+export const deleteAssignmentNotificationsStatement = (
+  db: D1Database,
+  tenantId: string,
+  id: string,
+): D1PreparedStatement =>
   db
     .prepare(
-      `DELETE FROM assignments WHERE tenant_id = ?1 AND id = ?2 AND status = 'draft'
-       AND NOT EXISTS (SELECT 1 FROM submissions WHERE assignment_id = ?2)`,
+      `DELETE FROM notifications WHERE tenant_id = ?1
+       AND (link = '/my/work/' || ?2 OR link = '/assignments/' || ?2 OR instr(link, '/assignments/' || ?2 || '/') = 1)`,
     )
     .bind(tenantId, id);
 

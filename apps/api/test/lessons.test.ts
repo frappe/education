@@ -1,20 +1,31 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { extendOpenSeries } from "../src/lessons/jobs";
 import { addStudent, call, createCourse, createTeacher, type Person } from "./helpers";
 
 const PAST = "2020-01-06"; // a Monday, long ago: attendance can be taken
 const FUTURE = "2099-01-05";
 
-const body = (over: Record<string, unknown> = {}) => ({
-  title: "Unit 1",
-  date: PAST,
-  startTime: "18:30",
-  durationMinutes: 90,
-  place: "Room 2",
-  onlineUrl: null,
-  repeatWeeks: 1,
-  ...over,
-});
+const plusDays = (date: string, days: number) =>
+  new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+
+/** `weeks: 4` is a short way to say "every week, four lessons in all". */
+const body = (over: Record<string, unknown> = {}) => {
+  const { weeks, ...rest } = over as { weeks?: number } & Record<string, unknown>;
+  const date = (rest.date as string | undefined) ?? PAST;
+  return {
+    title: "Unit 1",
+    date: PAST,
+    startTime: "18:30",
+    durationMinutes: 90,
+    place: "Room 2",
+    onlineUrl: null,
+    ...(weeks !== undefined && weeks > 1
+      ? { repeat: "weekly", repeatUntil: plusDays(date, 7 * (weeks - 1)) }
+      : {}),
+    ...rest,
+  };
+};
 
 const create = (t: Person, courseId: string, over: Record<string, unknown> = {}) =>
   call(`/api/courses/${courseId}/lessons`, { method: "POST", cookie: t.cookie, body: body(over) });
@@ -110,7 +121,7 @@ describe("create lessons", () => {
 
   it("repeats every week at the same clock time, sharing one series", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { date: "2026-10-26", repeatWeeks: 4 });
+    const { lessons } = await lessonsOf(t, { date: "2026-10-26", weeks: 4 });
     expect(lessons.map((l) => l.date)).toEqual(["2026-10-26", "2026-11-02", "2026-11-09", "2026-11-16"]);
     expect(new Set(lessons.map((l) => l.startTime))).toEqual(new Set(["18:30"]));
     expect(new Set(lessons.map((l) => l.seriesId)).size).toBe(1);
@@ -122,7 +133,7 @@ describe("create lessons", () => {
     await env.DB.prepare("UPDATE tenants SET timezone = 'America/New_York' WHERE id = ?")
       .bind(t.tenantId)
       .run();
-    const { lessons } = await lessonsOf(t, { date: "2026-03-02", startTime: "18:00", repeatWeeks: 3 });
+    const { lessons } = await lessonsOf(t, { date: "2026-03-02", startTime: "18:00", weeks: 3 });
     expect(lessons.map((l) => [l.date, l.startTime])).toEqual([
       ["2026-03-02", "18:00"],
       ["2026-03-09", "18:00"],
@@ -135,7 +146,7 @@ describe("create lessons", () => {
 
   it("can make a whole year (52 weeks) in one request", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { repeatWeeks: 52 });
+    const { lessons } = await lessonsOf(t, { weeks: 52 });
     expect(lessons).toHaveLength(52);
     expect(lessons.at(-1)!.date).toBe("2020-12-28"); // 51 weeks after the first
   });
@@ -160,8 +171,11 @@ describe("create lessons", () => {
       ["10 minutes", { durationMinutes: 10 }, "durationMinutes"],
       ["more than 8 hours", { durationMinutes: 481 }, "durationMinutes"],
       ["a duration with decimals", { durationMinutes: 45.5 }, "durationMinutes"],
-      ["repeat 0 weeks", { repeatWeeks: 0 }, "repeatWeeks"],
-      ["repeat 53 weeks", { repeatWeeks: 53 }, "repeatWeeks"],
+      ["a repeat that does not exist", { repeat: "daily" }, "repeat"],
+      ["an end date before the first lesson", { repeat: "weekly", repeatUntil: "2019-12-30" }, "repeatUntil"],
+      ["an end date that does not exist", { repeat: "weekly", repeatUntil: "2020-02-30" }, "repeatUntil"],
+      ["more than 104 lessons", { repeat: "weekly", repeatUntil: "2030-01-01" }, "repeatUntil"],
+      ["a repeat with no end that starts years ago", { repeat: "weekly" }, "date"],
       ["a link that runs code", { onlineUrl: "javascript:alert(1)" }, "onlineUrl"],
       ["a data link", { onlineUrl: "data:text/html,hi" }, "onlineUrl"],
       ["a file link", { onlineUrl: "file:///etc/passwd" }, "onlineUrl"],
@@ -206,10 +220,10 @@ describe("create lessons", () => {
     )
       .bind(t.tenantId, course.id)
       .run();
-    const tooMany = await create(t, course.id, { repeatWeeks: 21 });
+    const tooMany = await create(t, course.id, { weeks: 21 });
     expect(tooMany.status).toBe(409);
     expect(await count("SELECT COUNT(*) AS n FROM lessons WHERE course_id = ?", course.id)).toBe(480);
-    expect((await create(t, course.id, { repeatWeeks: 20 })).status).toBe(201);
+    expect((await create(t, course.id, { weeks: 20 })).status).toBe(201);
     expect(await count("SELECT COUNT(*) AS n FROM lessons WHERE course_id = ?", course.id)).toBe(500);
     expect((await create(t, course.id)).status).toBe(409);
   });
@@ -236,7 +250,7 @@ describe("create lessons", () => {
 
   it("writes to the audit log", async () => {
     const t = await createTeacher();
-    const { course } = await lessonsOf(t, { repeatWeeks: 3 });
+    const { course } = await lessonsOf(t, { weeks: 3 });
     const row = await env.DB.prepare(
       "SELECT meta FROM audit_log WHERE tenant_id = ? AND action = 'lesson.created' AND target_id = ?",
     )
@@ -366,7 +380,7 @@ describe("read lessons and the calendar", () => {
 describe("change lessons", () => {
   it("changes only this lesson", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", repeatWeeks: 3 });
+    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", weeks: 3 });
     const res = await update(t, lessons[1]!, {
       title: "Moved",
       date: "2026-11-11",
@@ -395,7 +409,7 @@ describe("change lessons", () => {
 
   it("changes this lesson and the next ones, and moves them all by the same number of days", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", repeatWeeks: 4 });
+    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", weeks: 4 });
     // Move the second lesson from Monday 12 Oct to Tuesday 13 Oct, at 19:00.
     const res = await update(t, lessons[1]!, {
       date: "2026-10-13",
@@ -416,7 +430,7 @@ describe("change lessons", () => {
 
   it("'this and the next ones' leaves alone later lessons that are held or cancelled", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", repeatWeeks: 4 });
+    const { course, lessons } = await lessonsOf(t, { date: "2026-10-05", weeks: 4 });
     await cancel(t, lessons[2]!.id);
     await env.DB.prepare("UPDATE lessons SET status = 'held' WHERE id = ?").bind(lessons[3]!.id).run();
     const res = await update(t, lessons[0]!, { title: "Changed", scope: "following" });
@@ -440,7 +454,7 @@ describe("change lessons", () => {
 
   it("refuses a save made on an old version, and changes nothing (not even the later lessons)", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { repeatWeeks: 3 });
+    const { course, lessons } = await lessonsOf(t, { weeks: 3 });
     expect((await update(t, lessons[0]!, { title: "First" })).status).toBe(200);
     const stale = await update(t, lessons[0]!, { title: "Second", scope: "following" }); // version 1 is old now
     expect(stale.status).toBe(409);
@@ -460,7 +474,7 @@ describe("change lessons", () => {
 
   it("does not change a lesson that was held or cancelled", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { repeatWeeks: 2 });
+    const { lessons } = await lessonsOf(t, { weeks: 2 });
     await env.DB.prepare("UPDATE lessons SET status = 'held' WHERE id = ?").bind(lessons[0]!.id).run();
     await cancel(t, lessons[1]!.id);
     for (const l of [lessons[0]!, { ...lessons[1]!, version: 2 }]) {
@@ -491,7 +505,7 @@ describe("change lessons", () => {
   it("does not let another teacher change or cancel it, and changes nothing", async () => {
     const a = await createTeacher();
     const b = await createTeacher();
-    const { course, lessons } = await lessonsOf(a, { repeatWeeks: 2 });
+    const { course, lessons } = await lessonsOf(a, { weeks: 2 });
     expect((await update(b, lessons[0]!, { title: "Hacked", scope: "following" })).status).toBe(404);
     expect((await cancel(b, lessons[0]!.id, "following")).status).toBe(404);
     expect((await restore(b, lessons[0]!.id)).status).toBe(404);
@@ -505,7 +519,7 @@ describe("change lessons", () => {
 describe("cancel and restore", () => {
   it("cancels one lesson", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { repeatWeeks: 3 });
+    const { course, lessons } = await lessonsOf(t, { weeks: 3 });
     const res = await cancel(t, lessons[1]!.id);
     expect(res.status).toBe(200);
     expect(res.json.lessons.map((l: Lesson) => l.status)).toEqual(["cancelled"]);
@@ -514,7 +528,7 @@ describe("cancel and restore", () => {
 
   it("cancels this lesson and the next ones only", async () => {
     const t = await createTeacher();
-    const { course, lessons } = await lessonsOf(t, { repeatWeeks: 4 });
+    const { course, lessons } = await lessonsOf(t, { weeks: 4 });
     const res = await cancel(t, lessons[1]!.id, "following");
     expect(res.json.lessons).toHaveLength(3);
     expect((await list(t, course.id)).map((l) => l.status)).toEqual([
@@ -527,7 +541,7 @@ describe("cancel and restore", () => {
 
   it("does not cancel a lesson that was held, or one that is already cancelled", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { repeatWeeks: 2 });
+    const { lessons } = await lessonsOf(t, { weeks: 2 });
     await env.DB.prepare("UPDATE lessons SET status = 'held' WHERE id = ?").bind(lessons[0]!.id).run();
     expect((await cancel(t, lessons[0]!.id)).status).toBe(409);
     expect((await cancel(t, lessons[1]!.id)).status).toBe(200);
@@ -536,7 +550,7 @@ describe("cancel and restore", () => {
 
   it("restores a cancelled lesson, and only that", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { repeatWeeks: 2 });
+    const { lessons } = await lessonsOf(t, { weeks: 2 });
     expect((await restore(t, lessons[0]!.id)).status).toBe(409); // not cancelled
     await cancel(t, lessons[0]!.id);
     const res = await restore(t, lessons[0]!.id);
@@ -546,7 +560,7 @@ describe("cancel and restore", () => {
 
   it("writes to the audit log", async () => {
     const t = await createTeacher();
-    const { lessons } = await lessonsOf(t, { repeatWeeks: 3 });
+    const { lessons } = await lessonsOf(t, { weeks: 3 });
     await cancel(t, lessons[0]!.id, "following");
     await restore(t, lessons[0]!.id);
     const rows = await env.DB.prepare(
@@ -965,5 +979,172 @@ describe("who may use lessons", () => {
       const anon = await call(path, { method, body: payload });
       expect(anon.status, `${method} ${path}`).toBe(401);
     }
+  });
+});
+
+describe("lessons that repeat", () => {
+  // The job looks at every repeat in the database, so each test starts with none from the other tests.
+  beforeEach(async () => {
+    await env.DB.prepare("DELETE FROM lesson_series").run();
+  });
+
+  const weekday = (date: string) => new Date(`${date}T00:00:00Z`).getUTCDay();
+  const seriesRows = (courseId: string) =>
+    count("SELECT COUNT(*) AS n FROM lesson_series WHERE course_id = ?", courseId);
+
+  it("repeats every two weeks, on the weekday of the first lesson, up to the end date", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const res = await create(t, course.id, {
+      date: FUTURE,
+      repeat: "every_2_weeks",
+      repeatUntil: plusDays(FUTURE, 28),
+    });
+    expect(res.status, JSON.stringify(res.json)).toBe(201);
+    const lessons = res.json.lessons as Lesson[];
+    expect(lessons.map((l) => l.date)).toEqual([FUTURE, plusDays(FUTURE, 14), plusDays(FUTURE, 28)]);
+    expect(new Set(lessons.map((l) => weekday(l.date)))).toEqual(new Set([weekday(FUTURE)]));
+    expect(new Set(lessons.map((l) => l.seriesId)).size).toBe(1);
+    expect(await seriesRows(course.id)).toBe(0); // an end date: nothing more to make later
+  });
+
+  it("stops at the last day that fits: an end date between two lessons makes no extra lesson", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const res = await create(t, course.id, {
+      date: FUTURE,
+      repeat: "weekly",
+      repeatUntil: plusDays(FUTURE, 20),
+    });
+    expect((res.json.lessons as Lesson[]).map((l) => l.date)).toEqual([
+      FUTURE,
+      plusDays(FUTURE, 7),
+      plusDays(FUTURE, 14),
+    ]);
+    // The end date itself counts.
+    const same = await create(t, course.id, { date: FUTURE, repeat: "weekly", repeatUntil: FUTURE });
+    expect((same.json.lessons as Lesson[]).map((l) => l.date)).toEqual([FUTURE]);
+  });
+
+  it("a lesson that does not repeat has no series, and an end date is not used", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const res = await create(t, course.id, {
+      date: FUTURE,
+      repeat: "none",
+      repeatUntil: plusDays(FUTURE, 70),
+    });
+    expect(res.json.lessons).toHaveLength(1);
+    expect(res.json.lessons[0].seriesId).toBeNull();
+    expect(await seriesRows(course.id)).toBe(0);
+  });
+
+  it("with no end date, makes the lessons of the next 26 weeks, and keeps a record of the repeat", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const weekly = await create(t, course.id, { date: FUTURE, repeat: "weekly" });
+    expect(weekly.status, JSON.stringify(weekly.json)).toBe(201);
+    expect(weekly.json.lessons).toHaveLength(27); // week 0 to week 26
+    const every2 = await create(t, course.id, { date: FUTURE, repeat: "every_2_weeks" });
+    expect(every2.json.lessons).toHaveLength(14); // week 0, 2, ... 26
+    expect(await seriesRows(course.id)).toBe(2);
+    const row = await env.DB.prepare("SELECT every_weeks, ended FROM lesson_series WHERE id = ?")
+      .bind(weekly.json.lessons[0].seriesId)
+      .first();
+    expect(row).toEqual({ every_weeks: 1, ended: 0 });
+  });
+
+  it("keeps making lessons ahead while time passes, once, and in the same way as the last lesson", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const first = (
+      await create(t, course.id, {
+        date: FUTURE,
+        startTime: "07:15",
+        durationMinutes: 45,
+        title: "Speaking club",
+        place: "Room 5",
+        onlineUrl: "https://meet.example.com/x",
+        repeat: "weekly",
+      })
+    ).json.lessons as Lesson[];
+    expect(first).toHaveLength(27);
+    const now = new Date(`${plusDays(FUTURE, 70)}T05:00:00Z`); // ten weeks later
+    expect(await extendOpenSeries(env, now)).toBe(10);
+    const all = await list(t, course.id);
+    expect(all).toHaveLength(37);
+    const added = all.slice(27);
+    expect(added.map((l) => l.date)).toEqual(
+      Array.from({ length: 10 }, (_, i) => plusDays(FUTURE, 7 * (27 + i))),
+    );
+    for (const l of added) {
+      expect(l).toMatchObject({
+        startTime: "07:15",
+        endTime: "08:00",
+        title: "Speaking club",
+        place: "Room 5",
+        onlineUrl: "https://meet.example.com/x",
+        status: "scheduled",
+        seriesId: first[0]!.seriesId,
+      });
+    }
+    // Running it again (the job runs every hour) makes nothing new.
+    expect(await extendOpenSeries(env, now)).toBe(0);
+    expect(await list(t, course.id)).toHaveLength(37);
+  });
+
+  it("does not make lessons for the days that are already past when the job was late", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    await create(t, course.id, { date: FUTURE, repeat: "every_2_weeks" }); // last lesson: week 26
+    const now = new Date(`${plusDays(FUTURE, 7 * 60)}T05:00:00Z`); // 60 weeks later
+    await extendOpenSeries(env, now);
+    const all = await list(t, course.id);
+    const later = all.filter((l) => l.date > plusDays(FUTURE, 7 * 26));
+    expect(later.length).toBeGreaterThan(0);
+    expect(later.every((l) => l.date >= plusDays(FUTURE, 7 * 60))).toBe(true);
+    expect(new Set(later.map((l) => weekday(l.date)))).toEqual(new Set([weekday(FUTURE)]));
+  });
+
+  it("stops making lessons when the teacher cancels this and the next lessons, or the course is archived", async () => {
+    const t = await createTeacher();
+    const a = await createCourse(t);
+    const b = await createCourse(t);
+    const la = (await create(t, a.id, { date: FUTURE, repeat: "weekly" })).json.lessons as Lesson[];
+    await create(t, b.id, { date: FUTURE, repeat: "weekly" });
+    expect((await cancel(t, la[5]!.id, "following")).status).toBe(200);
+    expect(await count("SELECT ended AS n FROM lesson_series WHERE id = ?", la[0]!.seriesId)).toBe(1);
+    await call(`/api/courses/${b.id}/archive`, { method: "POST", cookie: t.cookie, body: {} });
+    const now = new Date(`${plusDays(FUTURE, 70)}T05:00:00Z`);
+    expect(await extendOpenSeries(env, now)).toBe(0);
+    expect(await list(t, a.id)).toHaveLength(27);
+    // Cancelling only one lesson does not stop the repeat.
+    const c = await createCourse(t);
+    const lc = (await create(t, c.id, { date: FUTURE, repeat: "weekly" })).json.lessons as Lesson[];
+    await cancel(t, lc[3]!.id, "this");
+    expect(await extendOpenSeries(env, now)).toBe(10);
+  });
+
+  it("makes no series when the lessons are refused", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    await env.DB.prepare(
+      `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 480)
+       INSERT INTO lessons (id, tenant_id, course_id, starts_at, ends_at, created_at, updated_at)
+       SELECT 'repeatbulk-' || i, ?1, ?2, '2030-01-01T10:00:00.000Z', '2030-01-01T11:00:00.000Z', 'x', 'x' FROM n`,
+    )
+      .bind(t.tenantId, course.id)
+      .run();
+    expect((await create(t, course.id, { date: FUTURE, repeat: "weekly" })).status).toBe(409); // 27 more do not fit
+    expect(await seriesRows(course.id)).toBe(0);
+  });
+
+  it("one teacher's repeats are not touched by another teacher", async () => {
+    const a = await createTeacher();
+    const b = await createTeacher();
+    const course = await createCourse(a);
+    const lessons = (await create(a, course.id, { date: FUTURE, repeat: "weekly" })).json.lessons as Lesson[];
+    expect((await cancel(b, lessons[2]!.id, "following")).status).toBe(404);
+    expect(await count("SELECT ended AS n FROM lesson_series WHERE id = ?", lessons[0]!.seriesId)).toBe(0);
   });
 });

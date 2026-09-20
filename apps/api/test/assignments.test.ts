@@ -496,27 +496,30 @@ describe("publish, close and delete", () => {
     expect((await act(t, a.id, "publish")).status).toBe(409);
   });
 
-  it("deletes a draft that nobody answered, and its chosen students with it", async () => {
+  it("deletes a draft: it is gone from the list and cannot be opened", async () => {
     const { t, course, kids } = await setup();
     const a = await made(t, course.id, homework({ targetMode: "selected", studentIds: [kids[0]!.id] }));
     expect((await call(`/api/assignments/${a.id}`, { method: "DELETE", cookie: t.cookie })).status).toBe(200);
     expect((await call(`/api/assignments/${a.id}`, { cookie: t.cookie })).status).toBe(404);
-    expect(await count("SELECT COUNT(*) AS n FROM assignment_targets WHERE assignment_id = ?", a.id)).toBe(0);
+    const list = await call(`/api/courses/${course.id}/assignments`, { cookie: t.cookie });
+    expect(list.json.assignments.map((x: { id: string }) => x.id)).not.toContain(a.id);
+    // Deleting it again, or something that does not exist, is the same answer.
+    expect((await call(`/api/assignments/${a.id}`, { method: "DELETE", cookie: t.cookie })).status).toBe(404);
   });
 
-  it("does not delete published work, or a draft that has an answer, and keeps its chosen students", async () => {
+  it("deletes work that is open or has answers too (the screen asks first)", async () => {
     const { t, course, kids } = await setup();
     const live = await made(t, course.id);
     await act(t, live.id, "publish");
     expect((await call(`/api/assignments/${live.id}`, { method: "DELETE", cookie: t.cookie })).status).toBe(
-      409,
+      200,
     );
     const draft = await made(t, course.id, homework({ targetMode: "selected", studentIds: [kids[0]!.id] }));
     await hand(t.tenantId, draft.id, kids[0]!.id, "drafted");
     expect((await call(`/api/assignments/${draft.id}`, { method: "DELETE", cookie: t.cookie })).status).toBe(
-      409,
+      200,
     );
-    expect((await get(t, draft.id)).studentIds).toEqual([kids[0]!.id]);
+    expect((await call(`/api/assignments/${draft.id}`, { cookie: t.cookie })).status).toBe(404);
   });
 
   it("writes every step to the audit log", async () => {

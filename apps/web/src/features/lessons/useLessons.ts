@@ -1,4 +1,10 @@
-import { createLessonsBody, type CourseInfo, type LessonInfo, type LessonScope } from "@lms/shared";
+import {
+  createLessonsBody,
+  type CourseInfo,
+  type LessonInfo,
+  type LessonScope,
+  type Repeat,
+} from "@lms/shared";
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api/client";
 import { addDays, today } from "@/features/format";
@@ -12,30 +18,35 @@ export type LessonFormValues = {
   date: string;
   startTime: string;
   durationMinutes: string;
-  place: string;
   onlineUrl: string;
-  repeatWeeks: string;
+  repeat: Repeat;
+  /** The last day of a repeat. Empty: the lesson repeats with no end. */
+  repeatUntil: string;
 };
+
+/** The lengths a teacher can choose, in minutes. */
+export const LESSON_LENGTHS = [30, 60, 90, 120] as const;
 
 export const lessonFormDefaults = (): LessonFormValues => ({
   title: "",
   date: today(),
   startTime: "18:00",
   durationMinutes: "90",
-  place: "",
   onlineUrl: "",
-  repeatWeeks: "1",
+  repeat: "none",
+  repeatUntil: "",
 });
 
-/** What is sent to make lessons, from what was typed. */
+/** What is sent to make lessons, from what was chosen. The place is not asked for any more. */
 export const lessonPayload = (v: LessonFormValues) => ({
   title: v.title,
   date: v.date,
   startTime: v.startTime,
   durationMinutes: num(v.durationMinutes),
-  place: v.place,
+  place: "",
   onlineUrl: v.onlineUrl.trim() === "" ? null : v.onlineUrl,
-  repeatWeeks: num(v.repeatWeeks),
+  repeat: v.repeat,
+  repeatUntil: v.repeat === "none" || v.repeatUntil === "" ? null : v.repeatUntil,
 });
 
 /** Lessons that are still to come, then the ones that are over. Cancelled ones go to the end of their part. */
@@ -44,6 +55,15 @@ export function splitLessons(lessons: LessonInfo[], now: Date = new Date()) {
   const upcoming = lessons.filter((l) => l.endsAt >= cutoff && l.status !== "held");
   const past = lessons.filter((l) => !(l.endsAt >= cutoff && l.status !== "held")).reverse();
   return { upcoming, past };
+}
+
+/** Days back that the list of a course still shows. Older lessons are not listed. */
+export const RECENT_DAYS = 3;
+
+/** The lessons to show: the ones to come, and the ones that ended in the last `RECENT_DAYS` days. */
+export function recentLessons(lessons: LessonInfo[], now: Date = new Date()): LessonInfo[] {
+  const oldest = new Date(now.getTime() - RECENT_DAYS * 86_400_000).toISOString();
+  return lessons.filter((l) => l.endsAt >= oldest);
 }
 
 /** The lessons of one course, and making, cancelling and restoring them. Logic only. */
@@ -104,7 +124,7 @@ export function useCourseLessons(courseId: string, text: { added: (n: number) =>
       return done;
     });
 
-  const parts = computed(() => splitLessons(lessons.value));
+  const parts = computed(() => splitLessons(recentLessons(lessons.value)));
   onMounted(load);
   return { lessons, loading, error, load, form, cancel, restore, parts };
 }

@@ -85,7 +85,8 @@ const lessonsOf = async (t: Person, courseId: string, over: Record<string, unkno
       durationMinutes: 90,
       place: "",
       onlineUrl: null,
-      repeatWeeks: 4,
+      repeat: "weekly",
+      repeatUntil: "2020-01-27", // four lessons in January 2020
       ...over,
     },
   });
@@ -164,9 +165,9 @@ describe("making draft receipts from the attendance", () => {
     await env.DB.prepare("UPDATE lessons SET status = 'cancelled' WHERE id = ?").bind(lessons[3]!.id).run(); // Hoa loses one billed lesson
     const free = await createCourse(t, { name: "Free club", pricePerLesson: 0, maxStudents: null });
     await enrollExisting(t, free.id, hoa.studentId);
-    const freeLesson = (await lessonsOf(t, free.id, { repeatWeeks: 1, date: "2020-01-07" }))[0]!;
+    const freeLesson = (await lessonsOf(t, free.id, { repeat: "none", date: "2020-01-07" }))[0]!;
     await mark(t, freeLesson.id, [{ studentId: hoa.studentId, status: "attended" }]);
-    const feb = (await lessonsOf(t, course.id, { date: "2020-02-03", repeatWeeks: 1 }))[0]!;
+    const feb = (await lessonsOf(t, course.id, { date: "2020-02-03", repeat: "none" }))[0]!;
     await mark(t, feb.id, [{ studentId: hoa.studentId, status: "attended" }]);
 
     const d = await drafts(t);
@@ -189,7 +190,7 @@ describe("making draft receipts from the attendance", () => {
       maxStudents: null,
     });
     await enrollExisting(t, second.id, hoa.studentId);
-    const l = (await lessonsOf(t, second.id, { repeatWeeks: 1, date: "2020-01-08" }))[0]!;
+    const l = (await lessonsOf(t, second.id, { repeat: "none", date: "2020-01-08" }))[0]!;
     await mark(t, l.id, [{ studentId: hoa.studentId, status: "attended" }]);
     const d = await drafts(t);
     const byName = Object.fromEntries(d.Hoa!.lines.map((x) => [x.description, x]));
@@ -204,10 +205,10 @@ describe("making draft receipts from the attendance", () => {
     const kid = await joinedKid(t, course.id, "Hoa");
     // 23:30 on 31 January in Vietnam is 16:30 UTC (January). 00:30 on 1 February is 17:30 UTC on 31 January.
     const late = (
-      await lessonsOf(t, course.id, { date: "2020-01-31", startTime: "23:30", repeatWeeks: 1 })
+      await lessonsOf(t, course.id, { date: "2020-01-31", startTime: "23:30", repeat: "none" })
     )[0]!;
     const next = (
-      await lessonsOf(t, course.id, { date: "2020-02-01", startTime: "00:30", repeatWeeks: 1 })
+      await lessonsOf(t, course.id, { date: "2020-02-01", startTime: "00:30", repeat: "none" })
     )[0]!;
     for (const l of [late, next]) await mark(t, l.id, [{ studentId: kid.studentId, status: "attended" }]);
     expect((await drafts(t, "2020-01")).Hoa!.lines[0]).toMatchObject({ quantity: 1, dates: ["2020-01-31"] });
@@ -724,7 +725,7 @@ describe("choosing the lessons of a receipt", () => {
 
   it("files the receipt under the month of the latest lesson", async () => {
     const { t, course, hoa, lessons } = await setup();
-    const feb = (await lessonsOf(t, course.id, { date: "2020-02-03", repeatWeeks: 1 }))[0]!;
+    const feb = (await lessonsOf(t, course.id, { date: "2020-02-03", repeat: "none" }))[0]!;
     await mark(t, feb.id, [{ studentId: hoa.studentId, status: "attended" }]);
     const res = await create(t, hoa.studentId, [lessons[3]!.id, feb.id]);
     expect(res.json.invoice).toMatchObject({ period: "2020-02", total: 200_000 });
@@ -909,7 +910,7 @@ describe("choosing the lessons of a receipt", () => {
     const o = await createTeacher("Someone");
     const course = await createCourse(o, { maxStudents: null });
     const kid = await joinedKid(o, course.id, "Zed");
-    const l = (await lessonsOf(o, course.id, { repeatWeeks: 1 }))[0]!;
+    const l = (await lessonsOf(o, course.id, { repeat: "none" }))[0]!;
     await mark(o, l.id, [{ studentId: kid.studentId, status: "attended" }]);
     return l;
   }

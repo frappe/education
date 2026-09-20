@@ -74,9 +74,16 @@ async function remove() {
     void router.replace(`/courses/${a.value?.courseId}?tab=homework`);
   }
 }
-const canDelete = computed(
-  () => a.value?.status === "draft" && p.rows.value.every((r) => r.status === "not_started"),
-);
+// What the confirm window says: the work, and what happens to what students handed in.
+const deleteWords = computed(() => {
+  const x = a.value;
+  if (!x) return [];
+  return [
+    fill(t.deleteText, { title: x.title }),
+    ...(x.status !== "draft" ? [t.deleteLive] : []),
+    ...(x.counts.handedIn > 0 ? [fill(t.deleteHandedIn, { n: x.counts.handedIn })] : []),
+  ];
+});
 </script>
 
 <template>
@@ -88,7 +95,7 @@ const canDelete = computed(
     <template v-if="a" #actions>
       <AppBadge>{{ summaryLine(a.questions.length, a.maxScore) }}</AppBadge>
       <AppBadge :tone="assignmentStatusTone[a.status]">{{ assignmentStatusText[a.status] }}</AppBadge>
-      <AppButton v-if="canDelete" variant="ghost" compact @click="deleting = true">{{ t.delete }}</AppButton>
+      <AppButton variant="ghost" compact @click="deleting = true">{{ t.delete }}</AppButton>
       <AppButton variant="secondary" compact @click="router.push(`/assignments/${a.id}/edit`)"
         ><AppIcon name="edit" :size="16" />{{ t.edit }}</AppButton
       >
@@ -265,7 +272,7 @@ const canDelete = computed(
     </AppModal>
 
     <AppModal v-model="deleting" :title="t.deleteTitle" :close-label="messages.common.close">
-      <p>{{ t.deleteText }}</p>
+      <p v-for="(line, i) in deleteWords" :key="i">{{ line }}</p>
       <template #actions>
         <AppButton variant="ghost" @click="deleting = false">{{ messages.common.cancel }}</AppButton>
         <AppButton variant="danger" @click="remove">{{ t.delete }}</AppButton>

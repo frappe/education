@@ -16,6 +16,7 @@ import { uuidv7 } from "../lib/id";
 import { nowIso } from "../lib/time";
 import { addDays, daysBetween, localToUtc, utcToLocal } from "../lib/zone";
 import { authorize } from "../policy";
+import { everyWeeks, repeatDays } from "./repeat";
 import {
   attendanceOfStudent,
   markLessonHeldStatement,
@@ -26,6 +27,9 @@ import { findCourse } from "../repos/courses";
 import {
   activeStudentNames,
   cancelLessonsStatement,
+  deleteEmptySeriesStatement,
+  endSeriesStatement,
+  insertSeriesStatement,
   findLesson,
   insertLessonsStatement,
   lessonsBetween,
@@ -121,21 +125,40 @@ export async function createLessons(
   }
   const zone = await tenantTimezone(db, tenantId);
 
-  // One lesson a week, at the same clock time. Each week is worked out from the local date.
-  const lessons = Array.from({ length: body.repeatWeeks }, (_, week) => {
-    const startsAt = localToUtc(addDays(body.date, 7 * week), body.startTime, zone);
+  // The days of the lessons, each at the same clock time. Each one is worked out from the local date.
+  const every = everyWeeks(body.repeat);
+  const days = repeatDays({
+    date: body.date,
+    every,
+    until: body.repeatUntil,
+    today: utcToLocal(nowIso(), zone).date,
+  });
+  if (days === null) {
+    throw new AppError("VALIDATION_FAILED", {
+      fields:
+        body.repeatUntil !== null
+          ? { repeatUntil: "That is too many lessons. Please choose an earlier end date." }
+          : { date: "This date is too far back to repeat with no end date." },
+    });
+  }
+  const lessons = days.map((day) => {
+    const startsAt = localToUtc(day, body.startTime, zone);
     return { id: uuidv7(), startsAt, endsAt: endsAt(startsAt, body.durationMinutes) };
   });
+  const openEnded = every > 0 && body.repeatUntil === null;
+  const seriesId = every > 0 && lessons.length > 1 ? uuidv7() : null;
+  if (openEnded && seriesId) await insertSeriesStatement(db, tenantId, courseId, seriesId, every).run();
   const res = await insertLessonsStatement(db, {
     tenantId,
     courseId,
-    seriesId: lessons.length > 1 ? uuidv7() : null,
+    seriesId,
     title: body.title,
     place: body.place,
     onlineUrl: body.onlineUrl,
     lessons,
   }).run();
   if (res.meta.changes !== lessons.length) {
+    if (seriesId) await deleteEmptySeriesStatement(db, tenantId, seriesId).run();
     throw new AppError("CONFLICT", {
       message:
         "A course can have at most 500 lessons, or the course was archived. Please check and try again.",
@@ -233,14 +256,17 @@ export async function lessonCancel(
     throw new AppError("CONFLICT", { message: "Only lessons that have not happened yet can be cancelled." });
   }
   const targets = await targetsOf(ctx, tenantId, lesson, body.scope);
+  const following = body.scope === "following" && lesson.series_id !== null;
   const res = await cancelLessonsStatement(db, {
     tenantId,
     id,
     seriesId: lesson.series_id,
     startsAt: lesson.starts_at,
-    following: body.scope === "following" && lesson.series_id !== null,
+    following,
   }).run();
   if (!res.meta.changes) throw new AppError("CONFLICT");
+  // "This and the next lessons" also stops a repeat that has no end date from making more.
+  if (following && lesson.series_id) await endSeriesStatement(db, tenantId, lesson.series_id).run();
   await audit(db, {
     action: "lesson.cancelled",
     actorUserId: actor.userId,

@@ -17,7 +17,8 @@ import { useForm } from "@/features/forms/useForm";
 import { useToast } from "@/features/toast/useToast";
 
 /** The homework of one course. Logic only. */
-export function useCourseHomework(courseId: string) {
+export function useCourseHomework(courseId: string, text: { deleted: string }) {
+  const toast = useToast();
   const items = ref<AssignmentInfo[]>([]);
   const loading = ref(true);
   const error = ref<string | null>(null);
@@ -32,7 +33,19 @@ export function useCourseHomework(courseId: string) {
       loading.value = false;
     }
   });
-  return { items, loading, error };
+  /** Deletes a piece of work. The screen has asked first. */
+  async function remove(id: string): Promise<boolean> {
+    try {
+      await api(`/assignments/${id}`, { method: "DELETE" });
+      items.value = items.value.filter((a) => a.id !== id);
+      toast.success(text.deleted);
+      return true;
+    } catch (err) {
+      toast.error(messageOf(err));
+      return false;
+    }
+  }
+  return { items, loading, error, remove };
 }
 
 /** The links a teacher shares with a course (no file uploads: only https links). */

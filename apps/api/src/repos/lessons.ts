@@ -165,6 +165,75 @@ export const updateLessonsStatement = (
       o.version,
     );
 
+/** A repeat with no end date. It only exists for a course of this tenant that is not archived. */
+export const insertSeriesStatement = (
+  db: D1Database,
+  tenantId: string,
+  courseId: string,
+  id: string,
+  everyWeeks: number,
+): D1PreparedStatement =>
+  db
+    .prepare(
+      `INSERT INTO lesson_series (id, tenant_id, course_id, every_weeks, created_at)
+       SELECT ?1, c.tenant_id, c.id, ?4, ?5 FROM courses c
+       WHERE c.tenant_id = ?2 AND c.id = ?3 AND c.status != 'archived'`,
+    )
+    .bind(id, tenantId, courseId, everyWeeks, nowIso());
+
+/** Takes back a series that got no lessons (the lessons were refused). */
+export const deleteEmptySeriesStatement = (
+  db: D1Database,
+  tenantId: string,
+  id: string,
+): D1PreparedStatement =>
+  db
+    .prepare(
+      `DELETE FROM lesson_series WHERE id = ?1 AND tenant_id = ?2
+       AND NOT EXISTS (SELECT 1 FROM lessons WHERE series_id = ?1)`,
+    )
+    .bind(id, tenantId);
+
+/** The repeat makes no more lessons. The ones that exist stay. */
+export const endSeriesStatement = (db: D1Database, tenantId: string, id: string): D1PreparedStatement =>
+  db.prepare(`UPDATE lesson_series SET ended = 1 WHERE id = ? AND tenant_id = ?`).bind(id, tenantId);
+
+export interface SeriesToExtend {
+  series_id: string;
+  tenant_id: string;
+  course_id: string;
+  every_weeks: number;
+  timezone: string;
+  title: string;
+  place: string;
+  online_url: string | null;
+  starts_at: string;
+  ends_at: string;
+}
+
+/**
+ * Repeats with no end date whose last lesson is close enough to `horizonIso` that the next one has to be made.
+ * The last lesson of the series is the model for the new ones (so a change to "this and the next lessons" is kept).
+ * Only courses that are not archived and teachers whose account is active.
+ */
+export async function seriesToExtend(db: D1Database, horizonIso: string, limit: number) {
+  const res = await db
+    .prepare(
+      `SELECT s.id AS series_id, s.tenant_id, s.course_id, s.every_weeks, t.timezone, l.title, l.place, l.online_url,
+         l.starts_at, l.ends_at
+       FROM lesson_series s
+       JOIN courses c ON c.id = s.course_id AND c.tenant_id = s.tenant_id AND c.status != 'archived'
+       JOIN tenants t ON t.id = s.tenant_id AND t.status = 'active'
+       JOIN lessons l ON l.id = (SELECT x.id FROM lessons x WHERE x.series_id = s.id ORDER BY x.starts_at DESC, x.id DESC LIMIT 1)
+       WHERE s.ended = 0
+         AND l.starts_at < strftime('%Y-%m-%dT%H:%M:%fZ', ?1, '-' || (s.every_weeks * 7) || ' days')
+       ORDER BY l.starts_at LIMIT ?2`,
+    )
+    .bind(horizonIso, limit)
+    .all<SeriesToExtend>();
+  return res.results;
+}
+
 /** Cancels one lesson, or this one and the later ones of its series. Only "scheduled" lessons change. */
 export const cancelLessonsStatement = (
   db: D1Database,

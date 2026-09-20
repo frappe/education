@@ -21,6 +21,32 @@ describe("create and read courses", () => {
     expect(row?.tenant_id).toBe(t.tenantId);
   });
 
+  it("can open the course right away, and refuses a status that is not draft or active", async () => {
+    const t = await createTeacher();
+    const open = await call("/api/courses", {
+      method: "POST",
+      cookie: t.cookie,
+      body: { ...validCourse(), status: "active" },
+    });
+    expect(open.status, JSON.stringify(open.json)).toBe(201);
+    expect(open.json.course.status).toBe("active");
+    const draft = await call("/api/courses", {
+      method: "POST",
+      cookie: t.cookie,
+      body: { ...validCourse(), status: "draft" },
+    });
+    expect(draft.json.course.status).toBe("draft");
+    // A new course cannot start as archived (or as anything else).
+    for (const status of ["archived", "open", ""]) {
+      const bad = await call("/api/courses", {
+        method: "POST",
+        cookie: t.cookie,
+        body: { ...validCourse(), status },
+      });
+      expect(bad.status, status).toBe(400);
+    }
+  });
+
   it("ignores a tenant id sent in the body (the tenant comes from the session)", async () => {
     const a = await createTeacher();
     const b = await createTeacher();

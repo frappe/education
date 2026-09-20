@@ -94,7 +94,12 @@ const datesInOrder = (v: { startDate: string | null; endDate: string | null }) =
   !v.startDate || !v.endDate || v.endDate >= v.startDate;
 const datesMessage = { message: "The end date cannot be before the start date.", path: ["endDate"] };
 
-export const createCourseBody = courseFields.refine(datesInOrder, datesMessage);
+export const createCourseBody = courseFields
+  .extend({
+    /** "active": the course is open from the start. Left out, it is a draft. */
+    status: z.enum(["draft", "active"]).default("draft"),
+  })
+  .refine(datesInOrder, datesMessage);
 export const updateCourseBody = courseFields
   .extend({
     /** The version the person was looking at. If someone changed the course since, the save is refused. */
@@ -266,15 +271,20 @@ export const lessonFields = z.object({
 /** "this": only this lesson. "following": this lesson and the next ones made with it. */
 const scope = z.enum(["this", "following"]).default("this");
 
-export const createLessonsBody = lessonFields.extend({
-  /** How many weeks in a row, counting the first lesson. 1 means a single lesson. */
-  repeatWeeks: z
-    .number()
-    .int()
-    .min(1, "Use at least 1.")
-    .max(LIMITS.maxRepeatWeeks, `You can repeat up to ${LIMITS.maxRepeatWeeks} weeks at a time.`)
-    .default(1),
-});
+export const REPEATS = ["none", "weekly", "every_2_weeks"] as const;
+export type Repeat = (typeof REPEATS)[number];
+
+export const createLessonsBody = lessonFields
+  .extend({
+    /** How the lesson repeats. It repeats on the same weekday as the date of the first lesson. */
+    repeat: z.enum(REPEATS, "Please choose how often the lesson repeats.").default("none"),
+    /** The last day a repeated lesson can be on. Left empty, the lesson repeats with no end. */
+    repeatUntil: isoDate.nullable().default(null),
+  })
+  .refine((v) => v.repeat === "none" || v.repeatUntil === null || v.repeatUntil >= v.date, {
+    message: "The end date is before the first lesson.",
+    path: ["repeatUntil"],
+  });
 export const updateLessonBody = lessonFields.extend({ version: z.number().int().min(1), scope });
 export const cancelLessonBody = z.object({ scope });
 

@@ -75,13 +75,14 @@ export const insertCourse = (
     startDate: string | null;
     endDate: string | null;
     maxStudents: number | null;
+    status: "draft" | "active";
   },
 ): D1PreparedStatement => {
   const now = nowIso();
   return db
     .prepare(
-      `INSERT INTO courses (id, tenant_id, name, description, price_per_lesson, start_date, end_date, max_students, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO courses (id, tenant_id, name, description, price_per_lesson, start_date, end_date, max_students, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       c.id,
@@ -92,6 +93,7 @@ export const insertCourse = (
       c.startDate,
       c.endDate,
       c.maxStudents,
+      c.status,
       now,
       now,
     );

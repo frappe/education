@@ -54,7 +54,6 @@ describe("the student's courses", () => {
         durationMinutes: 90,
         place: "",
         onlineUrl: null,
-        repeatWeeks: 1,
       },
     });
     await publish(t, course.id);

@@ -7,7 +7,7 @@ import { nowIso } from "../lib/time";
  * Fixed text. Expects the user id to be ?1.
  */
 const VISIBLE = `FROM assignments a
-  JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND c.status != 'archived'
+  JOIN courses c ON c.id = a.course_id AND c.tenant_id = a.tenant_id AND c.status != 'archived' AND a.deleted_at IS NULL
   JOIN tenants t ON t.id = a.tenant_id AND t.status = 'active'
   JOIN students s ON s.tenant_id = a.tenant_id AND s.user_id = ?1 AND s.status != 'archived'
   JOIN enrollments e ON e.tenant_id = a.tenant_id AND e.course_id = a.course_id AND e.student_id = s.id AND e.status = 'active'
@@ -141,7 +141,7 @@ export const saveAnswerStatement = (
          CASE WHEN ?2 != 'drafted' THEN ?6 END, CASE WHEN ?2 = 'returned' THEN ?6 END, CASE WHEN ?2 = 'returned' THEN ?6 END,
          CASE WHEN ?2 != 'drafted' AND NOT ${onTime} THEN 1 ELSE 0 END, ?6, ?6
        FROM assignments a JOIN students s ON s.tenant_id = a.tenant_id AND s.id = ?7 AND s.user_id = ?8 AND s.status != 'archived'
-       WHERE a.tenant_id = ?9 AND a.id = ?10 AND a.status = 'published' AND (a.allow_late = 1 OR ${onTime})
+       WHERE a.tenant_id = ?9 AND a.id = ?10 AND a.deleted_at IS NULL AND a.status = 'published' AND (a.allow_late = 1 OR ${onTime})
        ON CONFLICT (assignment_id, student_id) DO UPDATE SET
          status = CASE WHEN ?2 != 'drafted' THEN ?2 ELSE submissions.status END,
          responses = excluded.responses,

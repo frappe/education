@@ -6,6 +6,7 @@ import CourseLessons from "@/components/CourseLessons.vue";
 import CourseLinks from "@/components/CourseLinks.vue";
 import CourseRoster from "@/components/CourseRoster.vue";
 import { useCourseForm } from "@/features/courses/useCourses";
+import { fill } from "@/features/text";
 import { useToast } from "@/features/toast/useToast";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -17,6 +18,7 @@ import AppIcon from "@/ui/AppIcon.vue";
 import AppInput from "@/ui/AppInput.vue";
 import AppMoneyInput from "@/ui/AppMoneyInput.vue";
 import AppLoading from "@/ui/AppLoading.vue";
+import AppMultiSelect from "@/ui/AppMultiSelect.vue";
 import AppPage from "@/ui/AppPage.vue";
 import AppTabs from "@/ui/AppTabs.vue";
 import AppTextarea from "@/ui/AppTextarea.vue";
@@ -27,11 +29,23 @@ const router = useRouter();
 const toast = useToast();
 const id = computed(() => (route.params.id ? String(route.params.id) : undefined));
 
-const { form, course, loading, notFound, archived, setArchived, reload } = useCourseForm(id.value, (c) => {
-  if (!id.value) {
-    toast.success(t.created);
-    void router.replace(`/courses/${c.id}`);
-  } else toast.success(t.saved);
+const { form, course, loading, notFound, archived, setArchived, reload, students, studentIds } =
+  useCourseForm(id.value, (c, studentsFailed) => {
+    if (!id.value) {
+      toast.success(t.created);
+      if (studentsFailed) toast.error(t.studentsFailed);
+      void router.replace(`/courses/${c.id}`);
+    } else toast.success(t.saved);
+  });
+
+// The choice of students for a new course: their names, and what the closed box says.
+const studentOptions = computed(() =>
+  students.value.map((s) => ({ value: s.id, label: s.name, hint: s.email })),
+);
+const studentSummary = computed(() => {
+  const names = students.value.filter((s) => studentIds.value.includes(s.id)).map((s) => s.name);
+  if (names.length === 0) return "";
+  return names.length <= 2 ? names.join(", ") : fill(t.studentsChosen, { n: names.length });
 });
 
 // The section that is open lives in the address (?tab=lessons), so a link can open it directly.
@@ -98,12 +112,14 @@ const statusText = {
               :hint="t.priceHint"
               :error="form.errors.value.pricePerLesson"
             />
-            <AppInput
-              v-model="form.values.maxStudents"
-              :label="t.max"
-              type="text"
-              inputmode="numeric"
-              :error="form.errors.value.maxStudents"
+            <AppMultiSelect
+              v-if="!course"
+              v-model="studentIds"
+              :label="t.students"
+              :options="studentOptions"
+              :placeholder="t.studentsPlaceholder"
+              :summary="studentSummary"
+              :empty-text="t.studentsNone"
             />
             <AppInput
               v-model="form.values.startDate"
@@ -117,7 +133,7 @@ const statusText = {
               type="date"
               :error="form.errors.value.endDate"
             />
-            <div v-if="course" class="md:col-span-2">
+            <div class="md:col-span-2">
               <AppCheckbox v-model="form.values.active" :label="t.active" />
             </div>
             <div class="md:col-span-2">

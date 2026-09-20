@@ -8,6 +8,7 @@ defineProps<{
   /** No empty choice at the top: one of the options is always chosen. */
   required?: boolean;
   disabled?: boolean;
+  hint?: string;
   error?: string;
 }>();
 const model = defineModel<string>({ default: "" });
@@ -28,6 +29,7 @@ const id = useId();
       <option v-if="!required" value="">{{ placeholder ?? "" }}</option>
       <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
     </select>
+    <p v-if="hint && !error" class="label whitespace-normal">{{ hint }}</p>
     <p v-if="error" role="alert" class="label whitespace-normal text-error">{{ error }}</p>
   </div>
 </template>

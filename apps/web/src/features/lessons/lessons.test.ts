@@ -2,7 +2,7 @@ import type { LessonInfo } from "@lms/shared";
 import { describe, expect, it } from "vitest";
 import { addDays, formatDayShort, formatWeek, startOfWeek, today } from "../format";
 import { lessonLabel } from "./status";
-import { splitLessons } from "./useLessons";
+import { lessonPayload, recentLessons, splitLessons, type LessonFormValues } from "./useLessons";
 
 const lesson = (over: Partial<LessonInfo>): LessonInfo => ({
   id: "x",
@@ -76,6 +76,60 @@ describe("splitLessons", () => {
   it("keeps cancelled lessons in the list, so they can be restored", () => {
     const l = lesson({ status: "cancelled", endsAt: "2026-10-09T10:00:00.000Z" });
     expect(splitLessons([l], now).upcoming).toEqual([l]);
+  });
+});
+
+describe("recentLessons", () => {
+  const now = new Date("2026-10-10T12:00:00.000Z");
+
+  it("keeps the lessons to come and the ones that ended in the last 3 days, and drops older ones", () => {
+    const old = lesson({ id: "old", endsAt: "2026-10-07T11:59:00.000Z" }); // just over 3 days ago
+    const edge = lesson({ id: "edge", endsAt: "2026-10-07T12:00:00.000Z" }); // exactly 3 days ago
+    const yesterday = lesson({ id: "yesterday", endsAt: "2026-10-09T10:00:00.000Z" });
+    const next = lesson({ id: "next", endsAt: "2026-11-09T10:00:00.000Z" });
+    expect(recentLessons([old, edge, yesterday, next], now).map((l) => l.id)).toEqual([
+      "edge",
+      "yesterday",
+      "next",
+    ]);
+  });
+
+  it("also drops an old lesson that nobody marked, and an old cancelled one", () => {
+    const unmarked = lesson({ id: "u", endsAt: "2026-09-01T10:00:00.000Z", status: "scheduled" });
+    const cancelled = lesson({ id: "c", endsAt: "2026-09-01T10:00:00.000Z", status: "cancelled" });
+    expect(recentLessons([unmarked, cancelled], now)).toEqual([]);
+  });
+});
+
+describe("what is sent to make lessons", () => {
+  const values = (over: Partial<LessonFormValues> = {}): LessonFormValues => ({
+    title: "Unit 1",
+    date: "2026-10-05",
+    startTime: "18:00",
+    durationMinutes: "60",
+    onlineUrl: " https://meet.example.com/x ",
+    repeat: "weekly",
+    repeatUntil: "2026-12-28",
+    ...over,
+  });
+
+  it("sends the length as a number, the repeat and its end date, and no place", () => {
+    expect(lessonPayload(values())).toMatchObject({
+      durationMinutes: 60,
+      repeat: "weekly",
+      repeatUntil: "2026-12-28",
+      place: "",
+    });
+  });
+
+  it("sends no end date when it repeats with no end, or when it does not repeat at all", () => {
+    expect(lessonPayload(values({ repeatUntil: "" })).repeatUntil).toBeNull();
+    expect(lessonPayload(values({ repeat: "none" })).repeatUntil).toBeNull();
+    expect(lessonPayload(values({ repeat: "none" })).repeat).toBe("none");
+  });
+
+  it("sends an empty link as no link", () => {
+    expect(lessonPayload(values({ onlineUrl: "  " })).onlineUrl).toBeNull();
   });
 });
 
