@@ -88,6 +88,43 @@ export async function myCourses(db: D1Database, userId: string): Promise<MyCours
   return res.results;
 }
 
+export interface MyLessonRow {
+  id: string;
+  course_id: string;
+  course_name: string;
+  timezone: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  place: string;
+  online_url: string | null;
+}
+
+/**
+ * The next lessons of the courses the student is in now: not cancelled and not over. The courses are found in the
+ * same way as in the list of courses, so nothing is shown that the list does not show.
+ */
+export async function myUpcomingLessons(
+  db: D1Database,
+  userId: string,
+  nowIso: string,
+  limit: number,
+): Promise<MyLessonRow[]> {
+  const res = await db
+    .prepare(
+      `SELECT l.id, l.course_id, co.name AS course_name, tn.timezone, l.title, l.starts_at, l.ends_at, l.place, l.online_url
+       FROM lessons l
+       JOIN courses co ON co.id = l.course_id AND co.tenant_id = l.tenant_id
+       JOIN tenants tn ON tn.id = l.tenant_id
+       WHERE l.status = 'scheduled' AND l.ends_at >= ?2
+         AND l.course_id IN (SELECT c.id ${COURSE_FROM})
+       ORDER BY l.starts_at, l.id LIMIT ?3`,
+    )
+    .bind(userId, nowIso, limit)
+    .all<MyLessonRow>();
+  return res.results;
+}
+
 export const findMyCourse = (db: D1Database, userId: string, courseId: string) =>
   db
     .prepare(`SELECT ${COURSE_COLUMNS} ${COURSE_FROM} AND c.id = ?2`)

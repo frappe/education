@@ -631,6 +631,19 @@ export interface MyCourseInfo {
   openWork: number;
 }
 
+/** A lesson of a course the student is in, still to come. Times are in the teacher's time zone. */
+export interface MyLesson {
+  id: string;
+  courseId: string;
+  courseName: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  place: string;
+  onlineUrl: string | null;
+}
+
 export interface MyCourseDetail {
   course: MyCourseInfo;
   materials: { id: string; title: string; url: string }[];

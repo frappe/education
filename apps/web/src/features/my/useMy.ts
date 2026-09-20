@@ -4,6 +4,7 @@ import type {
   MyCourseDetail,
   MyCourseInfo,
   MyInvoiceItem,
+  MyLesson,
   MyWorkDetail,
   MyWorkItem,
 } from "@lms/shared";
@@ -14,25 +15,43 @@ import { messageOf, statusOf } from "@/features/errors";
 import { useToast } from "@/features/toast/useToast";
 import { createAutosave } from "./autosave";
 
-/** What a student has to do, and their courses. Logic only. */
-export function useMyHome() {
-  const work = ref<MyWorkItem[]>([]);
+/** The courses a student is in. Logic only. */
+export function useMyCourses() {
   const courses = ref<MyCourseInfo[]>([]);
-  const unpaidReceipts = ref(0);
   const loading = ref(true);
   const error = ref<string | null>(null);
   onMounted(async () => {
     try {
-      const [w, c] = await Promise.all([
+      courses.value = (await api<{ courses: MyCourseInfo[] }>("/my/courses")).courses;
+    } catch (err) {
+      error.value = messageOf(err);
+    } finally {
+      loading.value = false;
+    }
+  });
+  return { courses, loading, error };
+}
+
+/**
+ * The start page of a student: the coming lessons, the homework (to do, to do again, scored) and the receipts that
+ * are not paid. Logic only. The lessons and the receipts are extra: the page still works without them.
+ */
+export function useMyHome() {
+  const work = ref<MyWorkItem[]>([]);
+  const lessons = ref<MyLesson[]>([]);
+  const unpaid = ref<MyInvoiceItem[]>([]);
+  const loading = ref(true);
+  const error = ref<string | null>(null);
+  onMounted(async () => {
+    try {
+      const [w, l, i] = await Promise.all([
         api<{ work: MyWorkItem[] }>("/my/work"),
-        api<{ courses: MyCourseInfo[] }>("/my/courses"),
+        api<{ lessons: MyLesson[] }>("/my/lessons").catch(() => ({ lessons: [] as MyLesson[] })),
+        api<{ invoices: MyInvoiceItem[] }>("/my/invoices").catch(() => ({ invoices: [] as MyInvoiceItem[] })),
       ]);
       work.value = w.work;
-      courses.value = c.courses;
-      // The receipts are extra: the page still works without them.
-      unpaidReceipts.value = await api<{ invoices: MyInvoiceItem[] }>("/my/invoices")
-        .then((r) => r.invoices.filter((i) => i.status === "sent").length)
-        .catch(() => 0);
+      lessons.value = l.lessons;
+      unpaid.value = i.invoices.filter((r) => r.status === "sent");
     } catch (err) {
       error.value = messageOf(err);
     } finally {
@@ -40,7 +59,7 @@ export function useMyHome() {
     }
   });
   const groups = computed(() => groupWork(work.value));
-  return { work, courses, groups, unpaidReceipts, loading, error };
+  return { work, groups, lessons, unpaid, loading, error };
 }
 
 export function useMyCourse(id: string) {

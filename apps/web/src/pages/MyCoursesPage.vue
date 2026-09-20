@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useMyHome } from "@/features/my/useMy";
+import { useMyCourses } from "@/features/my/useMy";
 import { formatDayShort } from "@/features/format";
 import { fill } from "@/features/text";
 import { messages } from "@/messages";
@@ -11,7 +11,7 @@ import AppLoading from "@/ui/AppLoading.vue";
 import AppPage from "@/ui/AppPage.vue";
 
 const t = messages.my;
-const { courses, loading, error } = useMyHome();
+const { courses, loading, error } = useMyCourses();
 </script>
 
 <template>

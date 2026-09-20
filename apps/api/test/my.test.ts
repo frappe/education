@@ -92,6 +92,116 @@ describe("the student's courses", () => {
     expect((await call(`/api/my/courses/${course.id}`, { cookie: kid.cookie })).status).toBe(404);
   });
 
+  describe("the coming lessons", () => {
+    const lesson = (t: Person, courseId: string, over: Record<string, unknown> = {}) =>
+      call(`/api/courses/${courseId}/lessons`, {
+        method: "POST",
+        cookie: t.cookie,
+        body: {
+          title: "Unit 1",
+          date: "2099-01-05",
+          startTime: "18:30",
+          durationMinutes: 90,
+          place: "Room 2",
+          onlineUrl: "https://meet.example.com/x",
+          repeat: "none",
+          repeatUntil: null,
+          ...over,
+        },
+      });
+    const mine = async (p: Person) => (await call("/api/my/lessons", { cookie: p.cookie })).json.lessons;
+
+    it("lists the next lessons of every course of the student, soonest first, with the place and the link", async () => {
+      const { t, course, kid } = await setup();
+      const other = await createCourse(t, { maxStudents: null, name: "Speaking" });
+      await call(`/api/courses/${other.id}/students`, {
+        method: "POST",
+        cookie: t.cookie,
+        body: { studentIds: [kid.studentId], customPrice: null },
+      });
+      await lesson(t, course.id, { date: "2099-01-12", title: "Later" });
+      await lesson(t, other.id, {
+        date: "2099-01-06",
+        title: "Speaking club",
+        startTime: "07:15",
+        place: "",
+      });
+      await lesson(t, course.id, { date: "2099-01-05" });
+      expect((await mine(kid)).map((l: { title: string }) => l.title)).toEqual([
+        "Unit 1",
+        "Speaking club",
+        "Later",
+      ]);
+      expect((await mine(kid))[0]).toEqual({
+        id: expect.any(String),
+        courseId: course.id,
+        courseName: "English A1",
+        title: "Unit 1",
+        date: "2099-01-05",
+        startTime: "18:30",
+        endTime: "20:00",
+        place: "Room 2",
+        onlineUrl: "https://meet.example.com/x",
+      });
+      expect((await mine(kid))[1]).toMatchObject({ courseName: "Speaking", startTime: "07:15", place: "" });
+    });
+
+    it("leaves out lessons that were cancelled or are over, and lessons of courses the student is not in", async () => {
+      const { t, course, kid } = await setup();
+      const outside = await createCourse(t, { maxStudents: null, name: "Not mine" });
+      const [past] = (await lesson(t, course.id, { date: "2020-01-06", title: "Past" })).json.lessons;
+      const cancelled = (await lesson(t, course.id, { date: "2099-02-02", title: "Cancelled" })).json
+        .lessons[0];
+      await lesson(t, course.id, { date: "2099-02-09", title: "Fine" });
+      await lesson(t, outside.id, { date: "2099-02-10", title: "Somebody else's" });
+      await call(`/api/lessons/${cancelled.id}/cancel`, {
+        method: "POST",
+        cookie: t.cookie,
+        body: { scope: "this" },
+      });
+      expect(past.title).toBe("Past");
+      expect((await mine(kid)).map((l: { title: string }) => l.title)).toEqual(["Fine"]);
+    });
+
+    it("stops when the student leaves the course or the course is archived", async () => {
+      const { t, course, kid } = await setup();
+      await lesson(t, course.id);
+      expect(await mine(kid)).toHaveLength(1);
+      await call(`/api/courses/${course.id}/students/${kid.studentId}`, {
+        method: "PUT",
+        cookie: t.cookie,
+        body: { status: "dropped", customPrice: null },
+      });
+      expect(await mine(kid)).toEqual([]);
+      await call(`/api/courses/${course.id}/students/${kid.studentId}`, {
+        method: "PUT",
+        cookie: t.cookie,
+        body: { status: "active", customPrice: null },
+      });
+      expect(await mine(kid)).toHaveLength(1);
+      await call(`/api/courses/${course.id}/archive`, { method: "POST", cookie: t.cookie, body: {} });
+      expect(await mine(kid)).toEqual([]);
+    });
+
+    it("shows at most 30 lessons, and never the lessons of another student's courses", async () => {
+      const { t, course, kid } = await setup();
+      await lesson(t, course.id, { date: "2099-01-05", repeat: "weekly", repeatUntil: "2099-12-28" }); // 52 lessons
+      expect(await mine(kid)).toHaveLength(30);
+      const rival = await createTeacher("Mai Pham");
+      const rivalCourse = await createCourse(rival, { maxStudents: null, name: "Rival" });
+      const stranger = await joinedKid(rival, rivalCourse.id, "Stranger");
+      await lesson(rival, rivalCourse.id, { title: "Rival lesson" });
+      expect((await mine(stranger)).map((l: { title: string }) => l.title)).toEqual(["Rival lesson"]);
+      expect((await mine(kid)).some((l: { title: string }) => l.title === "Rival lesson")).toBe(false);
+    });
+
+    it("is only for a signed in student", async () => {
+      const { t } = await setup();
+      expect((await call("/api/my/lessons")).status).toBe(401);
+      expect((await call("/api/my/lessons", { cookie: t.cookie })).status).toBe(403);
+    });
+  });
+
   it("shows the course page: only shared links, and the work", async () => {
     const { t, course, kid } = await setup();
     for (const [title, published] of [

@@ -24,7 +24,7 @@ const session = useSession();
 const router = useRouter();
 const { courses, studentTotal, week, queue, receipts, loading, error } = useDashboard();
 
-const firstName = computed(() => session.me?.user.name.split(" ")[0] ?? "");
+const fullName = computed(() => session.me?.user.name ?? "");
 const steps = computed(() => [
   {
     title: t.step1,
@@ -92,7 +92,7 @@ const statusText = {
 </script>
 
 <template>
-  <AppPage :title="fill(t.hello, { name: firstName })" :subtitle="`${formatDayLong(today())}. ${t.today}`">
+  <AppPage :title="fill(t.hello, { name: fullName })" :subtitle="`${formatDayLong(today())}. ${t.today}`">
     <AppAlert v-if="!session.me?.user.emailVerified" kind="warning">{{ messages.home.unconfirmed }}</AppAlert>
     <AppAlert v-if="error" kind="error">{{ error }}</AppAlert>
 

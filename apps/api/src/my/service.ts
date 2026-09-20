@@ -4,6 +4,7 @@ import {
   type AnswerItem,
   type MyCourseDetail,
   type MyCourseInfo,
+  type MyLesson,
   type MyWorkDetail,
   type MyWorkItem,
   type QuestionInfo,
@@ -27,6 +28,7 @@ import {
   findMyCourse,
   findMyWork,
   myCourses,
+  myUpcomingLessons,
   myWork,
   publishedMaterials,
   saveAnswerStatement,
@@ -296,6 +298,28 @@ export async function courseList(ctx: Ctx, actor: Actor): Promise<MyCourseInfo[]
   return Promise.all(
     rows.map((c) => courseInfo(ctx, c, work.filter((w) => w.courseId === c.id && isOpen(w)).length)),
   );
+}
+
+/** How many coming lessons the start page of a student lists. */
+const UPCOMING_LESSONS = 30;
+
+/** The next lessons of all the courses of the student, soonest first. */
+export async function upcomingLessons(ctx: Ctx, actor: Actor): Promise<MyLesson[]> {
+  const rows = await myUpcomingLessons(ctx.env.DB, actor.userId, nowIso(), UPCOMING_LESSONS);
+  return rows.map((l) => {
+    const start = utcToLocal(l.starts_at, l.timezone);
+    return {
+      id: l.id,
+      courseId: l.course_id,
+      courseName: l.course_name,
+      title: l.title,
+      date: start.date,
+      startTime: start.time,
+      endTime: utcToLocal(l.ends_at, l.timezone).time,
+      place: l.place,
+      onlineUrl: l.online_url,
+    };
+  });
 }
 
 export async function courseGet(ctx: Ctx, actor: Actor, courseId: string): Promise<MyCourseDetail> {

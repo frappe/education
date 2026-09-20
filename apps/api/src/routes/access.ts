@@ -90,6 +90,7 @@ export const ROUTE_ACCESS: Record<string, Access> = {
   "DELETE /api/assignments/:id/extensions/:studentId": "teacher",
   "GET /api/my/courses": "student",
   "GET /api/my/courses/:id": "student",
+  "GET /api/my/lessons": "student",
   "GET /api/my/work": "student",
   "GET /api/my/work/:id": "student",
   "PUT /api/my/work/:id/draft": "student",

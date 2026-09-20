@@ -4,7 +4,7 @@ import { makeCtx } from "../auth/service";
 import type { AppBindings } from "../env";
 import { myInvoiceGet, myInvoiceList } from "../invoices/service";
 import { actorOf, requireStudent } from "../middleware/auth";
-import { courseGet, courseList, handIn, saveDraft, workGet, workList } from "../my/service";
+import { courseGet, courseList, handIn, saveDraft, upcomingLessons, workGet, workList } from "../my/service";
 import { parseBody } from "./helpers";
 
 /**
@@ -15,6 +15,10 @@ export const my = new Hono<AppBindings>();
 
 my.get("/my/courses", requireStudent, async (c) => {
   return c.json({ courses: await courseList(await makeCtx(c), actorOf(c)) });
+});
+
+my.get("/my/lessons", requireStudent, async (c) => {
+  return c.json({ lessons: await upcomingLessons(await makeCtx(c), actorOf(c)) });
 });
 
 my.get("/my/courses/:id", requireStudent, async (c) => {
