@@ -87,7 +87,7 @@
         {
           "binding": "DB",
           "database_name": "ptv-lms-production",
-          "database_id": "REPLACE_WITH_PRODUCTION_D1_ID",
+          "database_id": "83a48959-c1d0-485e-a33c-7ec34cd96f54",
           "migrations_dir": "migrations",
         },
       ],

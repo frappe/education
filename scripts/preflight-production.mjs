@@ -138,31 +138,38 @@ function checkMigrations() {
   return errors;
 }
 
-function checkSecrets(config) {
+/** Runs pnpm; on a computer where only `corepack pnpm` works, uses that. */
+function pnpm(args) {
+  const options = { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] };
+  try {
+    return execFileSync("pnpm", args, options);
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err;
+    return execFileSync("corepack", ["pnpm", ...args], options);
+  }
+}
+
+function checkSecrets() {
   const need = ["HMAC_KEY", "TURNSTILE_SECRET", "SMTP_USER", "SMTP_PASS", "GOOGLE_CLIENT_SECRET"];
   let listed;
   try {
     listed = JSON.parse(
-      execFileSync(
-        "pnpm",
-        [
-          "--filter",
-          "@lms/api",
-          "exec",
-          "wrangler",
-          "secret",
-          "list",
-          "--env",
-          "production",
-          "--format",
-          "json",
-        ],
-        { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-      ),
+      pnpm([
+        "--filter",
+        "@lms/api",
+        "exec",
+        "wrangler",
+        "secret",
+        "list",
+        "--env",
+        "production",
+        "--format",
+        "json",
+      ]),
     ).map((s) => s.name);
-  } catch {
+  } catch (err) {
     return [
-      "Could not read the secrets of production (is `wrangler login` done, and does the Worker exist?).",
+      `Could not read the secrets of production (is \`wrangler login\` done, and does the Worker exist?): ${String(err.stderr || err.message).split("\n")[0]}`,
     ];
   }
   return need
@@ -173,7 +180,7 @@ function checkSecrets(config) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const config = parseJsonc(readFileSync(path.join(root, "apps/api/wrangler.jsonc"), "utf8"));
   problems.push(...checkConfig(config), ...checkBuild(), ...checkMigrations());
-  if (process.argv.includes("--secrets")) problems.push(...checkSecrets(config));
+  if (process.argv.includes("--secrets")) problems.push(...checkSecrets());
   for (const n of notes) console.log(`note: ${n}`);
   if (problems.length) {
     console.error(`\n${problems.length} problem(s) before production:`);
