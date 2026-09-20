@@ -45,11 +45,11 @@ async function savePayment() {
 <template>
   <AppPage :title="t.title" :subtitle="t.subtitle">
     <template #actions>
-      <RouterLink to="/invoices/new" class="btn btn-primary min-h-11 gap-2 font-medium"
-        ><AppIcon name="plus" :size="16" />{{ t.newReceipt }}</RouterLink
-      >
       <AppButton variant="secondary" @click="openPayment"
         ><AppIcon name="edit" :size="16" />{{ t.payment }}</AppButton
+      >
+      <RouterLink to="/invoices/new" class="btn btn-primary min-h-11 gap-2 font-medium"
+        ><AppIcon name="plus" :size="16" />{{ t.newReceipt }}</RouterLink
       >
     </template>
 

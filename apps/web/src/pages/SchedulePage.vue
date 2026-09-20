@@ -69,7 +69,6 @@ const statusTone = {
 <template>
   <AppPage :title="t.title" :subtitle="t.subtitle">
     <template #actions>
-      <AppButton @click="openAdd"><AppIcon name="calendar-plus" :size="18" />{{ t.addLesson }}</AppButton>
       <div class="join">
         <button type="button" class="btn join-item min-h-11" :aria-label="t.previous" @click="previous">
           <AppIcon name="left" />
@@ -81,6 +80,7 @@ const statusTone = {
           <AppIcon name="right" />
         </button>
       </div>
+      <AppButton @click="openAdd"><AppIcon name="calendar-plus" :size="18" />{{ t.addLesson }}</AppButton>
     </template>
 
     <AppAlert v-if="error" kind="error">{{ error }}</AppAlert>

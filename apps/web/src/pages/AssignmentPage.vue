@@ -88,14 +88,16 @@ const canDelete = computed(
     <template v-if="a" #actions>
       <AppBadge>{{ summaryLine(a.questions.length, a.maxScore) }}</AppBadge>
       <AppBadge :tone="assignmentStatusTone[a.status]">{{ assignmentStatusText[a.status] }}</AppBadge>
-      <AppButton v-if="a.status !== 'published'" compact @click="p.publish"
-        ><AppIcon name="send" :size="16" />{{ a.status === "closed" ? t.reopen : t.publish }}</AppButton
-      >
-      <AppButton v-else variant="secondary" compact @click="p.close">{{ t.close }}</AppButton>
+      <AppButton v-if="canDelete" variant="ghost" compact @click="deleting = true">{{ t.delete }}</AppButton>
       <AppButton variant="secondary" compact @click="router.push(`/assignments/${a.id}/edit`)"
         ><AppIcon name="edit" :size="16" />{{ t.edit }}</AppButton
       >
-      <AppButton v-if="canDelete" variant="ghost" compact @click="deleting = true">{{ t.delete }}</AppButton>
+      <AppButton v-if="a.status === 'published'" variant="secondary" compact @click="p.close">{{
+        t.close
+      }}</AppButton>
+      <AppButton v-else compact @click="p.publish"
+        ><AppIcon name="send" :size="16" />{{ a.status === "closed" ? t.reopen : t.publish }}</AppButton
+      >
     </template>
 
     <AppLoading v-if="p.loading.value" :label="messages.common.loading" />

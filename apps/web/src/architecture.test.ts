@@ -47,6 +47,25 @@ describe("frontend architecture (plan 5.2)", () => {
     expect(bad).toEqual([]);
   });
 
+  it("in the buttons at the top of a page, the main button is always the last one (the far right)", () => {
+    const bad = files(path.join(root, "pages"))
+      .filter((f) => f.endsWith(".vue"))
+      .flatMap((f) => {
+        const template = readFileSync(f, "utf8").replace(/<script[\s\S]*?<\/script>/, "");
+        // The buttons of the page itself: a slot named "actions" that is a direct child of the page (four spaces in).
+        const blocks = [...template.matchAll(/\n {4}<template[^>]*#actions>([\s\S]*?)\n {4}<\/template>/g)];
+        return blocks.flatMap((m) => {
+          const controls = [...m[1]!.matchAll(/<(AppButton|RouterLink|button)\b[^>]*>/g)];
+          const isMain = (tag: string) =>
+            tag.startsWith("<AppButton") ? !/variant/.test(tag) : /btn-primary/.test(tag);
+          const last = controls.at(-1);
+          const hasMain = controls.some((c) => isMain(c[0]));
+          return hasMain && last && !isMain(last[0]) ? [`${path.relative(root, f)}: ${last[0]}`] : [];
+        });
+      });
+    expect(bad).toEqual([]);
+  });
+
   it("no screen uses an inline style (the page security policy blocks them): use classes", () => {
     const bad = files(root)
       .filter((f) => f.endsWith(".vue"))
