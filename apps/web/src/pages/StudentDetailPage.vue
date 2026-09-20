@@ -6,6 +6,7 @@ import { formatDayShort } from "@/features/format";
 import { useStudentAttendance } from "@/features/lessons/useStudentAttendance";
 import { useStudentDetail } from "@/features/students/useStudents";
 import { useToast } from "@/features/toast/useToast";
+import { fill } from "@/features/text";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
 import AppAvatar from "@/ui/AppAvatar.vue";
@@ -105,7 +106,7 @@ async function sendInvite() {
             <AppLoading :label="messages.common.loading" :rows="2" />
           </div>
           <AppEmpty
-            v-else-if="!attendance.info.value || attendance.info.value.recent.length === 0"
+            v-else-if="!attendance.info.value || attendance.info.value.total === 0"
             icon="attendance"
             :title="a.empty"
           />
@@ -121,7 +122,7 @@ async function sendInvite() {
             </div>
             <ul class="divide-y divide-base-300 border-t border-base-300">
               <li
-                v-for="r in attendance.info.value.recent.slice(0, 8)"
+                v-for="r in attendance.info.value.recent"
                 :key="r.lessonId"
                 class="flex items-center gap-3 px-5 py-2.5 text-sm"
               >
@@ -132,6 +133,28 @@ async function sendInvite() {
                 }}</AppBadge>
               </li>
             </ul>
+            <div
+              v-if="attendance.pages.value > 1"
+              class="flex items-center justify-between gap-3 border-t border-base-300 px-5 py-3"
+            >
+              <AppButton
+                variant="ghost"
+                compact
+                :disabled="attendance.page.value <= 1"
+                @click="attendance.page.value--"
+                >{{ messages.students.previous }}</AppButton
+              >
+              <span class="text-sm text-base-content/60">{{
+                fill(messages.students.pageOf, { page: attendance.page.value, pages: attendance.pages.value })
+              }}</span>
+              <AppButton
+                variant="ghost"
+                compact
+                :disabled="attendance.page.value >= attendance.pages.value"
+                @click="attendance.page.value++"
+                >{{ messages.students.next }}</AppButton
+              >
+            </div>
           </template>
         </AppCard>
       </div>

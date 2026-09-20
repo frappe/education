@@ -161,6 +161,13 @@ export type AddStudentBody = z.infer<typeof addStudentBody>;
 export type UpdateStudentBody = z.infer<typeof updateStudentBody>;
 export type ImportStudentsBody = z.infer<typeof importStudentsBody>;
 
+/**
+ * Which students the list shows. current: everyone who is not archived (the default). all: also the archived ones.
+ * The others: only that group.
+ */
+export const STUDENT_FILTERS = ["current", "all", "joined", "invited", "not_invited", "archived"] as const;
+export type StudentFilter = (typeof STUDENT_FILTERS)[number];
+
 /** joined: has an account. invited: invite sent. not_invited: only a profile. */
 export type StudentAccess = "joined" | "invited" | "not_invited";
 export interface StudentInfo {
@@ -351,7 +358,11 @@ export interface AttendanceSheet {
 export interface StudentAttendanceInfo {
   attended: number;
   absent: number;
-  /** Newest first, at most 30. */
+  /** All the lessons with a mark, and which page of them this is. */
+  total: number;
+  page: number;
+  pageSize: number;
+  /** One page of the marks, newest first. */
   recent: {
     lessonId: string;
     courseName: string;

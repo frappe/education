@@ -1,3 +1,4 @@
+import type { StudentFilter } from "@lms/shared";
 import { uuidv7 } from "../lib/id";
 import { nowIso } from "../lib/time";
 import { placeholders } from "./sql";
@@ -102,21 +103,31 @@ export interface StudentListRow extends StudentRow {
 /** Turns a search text into a safe LIKE pattern: %, _ and \ typed by the person are matched literally. */
 export const likePattern = (text: string): string => `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 
+const INVITED = `EXISTS (SELECT 1 FROM auth_tokens t WHERE t.student_id = s.id AND t.kind = 'invite')`;
+
 export async function listStudents(
   db: D1Database,
   tenantId: string,
-  o: { search: string; includeArchived: boolean; limit: number; offset: number },
+  o: { search: string; filter: StudentFilter; limit: number; offset: number },
 ): Promise<{ rows: StudentListRow[]; total: number }> {
   const pattern = likePattern(o.search);
-  const where = `s.tenant_id = ?1 AND (?2 = 1 OR s.status != 'archived')
+  // Fixed text. The filter is one of a few known words (checked by the caller) and goes in as a value.
+  const where = `s.tenant_id = ?1
+    AND (?2 = 'all'
+      OR (?2 = 'archived' AND s.status = 'archived')
+      OR (s.status != 'archived' AND (?2 = 'current'
+        OR (?2 = 'joined' AND s.user_id IS NOT NULL)
+        OR (?2 = 'invited' AND s.user_id IS NULL AND ${INVITED})
+        OR (?2 = 'not_invited' AND s.user_id IS NULL AND NOT ${INVITED}))))
     AND (?3 = '' OR s.name LIKE ?4 ESCAPE '\\' OR s.email LIKE ?4 ESCAPE '\\')`;
-  const binds = [tenantId, o.includeArchived ? 1 : 0, o.search, pattern] as const;
+  const binds = [tenantId, o.filter, o.search, pattern] as const;
   const [rows, total] = await db.batch([
     db
       .prepare(
         `SELECT s.id, s.tenant_id, s.user_id, s.name, s.email, s.status, s.phone, s.teacher_note, s.version, s.created_at,
-           EXISTS (SELECT 1 FROM auth_tokens t WHERE t.student_id = s.id AND t.kind = 'invite') AS ever_invited
-         FROM students s WHERE ${where} ORDER BY s.name COLLATE NOCASE, s.id LIMIT ?5 OFFSET ?6`,
+           ${INVITED} AS ever_invited
+         FROM students s WHERE ${where}
+         ORDER BY (s.status = 'archived'), s.name COLLATE NOCASE, s.id LIMIT ?5 OFFSET ?6`,
       )
       .bind(...binds, o.limit, o.offset),
     db.prepare(`SELECT COUNT(*) AS n FROM students s WHERE ${where}`).bind(...binds),

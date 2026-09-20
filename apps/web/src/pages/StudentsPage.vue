@@ -22,7 +22,15 @@ import AppSelect from "@/ui/AppSelect.vue";
 const t = messages.students;
 const router = useRouter();
 const toast = useToast();
-const { data, search, page, showArchived, loading, error, form, courses, notice } = useStudentList();
+const { data, search, page, status, loading, error, form, courses, notice } = useStudentList();
+// True when a search or a status hides students, so an empty list is not the same as having none.
+const filtered = computed(() => search.value.trim() !== "" || status.value !== "");
+const statusOptions = [
+  { value: "joined", label: t.joined },
+  { value: "invited", label: t.invited },
+  { value: "not_invited", label: t.notInvited },
+  { value: "archived", label: t.archived },
+];
 const courseOptions = computed(() => courses.value.map((c) => ({ value: c.id, label: c.name })));
 
 const adding = ref(false);
@@ -56,13 +64,24 @@ const accessTone = { joined: "success", invited: "info", not_invited: "neutral" 
       <div class="w-full sm:max-w-xs">
         <AppInput v-model="search" :label="t.search" type="text" :placeholder="t.searchHint" />
       </div>
-      <AppCheckbox v-model="showArchived" :label="t.showArchived" />
+      <div class="w-full sm:w-56">
+        <AppSelect
+          v-model="status"
+          :label="t.filterStatus"
+          :options="statusOptions"
+          :placeholder="t.allStatuses"
+        />
+      </div>
     </div>
 
     <AppLoading v-if="loading" :label="messages.common.loading" :rows="5" />
     <div v-else-if="data.total === 0" class="rounded-box border border-base-300 bg-base-100">
-      <AppEmpty icon="users" :title="search ? t.noMatch : t.emptyTitle" :text="search ? undefined : t.empty">
-        <AppButton v-if="!search" @click="adding = true"
+      <AppEmpty
+        icon="users"
+        :title="filtered ? t.noMatch : t.emptyTitle"
+        :text="filtered ? undefined : t.empty"
+      >
+        <AppButton v-if="!filtered" @click="adding = true"
           ><AppIcon name="user-plus" :size="18" />{{ t.addButton }}</AppButton
         >
       </AppEmpty>

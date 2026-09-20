@@ -9,8 +9,11 @@ import type { CourseInfo, EnrollResult } from "@lms/shared";
 import { onMounted, ref, watch } from "vue";
 import { api } from "@/api/client";
 import { useForm } from "@/features/forms/useForm";
-import { useQueryFlag, useQueryRef } from "@/features/navigation/back";
+import { useQueryRef } from "@/features/navigation/back";
 import { parseStudentCsv, type CsvStudent } from "./parseCsv";
+
+/** The statuses a teacher can pick to filter the list. Empty means every status. */
+export const STATUS_FILTERS = ["joined", "invited", "not_invited", "archived"] as const;
 
 interface StudentPage {
   students: StudentInfo[];
@@ -21,10 +24,11 @@ interface StudentPage {
 
 export function useStudentList() {
   const data = ref<StudentPage>({ students: [], total: 0, page: 1, pageSize: 50 });
-  // The search and the archived choice stay in the address, so coming back to the list shows it as it was.
+  // The search and the status stay in the address, so coming back to the list shows it as it was.
   const search = useQueryRef("search", "");
   const page = ref(1);
-  const showArchived = useQueryFlag("archived");
+  // "" is every status, the archived ones too.
+  const status = useQueryRef("status", "", (v) => (STATUS_FILTERS as readonly string[]).includes(v));
   const loading = ref(true);
   const error = ref<string | null>(null);
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -34,7 +38,7 @@ export function useStudentList() {
     const mine = ++latest; // an older, slower answer must not replace a newer one
     const q = new URLSearchParams({ page: String(page.value) });
     if (search.value.trim()) q.set("search", search.value.trim());
-    if (showArchived.value) q.set("archived", "1");
+    q.set("status", status.value === "" ? "all" : status.value);
     try {
       const res = await api<StudentPage>(`/students?${q}`);
       if (mine === latest) {
@@ -57,7 +61,12 @@ export function useStudentList() {
       void load();
     }, 300);
   });
-  watch([page, showArchived], () => void load());
+  // A new status starts again from page 1.
+  watch(status, () => {
+    page.value = 1;
+    void load();
+  });
+  watch(page, () => void load());
 
   const courses = ref<CourseInfo[]>([]);
   /** Shown after adding a student to a course at the same time, when the course could not take them. */
@@ -110,7 +119,7 @@ export function useStudentList() {
       courses.value = [];
     }
   });
-  return { data, search, page, showArchived, loading, error, form, load, courses, notice };
+  return { data, search, page, status, loading, error, form, load, courses, notice };
 }
 
 export function useStudentDetail(id: string) {

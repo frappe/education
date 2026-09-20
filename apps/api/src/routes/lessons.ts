@@ -69,5 +69,13 @@ lessons.put("/lessons/:id/attendance", requireTeacher, async (c) => {
 });
 
 lessons.get("/students/:id/attendance", requireTeacher, async (c) => {
-  return c.json({ attendance: await studentAttendance(await makeCtx(c), actorOf(c), c.req.param("id")) });
+  const page = Number.parseInt(c.req.query("page") ?? "1", 10);
+  return c.json({
+    attendance: await studentAttendance(
+      await makeCtx(c),
+      actorOf(c),
+      c.req.param("id"),
+      Number.isFinite(page) ? page : 1,
+    ),
+  });
 });

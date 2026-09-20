@@ -396,19 +396,33 @@ export async function saveAttendance(
   return sheetOf(ctx, tenantId, await load(ctx, tenantId, lessonId), zone);
 }
 
+/** How many marks one page of a student's attendance shows. */
+export const ATTENDANCE_PAGE_SIZE = 10;
+
 export async function studentAttendance(
   ctx: Ctx,
   actor: Actor,
   studentId: string,
+  page = 1,
 ): Promise<StudentAttendanceInfo> {
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "attendance", "read", { tenantId });
   if (!(await findStudent(ctx.env.DB, tenantId, studentId))) throw new AppError("NOT_FOUND");
   const zone = await tenantTimezone(ctx.env.DB, tenantId);
-  const r = await attendanceOfStudent(ctx.env.DB, tenantId, studentId);
+  const at = Math.max(1, page);
+  const r = await attendanceOfStudent(
+    ctx.env.DB,
+    tenantId,
+    studentId,
+    ATTENDANCE_PAGE_SIZE,
+    (at - 1) * ATTENDANCE_PAGE_SIZE,
+  );
   return {
     attended: r.attended,
     absent: r.absent,
+    total: r.attended + r.absent, // a mark is either "attended" or "absent"
+    page: at,
+    pageSize: ATTENDANCE_PAGE_SIZE,
     recent: r.recent.map((x) => {
       const start = utcToLocal(x.starts_at, zone);
       return {

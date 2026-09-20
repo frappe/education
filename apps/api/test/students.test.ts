@@ -185,13 +185,62 @@ describe("list, search and pages", () => {
     expect((await list(t.cookie, "?page=-4")).json.page).toBe(1);
   });
 
-  it("hides archived students unless asked", async () => {
-    const t = await createTeacher();
-    const s = await addStudent(t);
-    await call(`/api/students/${s.id}/archive`, { method: "POST", cookie: t.cookie });
-    expect((await list(t.cookie)).json.total).toBe(0);
-    const all = await list(t.cookie, "?archived=1");
-    expect(all.json.students).toMatchObject([{ id: s.id, archived: true }]);
+  describe("the status filter", () => {
+    /** One student in each state: joined, invited, only a profile, and archived. */
+    async function four() {
+      const t = await createTeacher();
+      const joined = await createStudent(t, "Cuong"); // signed in with an invite
+      const invited = await addStudent(t, { name: "Bao", invite: true });
+      const plain = await addStudent(t, { name: "Anh" });
+      const archived = await addStudent(t, { name: "Dung" });
+      await call(`/api/students/${archived.id}/archive`, { method: "POST", cookie: t.cookie });
+      const all = (await list(t.cookie, "?status=all")).json.students as { id: string; name: string }[];
+      const joinedId = all.find((s) => s.name === "Cuong")!.id;
+      return { t, joinedId, invitedId: invited.id, plainId: plain.id, archivedId: archived.id };
+    }
+    const ids = async (t: { cookie: string }, query: string) =>
+      ((await list(t.cookie, query)).json.students as { id: string }[]).map((s) => s.id);
+
+    it("hides archived students unless asked: no word, or 'current', is everyone who is not archived", async () => {
+      const { t, joinedId, invitedId, plainId } = await four();
+      const expected = [plainId, invitedId, joinedId]; // by name: Anh, Bao, Cuong
+      expect(await ids(t, "")).toEqual(expected);
+      expect(await ids(t, "?status=current")).toEqual(expected);
+      expect(await ids(t, "?status=nonsense")).toEqual(expected);
+      expect((await list(t.cookie)).json.total).toBe(3);
+    });
+
+    it("'all' also shows the archived ones, after the others", async () => {
+      const { t, joinedId, invitedId, plainId, archivedId } = await four();
+      const res = await list(t.cookie, "?status=all");
+      expect(res.json.total).toBe(4);
+      expect(res.json.students.map((s: { id: string }) => s.id)).toEqual([
+        plainId,
+        invitedId,
+        joinedId,
+        archivedId,
+      ]);
+      expect(res.json.students[3]).toMatchObject({ archived: true });
+    });
+
+    it("shows one group at a time", async () => {
+      const { t, joinedId, invitedId, plainId, archivedId } = await four();
+      expect(await ids(t, "?status=joined")).toEqual([joinedId]);
+      expect(await ids(t, "?status=invited")).toEqual([invitedId]);
+      expect(await ids(t, "?status=not_invited")).toEqual([plainId]);
+      expect(await ids(t, "?status=archived")).toEqual([archivedId]);
+      expect((await list(t.cookie, "?status=archived")).json.total).toBe(1);
+    });
+
+    it("works together with the search and the page, and never shows another teacher's students", async () => {
+      const { t, invitedId } = await four();
+      expect(await ids(t, "?status=all&search=ba")).toEqual([invitedId]);
+      expect(await ids(t, "?status=joined&search=ba")).toEqual([]);
+      const p2 = await list(t.cookie, "?status=all&page=2");
+      expect(p2.json).toMatchObject({ students: [], total: 4, page: 2, pageSize: 50 });
+      const other = await createTeacher();
+      expect(await ids(other, "?status=all")).toEqual([]);
+    });
   });
 });
 

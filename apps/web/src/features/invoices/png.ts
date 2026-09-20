@@ -1,3 +1,4 @@
+import { saveFile } from "@/features/download";
 import { formatDay, formatVnd, formatWhen } from "@/features/format";
 import { periodShort } from "./period";
 import { qrModules, qrTextOf } from "./qr";
@@ -347,12 +348,5 @@ export async function receiptToPng(data: SheetData, t: PngLabels): Promise<Blob>
 /** Makes the picture and saves it as a file on the computer (or phone) of the person. */
 export async function downloadReceiptPng(data: SheetData, t: PngLabels, filename: string): Promise<void> {
   const blob = await receiptToPng(data, t);
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  saveFile(blob, filename);
 }

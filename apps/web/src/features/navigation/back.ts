@@ -1,4 +1,4 @@
-import { computed, ref, watch, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { useRoute, useRouter, type Router } from "vue-router";
 
 /** Screens that are not a good place to go "back" to: forms that were just filled in, and the screens for signing in. */
@@ -40,13 +40,4 @@ export function useQueryRef(
     void router.replace({ query });
   });
   return value;
-}
-
-/** A yes/no choice that lives in the address (`?archived=1`). */
-export function useQueryFlag(key: string): Ref<boolean> {
-  const text = useQueryRef(key, "", (v) => v === "1");
-  return computed({
-    get: () => text.value === "1",
-    set: (v: boolean) => (text.value = v ? "1" : ""),
-  });
 }

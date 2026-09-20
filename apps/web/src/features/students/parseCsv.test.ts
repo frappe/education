@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseStudentCsv } from "./parseCsv";
+import { SAMPLE_STUDENT_CSV } from "./sample";
 
 describe("parseStudentCsv", () => {
   it("reads rows without a header as name, email, phone", () => {
@@ -53,6 +54,18 @@ describe("parseStudentCsv", () => {
     expect(parseStudentCsv("Mai\n,x@x.com").rows).toEqual([
       { name: "Mai", email: "" },
       { name: "", email: "x@x.com" },
+    ]);
+  });
+});
+
+describe("the sample file", () => {
+  it("is read by the import as two students, and its first row is the column names", () => {
+    // The file that is saved starts with a byte order mark, as Excel likes it.
+    const res = parseStudentCsv(`\uFEFF${SAMPLE_STUDENT_CSV}\r\n`);
+    expect(res.problem).toBeUndefined();
+    expect(res.rows).toEqual([
+      { name: "Nguyen Van An", email: "an.nguyen@example.com", phone: "0901234567" },
+      { name: "Tran Thi Binh", email: "binh.tran@example.com" },
     ]);
   });
 });

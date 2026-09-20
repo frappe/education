@@ -882,7 +882,7 @@ describe("attendance of one student", () => {
     await mark(t, ids[2]!, [{ studentId: s.id, status: "attended" }]);
     const res = await call(`/api/students/${s.id}/attendance`, { cookie: t.cookie });
     expect(res.status).toBe(200);
-    expect(res.json.attendance).toMatchObject({ attended: 2, absent: 1 });
+    expect(res.json.attendance).toMatchObject({ attended: 2, absent: 1, total: 3, page: 1, pageSize: 10 });
     expect(
       res.json.attendance.recent.map((r: { date: string; status: string }) => [r.date, r.status]),
     ).toEqual([
@@ -893,12 +893,48 @@ describe("attendance of one student", () => {
     expect(res.json.attendance.recent[0]).toMatchObject({ courseName: "English A1", startTime: "18:30" });
   });
 
+  it("shows ten marks a page, newest first, and the totals count all of them", async () => {
+    const t = await createTeacher();
+    const course = await createCourse(t);
+    const s = await addStudent(t, { name: "Anh" });
+    await enroll(t, course.id, [s.id]);
+    const made = await create(t, course.id, { weeks: 12 }); // twelve Mondays from 2020-01-06
+    expect(made.status, JSON.stringify(made.json)).toBe(201);
+    const lessons = made.json.lessons as Lesson[];
+    for (const [i, l] of lessons.entries()) {
+      await mark(t, l.id, [{ studentId: s.id, status: i % 4 === 0 ? "absent" : "attended" }]);
+    }
+    const at = async (query: string) =>
+      (await call(`/api/students/${s.id}/attendance${query}`, { cookie: t.cookie })).json.attendance;
+    const p1 = await at("");
+    expect(p1).toMatchObject({ attended: 9, absent: 3, total: 12, page: 1, pageSize: 10 });
+    expect(p1.recent.map((r: { date: string }) => r.date)).toEqual(
+      lessons
+        .slice(2)
+        .map((l) => l.date)
+        .reverse(),
+    );
+    const p2 = await at("?page=2");
+    expect(p2).toMatchObject({ attended: 9, absent: 3, total: 12, page: 2 });
+    expect(p2.recent.map((r: { date: string }) => r.date)).toEqual([lessons[1]!.date, lessons[0]!.date]);
+    expect((await at("?page=3")).recent).toEqual([]);
+    expect((await at("?page=abc")).page).toBe(1);
+    expect((await at("?page=-2")).page).toBe(1);
+  });
+
   it("is zero for a student with no lessons, and 'not found' for another teacher's student", async () => {
     const a = await createTeacher();
     const b = await createTeacher();
     const s = await addStudent(a);
     const own = await call(`/api/students/${s.id}/attendance`, { cookie: a.cookie });
-    expect(own.json.attendance).toEqual({ attended: 0, absent: 0, recent: [] });
+    expect(own.json.attendance).toEqual({
+      attended: 0,
+      absent: 0,
+      total: 0,
+      page: 1,
+      pageSize: 10,
+      recent: [],
+    });
     expect((await call(`/api/students/${s.id}/attendance`, { cookie: b.cookie })).status).toBe(404);
   });
 });

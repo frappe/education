@@ -1,4 +1,4 @@
-import { addStudentBody, importStudentsBody, updateStudentBody } from "@lms/shared";
+import { addStudentBody, importStudentsBody, STUDENT_FILTERS, updateStudentBody } from "@lms/shared";
 import { Hono } from "hono";
 import { makeCtx } from "../auth/service";
 import type { AppBindings } from "../env";
@@ -20,7 +20,8 @@ students.get("/students", requireTeacher, async (c) => {
   const page = Number.parseInt(c.req.query("page") ?? "1", 10);
   const result = await studentList(await makeCtx(c), actorOf(c), {
     search: c.req.query("search") ?? "",
-    includeArchived: c.req.query("archived") === "1",
+    // An unknown word is the same as no word: the students who are not archived.
+    filter: STUDENT_FILTERS.find((f) => f === c.req.query("status")) ?? "current",
     page: Number.isFinite(page) ? page : 1,
   });
   return c.json(result);

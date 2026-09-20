@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { fill } from "@/features/text";
+import { downloadSampleStudents } from "@/features/students/sample";
 import { useCsvImport } from "@/features/students/useStudents";
 import { messages } from "@/messages";
 import AppAlert from "@/ui/AppAlert.vue";
@@ -58,6 +59,16 @@ const steps = computed(() => ({ input: 1, preview: 2, done: 3 })[imp.step.value]
 
     <AppCard v-if="imp.step.value === 'input'">
       <p class="text-base-content/70">{{ t.intro }}</p>
+      <ol class="list-decimal space-y-1 pl-5 text-base-content/70">
+        <li>{{ t.howTo1 }}</li>
+        <li>{{ t.howTo2 }}</li>
+        <li>{{ t.howTo3 }}</li>
+      </ol>
+      <div>
+        <AppButton variant="secondary" @click="downloadSampleStudents"
+          ><AppIcon name="download" :size="18" />{{ t.sample }}</AppButton
+        >
+      </div>
       <AppAlert v-if="problemText" kind="error">{{ problemText }}</AppAlert>
       <AppAlert v-if="imp.error.value" kind="error">{{ imp.error.value }}</AppAlert>
       <div class="fieldset">
@@ -70,7 +81,7 @@ const steps = computed(() => ({ input: 1, preview: 2, done: 3 })[imp.step.value]
           @change="onFile"
         />
       </div>
-      <AppTextarea v-model="imp.text.value" :label="t.paste" :rows="8" />
+      <AppTextarea v-model="imp.text.value" :label="t.paste" :hint="t.pasteHint" :rows="6" />
       <div>
         <AppButton :loading="imp.busy.value" @click="imp.check"
           ><AppIcon name="check" :size="18" />{{ t.check }}</AppButton

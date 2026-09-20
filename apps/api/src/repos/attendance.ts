@@ -77,7 +77,14 @@ export const markLessonHeldStatement = (
     )
     .bind(nowIso(), tenantId, lessonId);
 
-export async function attendanceOfStudent(db: D1Database, tenantId: string, studentId: string) {
+/** The totals of a student, and one page of the marks, newest first. */
+export async function attendanceOfStudent(
+  db: D1Database,
+  tenantId: string,
+  studentId: string,
+  limit: number,
+  offset: number,
+) {
   const counts = await db
     .prepare(
       `SELECT COALESCE(SUM(status = 'attended'), 0) AS attended, COALESCE(SUM(status = 'absent'), 0) AS absent
@@ -91,9 +98,9 @@ export async function attendanceOfStudent(db: D1Database, tenantId: string, stud
        FROM attendance a JOIN lessons l ON l.id = a.lesson_id AND l.tenant_id = a.tenant_id
          JOIN courses c ON c.id = l.course_id AND c.tenant_id = l.tenant_id
        WHERE a.tenant_id = ? AND a.student_id = ?
-       ORDER BY l.starts_at DESC, l.id LIMIT 30`,
+       ORDER BY l.starts_at DESC, l.id LIMIT ? OFFSET ?`,
     )
-    .bind(tenantId, studentId)
+    .bind(tenantId, studentId, limit, offset)
     .all<{
       lesson_id: string;
       course_name: string;

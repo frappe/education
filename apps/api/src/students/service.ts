@@ -5,6 +5,7 @@ import {
   type ImportResult,
   type ImportRowResult,
   type ImportStudentsBody,
+  type StudentFilter,
   type StudentInfo,
   type UpdateStudentBody,
 } from "@lms/shared";
@@ -50,14 +51,14 @@ async function load(ctx: Ctx, tenantId: string, id: string): Promise<StudentList
 export async function studentList(
   ctx: Ctx,
   actor: Actor,
-  q: { search: string; includeArchived: boolean; page: number },
+  q: { search: string; filter: StudentFilter; page: number },
 ): Promise<{ students: StudentInfo[]; total: number; page: number; pageSize: number }> {
   const tenantId = requireTeacherTenant(actor);
   authorize(actor, "student", "read", { tenantId });
   const page = Math.max(1, q.page);
   const { rows, total } = await listStudents(ctx.env.DB, tenantId, {
     search: q.search.trim().slice(0, 100),
-    includeArchived: q.includeArchived,
+    filter: q.filter,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
