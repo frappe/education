@@ -194,11 +194,15 @@ class GradeBook(Document):
 		if not self.grading_scale:
 			frappe.throw(_("Grading Scale is mandatory"))
 
-		course = frappe.get_doc("Course", self.course)
-		if not course.subjects:
+		from education.education.doctype.course_enrollment.course_enrollment import (
+			get_enrolled_subject_names,
+		)
+
+		subjects = get_enrolled_subject_names(self.student, self.course, self.student_batch)
+		if not subjects:
 			frappe.throw(
-				_("Course {0} has no subjects. Add subjects before generating grades.").format(
-					frappe.bold(self.course)
+				_("No subjects found for Student {0} on Course {1}.").format(
+					frappe.bold(self.student), frappe.bold(self.course)
 				)
 			)
 
@@ -215,17 +219,17 @@ class GradeBook(Document):
 		self.set("assignment_components", [])
 		self.set("attendance_components", [])
 
-		for row in course.subjects:
+		for subject in subjects:
 			template_name = get_grade_template(
-				self.course, row.subject, self.academic_year, self.academic_term
+				self.course, subject, self.academic_year, self.academic_term
 			)
 			template = frappe.get_doc("Grade Template", template_name)
 
 			if template.weightage_type == "Assignment Type Weightage":
-				percentage, components = self._compute_assignment_percentage(row.subject, template)
+				percentage, components = self._compute_assignment_percentage(subject, template)
 				component_field = "assignment_components"
 			elif template.weightage_type == "Attendance Weightage":
-				percentage, components = self._compute_attendance_percentage(row.subject, template)
+				percentage, components = self._compute_attendance_percentage(subject, template)
 				component_field = "attendance_components"
 			else:
 				frappe.throw(
@@ -236,9 +240,9 @@ class GradeBook(Document):
 
 			percentage = flt(percentage, 6)
 			details = get_grade_details(self.grading_scale, percentage)
-			override = overrides.get(row.subject)
+			override = overrides.get(subject)
 			subject_row = {
-				"subject": row.subject,
+				"subject": subject,
 				"grade_template": template_name,
 				"computed_percentage": percentage,
 				"computed_grade": details.grade_code,

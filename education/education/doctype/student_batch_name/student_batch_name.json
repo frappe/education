@@ -15,7 +15,8 @@
   "column_break_advy",
   "company",
   "start_date",
-  "end_date"
+  "end_date",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -80,10 +81,78 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
- "links": [],
- "modified": "2026-09-16 22:15:30.069997",
+ "links": [
+  {
+   "group": "Admission",
+   "link_doctype": "Course Enrollment",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Admission",
+   "link_doctype": "Student Applicant",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Academics",
+   "link_doctype": "Subject Schedule",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Attendance",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Attendance",
+   "link_doctype": "Student Leave Application",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Plan",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Schedule Student Batch",
+   "link_fieldname": "student_batch",
+   "parent_doctype": "Fee Schedule"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fees",
+   "link_fieldname": "student_batch"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Student Log",
+   "link_fieldname": "student_batch"
+  }
+ ],
+ "modified": "2026-09-21 13:48:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Batch Name",

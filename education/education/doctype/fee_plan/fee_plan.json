@@ -6,10 +6,15 @@
  "engine": "InnoDB",
  "field_order": [
   "student",
+  "student_name",
   "fee_term",
+  "course_enrollment",
   "column_break_zqnf",
   "company",
   "fee_term_type",
+  "course",
+  "program",
+  "student_batch",
   "section_break_kyvt",
   "fee_plan_details",
   "section_break_ddni",
@@ -22,7 +27,8 @@
   "column_break_grie",
   "paid_amount",
   "section_break_iu9a",
-  "amended_from"
+  "amended_from",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -40,6 +46,12 @@
    "search_index": 1
   },
   {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
    "fieldname": "student",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -47,6 +59,50 @@
    "label": "Student",
    "options": "Student",
    "reqd": 1
+  },
+  {
+   "fetch_from": "student.student_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "course_enrollment",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Course Enrollment",
+   "options": "Course Enrollment",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "course_enrollment.course",
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Course",
+   "options": "Course",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course_enrollment.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Program",
+   "options": "Program",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course_enrollment.student_batch",
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Student Batch",
+   "options": "Student Batch Name",
+   "read_only": 1
   },
   {
    "fieldname": "fee_term",
@@ -143,10 +199,22 @@
   }
  ],
  "grid_page_length": 50,
+ "in_create": 1,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2026-06-03 14:20:39.906368",
+ "links": [
+  {
+   "group": "Admission",
+   "link_doctype": "Course Enrollment",
+   "link_fieldname": "fee_plan"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Sales Invoice",
+   "link_fieldname": "fee_plan"
+  }
+ ],
+ "modified": "2026-09-21 20:00:44.949693",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Plan",

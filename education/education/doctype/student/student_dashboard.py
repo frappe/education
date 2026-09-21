@@ -13,5 +13,9 @@ def get_data():
 				"label": _("Assessment"),
 				"items": ["Assessment Result", "Grade Book"],
 			},
+			{
+				"label": _("Enrollment"),
+				"items": ["Course Enrollment", "Subject Registration"],
+			},
 		],
 	}

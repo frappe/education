@@ -41,6 +41,14 @@ frappe.ui.form.on('Student Applicant', {
       }
     })
 
+    frm.set_query('student', function () {
+      return {
+        filters: {
+          enabled: 1,
+        },
+      }
+    })
+
     frm.trigger('fetch_register_courses')
     frm.trigger('toggle_email_mandatory')
     frm.trigger('setup_actions')
@@ -109,8 +117,7 @@ frappe.ui.form.on('Student Applicant', {
       frm.add_custom_button(
         __('Reject'),
         function () {
-          frm.set_value('application_status', 'Rejected')
-          frm.save_or_update()
+          frm.call('reject').then(() => frm.reload_doc())
         },
         'Actions'
       )
@@ -229,7 +236,69 @@ frappe.ui.form.on('Student Applicant', {
     if (!frm.doc.is_already_a_student) {
       frm.set_value('student', '')
       frm.refresh_field('student')
+      return
     }
+
+    frm.trigger('load_student_details')
+  },
+
+  student: function (frm) {
+    frm.trigger('load_student_details')
+  },
+
+  load_student_details: function (frm) {
+    if (!frm.doc.is_already_a_student || !frm.doc.student) return
+
+    frm.call('get_student_details').then((r) => {
+      const details = r.message
+      if (!details) return
+
+      const fields = [
+        'first_name',
+        'middle_name',
+        'last_name',
+        'email_address',
+        'image',
+        'date_of_birth',
+        'gender',
+        'blood_group',
+        'student_mobile_number',
+        'nationality',
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state',
+        'pincode',
+        'country',
+      ]
+      fields.forEach((field) => {
+        frm.set_value(field, details[field] || '')
+      })
+
+      frm.clear_table('guardians')
+      ;(details.guardians || []).forEach((row) => {
+        frm.add_child('guardians', {
+          guardian: row.guardian,
+          guardian_name: row.guardian_name,
+          relation: row.relation,
+        })
+      })
+      frm.refresh_field('guardians')
+
+      frm.clear_table('siblings')
+      ;(details.siblings || []).forEach((row) => {
+        frm.add_child('siblings', {
+          studying_in_same_institute: row.studying_in_same_institute,
+          full_name: row.full_name,
+          gender: row.gender,
+          student: row.student,
+          institution: row.institution,
+          program: row.program,
+          date_of_birth: row.date_of_birth,
+        })
+      })
+      frm.refresh_field('siblings')
+    })
   },
 
   toggle_email_mandatory: function (frm) {

@@ -10,11 +10,11 @@
   "academic_year",
   "academic_term",
   "start_date",
-  "max_number_of_admissions",
+  "end_date",
   "minimum_age",
   "column_break_tsxg",
   "admission_based_on",
-  "end_date",
+  "max_number_of_admissions",
   "course",
   "program",
   "registration_fee",
@@ -32,7 +32,8 @@
   "introduction",
   "published",
   "section_break_bnar",
-  "amended_from"
+  "amended_from",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -48,6 +49,12 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   },
   {
    "fieldname": "academic_year",
@@ -235,8 +242,19 @@
  "index_web_pages_for_search": 1,
  "is_published_field": "published",
  "is_submittable": 1,
- "links": [],
- "modified": "2026-09-17 21:28:02.785666",
+ "links": [
+  {
+   "group": "Admission",
+   "link_doctype": "Student Applicant",
+   "link_fieldname": "admission_register"
+  },
+  {
+   "group": "Admission",
+   "link_doctype": "Course Enrollment",
+   "link_fieldname": "admission_register"
+  }
+ ],
+ "modified": "2026-09-21 19:59:07.577983",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Admission Register",

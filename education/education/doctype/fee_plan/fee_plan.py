@@ -4,7 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_to_date, cint, flt, getdate
+from frappe.utils import add_to_date, cint, cstr, flt, get_link_to_form, getdate
 
 INSTALLMENT_TERM_TYPES = (
 	"Fixed Fees of Days",
@@ -14,8 +14,31 @@ INSTALLMENT_TERM_TYPES = (
 
 
 class FeePlan(Document):
+	def validate(self):
+		self.validate_course_enrollment()
+
 	def before_save(self):
 		self.update_totals()
+
+	def validate_course_enrollment(self):
+		if not self.course_enrollment:
+			frappe.throw(_("Fee Plan must be created from a Course Enrollment."))
+
+		existing = frappe.db.exists(
+			"Fee Plan",
+			{
+				"course_enrollment": self.course_enrollment,
+				"docstatus": ("!=", 2),
+				"name": ("!=", self.name or ""),
+			},
+		)
+		if existing:
+			frappe.throw(
+				_("Fee Plan {0} already exists for Course Enrollment {1}.").format(
+					get_link_to_form("Fee Plan", existing),
+					get_link_to_form("Course Enrollment", self.course_enrollment),
+				)
+			)
 
 	def update_totals(self):
 		if self.fee_plan_details:
@@ -39,17 +62,35 @@ class FeePlan(Document):
 		self.cancel_invoices()
 
 	def create_invoices(self):
+		self.flags.invoice_errors = []
+		if not self.fee_plan_details:
+			return
+
 		fee_term = frappe.get_doc("Fee Term", self.fee_term)
 		customer = frappe.db.get_value("Student", self.student, "customer")
 		if not customer:
-			frappe.throw(_("Student {0} does not have a linked Customer.").format(self.student))
+			self.flags.invoice_errors.append(
+				_("Student {0} does not have a linked Customer.").format(self.student)
+			)
+			return
 
 		for detail in self.fee_plan_details:
 			if detail.invoice:
 				continue
-			invoice = self.make_sales_invoice(fee_term, customer, detail)
-			detail.db_set("invoice", invoice.name)
-			detail.db_set("invoice_status", invoice.status)
+			frappe.db.savepoint("fee_plan_invoice")
+			try:
+				invoice = self.make_sales_invoice(fee_term, customer, detail)
+				detail.db_set("invoice", invoice.name)
+				detail.db_set("invoice_status", invoice.status)
+			except Exception as e:
+				frappe.db.rollback(save_point="fee_plan_invoice")
+				frappe.log_error(
+					title=_("Fee Plan invoice creation failed"),
+					message=frappe.get_traceback(),
+				)
+				self.flags.invoice_errors.append(
+					_("Installment {0}: {1}").format(detail.date, get_billing_error(e))
+				)
 
 	def make_sales_invoice(self, fee_term, customer, detail):
 		invoice = frappe.new_doc("Sales Invoice")
@@ -98,6 +139,26 @@ class FeePlan(Document):
 
 		self.db_set("paid_amount", total_paid)
 		self.db_set("outstanding_amount", total_outstanding)
+
+
+def get_billing_error(exc=None):
+	"""Return a concise error from frappe.throw messages, then the exception."""
+	messages = []
+	for entry in frappe.local.message_log or []:
+		if isinstance(entry, dict):
+			messages.append(cstr(entry.get("message")))
+		else:
+			try:
+				parsed = frappe.parse_json(entry)
+				messages.append(cstr(parsed.get("message") if isinstance(parsed, dict) else entry))
+			except Exception:
+				messages.append(cstr(entry))
+
+	frappe.clear_messages()
+	messages = [message for message in messages if message]
+	if messages:
+		return "\n".join(messages)
+	return cstr(exc) if exc else _("Unknown billing error")
 
 
 def get_installments(fee_term, total_amount, start_date):

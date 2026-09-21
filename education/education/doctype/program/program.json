@@ -132,6 +132,11 @@
  "links": [
   {
    "group": "Admission and Enrollments",
+   "link_doctype": "Course",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Admission and Enrollments",
    "link_doctype": "Admission Register",
    "link_fieldname": "program"
   },
@@ -143,6 +148,11 @@
   {
    "group": "Student Activity",
    "link_doctype": "Student Batch Name",
+   "link_fieldname": "program"
+  },
+  {
+   "group": "Student Activity",
+   "link_doctype": "Academic Plan",
    "link_fieldname": "program"
   },
   {
@@ -159,9 +169,14 @@
    "group": "Fee",
    "link_doctype": "Fee Schedule",
    "link_fieldname": "program"
+  },
+  {
+   "group": "Fee",
+   "link_doctype": "Fee Plan",
+   "link_fieldname": "program"
   }
  ],
- "modified": "2026-09-15 18:29:23.146914",
+ "modified": "2026-09-21 20:01:22.776998",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Program",

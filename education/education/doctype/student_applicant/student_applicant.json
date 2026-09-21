@@ -308,8 +308,7 @@
    "fieldname": "email_address",
    "fieldtype": "Data",
    "label": "Email Address",
-   "options": "Email",
-   "unique": 1
+   "options": "Email"
   },
   {
    "fetch_from": "admission_register.registration_fee_item",
@@ -381,7 +380,7 @@
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-09-17 21:26:41.877294",
+ "modified": "2026-09-21 20:01:50.636759",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",

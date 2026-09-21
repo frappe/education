@@ -39,6 +39,53 @@ frappe.ui.form.on('Course Enrollment', {
     })
 
     frm.trigger('fetch_allowed_courses')
+    frm.trigger('setup_billing_actions')
+    frm.trigger('setup_subject_registration_action')
+  },
+
+  setup_subject_registration_action: function (frm) {
+    if (frm.doc.docstatus !== 1) return
+
+    frm.add_custom_button(__('Subject Registration'), function () {
+      frappe
+        .call({
+          method:
+            'education.education.doctype.subject_registration.subject_registration.get_subject_registration',
+          args: { course_enrollment: frm.doc.name },
+        })
+        .then((r) => {
+          if (r.message) {
+            frappe.set_route('Form', 'Subject Registration', r.message)
+            return
+          }
+          frappe.new_doc('Subject Registration', {
+            course_enrollment: frm.doc.name,
+          })
+        })
+    })
+  },
+
+  setup_billing_actions: function (frm) {
+    if (frm.doc.docstatus !== 1) return
+
+    const retryable = ['Pending', 'Failed', 'Partially Invoiced']
+    if (!retryable.includes(frm.doc.billing_status) && !frm.doc.billing_error)
+      return
+
+    frm
+      .add_custom_button(__('Create / Retry Fee Plan'), function () {
+        frm.call('create_or_retry_fee_plan').then((r) => {
+          const result = r.message || {}
+          if (result.billing_status === 'Created') {
+            frappe.show_alert({
+              message: __('Fee Plan and invoices are up to date.'),
+              indicator: 'green',
+            })
+          }
+          frm.reload_doc()
+        })
+      })
+      .addClass('btn-primary')
   },
 
   course: function (frm) {

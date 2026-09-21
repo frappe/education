@@ -11,6 +11,9 @@ from frappe.utils import getdate, today
 from education.education.doctype.admission_register.admission_register import (
 	STATUS_ADMISSION_OPEN,
 )
+from education.education.doctype.student_batch_name.student_batch_name import (
+	validate_batch_capacity,
+)
 
 STUDENT_FIELDS = (
 	"first_name",
@@ -42,17 +45,16 @@ class StudentApplicant(Document):
 		self.set_title()
 		self.validate_dates()
 		self.validate_term()
+		self.populate_from_student()
 		self.validate_email_address()
 		self.validate_admission_register()
+		self.validate_student_batch()
 
 		if self.course_fee_amount and self.course_fee_amount <= 0:
 			frappe.throw(_("Course Fee Amount must be greater than 0."))
 
 		if not self.fee_term:
 			frappe.throw(_("Fee Term is required."))
-
-		if not self.student_batch:
-			frappe.throw(_("Student Batch is required."))
 
 	def set_title(self):
 		self.title = " ".join(
@@ -85,6 +87,126 @@ class StudentApplicant(Document):
 					"Email Address is mandatory as a user will be created for the student upon admission."
 				)
 			)
+
+		if not self.email_address:
+			return
+
+		email = self.email_address.strip().lower()
+		linked_student = self.student if self.is_already_a_student else None
+
+		student_with_email = frappe.db.sql(
+			"""
+			SELECT name FROM `tabStudent`
+			WHERE name != %s
+				AND (
+					lower(trim(ifnull(email_address, ''))) = %s
+					OR lower(trim(ifnull(student_email_id, ''))) = %s
+				)
+			LIMIT 1
+			""",
+			(linked_student or "", email, email),
+			as_dict=True,
+		)
+		if student_with_email:
+			frappe.throw(
+				_("Email Address {0} is already in use by Student {1}.").format(
+					frappe.bold(self.email_address), frappe.bold(student_with_email[0].name)
+				)
+			)
+
+		other_applicants = frappe.db.sql(
+			"""
+			SELECT name, student, application_status
+			FROM `tabStudent Applicant`
+			WHERE lower(trim(email_address)) = %s
+				AND name != %s
+			""",
+			(email, self.name or ""),
+			as_dict=True,
+		)
+		for other in other_applicants:
+			if other.application_status == "Rejected":
+				continue
+			if linked_student and other.student == linked_student:
+				continue
+			frappe.throw(
+				_("Email Address {0} is already in use by Student Applicant {1}.").format(
+					frappe.bold(self.email_address), frappe.bold(other.name)
+				)
+			)
+
+	def populate_from_student(self):
+		if not self.is_already_a_student or not self.student:
+			return
+
+		if not (
+			self.is_new()
+			or self.has_value_changed("student")
+			or (self.has_value_changed("is_already_a_student") and self.is_already_a_student)
+		):
+			return
+
+		self.set_student_details(frappe.get_doc("Student", self.student))
+
+	def set_student_details(self, student):
+		for field in STUDENT_FIELDS:
+			self.set(field, student.get(field))
+
+		self.set("guardians", [])
+		for row in student.guardians or []:
+			self.append(
+				"guardians",
+				{
+					"guardian": row.guardian,
+					"guardian_name": row.guardian_name,
+					"relation": row.relation,
+				},
+			)
+
+		self.set("siblings", [])
+		for row in student.siblings or []:
+			self.append(
+				"siblings",
+				{
+					"studying_in_same_institute": row.studying_in_same_institute,
+					"full_name": row.full_name,
+					"gender": row.gender,
+					"student": row.student,
+					"institution": row.institution,
+					"program": row.program,
+					"date_of_birth": row.date_of_birth,
+				},
+			)
+
+	@frappe.whitelist()
+	def get_student_details(self):
+		if not self.is_already_a_student or not self.student:
+			return {}
+
+		student = frappe.get_doc("Student", self.student)
+		return {
+			**{field: student.get(field) for field in STUDENT_FIELDS},
+			"guardians": [
+				{
+					"guardian": row.guardian,
+					"guardian_name": row.guardian_name,
+					"relation": row.relation,
+				}
+				for row in student.guardians or []
+			],
+			"siblings": [
+				{
+					"studying_in_same_institute": row.studying_in_same_institute,
+					"full_name": row.full_name,
+					"gender": row.gender,
+					"student": row.student,
+					"institution": row.institution,
+					"program": row.program,
+					"date_of_birth": row.date_of_birth,
+				}
+				for row in student.siblings or []
+			],
+		}
 
 	def validate_admission_register(self):
 		if not self.admission_register:
@@ -125,6 +247,35 @@ class StudentApplicant(Document):
 						self.course, self.admission_register
 					)
 				)
+
+	def validate_student_batch(self):
+		if not self.student_batch:
+			return
+
+		batch = frappe.db.get_value(
+			"Student Batch Name",
+			self.student_batch,
+			["course", "disabled"],
+			as_dict=True,
+		)
+		if not batch:
+			frappe.throw(
+				_("Student Batch {0} does not exist.").format(frappe.bold(self.student_batch))
+			)
+
+		if self.course and batch.course != self.course:
+			frappe.throw(
+				_("Batch {0} belongs to Course {1}, not to Course {2}.").format(
+					frappe.bold(self.student_batch),
+					frappe.bold(batch.course),
+					frappe.bold(self.course),
+				)
+			)
+
+		if batch.disabled:
+			frappe.throw(_("Batch {0} is disabled.").format(frappe.bold(self.student_batch)))
+
+		validate_batch_capacity(self.student_batch, exclude_applicant=self.name)
 
 	def get_register_courses(self):
 		return frappe.get_all(
@@ -175,6 +326,11 @@ class StudentApplicant(Document):
 		if self.application_status not in ("Applied", "Rejected"):
 			frappe.throw(_("Only applications with status Applied or Rejected can be approved."))
 
+		if not self.student_batch:
+			frappe.throw(_("Student Batch is required before the application can be approved."))
+
+		self.validate_student_batch()
+
 		if self.is_already_a_student:
 			if not self.student:
 				frappe.throw(_("Please select the Student record to update."))
@@ -194,6 +350,15 @@ class StudentApplicant(Document):
 			alert=True,
 		)
 		return student.name
+
+	@frappe.whitelist()
+	def reject(self):
+		"""Mark the application as Rejected without running full form validation."""
+		if self.application_status not in ("Applied", "Approved"):
+			frappe.throw(_("Only applications with status Applied or Approved can be rejected."))
+
+		self.db_set("application_status", "Rejected")
+		frappe.msgprint(_("Application has been rejected."), alert=True)
 
 	def update_student(self):
 		"""Update the existing Student record with the data in the application."""
@@ -229,6 +394,9 @@ class StudentApplicant(Document):
 
 		if not self.student:
 			frappe.throw(_("No Student is linked to this application. Please approve it first."))
+
+		if not self.student_batch:
+			frappe.throw(_("Student Batch is required before the student can be enrolled."))
 
 		try:
 			enrollment_name = self.create_course_enrollment().name

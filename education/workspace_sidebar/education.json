@@ -133,6 +133,17 @@
    "collapsible": 1,
    "indent": 0,
    "keep_closed": 0,
+   "label": "Subject Registration",
+   "link_to": "Subject Registration",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
    "label": "Student Log",
    "link_to": "Student Log",
    "link_type": "DocType",
