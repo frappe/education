@@ -79,7 +79,18 @@ const student_programs = createResource({
     response.forEach((program) => {
       programs.push({
         label: program.program,
-        onClick: () => (selectedProgram.value = program.program),
+        onClick: () => {
+          if (selectedProgram.value === program.program) return  
+          selectedProgram.value = program.program
+          grades.update({
+            filters: {
+              student: studentInfo.name,
+              program: selectedProgram.value,
+              docstatus: '1',
+            },
+          })
+          grades.reload()
+        },
       })
     })
     selectedProgram.value = programs[programs.length - 1].label
@@ -102,12 +113,25 @@ const grades = createListResource({
   filters: {
     student: studentInfo.name,
     program: currentProgram.program,
+    docstatus: '1',
     // student:"EDU-STU-2023-00005",
     // program:"Comp Science"
   },
   transform: () => {},
 
   onSuccess: (response) => {
+    tableData.value.rows = []
+    tableData.value.columns = [
+      {
+        label: 'Course',
+        key: 'course',
+      },
+      {
+        label: 'Batch',
+        key: 'batch',
+      },
+    ]
+
     let conductedExams = groupBy(response, (row) => row.assessment_group)
     let exams = Object.keys(conductedExams)
     updateColumns(exams)
