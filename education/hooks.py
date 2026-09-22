@@ -41,17 +41,18 @@ app_include_js = "education.bundle.js"
 # website
 update_website_context = []
 
-website_generators = ["Student Admission"]
+website_generators = ["Student Admission", "Admission Register"]
 
 website_route_rules = [
 	{"from_route": "/admissions", "to_route": "Student Admission"},
+	{"from_route": "/admission-registers", "to_route": "Admission Register"},
 	{"from_route": "/student-portal/<path:app_path>", "to_route": "student-portal"},
 ]
 
 treeviews = ["Assessment Group"]
 
 calendars = [
-	"Course Schedule",
+	"Subject Schedule",
 ]
 
 standard_portal_menu_items = [
@@ -59,6 +60,12 @@ standard_portal_menu_items = [
 		"title": "Admission",
 		"route": "/admissions",
 		"reference_doctype": "Student Admission",
+		"role": "Student",
+	},
+	{
+		"title": "Open Admissions",
+		"route": "/admission-registers",
+		"reference_doctype": "Admission Register",
 		"role": "Student",
 	},
 ]
@@ -80,36 +87,36 @@ global_search_doctypes = {
 		{"doctype": "Question", "index": 7},
 		{"doctype": "Fee Schedule", "index": 8},
 		{"doctype": "Fee Structure", "index": 9},
-		{"doctype": "Student Group", "index": 10},
+		{"doctype": "Student Batch Name", "index": 10},
 		{"doctype": "Student", "index": 11},
 		{"doctype": "Instructor", "index": 12},
 		{"doctype": "Course Activity", "index": 13},
 		{"doctype": "Quiz Activity", "index": 14},
 		{"doctype": "Course Enrollment", "index": 15},
-		{"doctype": "Program Enrollment", "index": 16},
+		{"doctype": "Subject Registration", "index": 16},
 		{"doctype": "Student Language", "index": 17},
-		{"doctype": "Student Applicant", "index": 18},
-		{"doctype": "Assessment Result", "index": 19},
-		{"doctype": "Assessment Plan", "index": 20},
+		{"doctype": "Student Applicant", "index": 17},
+		{"doctype": "Assessment Result", "index": 18},
+		{"doctype": "Assessment Plan", "index": 19},
 		{"doctype": "Grading Scale", "index": 21},
-		{"doctype": "Guardian", "index": 22},
-		{"doctype": "Student Leave Application", "index": 23},
-		{"doctype": "Student Log", "index": 24},
-		{"doctype": "Room", "index": 25},
-		{"doctype": "Course Schedule", "index": 26},
-		{"doctype": "Student Attendance", "index": 27},
-		{"doctype": "Announcement", "index": 28},
-		{"doctype": "Student Category", "index": 29},
-		{"doctype": "Assessment Group", "index": 30},
-		{"doctype": "Student Batch Name", "index": 31},
-		{"doctype": "Assessment Criteria", "index": 32},
-		{"doctype": "Academic Year", "index": 33},
-		{"doctype": "Academic Term", "index": 34},
-		{"doctype": "School House", "index": 35},
-		{"doctype": "Student Admission", "index": 36},
-		{"doctype": "Fee Category", "index": 37},
-		{"doctype": "Assessment Code", "index": 38},
-		{"doctype": "Discussion", "index": 39},
+		{"doctype": "Guardian", "index": 20},
+		{"doctype": "Student Leave Application", "index": 21},
+		{"doctype": "Student Log", "index": 22},
+		{"doctype": "Room", "index": 23},
+		{"doctype": "Subject Schedule", "index": 24},
+		{"doctype": "Student Attendance", "index": 25},
+		{"doctype": "Announcement", "index": 26},
+		{"doctype": "Student Category", "index": 27},
+		{"doctype": "Assessment Group", "index": 28},
+		{"doctype": "Academic Year", "index": 29},
+		{"doctype": "Academic Term", "index": 30},
+		{"doctype": "School House", "index": 31},
+		{"doctype": "Student Admission", "index": 32},
+		{"doctype": "Fee Category", "index": 33},
+		{"doctype": "Assessment Code", "index": 34},
+		{"doctype": "Discussion", "index": 35},
+		{"doctype": "Grade Template", "index": 36},
+		{"doctype": "Grade Book", "index": 37},
 	]
 }
 
@@ -196,34 +203,25 @@ after_install = "education.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Payment Entry": {
+		"on_submit": "education.overrides.payment_entry.on_payment_entry_submit",
+		"on_cancel": "education.overrides.payment_entry.on_payment_entry_cancel",
+		"on_update_after_submit": "education.overrides.payment_entry.on_payment_entry_update_after_submit",
+	},
+	"Unreconcile Payment": {
+		"on_submit": "education.overrides.payment_entry.on_unreconcile_payment",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"education.tasks.all"
-# 	],
-# 	"daily": [
-# 		"education.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"education.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"education.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"education.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"education.education.doctype.admission_register.admission_register.process_admission_register_schedules",
+	],
+}
 
 # Testing
 # -------

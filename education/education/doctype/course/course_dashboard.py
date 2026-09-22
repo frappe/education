@@ -9,10 +9,13 @@ def get_data():
 		"fieldname": "course",
 		"transactions": [
 			{
-				"label": _("Program and Course"),
-				"items": ["Program", "Course Enrollment", "Course Schedule"],
+				"label": _("Course"),
+				"items": ["Course Enrollment", "Subject Registration", "Subject Schedule"],
 			},
-			{"label": _("Student"), "items": ["Student Group"]},
-			{"label": _("Assessment"), "items": ["Assessment Plan", "Assessment Result"]},
+			{"label": _("Student"), "items": ["Student Batch Name"]},
+			{
+				"label": _("Assessment"),
+				"items": ["Assessment Plan", "Assessment Result", "Grade Book"],
+			},
 		],
 	}

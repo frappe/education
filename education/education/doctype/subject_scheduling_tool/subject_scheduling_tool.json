@@ -1,0 +1,136 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "creation": "2026-08-12 20:54:23.519278",
+ "doctype": "DocType",
+ "document_type": "Setup",
+ "engine": "InnoDB",
+ "field_order": [
+  "student_batch",
+  "course",
+  "program",
+  "column_break_3",
+  "batch_start_date",
+  "batch_end_date",
+  "section_break_dates",
+  "from_date",
+  "column_break_dates",
+  "to_date",
+  "reschedule",
+  "class_schedule_color",
+  "section_break_slots",
+  "slots"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student Batch",
+   "options": "Student Batch Name",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student_batch.course",
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Course",
+   "options": "Course",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student_batch.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "student_batch.start_date",
+   "fieldname": "batch_start_date",
+   "fieldtype": "Date",
+   "label": "Batch Start Date",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "student_batch.end_date",
+   "fieldname": "batch_end_date",
+   "fieldtype": "Date",
+   "label": "Batch End Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_dates",
+   "fieldtype": "Section Break",
+   "label": "Date Range"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "reschedule",
+   "fieldtype": "Check",
+   "label": "Reschedule"
+  },
+  {
+   "fieldname": "class_schedule_color",
+   "fieldtype": "Select",
+   "label": "Class Schedule Color",
+   "options": "blue\ngreen\nred\norange\nyellow\nteal\nviolet\ncyan\namber\npink\npurple"
+  },
+  {
+   "fieldname": "section_break_slots",
+   "fieldtype": "Section Break",
+   "label": "Weekly Slots"
+  },
+  {
+   "fieldname": "slots",
+   "fieldtype": "Table",
+   "label": "Slots",
+   "options": "Subject Scheduling Tool Slot",
+   "reqd": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-13 22:34:34.794530",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Subject Scheduling Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Academics User",
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

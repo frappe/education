@@ -44,10 +44,11 @@ def get_assessment_data(args=None):
 			SELECT
 				ap.name as assessment_plan,
 				ap.assessment_name,
-				ap.student_group,
+				ap.student_batch,
 				ap.schedule_date,
-				(select count(*) from `tabStudent Group Student` sgs where sgs.parent=ap.student_group)
-					as student_group_strength
+				(select count(*) from `tabCourse Enrollment` ce
+					where ce.student_batch=ap.student_batch and ce.docstatus=1)
+					as batch_strength
 			FROM
 				`tabAssessment Plan` ap
 			WHERE
@@ -81,14 +82,14 @@ def get_assessment_data(args=None):
 
 		# remaining students whose marks not entered
 		remaining_students = (
-			cint(d.student_group_strength)
+			cint(d.batch_strength)
 			- cint(assessment_plan_details.saved)
 			- cint(assessment_plan_details.submitted)
 		)
 		assessment_plan_details.update({"remaining": remaining_students})
 		d.update(assessment_plan_details)
 
-		chart_data[0] += cint(d.student_group_strength)
+		chart_data[0] += cint(d.batch_strength)
 		chart_data[1] += assessment_plan_details.saved
 		chart_data[2] += assessment_plan_details.submitted
 		chart_data[3] += assessment_plan_details.remaining
@@ -163,14 +164,14 @@ def get_column():
 			"width": 100,
 		},
 		{
-			"fieldname": "student_group",
-			"label": _("Student Group"),
+			"fieldname": "student_batch",
+			"label": _("Student Batch"),
 			"fieldtype": "Link",
-			"options": "Student Group",
+			"options": "Student Batch Name",
 			"width": 200,
 		},
 		{
-			"fieldname": "student_group_strength",
+			"fieldname": "batch_strength",
 			"label": _("Total Student"),
 			"fieldtype": "Data",
 			"options": "",

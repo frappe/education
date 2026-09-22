@@ -2,13 +2,15 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "field:academic_year_name",
- "creation": "2015-09-07 12:49:51.303026",
+ "creation": "2026-08-12 20:54:23.644919",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "academic_year_name",
   "year_start_date",
   "year_end_date",
+  "column_break_rdav",
+  "company",
   "connections_tab"
  ],
  "fields": [
@@ -18,6 +20,15 @@
    "label": "Academic Year Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   },
   {
    "allow_in_quick_entry": 1,
@@ -40,6 +51,10 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "column_break_rdav",
+   "fieldtype": "Column Break"
   }
  ],
  "links": [
@@ -55,22 +70,12 @@
   },
   {
    "group": "Student",
-   "link_doctype": "Student Group",
-   "link_fieldname": "academic_year"
-  },
-  {
-   "group": "Student",
    "link_doctype": "Student Log",
    "link_fieldname": "academic_year"
   },
   {
    "group": "Academic Term and Program",
    "link_doctype": "Academic Term",
-   "link_fieldname": "academic_year"
-  },
-  {
-   "group": "Academic Term and Program",
-   "link_doctype": "Program Enrollment",
    "link_fieldname": "academic_year"
   },
   {
@@ -84,6 +89,11 @@
    "link_fieldname": "academic_year"
   },
   {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "academic_year"
+  },
+  {
    "group": "Fee",
    "link_doctype": "Fee Schedule",
    "link_fieldname": "academic_year"
@@ -94,7 +104,7 @@
    "link_fieldname": "academic_year"
   }
  ],
- "modified": "2024-01-25 11:14:11.648233",
+ "modified": "2026-08-26 12:51:09.113123",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Academic Year",
@@ -115,6 +125,7 @@
   }
  ],
  "quick_entry": 1,
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

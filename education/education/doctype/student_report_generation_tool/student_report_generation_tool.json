@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_bulk_edit": 1,
  "creation": "2018-01-15 15:36:32.830069",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -131,7 +132,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-12-07 17:53:40.391739",
+ "modified": "2026-08-13 02:54:16.563364",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Report Generation Tool",
@@ -145,7 +146,7 @@
   }
  ],
  "quick_entry": 1,
- "restrict_to_domain": "",
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

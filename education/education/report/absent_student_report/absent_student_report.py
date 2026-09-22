@@ -32,13 +32,11 @@ def execute(filters=None):
 
 	absent_students = get_absent_students(date)
 	leave_applicants = get_leave_applications(date)
-	if absent_students:
-		student_list = [d["student"] for d in absent_students]
 
 	data = []
 	for student in absent_students:
 		if not student.student in leave_applicants:
-			row = [student.student, student.student_name, student.student_group]
+			row = [student.student, student.student_name, student.student_batch]
 			stud_details = frappe.db.get_value(
 				"Student",
 				student.student,
@@ -65,7 +63,7 @@ def get_columns(filters):
 	columns = [
 		_("Student") + ":Link/Student:90",
 		_("Student Name") + "::150",
-		_("Student Group") + "::180",
+		_("Student Batch") + "::180",
 		_("Student Email Address") + "::180",
 		_("Student Mobile No.") + "::150",
 	]
@@ -75,12 +73,12 @@ def get_columns(filters):
 def get_absent_students(date):
 	absent_students = frappe.db.sql(
 		"""
-		SELECT student, student_name, student_group
+		SELECT student, student_name, student_batch
 		FROM `tabStudent Attendance`
 		WHERE
 			status='Absent' and docstatus=1 and date = %s
 		ORDER BY
-			student_group, student_name""",
+			student_batch, student_name""",
 		date,
 		as_dict=1,
 	)
@@ -104,30 +102,3 @@ def get_leave_applications(date):
 		leave_applicants.append(student[0])
 
 	return leave_applicants
-
-
-def get_transportation_details(date, student_list):
-	academic_year = frappe.get_all(
-		"Academic Year",
-		filters=[["year_start_date", "<=", date], ["year_end_date", ">=", date]],
-	)
-	if academic_year:
-		academic_year = academic_year[0].name
-	elif frappe.defaults.get_defaults().academic_year:
-		academic_year = frappe.defaults.get_defaults().academic_year
-	else:
-		return {}
-
-	transportation_details = frappe.get_all(
-		"Program Enrollment",
-		fields=["student", "mode_of_transportation", "vehicle_no"],
-		filters={
-			"student": ("in", student_list),
-			"academic_year": academic_year,
-			"docstatus": ("not in", ["2"]),
-		},
-	)
-	transportation_map = {}
-	for d in transportation_details:
-		transportation_map[d.student] = [d.mode_of_transportation, d.vehicle_no]
-	return transportation_map

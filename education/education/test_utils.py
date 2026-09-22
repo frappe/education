@@ -1,6 +1,5 @@
 import frappe
 from education.education.doctype.fee_schedule.fee_schedule import get_fee_structure
-from education.education.doctype.student_group.student_group import get_students
 from erpnext.setup.utils import enable_all_roles_and_domains
 from frappe.utils import now_datetime, add_years, nowdate
 
@@ -8,8 +7,8 @@ from frappe.utils import now_datetime, add_years, nowdate
 DEFAULT_PROGRAM_NAME = "Class 1"
 DEFAULT_ACADEMIC_YEAR = "2023-2024"
 DEFAULT_ACADEMIC_TERM = "2023-2024 (Term 1)"
-DEFAULT_STUDENT_GROUP = "Test Student Group"
-DEFAULT_GROUP_BASED_ON = "Batch"
+DEFAULT_STUDENT_BATCH = "Test Batch"
+DEFAULT_COURSE = "Test Course"
 DEFAULT_FEES_CATEGORY = "Tuition Fee"
 DEFAULT_STUDENT_EMAIL_ID = "test@example.com"
 
@@ -63,13 +62,17 @@ def make_holiday_list(holiday_list_name="Test Holiday List"):
 
 
 def create_academic_year(
-	academic_year_name=DEFAULT_ACADEMIC_YEAR, year_start_date=None, year_end_date=None
+	academic_year_name=DEFAULT_ACADEMIC_YEAR,
+	year_start_date=None,
+	year_end_date=None,
+	company="_Test Company",
 ):
 	if frappe.db.exists("Academic Year", {"academic_year_name": DEFAULT_ACADEMIC_YEAR}):
 		return
 
 	academic_year = frappe.new_doc("Academic Year")
 	academic_year.academic_year_name = academic_year_name
+	academic_year.company = company
 	academic_year.year_start_date = year_start_date or "2023-04-01"
 	academic_year.year_end_date = year_end_date or "2024-03-31"
 	academic_year.save()
@@ -83,6 +86,7 @@ def create_academic_term(
 
 	academic_term = frappe.new_doc("Academic Term")
 	academic_term.academic_year = academic_year
+	academic_term.company = frappe.db.get_value("Academic Year", academic_year, "company")
 	academic_term.term_name = term_name
 	academic_term.term_start_date = term_start_date
 	academic_term.term_end_date = term_end_date
@@ -148,49 +152,23 @@ def create_student(
 	return student
 
 
-def create_program_enrollment(
-	student_name,
-	program=DEFAULT_PROGRAM_NAME,
-	academic_year=DEFAULT_ACADEMIC_YEAR,
-	academic_term=DEFAULT_ACADEMIC_TERM,
-	enrollment_date="2023-04-01",
-	submit=False,
+def create_student_batch(
+	batch_name=DEFAULT_STUDENT_BATCH,
+	course=DEFAULT_COURSE,
+	start_date="2023-04-01",
+	end_date="2024-03-31",
 ):
-	program_enrollment = frappe.new_doc("Program Enrollment")
-	program_enrollment.student = student_name
-	program_enrollment.program = program
-	program_enrollment.academic_year = academic_year
-	program_enrollment.academic_term = academic_term
-	program_enrollment.enrollment_date = enrollment_date
-	program_enrollment.save()
-	if submit:
-		program_enrollment.submit()
-	return program_enrollment
+	if frappe.db.exists("Student Batch Name", batch_name):
+		return frappe.get_doc("Student Batch Name", batch_name)
 
+	student_batch = frappe.new_doc("Student Batch Name")
+	student_batch.batch_name = batch_name
+	student_batch.course = course
+	student_batch.start_date = start_date
+	student_batch.end_date = end_date
+	student_batch.save()
 
-def create_student_group(
-	student_group_name=DEFAULT_STUDENT_GROUP,
-	academic_year=DEFAULT_ACADEMIC_YEAR,
-	academic_term=DEFAULT_ACADEMIC_TERM,
-	group_based_on=DEFAULT_GROUP_BASED_ON,
-	program=DEFAULT_PROGRAM_NAME,
-):
-	if frappe.db.exists("Student Group", {"student_group_name": student_group_name}):
-		return frappe.get_doc("Student Group", {"student_group_name": student_group_name})
-	student_group = frappe.new_doc("Student Group")
-	student_group.student_group_name = student_group_name
-	student_group.academic_year = academic_year
-	student_group.academic_term = academic_term
-	student_group.group_based_on = group_based_on
-	student_group.program = program
-
-	students_in_group = get_students(academic_year, group_based_on, academic_term, program)
-
-	for student in students_in_group:
-		student_group.append("students", {"student": student.get("student")})
-	student_group.save()
-
-	return student_group
+	return student_batch
 
 
 def create_fee_schedule(
@@ -205,23 +183,51 @@ def create_fee_schedule(
 	fee_schedule = get_fee_structure(fee_structure_name)
 	fee_schedule.due_date = due_date
 
-	student_groups = frappe.db.get_list(
-		"Student Group",
-		{
-			"academic_year": DEFAULT_ACADEMIC_YEAR,
-			"academic_term": DEFAULT_ACADEMIC_TERM,
-			"student_group_name": DEFAULT_STUDENT_GROUP,
-		},
-		"name",
+	student_batches = frappe.db.get_list(
+		"Student Batch Name", {"name": DEFAULT_STUDENT_BATCH}, "name"
 	)
-	for group in student_groups:
-		fee_schedule.append("student_groups", {"student_group": group.get("name")})
+	for batch in student_batches:
+		fee_schedule.append("student_batches", {"student_batch": batch.get("name")})
 
 	fee_schedule.save()
 	if submit:
 		fee_schedule.submit()
 
 	return fee_schedule
+
+
+def create_faculty(first_name="Test", last_name="Faculty", email=None):
+	faculty_name = " ".join(filter(None, [first_name, last_name]))
+	existing = frappe.db.exists("Faculty", {"faculty_name": faculty_name})
+	if existing:
+		return frappe.get_doc("Faculty", existing)
+
+	frappe.db.set_single_value("Education Settings", "user_creation_skip", 1)
+	faculty = frappe.new_doc("Faculty")
+	faculty.first_name = first_name
+	faculty.last_name = last_name
+	faculty.naming_series = "EDU-FCT-.YYYY.-"
+	faculty.email_address = (
+		email or f"{first_name.lower()}.{last_name.lower().replace(' ', '')}@example.com"
+	)
+	faculty.insert(ignore_mandatory=True)
+	return faculty
+
+
+def create_subject(subject_name="Test Subject", course=DEFAULT_COURSE):
+	if frappe.db.exists("Subject", subject_name):
+		return frappe.get_doc("Subject", subject_name)
+
+	subject = frappe.new_doc("Subject")
+	subject.subject_name = subject_name
+	subject.abbreviation = (
+		"".join(part[0] for part in subject_name.split() if part).upper() or "SUB"
+	)
+	subject.type = "Theory"
+	subject.subject_type = "Compulsory"
+	subject.course = course
+	subject.save()
+	return subject
 
 
 def create_instructor(instructor_name="Test Instructor"):
@@ -249,11 +255,33 @@ def create_grading_scale(grading_scale_name="_Test Grading Scale"):
 	if frappe.db.exists("Grading Scale", grading_scale_name):
 		return
 
+	company = frappe.db.get_value(
+		"Company", {"company_name": "_Test Company"}, "name"
+	) or frappe.db.get_value("Company", {}, "name")
+
 	grading_scale = frappe.new_doc("Grading Scale")
 	grading_scale.grading_scale_name = grading_scale_name
-	grades = {"A": 80, "B": 70, "C": 60, "D": 50, "F": 0}
-	for grade, threshold in grades.items():
-		grading_scale.append("intervals", {"grade_code": grade, "threshold": threshold})
+	if company:
+		grading_scale.company = company
+	grades = {
+		"A": (80, 100, 4.0, 1, 1),
+		"B": (70, 79, 3.0, 1, 1),
+		"C": (60, 69, 2.0, 1, 1),
+		"D": (50, 59, 1.0, 1, 1),
+		"F": (0, 49, 0.0, 1, 0),
+	}
+	for grade, (minimum, maximum, gpa, include_gpa, earn_credits) in grades.items():
+		grading_scale.append(
+			"intervals",
+			{
+				"grade_code": grade,
+				"minimum_percentage": minimum,
+				"maximum_percentage": maximum,
+				"gpa": gpa,
+				"include_gpa": include_gpa,
+				"earn_credits": earn_credits,
+			},
+		)
 
 	grading_scale.save()
 	grading_scale.submit()

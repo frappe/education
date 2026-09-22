@@ -5,6 +5,10 @@
 import frappe
 from frappe.model.document import Document
 
+from education.education.doctype.student_batch_name.student_batch_name import (
+	get_batch_students,
+)
+
 
 class StudentAttendanceTool(Document):
 	pass
@@ -12,49 +16,35 @@ class StudentAttendanceTool(Document):
 
 @frappe.whitelist()
 def get_student_attendance_records(
-	based_on, date=None, student_group=None, course_schedule=None
+	based_on, date=None, student_batch=None, subject_schedule=None
 ):
-	student_list = []
 	student_attendance_list = []
 
-	if based_on == "Course Schedule":
-		student_group = frappe.db.get_value(
-			"Course Schedule", course_schedule, "student_group"
+	if based_on == "Subject Schedule":
+		student_batch = frappe.db.get_value(
+			"Subject Schedule", subject_schedule, "student_batch"
 		)
-		if student_group:
-			student_list = frappe.get_all(
-				"Student Group Student",
-				fields=["student", "student_name", "group_roll_number"],
-				filters={"parent": student_group, "active": 1},
-				order_by="group_roll_number",
-			)
 
-	if not student_list:
-		student_list = frappe.get_all(
-			"Student Group Student",
-			fields=["student", "student_name", "group_roll_number"],
-			filters={"parent": student_group, "active": 1},
-			order_by="group_roll_number",
-		)
+	student_list = get_batch_students(student_batch) if student_batch else []
 
 	StudentAttendance = frappe.qb.DocType("Student Attendance")
 
-	if course_schedule:
+	if subject_schedule:
 		student_attendance_list = (
 			frappe.qb.from_(StudentAttendance)
 			.select(StudentAttendance.student, StudentAttendance.status)
-			.where((StudentAttendance.course_schedule == course_schedule))
+			.where((StudentAttendance.subject_schedule == subject_schedule))
 		).run(as_dict=True)
 	else:
 		student_attendance_list = (
 			frappe.qb.from_(StudentAttendance)
 			.select(StudentAttendance.student, StudentAttendance.status)
 			.where(
-				(StudentAttendance.student_group == student_group)
+				(StudentAttendance.student_batch == student_batch)
 				& (StudentAttendance.date == date)
 				& (
-					(StudentAttendance.course_schedule == "")
-					| (StudentAttendance.course_schedule.isnull())
+					(StudentAttendance.subject_schedule == "")
+					| (StudentAttendance.subject_schedule.isnull())
 				)
 			)
 		).run(as_dict=True)

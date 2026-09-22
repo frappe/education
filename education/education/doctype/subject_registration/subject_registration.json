@@ -1,0 +1,267 @@
+{
+ "actions": [],
+ "autoname": "format:EDU-SR-{YYYY}-{#####}",
+ "creation": "2026-09-21 14:45:12.456789",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "course_enrollment",
+  "student",
+  "student_name",
+  "student_batch",
+  "column_break_main",
+  "company",
+  "course",
+  "program",
+  "academic_term",
+  "section_break_selection",
+  "subject_selection",
+  "minimum_unit_load",
+  "maximum_unit_load",
+  "column_break_load",
+  "status",
+  "total_credits",
+  "section_break_compulsory",
+  "compulsory_subjects",
+  "section_break_elective",
+  "elective_subjects",
+  "amended_from",
+  "connections_tab"
+ ],
+ "fields": [
+  {
+   "fieldname": "course_enrollment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Course Enrollment",
+   "options": "Course Enrollment",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "course_enrollment.student",
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Student",
+   "options": "Student",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "course_enrollment.student_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course_enrollment.student_batch",
+   "fieldname": "student_batch",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Student Batch",
+   "options": "Student Batch Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "course_enrollment.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course_enrollment.course",
+   "fieldname": "course",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Course",
+   "options": "Course",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "course_enrollment.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Program",
+   "options": "Program",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course_enrollment.academic_term",
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_selection",
+   "fieldtype": "Section Break",
+   "label": "Subject Selection"
+  },
+  {
+   "fetch_from": "course.subject_selection",
+   "fieldname": "subject_selection",
+   "fieldtype": "Select",
+   "label": "Subject Selection",
+   "options": "Regular\nCredit Based\nSubject Based",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course.minimum_unit_load",
+   "fieldname": "minimum_unit_load",
+   "fieldtype": "Float",
+   "label": "Minimum Unit Load",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "course.maximum_unit_load",
+   "fieldname": "maximum_unit_load",
+   "fieldtype": "Float",
+   "label": "Maximum Unit Load",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_load",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nSubmitted\nCancelled",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_credits",
+   "fieldtype": "Float",
+   "label": "Total Credits",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_compulsory",
+   "fieldtype": "Section Break",
+   "label": "Compulsory Subjects"
+  },
+  {
+   "fieldname": "compulsory_subjects",
+   "fieldtype": "Table",
+   "label": "Compulsory Subjects",
+   "options": "Subject Registration Subject",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_elective",
+   "fieldtype": "Section Break",
+   "label": "Elective Subjects"
+  },
+  {
+   "fieldname": "elective_subjects",
+   "fieldtype": "Table",
+   "label": "Elective Subjects",
+   "options": "Subject Registration Subject"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Subject Registration",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-09-21 19:59:30.866672",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Subject Registration",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Instructor",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "student,student_name,course",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Green",
+   "title": "Submitted"
+  },
+  {
+   "color": "Red",
+   "title": "Cancelled"
+  }
+ ],
+ "title_field": "student_name",
+ "track_changes": 1
+}

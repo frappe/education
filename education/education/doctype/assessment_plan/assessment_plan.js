@@ -10,23 +10,31 @@ frappe.ui.form.on('Assessment Plan', {
         },
       }
     })
-    frm.set_query('grading_scale', function () {
+    frm.set_query('subject', function () {
       return {
         filters: {
-          docstatus: 1,
+          course: frm.doc.course,
         },
       }
     })
+    set_academic_queries(frm)
+    set_default_academic_year(frm)
   },
 
   refresh: function (frm) {
     if (frm.doc.docstatus == 1) {
+      frm.add_custom_button(__('Statistics'), function () {
+        frappe.set_route('query-report', 'Assessment Statistics', {
+          assessment_plan: frm.doc.name,
+        })
+      })
+
       frm.add_custom_button(
         __('Assessment Result Tool'),
         function () {
           frappe.route_options = {
             assessment_plan: frm.doc.name,
-            student_group: frm.doc.student_group,
+            student_batch: frm.doc.student_batch,
           }
           frappe.set_route('Form', 'Assessment Result Tool')
         },
@@ -34,53 +42,55 @@ frappe.ui.form.on('Assessment Plan', {
       )
     }
 
-    frm.set_query('course', function () {
-      return {
-        query:
-          'education.education.doctype.program_enrollment.program_enrollment.get_program_courses',
-        filters: {
-          program: frm.doc.program,
-        },
-      }
-    })
+    set_academic_queries(frm)
+    set_default_academic_year(frm)
+  },
 
-    frm.set_query('academic_term', function () {
-      return {
-        filters: {
-          academic_year: frm.doc.academic_year,
-        },
-      }
-    })
+  company: function (frm) {
+    set_academic_queries(frm)
+  },
+
+  academic_year: function (frm) {
+    if (frm.doc.academic_term) {
+      frm.set_value('academic_term', '')
+    }
+    set_academic_queries(frm)
   },
 
   course: function (frm) {
-    if (frm.doc.course && frm.doc.maximum_assessment_score) {
-      frappe.call({
-        method: 'education.education.api.get_assessment_criteria',
-        args: {
-          course: frm.doc.course,
-        },
-        callback: function (r) {
-          if (r.message) {
-            frm.doc.assessment_criteria = []
-            $.each(r.message, function (i, d) {
-              var row = frappe.model.add_child(
-                frm.doc,
-                'Assessment Plan Criteria',
-                'assessment_criteria'
-              )
-              row.assessment_criteria = d.assessment_criteria
-              row.maximum_score =
-                (d.weightage / 100) * frm.doc.maximum_assessment_score
-            })
-          }
-          refresh_field('assessment_criteria')
-        },
-      })
+    if (frm.doc.subject) {
+      frm.set_value('subject', '')
     }
   },
-
-  maximum_assessment_score: function (frm) {
-    frm.trigger('course')
-  },
 })
+
+function set_default_academic_year(frm) {
+  if (!frm.is_new() || frm.doc.academic_year) {
+    return
+  }
+  const year = frappe.defaults.get_user_default('academic_year')
+  if (year) {
+    frm.set_value('academic_year', year)
+  }
+}
+
+function set_academic_queries(frm) {
+  frm.set_query('academic_year', function () {
+    const filters = {}
+    if (frm.doc.company) {
+      filters.company = frm.doc.company
+    }
+    return { filters }
+  })
+
+  frm.set_query('academic_term', function () {
+    const filters = {}
+    if (frm.doc.academic_year) {
+      filters.academic_year = frm.doc.academic_year
+    }
+    if (frm.doc.company) {
+      filters.company = frm.doc.company
+    }
+    return { filters }
+  })
+}

@@ -28,6 +28,7 @@ def preview_report_card(doc):
 	courses = values.get("courses")
 	assessment_groups = get_child_assessment_groups(doc.assessment_group)
 	letterhead = get_letter_head(doc, not doc.add_letterhead)
+	grade_books = get_grade_books(doc)
 
 	# get the attendance of the student for that peroid of time.
 	doc.attendance = get_attendance_count(
@@ -39,6 +40,7 @@ def preview_report_card(doc):
 		{
 			"doc": doc,
 			"assessment_result": values.get("assessment_result"),
+			"grade_books": grade_books,
 			"courses": courses,
 			"assessment_groups": assessment_groups,
 			"letterhead": letterhead and letterhead.get("content", None),
@@ -85,3 +87,42 @@ def get_attendance_count(student, academic_year, academic_term=None):
 		return attendance
 	else:
 		frappe.throw(_("Please enter the Academic Year and set the Start and End date."))
+
+
+def get_grade_books(doc):
+	filters = {
+		"student": doc.students[0],
+		"academic_year": doc.academic_year,
+		"status": "Computed",
+	}
+	if doc.academic_term:
+		filters["academic_term"] = doc.academic_term
+	if doc.program:
+		filters["program"] = doc.program
+	if doc.student_batch:
+		filters["student_batch"] = doc.student_batch
+
+	books = frappe.get_all(
+		"Grade Book",
+		filters=filters,
+		fields=[
+			"name",
+			"course",
+			"overall_percentage",
+			"overall_grade",
+		],
+		order_by="course",
+	)
+	for book in books:
+		book.subjects = frappe.get_all(
+			"Grade Book Subject",
+			{"parent": book.name, "parenttype": "Grade Book"},
+			[
+				"subject",
+				"percentage",
+				"grade",
+				"is_overridden",
+			],
+			order_by="idx",
+		)
+	return books

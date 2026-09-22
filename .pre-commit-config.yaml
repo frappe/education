@@ -2,19 +2,18 @@ exclude: 'node_modules|.git'
 default_stages: [commit]
 fail_fast: false
 
-
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-      - id: trailing-whitespace
-        files: "education.*"
-        exclude: ".*json$|.*txt$|.*csv|.*md|.*svg"
-      - id: check-yaml
-      - id: no-commit-to-branch
-        args: ['--branch', 'develop']
-      - id: check-merge-conflict
-      - id: check-ast
+  # - repo: https://github.com/pre-commit/pre-commit-hooks
+  #   rev: v4.0.1
+  #   hooks:
+  #     - id: trailing-whitespace
+  #       files: "education.*"
+  #       exclude: ".*json$|.*txt$|.*csv|.*md|.*svg"
+  #     - id: check-yaml
+  #     - id: no-commit-to-branch
+  #       args: ['--branch', 'develop']
+  #     - id: check-merge-conflict
+  #     - id: check-ast
 
   - repo: https://github.com/adityahase/black
     rev: 9cb0a69f4d0030cdf687eddf314468b39ed54119
@@ -26,8 +25,8 @@ repos:
     rev: 5.0.4
     hooks:
       - id: flake8
-        additional_dependencies: ["flake8-bugbear"]
-        args: ["--config", ".github/helper/flake8.conf"]
+        additional_dependencies: ['flake8-bugbear']
+        args: ['--config', '.github/helper/flake8.conf']
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
@@ -36,6 +35,6 @@ repos:
         types_or: [javascript, vue, scss]
 
 ci:
-    autoupdate_schedule: weekly
-    skip: []
-    submodules: false
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

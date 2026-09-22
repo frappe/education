@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2017-07-18 15:21:21.527136",
+ "creation": "2026-08-12 20:54:24.863567",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -19,7 +19,7 @@
   "academic_term",
   "section_break_10",
   "currency",
-  "student_groups",
+  "student_batches",
   "section_break_14",
   "components",
   "section_break_16",
@@ -129,9 +129,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "student_groups",
+   "fieldname": "student_batches",
    "fieldtype": "Table",
-   "options": "Fee Schedule Student Group",
+   "label": "Student Batches",
+   "options": "Fee Schedule Student Batch",
    "reqd": 1
   },
   {
@@ -281,7 +282,7 @@
    "link_fieldname": "fee_schedule"
   }
  ],
- "modified": "2024-07-10 00:17:14.407591",
+ "modified": "2026-08-13 02:49:22.577501",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Schedule",
@@ -330,6 +331,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [

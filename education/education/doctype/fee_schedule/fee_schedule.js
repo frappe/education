@@ -44,12 +44,10 @@ frappe.ui.form.on('Fee Schedule', {
       }
     })
 
-    frm.set_query('student_group', 'student_groups', function () {
+    frm.set_query('student_batch', 'student_batches', function () {
       return {
         filters: {
           program: frm.doc.program,
-          academic_term: frm.doc.academic_term,
-          academic_year: frm.doc.academic_year,
           disabled: 0,
         },
       }
@@ -145,17 +143,15 @@ frappe.ui.form.on('Fee Schedule', {
   },
 })
 
-frappe.ui.form.on('Fee Schedule Student Group', {
-  student_group: function (frm, cdt, cdn) {
+frappe.ui.form.on('Fee Schedule Student Batch', {
+  student_batch: function (frm, cdt, cdn) {
     var row = locals[cdt][cdn]
-    if (row.student_group && frm.doc.academic_year) {
+    if (row.student_batch) {
       frappe.call({
         method:
           'education.education.doctype.fee_schedule.fee_schedule.get_total_students',
         args: {
-          student_group: row.student_group,
-          academic_year: frm.doc.academic_year,
-          academic_term: frm.doc.academic_term,
+          student_batch: row.student_batch,
           student_category: frm.doc.student_category,
         },
         callback: function (r) {

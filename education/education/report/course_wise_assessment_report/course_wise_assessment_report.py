@@ -17,33 +17,34 @@ def execute(filters=None):
 			_("Please select the assessment group other than 'All Assessment Groups'")
 		)
 
-	data, criterias = get_data(filters)
-	columns = get_column(criterias)
-	chart = get_chart(data, criterias)
+	data = get_data(filters)
+	columns = get_column()
+	chart = get_chart(data)
 
 	return columns, data, None, chart
 
 
 def get_data(filters):
 	data = []
-	criterias = []
 	values = get_formatted_result(filters)
 
 	for result in values.get("assessment_result"):
-		row = frappe._dict()
-		row.student = result.get("student")
-		row.student_name = result.get("student_name")
+		data.append(
+			frappe._dict(
+				{
+					"student": result.get("student"),
+					"student_name": result.get("student_name"),
+					"assessment_plan": result.get("assessment_plan"),
+					"subject": result.get("subject"),
+					"score": result.get("score"),
+					"maximum_score": result.get("maximum_score"),
+					"percentage": result.get("percentage"),
+					"grade": result.get("grade"),
+				}
+			)
+		)
 
-		for detail in result.details:
-			criteria = detail.get("assessment_criteria")
-			row[frappe.scrub(criteria)] = detail.get("grade")
-			row[frappe.scrub(criteria) + "_score"] = detail.get("score")
-			if not criteria in criterias:
-				criterias.append(criteria)
-
-		data.append(row)
-
-	return data, criterias
+	return data
 
 
 def get_formatted_result(args, get_course=False):
@@ -58,8 +59,11 @@ def get_formatted_result(args, get_course=False):
 			"student_name",
 			"name",
 			"course",
+			"assessment_plan",
 			"assessment_group",
-			"total_score",
+			"score",
+			"maximum_score",
+			"percentage",
 			"grade",
 		],
 		order_by="",
@@ -69,14 +73,9 @@ def get_formatted_result(args, get_course=False):
 		if get_course and result.course not in courses:
 			courses.append(result.course)
 
-		details = frappe.get_all(
-			"Assessment Result Detail",
-			{
-				"parent": result.name,
-			},
-			["assessment_criteria", "maximum_score", "grade", "score"],
+		result.subject = frappe.db.get_value(
+			"Assessment Plan", result.assessment_plan, "subject"
 		)
-		result.update({"details": details})
 
 	return {"assessment_result": assessment_result, "courses": courses}
 
@@ -84,7 +83,7 @@ def get_formatted_result(args, get_course=False):
 def prepare_filters(args):
 	filters = {"academic_year": args.academic_year, "docstatus": 1}
 
-	options = ["course", "academic_term", "student_group"]
+	options = ["course", "academic_term", "student_batch"]
 	for option in options:
 		if args.get(option):
 			filters[option] = args.get(option)
@@ -98,8 +97,8 @@ def prepare_filters(args):
 	return filters
 
 
-def get_column(criterias):
-	columns = [
+def get_column():
+	return [
 		{
 			"fieldname": "student",
 			"label": _("Student ID"),
@@ -113,50 +112,46 @@ def get_column(criterias):
 			"fieldtype": "Data",
 			"width": 150,
 		},
+		{
+			"fieldname": "assessment_plan",
+			"label": _("Assessment"),
+			"fieldtype": "Link",
+			"options": "Assessment Plan",
+			"width": 150,
+		},
+		{
+			"fieldname": "subject",
+			"label": _("Subject"),
+			"fieldtype": "Link",
+			"options": "Subject",
+			"width": 130,
+		},
+		{"fieldname": "score", "label": _("Score"), "fieldtype": "Float", "width": 100},
+		{
+			"fieldname": "maximum_score",
+			"label": _("Maximum Score"),
+			"fieldtype": "Float",
+			"width": 130,
+		},
+		{
+			"fieldname": "percentage",
+			"label": _("Percentage"),
+			"fieldtype": "Percent",
+			"width": 110,
+		},
+		{"fieldname": "grade", "label": _("Grade"), "fieldtype": "Data", "width": 80},
 	]
-	for criteria in criterias:
-		columns.append(
-			{
-				"fieldname": frappe.scrub(criteria),
-				"label": criteria,
-				"fieldtype": "Data",
-				"width": 100,
-			}
-		)
-		columns.append(
-			{
-				"fieldname": frappe.scrub(criteria) + "_score",
-				"label": "Score (" + criteria + ")",
-				"fieldtype": "Float",
-				"width": 100,
-			}
-		)
-
-	return columns
 
 
-def get_chart(data, criterias):
-	dataset = []
+def get_chart(data):
 	students = [row.student_name for row in data]
+	dataset = [{"name": _("Percentage"), "values": [row.percentage for row in data]}]
 
-	for criteria in criterias:
-		dataset_row = {"values": []}
-		dataset_row["name"] = criteria
-		for row in data:
-			if frappe.scrub(criteria) + "_score" in row:
-				dataset_row["values"].append(row[frappe.scrub(criteria) + "_score"])
-			else:
-				dataset_row["values"].append(0)
-
-		dataset.append(dataset_row)
-
-	charts = {
+	return {
 		"data": {"labels": students, "datasets": dataset},
 		"type": "bar",
-		"colors": ["#ff0e0e", "#ff9966", "#ffcc00", "#99cc33", "#339900"],
+		"colors": ["#339900"],
 	}
-
-	return charts
 
 
 def get_child_assessment_groups(assessment_group):

@@ -3,87 +3,313 @@
 
 frappe.ui.form.on('Student Applicant', {
   refresh: function (frm) {
-    frm.set_query('academic_term', function (doc, cdt, cdn) {
+    frm.set_query('admission_register', function () {
       return {
         filters: {
-          academic_year: frm.doc.academic_year,
+          docstatus: 1,
+          company: frm.doc.company,
+          status: 'Admission Open',
         },
       }
     })
 
-    if (!frm.is_new() && frm.doc.application_status === 'Applied') {
-      frm.add_custom_button(
-        __('Approve'),
-        function () {
-          frm.set_value('application_status', 'Approved')
-          frm.save_or_update()
+    frm.set_query('fee_term', function () {
+      return {
+        filters: {
+          docstatus: 1,
+          company: frm.doc.company,
         },
-        'Actions'
-      )
-
-      frm.add_custom_button(
-        __('Reject'),
-        function () {
-          frm.set_value('application_status', 'Rejected')
-          frm.save_or_update()
-        },
-        'Actions'
-      )
-    }
-
-    if (!frm.is_new() && frm.doc.application_status === 'Approved') {
-      frm.add_custom_button(__('Enroll'), function () {
-        frm.events.enroll(frm)
-      })
-
-      frm.add_custom_button(
-        __('Reject'),
-        function () {
-          frm.set_value('application_status', 'Rejected')
-          frm.save_or_update()
-        },
-        'Actions'
-      )
-    }
-
-    if (!frm.is_new() && frm.doc.application_status === 'Rejected') {
-      frm.add_custom_button(
-        __('Approve'),
-        function () {
-          frm.set_value('application_status', 'Approved')
-          frm.save_or_update()
-        },
-        'Actions'
-      )
-    }
-
-    frappe.realtime.on('enroll_student_progress', function (data) {
-      if (data.progress) {
-        frappe.hide_msgprint(true)
-        frappe.show_progress(
-          __('Enrolling student'),
-          data.progress[0],
-          data.progress[1]
-        )
       }
     })
 
-    frappe.db.get_value(
-      'Education Settings',
-      { name: 'Education Settings' },
-      'user_creation_skip',
-      (r) => {
-        if (cint(r.user_creation_skip) !== 1) {
-          frm.set_df_property('student_email_id', 'reqd', 1)
+    frm.set_query('course', function () {
+      if (frm.doc.admission_based_on === 'Program') {
+        return {
+          filters: {
+            name: ['in', frm._register_courses || []],
+          },
         }
       }
-    )
+      return {}
+    })
+
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+        },
+      }
+    })
+
+    frm.set_query('student', function () {
+      return {
+        filters: {
+          enabled: 1,
+        },
+      }
+    })
+
+    frm.trigger('fetch_register_courses')
+    frm.trigger('toggle_email_mandatory')
+    frm.trigger('setup_actions')
   },
 
-  enroll: function (frm) {
-    frappe.model.open_mapped_doc({
-      method: 'education.education.api.enroll_student',
-      frm: frm,
+  company: function (frm) {
+    if (frm.doc.company) {
+      frm.set_query('admission_register', function () {
+        return {
+          filters: {
+            company: frm.doc.company,
+            docstatus: 1,
+            status: 'Admission Open',
+          },
+        }
+      })
+    }
+
+    frm.set_value('admission_register', null)
+    frm.set_value('fee_term', null)
+  },
+
+  course: function (frm) {
+    if (frm.doc.course) {
+      frappe.db.get_value('Course', frm.doc.course, 'fee_term').then((r) => {
+        frm.set_value('fee_term', (r.message && r.message.fee_term) || null)
+      })
+
+      frm.call('get_course_fee_amount').then((r) => {
+        frm.set_value('course_fee_amount', r.message)
+      })
+    } else {
+      frm.set_value('fee_term', null)
+    }
+
+    frm.set_value('student_batch', null)
+    frm.set_query('student_batch', function () {
+      return {
+        filters: {
+          course: frm.doc.course,
+        },
+      }
     })
+  },
+
+  setup_actions: function (frm) {
+    if (frm.is_new()) return
+
+    if (['Admitted', 'Approved'].includes(frm.doc.application_status)) {
+      frm.disable_form()
+    }
+
+    const status = frm.doc.application_status
+
+    if (status === 'Applied' || status === 'Rejected') {
+      frm.add_custom_button(
+        __('Approve'),
+        function () {
+          frm.call('approve').then(() => frm.reload_doc())
+        },
+        'Actions'
+      )
+    }
+
+    if (status === 'Applied' || status === 'Approved') {
+      frm.add_custom_button(
+        __('Reject'),
+        function () {
+          frm.call('reject').then(() => frm.reload_doc())
+        },
+        'Actions'
+      )
+    }
+
+    if (
+      (status === 'Approved' && frm.doc.admission_based_on === 'Course') ||
+      (status === 'Approved' && frm.doc.admission_based_on === 'Program')
+    ) {
+      frm
+        .add_custom_button(__('Enroll'), function () {
+          frm.call('enroll_in_course').then((r) => {
+            if (r.message) {
+              frappe.msgprint(
+                __(
+                  'Course Enrollment {0} created and student enrolled in course.',
+                  [
+                    `<a href="/app/course-enrollment/${r.message}">${r.message}</a>`,
+                  ]
+                )
+              )
+            }
+            frm.reload_doc()
+          })
+        })
+        .addClass('btn-primary')
+    }
+
+    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
+    //   frm
+    //     .add_custom_button(__('Enroll in Program'), function () {
+    //       frm.call('enroll_in_program').then((r) => {
+    //         if (r.message) {
+    //           frappe.msgprint(
+    //             __(
+    //               'Program Enrollment {0} created and student enrolled in course.',
+    //               [
+    //                 `<a href="/app/program-enrollment/${r.message}">${r.message}</a>`,
+    //               ],
+    //             ),
+    //           )
+    //         }
+    //         frm.reload_doc()
+    //       })
+    //     })
+    //     .addClass('btn-primary')
+    // }
+
+    // NOTE: SEPARATE ENROLLMENT FOR COURSE AND PROGRAM
+
+    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
+    //   frm
+    //     .add_custom_button(__('Enroll'), function () {
+    //       frm.call('enroll_in_program_and_course').then((r) => {
+    //         if (r.message) {
+    //           frappe.msgprint(
+    //             __(
+    //               'Program Enrollment {0} created and student enrolled in course.',
+    //               [
+    //                 `<a href="/app/-enrollment/${r.message}">${r.message}</a>`,
+    //               ],
+    //             ),
+    //           )
+    //         }
+    //         frm.reload_doc()
+    //       })
+    //     })
+    //     .addClass('btn-primary')
+    // }
+  },
+
+  admission_register: function (frm) {
+    frm.set_value('course', null)
+    frm._register_courses = []
+
+    if (!frm.doc.admission_register) {
+      frm.set_value('academic_term', null)
+      return
+    }
+
+    frm.call('get_admission_register_details').then((r) => {
+      const details = r.message
+      if (!details) return
+
+      frm.set_value('admission_based_on', details.admission_based_on)
+      frm.set_value('academic_year', details.academic_year)
+      frm.set_value('academic_term', details.academic_term || null)
+      frm.set_value('registration_fee', details.registration_fee)
+      frm.set_value('registration_fee_item', details.registration_fee_item)
+      frm.set_value('registration_fee_amount', details.registration_fee_amount)
+
+      if (details.admission_based_on === 'Course') {
+        frm.set_value('course', details.course)
+      } else if (details.admission_based_on === 'Program') {
+        frm._register_courses = details.courses || []
+      }
+    })
+  },
+
+  fetch_register_courses: function (frm) {
+    if (
+      frm.doc.admission_register &&
+      frm.doc.admission_based_on === 'Program'
+    ) {
+      frappe.db
+        .get_doc('Admission Register', frm.doc.admission_register)
+        .then((register) => {
+          frm._register_courses = (register.courses || []).map(
+            (row) => row.course
+          )
+        })
+    }
+  },
+
+  is_already_a_student: function (frm) {
+    if (!frm.doc.is_already_a_student) {
+      frm.set_value('student', '')
+      frm.refresh_field('student')
+      return
+    }
+
+    frm.trigger('load_student_details')
+  },
+
+  student: function (frm) {
+    frm.trigger('load_student_details')
+  },
+
+  load_student_details: function (frm) {
+    if (!frm.doc.is_already_a_student || !frm.doc.student) return
+
+    frm.call('get_student_details').then((r) => {
+      const details = r.message
+      if (!details) return
+
+      const fields = [
+        'first_name',
+        'middle_name',
+        'last_name',
+        'email_address',
+        'image',
+        'date_of_birth',
+        'gender',
+        'blood_group',
+        'student_mobile_number',
+        'nationality',
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state',
+        'pincode',
+        'country',
+      ]
+      fields.forEach((field) => {
+        frm.set_value(field, details[field] || '')
+      })
+
+      frm.clear_table('guardians')
+      ;(details.guardians || []).forEach((row) => {
+        frm.add_child('guardians', {
+          guardian: row.guardian,
+          guardian_name: row.guardian_name,
+          relation: row.relation,
+        })
+      })
+      frm.refresh_field('guardians')
+
+      frm.clear_table('siblings')
+      ;(details.siblings || []).forEach((row) => {
+        frm.add_child('siblings', {
+          studying_in_same_institute: row.studying_in_same_institute,
+          full_name: row.full_name,
+          gender: row.gender,
+          student: row.student,
+          institution: row.institution,
+          program: row.program,
+          date_of_birth: row.date_of_birth,
+        })
+      })
+      frm.refresh_field('siblings')
+    })
+  },
+
+  toggle_email_mandatory: function (frm) {
+    frappe.db
+      .get_single_value('Education Settings', 'user_creation_skip')
+      .then((user_creation_skip) => {
+        frm.set_df_property(
+          'email_address',
+          'reqd',
+          cint(user_creation_skip) ? 0 : 1
+        )
+      })
   },
 })

@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-12 12:51:36.967615",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "ceremony_document",
+  "code",
+  "document_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "ceremony_document",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Ceremony Document",
+   "options": "Ceremony Document",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "ceremony_document.code",
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Code"
+  },
+  {
+   "fetch_from": "ceremony_document.document_type",
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "Ceremony Document Type"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-12 16:04:12.804151",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Ceremony Document Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

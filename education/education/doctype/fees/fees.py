@@ -51,12 +51,12 @@ class Fees(AccountsController):
 
 	def validate_enrollment(self):
 		enrollment_student = frappe.db.get_value(
-			"Program Enrollment", self.program_enrollment, "student"
+			"Course Enrollment", self.course_enrollment, "student"
 		)
 		if enrollment_student != self.student:
 			frappe.throw(
 				_("Invalid Enrollment {0} for student {1}").format(
-					frappe.bold(self.program_enrollment), frappe.bold(self.student)
+					frappe.bold(self.course_enrollment), frappe.bold(self.student)
 				)
 			)
 
