@@ -7,8 +7,9 @@ import calendar
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_days, cint, formatdate, getdate
+from frappe.utils import add_days, cint, formatdate, get_time, getdate
 
+from education.education.doctype.faculty.faculty import faculty_teaches_subject
 from education.education.utils import OverlapError
 
 IGNORE_FIELDTYPES = {
@@ -33,7 +34,9 @@ class SubjectSchedulingTool(Document):
 
 		self.set_course_from_batch()
 		self.validate_mandatory()
+		self.validate_batch()
 		self.validate_date()
+		self.validate_slots()
 
 		days = list({slot.day for slot in self.slots})
 
@@ -86,18 +89,27 @@ class SubjectSchedulingTool(Document):
 			if not self.get(df.fieldname):
 				frappe.throw(_("{0} is mandatory").format(_(df.label or df.fieldname)))
 
+		if not self.slots:
+			frappe.throw(_("Please add at least one weekly slot."))
+
 		for slot in self.slots:
 			for df in slot.meta.get("fields", []):
 				if not cint(df.reqd) or df.fieldtype in IGNORE_FIELDTYPES:
 					continue
 				if not slot.get(df.fieldname):
-					frappe.throw(
-						_("Row {0}: {1} is mandatory").format(slot.idx, _(df.label or df.fieldname))
-					)
-			if slot.from_time > slot.to_time:
+					frappe.throw(_("Row {0}: {1} is mandatory").format(slot.idx, _(df.label or df.fieldname)))
+			if get_time(slot.from_time) >= get_time(slot.to_time):
 				frappe.throw(
-					_("Row {0}: From Time cannot be greater than To Time.").format(slot.idx)
+					_("Row {0}: From Time cannot be greater than or equal to To Time.").format(slot.idx)
 				)
+
+	def validate_batch(self):
+		if not self.student_batch:
+			return
+
+		disabled = frappe.db.get_value("Student Batch Name", self.student_batch, "disabled")
+		if cint(disabled):
+			frappe.throw(_("Student Batch {0} is disabled.").format(frappe.bold(self.student_batch)))
 
 	def validate_date(self):
 		if getdate(self.from_date) > getdate(self.to_date):
@@ -119,16 +131,67 @@ class SubjectSchedulingTool(Document):
 				)
 			)
 
+	def validate_slots(self):
+		for slot in self.slots:
+			if slot.subject and self.course:
+				subject_course = frappe.db.get_value("Subject", slot.subject, "course")
+				if subject_course and subject_course != self.course:
+					frappe.throw(
+						_("Row {0}: Subject {1} does not belong to Course {2}").format(
+							slot.idx, frappe.bold(slot.subject), frappe.bold(self.course)
+						)
+					)
+
+			if slot.faculty and slot.subject and not faculty_teaches_subject(slot.faculty, slot.subject):
+				frappe.throw(
+					_("Row {0}: Faculty {1} does not teach Subject {2}").format(
+						slot.idx, frappe.bold(slot.faculty), frappe.bold(slot.subject)
+					)
+				)
+
+		self.validate_slot_overlaps()
+
+	def validate_slot_overlaps(self):
+		slots = list(self.slots)
+		for i, first in enumerate(slots):
+			for second in slots[i + 1 :]:
+				if first.day != second.day:
+					continue
+				if not times_overlap(first.from_time, first.to_time, second.from_time, second.to_time):
+					continue
+				if first.faculty and first.faculty == second.faculty:
+					frappe.throw(
+						_("Row {0} and {1}: Faculty {2} is double-booked on {3}.").format(
+							first.idx, second.idx, frappe.bold(first.faculty), _(first.day)
+						)
+					)
+				if first.room and first.room == second.room:
+					frappe.throw(
+						_("Row {0} and {1}: Room {2} is double-booked on {3}.").format(
+							first.idx, second.idx, frappe.bold(first.room), _(first.day)
+						)
+					)
+				frappe.throw(
+					_("Row {0} and {1}: Slots overlap on {2} for the same batch.").format(
+						first.idx, second.idx, _(first.day)
+					)
+				)
+
 	def delete_subject_schedule(self, rescheduled, reschedule_errors, days):
-		"""Delete subject schedules in the date range for the selected weekdays."""
+		"""Delete matching subject schedules in the date range for selected weekdays."""
+		subjects = list({slot.subject for slot in self.slots if slot.subject})
+		filters = [
+			["student_batch", "=", self.student_batch],
+			["schedule_date", ">=", self.from_date],
+			["schedule_date", "<=", self.to_date],
+		]
+		if subjects:
+			filters.append(["subject", "in", subjects])
+
 		schedules = frappe.get_list(
 			"Subject Schedule",
 			fields=["name", "schedule_date"],
-			filters=[
-				["student_batch", "=", self.student_batch],
-				["schedule_date", ">=", self.from_date],
-				["schedule_date", "<=", self.to_date],
-			],
+			filters=filters,
 		)
 
 		for d in schedules:
@@ -153,3 +216,13 @@ class SubjectSchedulingTool(Document):
 		subject_schedule.to_time = slot.to_time
 		subject_schedule.class_schedule_color = self.class_schedule_color
 		return subject_schedule
+
+
+def times_overlap(from_a, to_a, from_b, to_b):
+	from_a, to_a, from_b, to_b = (
+		get_time(from_a),
+		get_time(to_a),
+		get_time(from_b),
+		get_time(to_b),
+	)
+	return from_a < to_b and from_b < to_a

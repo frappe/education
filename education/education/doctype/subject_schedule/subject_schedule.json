@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2026-08-12 20:54:25.072043",
+ "creation": "2026-09-23 16:22:57.712725",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -12,7 +12,6 @@
   "faculty_name",
   "column_break_2",
   "naming_series",
-  "program",
   "course",
   "subject",
   "color",
@@ -131,14 +130,6 @@
    "label": "Title"
   },
   {
-   "fetch_from": "student_batch.program",
-   "fieldname": "program",
-   "fieldtype": "Link",
-   "label": "Program",
-   "options": "Program",
-   "read_only": 1
-  },
-  {
    "default": "blue",
    "fieldname": "class_schedule_color",
    "fieldtype": "Select",
@@ -148,7 +139,7 @@
   }
  ],
  "links": [],
- "modified": "2026-08-13 22:34:07.610087",
+ "modified": "2026-09-23 18:55:56.153051",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Schedule",

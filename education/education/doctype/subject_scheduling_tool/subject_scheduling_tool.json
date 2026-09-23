@@ -1,14 +1,13 @@
 {
  "actions": [],
  "allow_copy": 1,
- "creation": "2026-08-12 20:54:23.519278",
+ "creation": "2026-09-23 16:22:58.992816",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
  "field_order": [
   "student_batch",
   "course",
-  "program",
   "column_break_3",
   "batch_start_date",
   "batch_end_date",
@@ -39,14 +38,6 @@
    "options": "Course",
    "read_only": 1,
    "reqd": 1
-  },
-  {
-   "fetch_from": "student_batch.program",
-   "fieldname": "program",
-   "fieldtype": "Link",
-   "label": "Program",
-   "options": "Program",
-   "read_only": 1
   },
   {
    "fieldname": "column_break_3",
@@ -115,7 +106,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 22:34:34.794530",
+ "modified": "2026-09-23 18:56:14.061363",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Scheduling Tool",

@@ -10,9 +10,29 @@ frappe.ui.form.on('Subject Scheduling Tool', {
         },
       }
     })
-    frm.set_query('subject', 'slots', function () {
+    frm.set_query('subject', 'slots', function (doc, cdt, cdn) {
+      const row = locals[cdt][cdn]
+      if (row.faculty) {
+        return {
+          query: 'education.education.doctype.faculty.faculty.subject_query',
+          filters: {
+            faculty: row.faculty,
+            course: frm.doc.course,
+          },
+        }
+      }
       return {
         filters: {
+          course: frm.doc.course,
+        },
+      }
+    })
+    frm.set_query('faculty', 'slots', function (doc, cdt, cdn) {
+      const row = locals[cdt][cdn]
+      return {
+        query: 'education.education.doctype.faculty.faculty.faculty_query',
+        filters: {
+          subject: row.subject,
           course: frm.doc.course,
         },
       }
@@ -33,35 +53,148 @@ frappe.ui.form.on('Subject Scheduling Tool', {
           if (!r.message) {
             frappe.throw(__('There were errors creating Subject Schedule'))
           }
-          const { subject_schedules } = r.message
-          if (subject_schedules && subject_schedules.length > 0) {
-            const subject_schedules_html = subject_schedules
-              .map(
-                (c) => `
-							<tr>
-								<td><a href="/app/subject-schedule/${c.name}">${c.name}</a></td>
-								<td>${c.subject || ''}</td>
-								<td>${c.schedule_date}</td>
-							</tr>
-						`
-              )
-              .join('')
-
-            const html = `
-							<table class="table table-bordered">
-								<caption>${__('Following subject schedules were created')}</caption>
-								<thead><tr><th>${__('Schedule')}</th><th>${__('Subject')}</th><th>${__(
-              'Date'
-            )}</th></tr></thead>
-								<tbody>
-									${subject_schedules_html}
-								</tbody>
-							</table>
-						`
-
-            frappe.msgprint(html)
-          }
+          show_scheduling_result(r.message)
         })
     })
   },
 })
+
+frappe.ui.form.on('Subject Scheduling Tool Slot', {
+  subject(frm, cdt, cdn) {
+    const row = frappe.get_doc(cdt, cdn)
+    clear_invalid_faculty(row)
+  },
+  faculty(frm, cdt, cdn) {
+    const row = frappe.get_doc(cdt, cdn)
+    clear_invalid_subject(row)
+  },
+})
+
+function clear_invalid_faculty(row) {
+  if (!row.faculty || !row.subject) {
+    return
+  }
+  frappe.db
+    .exists('Course Subject', {
+      parenttype: 'Faculty',
+      parent: row.faculty,
+      subject: row.subject,
+    })
+    .then((exists) => {
+      if (!exists) {
+        frappe.model.set_value(row.doctype, row.name, 'faculty', '')
+      }
+    })
+}
+
+function clear_invalid_subject(row) {
+  if (!row.faculty || !row.subject) {
+    return
+  }
+  frappe.db
+    .exists('Course Subject', {
+      parenttype: 'Faculty',
+      parent: row.faculty,
+      subject: row.subject,
+    })
+    .then((exists) => {
+      if (!exists) {
+        frappe.model.set_value(row.doctype, row.name, 'subject', '')
+      }
+    })
+}
+
+function show_scheduling_result(result) {
+  const {
+    subject_schedules = [],
+    subject_schedules_errors = [],
+    rescheduled = [],
+    reschedule_errors = [],
+  } = result
+  const sections = []
+
+  if (subject_schedules.length) {
+    sections.push(
+      table_section(
+        __('Following subject schedules were created'),
+        [__('Schedule'), __('Subject'), __('Date')],
+        subject_schedules.map(
+          (c) => `
+						<tr>
+							<td><a href="/app/subject-schedule/${c.name}">${c.name}</a></td>
+							<td>${frappe.utils.escape_html(c.subject || '')}</td>
+							<td>${c.schedule_date}</td>
+						</tr>
+					`
+        )
+      )
+    )
+  }
+
+  if (subject_schedules_errors.length) {
+    sections.push(
+      table_section(
+        __('These slots were skipped because of an overlap'),
+        [__('Subject'), __('Faculty'), __('Date')],
+        subject_schedules_errors.map(
+          (c) => `
+						<tr>
+							<td>${frappe.utils.escape_html(c.subject || '')}</td>
+							<td>${frappe.utils.escape_html(c.faculty || '')}</td>
+							<td>${c.date}</td>
+						</tr>
+					`
+        )
+      )
+    )
+  }
+
+  if (rescheduled.length) {
+    sections.push(
+      table_section(
+        __('These existing schedules were removed for reschedule'),
+        [__('Schedule')],
+        rescheduled.map(
+          (name) => `<tr><td>${frappe.utils.escape_html(name)}</td></tr>`
+        )
+      )
+    )
+  }
+
+  if (reschedule_errors.length) {
+    sections.push(
+      table_section(
+        __('These existing schedules could not be removed'),
+        [__('Schedule')],
+        reschedule_errors.map(
+          (name) => `<tr><td>${frappe.utils.escape_html(name)}</td></tr>`
+        )
+      )
+    )
+  }
+
+  if (!sections.length) {
+    frappe.msgprint(__('No subject schedules were created'))
+    return
+  }
+
+  frappe.msgprint({
+    title: __('Subject Scheduling'),
+    indicator: subject_schedules.length ? 'green' : 'orange',
+    message: sections.join(''),
+  })
+}
+
+function table_section(caption, headers, rows) {
+  return `
+		<table class="table table-bordered">
+			<caption>${caption}</caption>
+			<thead><tr>${headers
+        .map((header) => `<th>${header}</th>`)
+        .join('')}</tr></thead>
+			<tbody>
+				${rows.join('')}
+			</tbody>
+		</table>
+	`
+}

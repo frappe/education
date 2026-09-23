@@ -15,14 +15,21 @@ repos:
       - id: check-merge-conflict
       - id: check-ast
 
-  - repo: https://github.com/adityahase/black
-    rev: 9cb0a69f4d0030cdf687eddf314468b39ed54119
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
     hooks:
-      - id: black
-        additional_dependencies: ['click==8.0.4']
+      - id: ruff
+        name: 'Run ruff import sorter'
+        args: ['--select=I', '--fix']
+
+      - id: ruff
+        name: 'Run ruff linter'
+
+      - id: ruff-format
+        name: 'Run ruff formatter'
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 7.4.1
     hooks:
       - id: flake8
         additional_dependencies: ['flake8-bugbear']
