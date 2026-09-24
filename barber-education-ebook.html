@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barber Education E-Book</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --paper: #fffdf9;
+      --ink: #2d241d;
+      --accent: #8a4b2f;
+      --accent-2: #c97f42;
+      --muted: #6c5b4d;
+      --line: #dcc8b6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f4efe8 0%, #e9ddcf 100%);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 24px;
+    }
+
+    .book {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(45,36,29,0.14);
+      overflow: hidden;
+    }
+
+    .cover {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      color: white;
+      padding: 60px 36px;
+      text-align: center;
+    }
+
+    .cover h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+
+    .cover p {
+      font-size: 1.05rem;
+      opacity: 0.95;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .toc {
+      padding: 24px 30px;
+      background: #fcf7f0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toc h2 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .toc ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .toc a {
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 600;
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: block;
+      background: #fff;
+      border: 1px solid #eee2d2;
+    }
+
+    .chapter {
+      padding: 32px 30px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chapter:last-child { border-bottom: none; }
+
+    .chapter h2 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.6rem;
+    }
+
+    .chapter h3 {
+      color: var(--accent-2);
+      margin: 18px 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .chapter p, .chapter li {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .chapter ul, .chapter ol {
+      padding-left: 20px;
+      margin: 10px 0 12px;
+    }
+
+    .quote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent-2);
+      background: #fff6eb;
+      border-radius: 8px;
+      font-style: italic;
+      color: #5a4333;
+    }
+
+    .card {
+      background: #fdf7f0;
+      border: 1px solid #ecd8c4;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 14px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      background: #fbf4ea;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .cover, .chapter, .toc { padding-left: 18px; padding-right: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="book">
+    <section class="cover">
+      <h1>Barber Education E-Book</h1>
+      <p>A clear and inspiring introduction to barbering for learners, covering the history of barbering, its fundamentals and ethics, and the practice of the trade.</p>
+    </section>
+
+    <section class="toc">
+      <h2>Contents</h2>
+      <ul>
+        <li><a href="#history">1. History of Barbering</a></li>
+        <li><a href="#fundamentals">2. Fundamentals and Ethics of Barbering</a></li>
+        <li><a href="#practice">3. Practice of Barbering</a></li>
+      </ul>
+    </section>
+
+    <section class="chapter" id="history">
+      <h2>1. History of Barbering</h2>
+      <p>Barbering is one of the oldest professions in human history. It began as a practical service for grooming, hygiene, and appearance, and over centuries it grew into a respected craft that blends artistry, culture, and personal care.</p>
+
+      <h3>Early Origins</h3>
+      <p>Ancient civilizations such as Egypt, Greece, and Rome valued barbers for shaving, hair cutting, and grooming. In many societies, barbers were also seen as trusted healers, because they treated minor wounds and provided basic care.</p>
+
+      <h3>Development Through the Ages</h3>
+      <ul>
+        <li>During the Middle Ages, barber-surgeons performed both hair cutting and simple medical procedures.</li>
+        <li>In the Renaissance, barbering became more specialized and increasingly tied to style and fashion.</li>
+        <li>In the modern era, barbering evolved into a professional trade supported by education, licensing, and advanced techniques.</li>
+      </ul>
+
+      <div class="quote">“Barbering has always connected personal care with identity, culture, and confidence.”</div>
+
+      <h3>Why History Matters</h3>
+      <p>Studying the history of barbering helps learners appreciate how the craft has developed and why tradition still matters in today’s barber shop.</p>
+    </section>
+
+    <section class="chapter" id="fundamentals">
+      <h2>2. Fundamentals and Ethics of Barbering</h2>
+      <p>Great barbering is built on both technical skill and strong character. A barber must understand the basics of haircutting, grooming, sanitation, and client care while acting in a professional and ethical manner.</p>
+
+      <h3>Fundamental Skills</h3>
+      <ul>
+        <li>Proper handling of tools such as clippers, scissors, combs, and trimmers.</li>
+        <li>Understanding hair texture, growth patterns, and facial structure.</li>
+        <li>Maintaining posture, balance, and control during cutting.</li>
+        <li>Creating clean lines and balanced shapes that suit the client.</li>
+      </ul>
+
+      <h3>Ethics in Barbering</h3>
+      <ul>
+        <li>Respect the client’s privacy and personal preferences.</li>
+        <li>Practice honesty by explaining what is possible and realistic.</li>
+        <li>Maintain hygiene and cleanliness at all times.</li>
+        <li>Protect the client’s comfort, safety, and dignity.</li>
+        <li>Show professionalism through punctuality, neat presentation, and good communication.</li>
+      </ul>
+
+      <div class="card">
+        <strong>Core ethical values:</strong> respect, honesty, cleanliness, confidentiality, and professionalism.
+      </div>
+    </section>
+
+    <section class="chapter" id="practice">
+      <h2>3. Practice of Barbering</h2>
+      <p>The practice of barbering combines craft, creativity, and service. A good barber learns not only how to cut hair, but also how to build trust and provide a memorable experience.</p>
+
+      <h3>Step-by-Step Practice</h3>
+      <ol>
+        <li>Begin with consultation: listen carefully to the client’s needs and expectations.</li>
+        <li>Prepare the workspace: sanitize tools, arrange equipment, and ensure comfort.</li>
+        <li>Analyze the hair and face shape before cutting.</li>
+        <li>Use proper sectioning, tension, and cutting angles for clean results.</li>
+        <li>Finish with styling, aftercare advice, and a professional check of the final look.</li>
+      </ol>
+
+      <h3>Skills to Develop</h3>
+      <ul>
+        <li>Scissor over comb techniques</li>
+        <li>Clipper work and fades</li>
+        <li>Beard trimming and detailing</li>
+        <li>Client communication and consultation</li>
+        <li>Time management and service flow</li>
+      </ul>
+
+      <div class="quote">“The best barbers combine skill with patience, listening, and pride in their craft.”</div>
+    </section>
+
+    <section class="footer">
+      Designed as a simple educational e-book for barber training and study.
+    </section>
+  </div>
+</body>
+</html>
