@@ -3,12 +3,13 @@
 
 
 import json
+
 import frappe
 from frappe import _
-
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt
+
 from education.education.doctype.fee_category.fee_category import create_item
 
 
@@ -28,9 +29,7 @@ class FeeStructure(Document):
 	def validate_discount(self):
 		for component in self.components:
 			if flt(component.discount) > 100:
-				frappe.throw(
-					_("Discount cannot be greater than 100%  in row {0}").format(component.idx)
-				)
+				frappe.throw(_("Discount cannot be greater than 100%  in row {0}").format(component.idx))
 
 	def validate_component_defaults(self):
 		company = self.company
@@ -43,7 +42,7 @@ class FeeStructure(Document):
 			)
 			if not fee_category_default_income_account:
 				frappe.msgprint(
-					_("Accounting Defaults are not set in row {0} for component {1} ").format(
+					_("Accounting Defaults are not set in row {0} for component {1}").format(
 						frappe.bold(fees_category.idx), frappe.bold(fee_category)
 					)
 				)
@@ -66,12 +65,11 @@ class FeeStructure(Document):
 
 @frappe.whitelist()
 def get_amount_distribution_based_on_fee_plan(
-	components,
-	total_amount=0,
-	fee_plan="Monthly",
-	academic_year=None,
+	components: str,
+	total_amount: float | str | int = 0,
+	fee_plan: str = "Monthly",
+	academic_year: str | None = None,
 ):
-
 	total_amount = flt(total_amount)
 	components = json.loads(components)
 
@@ -81,7 +79,10 @@ def get_amount_distribution_based_on_fee_plan(
 			"month_list": get_future_dates("Quarterly"),
 			"amount": 1 / 4,
 		},
-		"Semi-Annually": {"month_list": get_future_dates("Semi-Annually"), "amount": 1 / 2},
+		"Semi-Annually": {
+			"month_list": get_future_dates("Semi-Annually"),
+			"amount": 1 / 2,
+		},
 		"Term-Wise": {"month_list": [], "amount": 0},
 		"Annually": {"month_list": get_future_dates("Annually"), "amount": 1},
 	}
@@ -95,13 +96,11 @@ def get_amount_distribution_based_on_fee_plan(
 			order_by="term_start_date asc",
 		)
 		if not academic_terms:
-			frappe.throw(
-				_("No Academic Terms found for Academic Year {0}").format(academic_year)
-			)
+			frappe.throw(_("No Academic Terms found for Academic Year {0}").format(academic_year))
 		month_dict.get(fee_plan)["amount"] = 1 / len(academic_terms)
 
 		for term in academic_terms:
-			term_start_date = term.get("term_start_date")
+			term.get("term_start_date")
 			month_dict.get(fee_plan)["month_list"].append(
 				{"term": term.get("name"), "due_date": term.get("term_start_date")}
 			)
@@ -121,14 +120,21 @@ def get_amount_distribution_based_on_fee_plan(
 	if fee_plan == "Term-Wise":
 		for term in month_list_and_amount.get("month_list"):
 			final_month_list.append(
-				{"term": term.get("term"), "due_date": term.get("due_date"), "amount": amount}
+				{
+					"term": term.get("term"),
+					"due_date": term.get("due_date"),
+					"amount": amount,
+				}
 			)
 
 	else:
 		for date in month_list_and_amount.get("month_list"):
 			final_month_list.append({"due_date": date, "amount": amount})
 
-	return {"distribution": final_month_list, "per_component_amount": per_component_amount}
+	return {
+		"distribution": final_month_list,
+		"per_component_amount": per_component_amount,
+	}
 
 
 def get_future_dates(fee_plan, start_date=None):
@@ -157,13 +163,12 @@ def get_future_dates(fee_plan, start_date=None):
 
 @frappe.whitelist()
 def make_fee_schedule(
-	source_name,
-	dialog_values,
-	per_component_amount,
-	total_amount,
-	target_doc=None,
+	source_name: str,
+	dialog_values: str,
+	per_component_amount: str,
+	total_amount: float | str,
+	target_doc: str | None = None,
 ):
-
 	dialog_values = json.loads(dialog_values)
 	per_component_amount = json.loads(per_component_amount)
 
@@ -218,14 +223,11 @@ def make_fee_schedule(
 
 def validate_due_date(due_date, idx):
 	if due_date < frappe.utils.nowdate():
-		frappe.throw(
-			_("Due Date in row {0} should be greater than or same as today's date.").format(idx)
-		)
+		frappe.throw(_("Due Date in row {0} should be greater than or same as today's date.").format(idx))
 
 
 @frappe.whitelist()
-def make_term_wise_fee_schedule(source_name, target_doc=None):
-
+def make_term_wise_fee_schedule(source_name: str, target_doc: str | None = None):
 	return get_mapped_doc(
 		"Fee Structure",
 		source_name,

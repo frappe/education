@@ -57,9 +57,7 @@ class StudentApplicant(Document):
 			frappe.throw(_("Fee Term is required."))
 
 	def set_title(self):
-		self.title = " ".join(
-			filter(None, [self.first_name, self.middle_name, self.last_name])
-		)
+		self.title = " ".join(name for name in (self.first_name, self.middle_name, self.last_name) if name)
 
 	def validate_dates(self):
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
@@ -67,9 +65,7 @@ class StudentApplicant(Document):
 
 	def validate_term(self):
 		if self.academic_year and self.academic_term:
-			actual_academic_year = frappe.db.get_value(
-				"Academic Term", self.academic_term, "academic_year"
-			)
+			actual_academic_year = frappe.db.get_value("Academic Term", self.academic_term, "academic_year")
 			if actual_academic_year != self.academic_year:
 				frappe.throw(
 					_("Academic Term {0} does not belong to Academic Year {1}").format(
@@ -83,9 +79,7 @@ class StudentApplicant(Document):
 			"Education Settings", "user_creation_skip"
 		):
 			frappe.throw(
-				_(
-					"Email Address is mandatory as a user will be created for the student upon admission."
-				)
+				_("Email Address is mandatory as a user will be created for the student upon admission.")
 			)
 
 		if not self.email_address:
@@ -219,17 +213,13 @@ class StudentApplicant(Document):
 			as_dict=True,
 		)
 		if not register or register.docstatus != 1:
-			frappe.throw(
-				_("Admission Register {0} must be submitted.").format(self.admission_register)
-			)
+			frappe.throw(_("Admission Register {0} must be submitted.").format(self.admission_register))
 
 		is_new_application = self.is_new() or self.has_value_changed("admission_register")
 		if is_new_application:
 			if register.status != STATUS_ADMISSION_OPEN:
 				frappe.throw(
-					_("Admission is not open for Admission Register {0}.").format(
-						self.admission_register
-					)
+					_("Admission is not open for Admission Register {0}.").format(self.admission_register)
 				)
 
 			if register.end_date and getdate(today()) > getdate(register.end_date):
@@ -259,9 +249,7 @@ class StudentApplicant(Document):
 			as_dict=True,
 		)
 		if not batch:
-			frappe.throw(
-				_("Student Batch {0} does not exist.").format(frappe.bold(self.student_batch))
-			)
+			frappe.throw(_("Student Batch {0} does not exist.").format(frappe.bold(self.student_batch)))
 
 		if self.course and batch.course != self.course:
 			frappe.throw(
@@ -309,9 +297,7 @@ class StudentApplicant(Document):
 	@frappe.whitelist()
 	def get_course_fee_amount(self):
 		if self.admission_based_on == "Course":
-			return frappe.db.get_value(
-				"Admission Register", self.admission_register, "course_fee_amount"
-			)
+			return frappe.db.get_value("Admission Register", self.admission_register, "course_fee_amount")
 
 		if self.admission_based_on == "Program":
 			return frappe.db.get_value(

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies and contributors
 # For license information, please see license.txt
 
@@ -8,7 +7,9 @@ from datetime import datetime
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import formatdate, getdate
+from frappe.utils import formatdate, get_time, getdate
+
+from education.education.doctype.faculty.faculty import faculty_teaches_subject
 
 
 class SubjectSchedule(Document):
@@ -16,6 +17,7 @@ class SubjectSchedule(Document):
 		self.set_faculty_name()
 		self.validate_course()
 		self.validate_subject()
+		self.validate_faculty()
 		self.set_title()
 		self.validate_time()
 		self.validate_date()
@@ -55,6 +57,17 @@ class SubjectSchedule(Document):
 				)
 			)
 
+	def validate_faculty(self):
+		if not (self.faculty and self.subject):
+			return
+
+		if not faculty_teaches_subject(self.faculty, self.subject):
+			frappe.throw(
+				_("Faculty {0} does not teach Subject {1}").format(
+					frappe.bold(self.faculty), frappe.bold(self.subject)
+				)
+			)
+
 	def validate_date(self):
 		start_date, end_date = frappe.db.get_value(
 			"Student Batch Name", self.student_batch, ["start_date", "end_date"]
@@ -77,8 +90,8 @@ class SubjectSchedule(Document):
 
 	def validate_time(self):
 		"""Validates if from_time is greater than to_time"""
-		if self.from_time > self.to_time:
-			frappe.throw(_("From Time cannot be greater than To Time."))
+		if get_time(self.from_time) >= get_time(self.to_time):
+			frappe.throw(_("From Time cannot be greater than or equal to To Time."))
 
 		"""Handles specicfic case to update schedule date in calendar """
 		if isinstance(self.from_time, str):

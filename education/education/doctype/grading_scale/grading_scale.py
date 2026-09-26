@@ -54,7 +54,5 @@ class GradingScale(Document):
 			next_min, __, next_grade = intervals[i + 1]
 			if curr_max > next_min:
 				frappe.throw(
-					_("Percentage intervals for grades {0} and {1} overlap").format(
-						curr_grade, next_grade
-					)
+					_("Percentage intervals for grades {0} and {1} overlap").format(curr_grade, next_grade)
 				)

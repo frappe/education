@@ -18,13 +18,9 @@ def execute(filters=None):
 	assessment_plan = frappe.get_doc("Assessment Plan", filters.assessment_plan)
 	assessment_plan.check_permission("read")
 	if assessment_plan.docstatus != 1:
-		frappe.throw(
-			_("Assessment Plan {0} must be submitted").format(frappe.bold(assessment_plan.name))
-		)
+		frappe.throw(_("Assessment Plan {0} must be submitted").format(frappe.bold(assessment_plan.name)))
 
-	grading_scale = frappe.db.get_value(
-		"Course", assessment_plan.course, "default_grading_scale"
-	)
+	grading_scale = frappe.db.get_value("Course", assessment_plan.course, "default_grading_scale")
 	data = get_data(assessment_plan.name, grading_scale)
 	return (
 		get_columns(),
@@ -88,11 +84,7 @@ def get_data(assessment_plan, grading_scale):
 		result.score = flt(result.score, 2)
 		result.maximum_score = flt(result.maximum_score, 2)
 		result.percentage = flt(result.percentage, 2)
-		result.grade = (
-			get_grade_details(grading_scale, result.percentage).grade_code
-			if grading_scale
-			else ""
-		)
+		result.grade = get_grade_details(grading_scale, result.percentage).grade_code if grading_scale else ""
 	return results
 
 
@@ -182,9 +174,7 @@ def get_report_summary(data, grading_scale):
 
 	if grading_scale:
 		passed = sum(
-			1
-			for percentage in percentages
-			if get_grade_details(grading_scale, percentage).earn_credits
+			1 for percentage in percentages if get_grade_details(grading_scale, percentage).earn_credits
 		)
 		summary.append(
 			{

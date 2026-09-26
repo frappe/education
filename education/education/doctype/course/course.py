@@ -99,7 +99,7 @@ class Course(Document):
 
 
 @frappe.whitelist()
-def get_grade_template(course, subject, academic_year, academic_term=None):
+def get_grade_template(course: str, subject: str, academic_year: str, academic_term: str | None = None):
 	"""Return the Grade Template for a course subject in a given academic period."""
 	if not course:
 		frappe.throw(_("Course is required"))
@@ -111,14 +111,10 @@ def get_grade_template(course, subject, academic_year, academic_term=None):
 	academic_term = academic_term or None
 	course_doc = frappe.get_doc("Course", course)
 
-	subject_row = next(
-		(row for row in course_doc.subjects or [] if row.subject == subject), None
-	)
+	subject_row = next((row for row in course_doc.subjects or [] if row.subject == subject), None)
 	if not subject_row:
 		frappe.throw(
-			_("Subject {0} is not part of Course {1}").format(
-				frappe.bold(subject), frappe.bold(course)
-			)
+			_("Subject {0} is not part of Course {1}").format(frappe.bold(subject), frappe.bold(course))
 		)
 
 	if not subject_row.use_course_grade_template:
@@ -128,9 +124,7 @@ def get_grade_template(course, subject, academic_year, academic_term=None):
 					frappe.bold(subject), frappe.bold(course)
 				)
 			)
-		_assert_template_matches_period(
-			subject_row.grade_template, academic_year, academic_term
-		)
+		_assert_template_matches_period(subject_row.grade_template, academic_year, academic_term)
 		return subject_row.grade_template
 
 	candidates = []
@@ -163,18 +157,14 @@ def get_grade_template(course, subject, academic_year, academic_term=None):
 		frappe.throw(
 			_(
 				"Multiple Grade Templates match Course {0}, Subject {1}, and Academic Year {2}. Keep one matching template on the Course or set a template on the Subject."
-			).format(
-				frappe.bold(course), frappe.bold(subject), frappe.bold(academic_year)
-			)
+			).format(frappe.bold(course), frappe.bold(subject), frappe.bold(academic_year))
 		)
 
 	return candidates[0]
 
 
 def _assert_template_matches_period(grade_template, academic_year, academic_term=None):
-	year, term = frappe.db.get_value(
-		"Grade Template", grade_template, ["academic_year", "academic_term"]
-	)
+	year, term = frappe.db.get_value("Grade Template", grade_template, ["academic_year", "academic_term"])
 	if year != academic_year:
 		frappe.throw(
 			_("Grade Template {0} belongs to Academic Year {1}, not {2}").format(

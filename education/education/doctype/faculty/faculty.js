@@ -3,6 +3,7 @@
 
 frappe.ui.form.on('Faculty', {
   refresh(frm) {
+    set_course_subject_fields_read_only(frm)
     frappe.db
       .get_single_value('Education Settings', 'user_creation_skip')
       .then((r) => {
@@ -12,6 +13,16 @@ frappe.ui.form.on('Faculty', {
       })
   },
 })
+
+function set_course_subject_fields_read_only(frm) {
+  const grid = frm.fields_dict.subjects.grid
+  const skip_fieldtypes = ['Section Break', 'Column Break', 'Tab Break']
+  grid.docfields.forEach((df) => {
+    if (df.fieldname !== 'subject' && !skip_fieldtypes.includes(df.fieldtype)) {
+      grid.update_docfield_property(df.fieldname, 'read_only', 1)
+    }
+  })
+}
 
 frappe.ui.form.on('Course Subject', {
   subjects_add: function (frm) {

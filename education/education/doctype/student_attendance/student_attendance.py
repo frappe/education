@@ -24,9 +24,7 @@ class StudentAttendance(Document):
 
 	def set_date(self):
 		if self.subject_schedule:
-			self.date = frappe.db.get_value(
-				"Subject Schedule", self.subject_schedule, "schedule_date"
-			)
+			self.date = frappe.db.get_value("Subject Schedule", self.subject_schedule, "schedule_date")
 
 	def validate_mandatory(self):
 		if not (self.student_batch or self.subject_schedule):
@@ -114,8 +112,6 @@ def get_holiday_list(company=None):
 	holiday_list = frappe.get_cached_value("Company", company, "default_holiday_list")
 	if not holiday_list:
 		frappe.throw(
-			_("Please set a default Holiday List for Company {0}").format(
-				frappe.bold(get_default_company())
-			)
+			_("Please set a default Holiday List for Company {0}").format(frappe.bold(get_default_company()))
 		)
 	return holiday_list

@@ -78,16 +78,12 @@ class AssessmentPlan(Document):
 
 		if start and schedule_date < getdate(start):
 			frappe.throw(
-				_("Schedule Date cannot be before the start of {0} {1}").format(
-					_(doctype), frappe.bold(name)
-				)
+				_("Schedule Date cannot be before the start of {0} {1}").format(_(doctype), frappe.bold(name))
 			)
 
 		if end and schedule_date > getdate(end):
 			frappe.throw(
-				_("Schedule Date cannot be after the end of {0} {1}").format(
-					_(doctype), frappe.bold(name)
-				)
+				_("Schedule Date cannot be after the end of {0} {1}").format(_(doctype), frappe.bold(name))
 			)
 
 	def validate_company(self):
@@ -106,9 +102,7 @@ class AssessmentPlan(Document):
 			company = frappe.db.get_value(doctype, value, "company")
 			if company and company != self.company:
 				frappe.throw(
-					_("Company must be the same as that of {0} {1}").format(
-						_(doctype), frappe.bold(value)
-					)
+					_("Company must be the same as that of {0} {1}").format(_(doctype), frappe.bold(value))
 				)
 
 	def validate_overlap(self):

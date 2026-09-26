@@ -35,9 +35,7 @@ class FeeTerm(Document):
 		total = sum(flt(component.value) for component in self.fee_components)
 		if flt(total, 2) != 100:
 			frappe.throw(
-				_("Total value of all Fee Components must be 100%, currently {0}%.").format(
-					flt(total, 2)
-				)
+				_("Total value of all Fee Components must be 100%, currently {0}%.").format(flt(total, 2))
 			)
 
 	def validate_payment_terms(self):
@@ -45,24 +43,18 @@ class FeeTerm(Document):
 			return
 
 		if not self.payment_terms:
-			frappe.throw(
-				_("Payment Terms are required for term type {0}.").format(self.term_type)
-			)
+			frappe.throw(_("Payment Terms are required for term type {0}.").format(self.term_type))
 
 		for row in self.payment_terms:
 			if self.term_type == "Fixed Fees of Days" and not row.due_days:
 				frappe.throw(
-					_("Row {0}: Due Days is mandatory for term type {1}.").format(
-						row.idx, self.term_type
-					)
+					_("Row {0}: Due Days is mandatory for term type {1}.").format(row.idx, self.term_type)
 				)
 
 			if self.term_type == "Fixed Fees of Dates":
 				if not row.due_date:
 					frappe.throw(
-						_("Row {0}: Due Date is mandatory for term type {1}.").format(
-							row.idx, self.term_type
-						)
+						_("Row {0}: Due Date is mandatory for term type {1}.").format(row.idx, self.term_type)
 					)
 				if self.posting_date and getdate(row.due_date) < getdate(self.posting_date):
 					frappe.throw(_("Row {0}: Due Date cannot be before Posting Date.").format(row.idx))
@@ -70,9 +62,9 @@ class FeeTerm(Document):
 		total_percent = sum(flt(row.percent_of_total) for row in self.payment_terms)
 		if flt(total_percent, 2) != 100:
 			frappe.throw(
-				_(
-					"Total Percent of Total of all Payment Terms must be 100%, currently {0}%."
-				).format(flt(total_percent, 2))
+				_("Total Percent of Total of all Payment Terms must be 100%, currently {0}%.").format(
+					flt(total_percent, 2)
+				)
 			)
 
 	def validate_duration_settings(self):

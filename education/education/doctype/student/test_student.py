@@ -10,12 +10,13 @@ from education.education.doctype.program.test_program import (
 
 test_records = frappe.get_test_records("Student")
 from frappe.tests.utils import FrappeTestCase
+
 from education.education.test_utils import create_student
 
 
 class TestStudent(FrappeTestCase):
 	def setUp(self):
-		student = create_student()
+		create_student()
 
 	def test_create_student_user(self):
 		self.assertTrue(bool(frappe.db.exists("User", "test@example.com")))

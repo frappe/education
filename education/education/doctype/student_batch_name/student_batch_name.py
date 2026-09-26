@@ -14,11 +14,7 @@ class StudentBatchName(Document):
 		self.validate_strength()
 
 	def validate_dates(self):
-		if (
-			self.start_date
-			and self.end_date
-			and getdate(self.end_date) < getdate(self.start_date)
-		):
+		if self.start_date and self.end_date and getdate(self.end_date) < getdate(self.start_date):
 			frappe.throw(_("End Date cannot be before Start Date"))
 
 	def validate_company(self):
@@ -83,9 +79,7 @@ def get_batch_occupancy(batch, exclude_applicant=None, exclude_enrollment=None):
 		pluck="name",
 	)
 	reserved = sum(
-		1
-		for name in approved_applicants
-		if name != exclude_applicant and name not in enrolled_applicants
+		1 for name in approved_applicants if name != exclude_applicant and name not in enrolled_applicants
 	)
 
 	return enrolled + reserved

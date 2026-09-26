@@ -46,8 +46,6 @@ def update_fee_plan_invoice_status(payment_entry):
 
 		frappe.get_doc("Fee Plan", fee_plan_name).run_method("update_outstanding_amount")
 
-	frappe.db.commit()
-
 
 def on_unreconcile_payment(doc, method=None):
 	for allocation in doc.allocations:
@@ -71,8 +69,6 @@ def on_unreconcile_payment(doc, method=None):
 						},
 					)
 					frappe.get_doc("Fee Plan", fee_plan_name).run_method("update_outstanding_amount")
-
-	frappe.db.commit()
 
 
 def on_payment_entry_update_after_submit(doc, method=None):
@@ -103,5 +99,3 @@ def on_payment_entry_update_after_submit(doc, method=None):
 						},
 					)
 					frappe.get_doc("Fee Plan", fee_plan_name).run_method("update_outstanding_amount")
-
-	frappe.db.commit()

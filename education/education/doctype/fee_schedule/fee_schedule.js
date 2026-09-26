@@ -58,7 +58,7 @@ frappe.ui.form.on('Fee Schedule', {
         frm.reload_doc()
       }
       if (data.progress) {
-        let progress_bar = $(cur_frm.dashboard.progress_area.body).find(
+        let progress_bar = $(frm.dashboard.progress_area.body).find(
           '.progress-bar'
         )
         if (progress_bar) {
@@ -101,27 +101,27 @@ frappe.ui.form.on('Fee Schedule', {
     if (frm.doc.docstatus === 1 || frm.doc.status === 'Failed') {
       let button_label = 'Create Sales Invoice'
 
-      frappe.db.get_value('Education Settings', {}, 'create_so', (r) => {
-        // convert r.create_so to number
-        if (+r.create_so) {
-          button_label = 'Create Sales Order'
-          // set indicator in the frm
-        }
-        if (
-          frm.doc.status === 'Order Pending' ||
-          frm.doc.status === 'Invoice Pending'
-        ) {
-          frm.add_custom_button(__(button_label), function () {
-            frappe.call({
-              method: 'create_fees',
-              doc: frm.doc,
-              callback: function () {
-                frm.refresh()
-              },
+      frappe.db
+        .get_single_value('Education Settings', 'create_so')
+        .then((create_so) => {
+          if (+create_so) {
+            button_label = 'Create Sales Order'
+          }
+          if (
+            frm.doc.status === 'Order Pending' ||
+            frm.doc.status === 'Invoice Pending'
+          ) {
+            frm.add_custom_button(__(button_label), function () {
+              frappe.call({
+                method: 'create_fees',
+                doc: frm.doc,
+                callback: function () {
+                  frm.refresh()
+                },
+              })
             })
-          })
-        }
-      })
+          }
+        })
     }
   },
 

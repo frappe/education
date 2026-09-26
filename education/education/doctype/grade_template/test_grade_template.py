@@ -7,9 +7,7 @@ from frappe.tests.utils import FrappeTestCase
 
 class TestGradeTemplate(FrappeTestCase):
 	def setUp(self):
-		self.company = frappe.db.get_value(
-			"Company", {"company_name": "_Test Company"}, "name"
-		)
+		self.company = frappe.db.get_value("Company", {"company_name": "_Test Company"}, "name")
 		if not self.company:
 			self.company = frappe.get_all("Company", pluck="name", limit=1)[0]
 

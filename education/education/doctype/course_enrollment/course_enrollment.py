@@ -12,13 +12,13 @@ from frappe.utils import cint, flt, get_link_to_form
 from education.education.doctype.admission_register.admission_register import (
 	ENROLLMENT_ALLOWED_STATUSES,
 )
-from education.education.doctype.student_batch_name.student_batch_name import (
-	validate_batch_capacity,
-)
 from education.education.doctype.fee_plan.fee_plan import (
 	INSTALLMENT_TERM_TYPES,
 	get_billing_error,
 	get_installments,
+)
+from education.education.doctype.student_batch_name.student_batch_name import (
+	validate_batch_capacity,
 )
 
 BILLING_NOT_APPLICABLE = "Not Applicable"
@@ -107,9 +107,9 @@ class CourseEnrollment(Document):
 		total_fee = get_course_fee(self.admission_register, self.course)
 		if total_fee <= 0:
 			errors.append(
-				_(
-					"Course fee amount for course {0} is not defined in Admission Register {1}."
-				).format(self.course, self.admission_register)
+				_("Course fee amount for course {0} is not defined in Admission Register {1}.").format(
+					self.course, self.admission_register
+				)
 			)
 			return
 
@@ -117,9 +117,7 @@ class CourseEnrollment(Document):
 		payable_amount = flt(total_fee) - discount_amount
 		installments = get_installments(fee_term, payable_amount, self.enrollment_date)
 		if not installments:
-			errors.append(
-				_("Fee Term {0} has no installments to invoice.").format(self.fee_term)
-			)
+			errors.append(_("Fee Term {0} has no installments to invoice.").format(self.fee_term))
 			return
 
 		frappe.db.savepoint("create_fee_plan")
@@ -255,7 +253,10 @@ class CourseEnrollment(Document):
 		self.billing_error = error_text
 
 	def _notify_billing_result(self, errors):
-		if not errors and self.billing_status in (BILLING_CREATED, BILLING_NOT_APPLICABLE):
+		if not errors and self.billing_status in (
+			BILLING_CREATED,
+			BILLING_NOT_APPLICABLE,
+		):
 			return
 
 		frappe.msgprint(
@@ -307,15 +308,11 @@ class CourseEnrollment(Document):
 			as_dict=True,
 		)
 		if not register or register.docstatus != 1:
-			frappe.throw(
-				_("Admission Register {0} must be submitted.").format(self.admission_register)
-			)
+			frappe.throw(_("Admission Register {0} must be submitted.").format(self.admission_register))
 
 		if register.status not in ENROLLMENT_ALLOWED_STATUSES:
 			frappe.throw(
-				_("Admission has not started for Admission Register {0}.").format(
-					self.admission_register
-				)
+				_("Admission has not started for Admission Register {0}.").format(self.admission_register)
 			)
 
 		if register.admission_based_on == "Program" and register.program:
@@ -469,9 +466,7 @@ class CourseEnrollment(Document):
 		registration.insert(ignore_permissions=True)
 		registration.get_subjects()
 
-		subject_selection = (
-			frappe.db.get_value("Course", self.course, "subject_selection") or "Regular"
-		)
+		subject_selection = frappe.db.get_value("Course", self.course, "subject_selection") or "Regular"
 		if subject_selection == "Regular" and not course_has_electives(self.course):
 			registration.reload()
 			registration.flags.ignore_permissions = True
@@ -530,13 +525,9 @@ class CourseEnrollment(Document):
 			get_course_subjects,
 		)
 
-		return [
-			row.get("subject") for row in get_course_subjects(self.course) if row.get("subject")
-		]
+		return [row.get("subject") for row in get_course_subjects(self.course) if row.get("subject")]
 
-	def add_quiz_activity(
-		self, quiz_name, quiz_response, answers, score, status, time_taken
-	):
+	def add_quiz_activity(self, quiz_name, quiz_response, answers, score, status, time_taken):
 		result = {k: ("Correct" if v else "Wrong") for k, v in answers.items()}
 		result_data = []
 		for key in answers:
@@ -556,7 +547,7 @@ class CourseEnrollment(Document):
 				item["selected_option"] = "Unattempted"
 			result_data.append(item)
 
-		quiz_activity = frappe.get_doc(
+		frappe.get_doc(
 			{
 				"doctype": "Quiz Activity",
 				"enrollment": self.name,
@@ -589,7 +580,7 @@ class CourseEnrollment(Document):
 
 
 @frappe.whitelist()
-def get_next_roll_number(batch):
+def get_next_roll_number(batch: str):
 	"""Return the next roll number available in the batch."""
 	roll_numbers = frappe.get_all(
 		"Course Enrollment",
@@ -666,13 +657,11 @@ def get_enrolled_subject_names(student, course, student_batch=None):
 		get_course_subjects,
 	)
 
-	return [
-		row.get("subject") for row in get_course_subjects(course) if row.get("subject")
-	]
+	return [row.get("subject") for row in get_course_subjects(course) if row.get("subject")]
 
 
 @frappe.whitelist()
-def get_allowed_courses(admission_register, student=None):
+def get_allowed_courses(admission_register: str, student: str | None = None):
 	"""Return register courses the student is not yet enrolled in."""
 	courses = get_register_courses(admission_register)
 

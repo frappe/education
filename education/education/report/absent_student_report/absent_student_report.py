@@ -35,7 +35,7 @@ def execute(filters=None):
 
 	data = []
 	for student in absent_students:
-		if not student.student in leave_applicants:
+		if student.student not in leave_applicants:
 			row = [student.student, student.student_name, student.student_batch]
 			stud_details = frappe.db.get_value(
 				"Student",

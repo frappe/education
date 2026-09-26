@@ -13,9 +13,7 @@ import education.education
 
 class AssessmentResult(Document):
 	def validate(self):
-		education.education.validate_student_belongs_to_batch(
-			self.student, self.student_batch
-		)
+		education.education.validate_student_belongs_to_batch(self.student, self.student_batch)
 		self.validate_assessment_plan()
 		self.validate_maximum_score()
 		self.calculate_percentage()
@@ -28,13 +26,9 @@ class AssessmentResult(Document):
 		if not self.assessment_plan:
 			return
 
-		plan_status = frappe.db.get_value(
-			"Assessment Plan", self.assessment_plan, "docstatus"
-		)
+		plan_status = frappe.db.get_value("Assessment Plan", self.assessment_plan, "docstatus")
 		if plan_status != 1:
-			frappe.throw(
-				_("Assessment Plan {0} must be submitted").format(frappe.bold(self.assessment_plan))
-			)
+			frappe.throw(_("Assessment Plan {0} must be submitted").format(frappe.bold(self.assessment_plan)))
 
 	def validate_maximum_score(self):
 		self.maximum_score = frappe.db.get_value(
@@ -43,9 +37,7 @@ class AssessmentResult(Document):
 
 		if not self.maximum_score:
 			frappe.throw(
-				_("Maximum Score is not set on Assessment Plan {0}").format(
-					frappe.bold(self.assessment_plan)
-				)
+				_("Maximum Score is not set on Assessment Plan {0}").format(frappe.bold(self.assessment_plan))
 			)
 
 		if flt(self.score) > flt(self.maximum_score):
@@ -92,9 +84,7 @@ class AssessmentResult(Document):
 		)
 
 
-def _get_computed_grade_book(
-	student, course, academic_year, academic_term=None, student_batch=None
-):
+def _get_computed_grade_book(student, course, academic_year, academic_term=None, student_batch=None):
 	if not (student and course and academic_year):
 		return None
 

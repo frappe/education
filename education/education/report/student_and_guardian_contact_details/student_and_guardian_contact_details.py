@@ -41,10 +41,10 @@ def execute(filters=None):
 		student_guardians = guardian_map.get(d.student, [])
 		# only 2 guardians per student
 		for i, g in enumerate(student_guardians[:2]):
-			row[f"guardian{i+1}_name"] = g.guardian_name
-			row[f"relation_with_guardian{i+1}"] = g.relation
-			row[f"guardian{i+1}_mobile_no"] = g.mobile_number
-			row[f"guardian{i+1}_email_id"] = g.email_address
+			row[f"guardian{i + 1}_name"] = g.guardian_name
+			row[f"relation_with_guardian{i + 1}"] = g.relation
+			row[f"guardian{i + 1}_mobile_no"] = g.mobile_number
+			row[f"guardian{i + 1}_email_id"] = g.email_address
 
 		data.append(row)
 

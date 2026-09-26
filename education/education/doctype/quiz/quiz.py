@@ -19,7 +19,10 @@ class Quiz(Document):
 		try:
 			if (
 				len(
-					frappe.get_all("Quiz Activity", {"enrollment": enrollment.name, "quiz": quiz_name})
+					frappe.get_all(
+						"Quiz Activity",
+						{"enrollment": enrollment.name, "quiz": quiz_name},
+					)
 				)
 				>= self.max_attempts
 			):
@@ -27,13 +30,11 @@ class Quiz(Document):
 				return False
 			else:
 				return True
-		except Exception as e:
+		except Exception:
 			return False
 
 	def evaluate(self, response_dict, quiz_name):
-		questions = [
-			frappe.get_doc("Question", question.question_link) for question in self.question
-		]
+		questions = [frappe.get_doc("Question", question.question_link) for question in self.question]
 		answers = {q.name: q.get_answer() for q in questions}
 		result = {}
 		for key in answers:
@@ -42,7 +43,7 @@ class Quiz(Document):
 					is_correct = compare_list_elementwise(response_dict[key], answers[key])
 				else:
 					is_correct = response_dict[key] == answers[key]
-			except Exception as e:
+			except Exception:
 				is_correct = False
 			result[key] = is_correct
 		score = (sum(result.values()) * 100) / len(answers)
@@ -53,9 +54,7 @@ class Quiz(Document):
 		return result, score, status
 
 	def get_questions(self):
-		return [
-			frappe.get_doc("Question", question.question_link) for question in self.question
-		]
+		return [frappe.get_doc("Question", question.question_link) for question in self.question]
 
 
 def compare_list_elementwise(*args):
@@ -69,7 +68,7 @@ def compare_list_elementwise(*args):
 
 
 @frappe.whitelist()
-def get_topics_without_quiz(quiz):
+def get_topics_without_quiz(quiz: str):
 	data = []
 	for entry in frappe.db.get_all("Topic"):
 		topic = frappe.get_doc("Topic", entry.name)

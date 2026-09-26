@@ -16,14 +16,15 @@ class StudentAttendanceTool(Document):
 
 @frappe.whitelist()
 def get_student_attendance_records(
-	based_on, date=None, student_batch=None, subject_schedule=None
+	based_on: str,
+	date: str | None = None,
+	student_batch: str | None = None,
+	subject_schedule: str | None = None,
 ):
 	student_attendance_list = []
 
 	if based_on == "Subject Schedule":
-		student_batch = frappe.db.get_value(
-			"Subject Schedule", subject_schedule, "student_batch"
-		)
+		student_batch = frappe.db.get_value("Subject Schedule", subject_schedule, "student_batch")
 
 	student_list = get_batch_students(student_batch) if student_batch else []
 
@@ -33,7 +34,7 @@ def get_student_attendance_records(
 		student_attendance_list = (
 			frappe.qb.from_(StudentAttendance)
 			.select(StudentAttendance.student, StudentAttendance.status)
-			.where((StudentAttendance.subject_schedule == subject_schedule))
+			.where(StudentAttendance.subject_schedule == subject_schedule)
 		).run(as_dict=True)
 	else:
 		student_attendance_list = (
@@ -42,10 +43,7 @@ def get_student_attendance_records(
 			.where(
 				(StudentAttendance.student_batch == student_batch)
 				& (StudentAttendance.date == date)
-				& (
-					(StudentAttendance.subject_schedule == "")
-					| (StudentAttendance.subject_schedule.isnull())
-				)
+				& ((StudentAttendance.subject_schedule == "") | (StudentAttendance.subject_schedule.isnull()))
 			)
 		).run(as_dict=True)
 
