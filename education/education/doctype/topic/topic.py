@@ -17,7 +17,7 @@ class Topic(Document):
 				frappe.get_doc(topic_content.content_type, topic_content.content)
 				for topic_content in topic_content_list
 			]
-		except Exception as e:
+		except Exception:
 			frappe.log_error(frappe.get_traceback())
 			return None
 		return content_data
@@ -44,9 +44,7 @@ def add_topic_to_courses(topic, courses, mandatory=False):
 		course.save()
 	frappe.db.commit()
 	frappe.msgprint(
-		_("Topic {0} has been added to all the selected courses successfully.").format(
-			frappe.bold(topic)
-		),
+		_("Topic {0} has been added to all the selected courses successfully.").format(frappe.bold(topic)),
 		title=_("Courses updated"),
 		indicator="green",
 	)

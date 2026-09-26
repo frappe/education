@@ -4,8 +4,8 @@
 
 import frappe
 from frappe import _
-from frappe.query_builder.functions import Sum
 from frappe.query_builder import Order
+from frappe.query_builder.functions import Sum
 
 
 def execute(filters=None):
@@ -61,9 +61,7 @@ def get_data(filters=None):
 		.on(sales_invoice.fee_schedule == fee_schedule.name)
 		.select(
 			fee_schedule.program,
-			(Sum(sales_invoice.grand_total) - Sum(sales_invoice.outstanding_amount)).as_(
-				"paid_amount"
-			),
+			(Sum(sales_invoice.grand_total) - Sum(sales_invoice.outstanding_amount)).as_("paid_amount"),
 			Sum(sales_invoice.outstanding_amount).as_("outstanding_amount"),
 			Sum(sales_invoice.grand_total).as_("grand_total"),
 		)

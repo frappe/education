@@ -56,14 +56,11 @@ class StudentLeaveApplication(Document):
 
 	def validate_holiday_list(self):
 		holiday_list = get_holiday_list()
-		self.total_leave_days = get_number_of_leave_days(
-			self.from_date, self.to_date, holiday_list
-		)
+		self.total_leave_days = get_number_of_leave_days(self.from_date, self.to_date, holiday_list)
 
 	def update_attendance(self):
-
 		# get classes organized between from_date and to_date
-		leave_classes = frappe.db.get_list(
+		_leave_classes = frappe.db.get_list(
 			"Subject Schedule",
 			filters={
 				"docstatus": 1,

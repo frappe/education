@@ -15,7 +15,7 @@ CATALOG_FIELDS = (
 	"credit",
 	"attempted_units",
 )
-SUBJECT_ROW_FIELDS = CATALOG_FIELDS + ("source",)
+SUBJECT_ROW_FIELDS = (*CATALOG_FIELDS, "source")
 
 
 class SubjectRegistration(Document):
@@ -62,9 +62,7 @@ class SubjectRegistration(Document):
 		)
 		if not enrollment:
 			frappe.throw(
-				_("Course Enrollment {0} does not exist.").format(
-					frappe.bold(self.course_enrollment)
-				)
+				_("Course Enrollment {0} does not exist.").format(frappe.bold(self.course_enrollment))
 			)
 
 		self.student = enrollment.student
@@ -187,25 +185,19 @@ class SubjectRegistration(Document):
 		if not subject:
 			return
 		if subject in seen:
-			frappe.throw(
-				_("Subject {0} is selected more than once.").format(frappe.bold(subject))
-			)
+			frappe.throw(_("Subject {0} is selected more than once.").format(frappe.bold(subject)))
 		seen.add(subject)
 
 	def validate_for_submit(self):
 		catalog = get_course_subject_map(self.course)
-		required = {
-			subject
-			for subject, meta in catalog.items()
-			if meta.get("subject_type") == "Compulsory"
-		}
+		required = {subject for subject, meta in catalog.items() if meta.get("subject_type") == "Compulsory"}
 		present = {row.subject for row in self.compulsory_subjects or [] if row.subject}
 		missing = required - present
 		if missing:
 			frappe.throw(
-				_(
-					"Compulsory subjects are missing: {0}. Click Get Subjects before submitting."
-				).format(", ".join(frappe.bold(subject) for subject in sorted(missing)))
+				_("Compulsory subjects are missing: {0}. Click Get Subjects before submitting.").format(
+					", ".join(frappe.bold(subject) for subject in sorted(missing))
+				)
 			)
 
 		selected = list(self.compulsory_subjects or []) + list(self.elective_subjects or [])
@@ -324,15 +316,11 @@ def get_course_subjects(course):
 
 
 def get_course_subject_map(course):
-	return {
-		row.get("subject"): row for row in get_course_subjects(course) if row.get("subject")
-	}
+	return {row.get("subject"): row for row in get_course_subjects(course) if row.get("subject")}
 
 
 def course_has_electives(course):
-	return any(
-		row.get("subject_type") == "Elective" for row in get_course_subjects(course)
-	)
+	return any(row.get("subject_type") == "Elective" for row in get_course_subjects(course))
 
 
 @frappe.whitelist()

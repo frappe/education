@@ -14,9 +14,7 @@ def execute(filters=None):
 	grade_book = frappe.get_doc("Grade Book", filters.grade_book)
 	grade_book.check_permission("read")
 	if grade_book.status != "Computed":
-		frappe.throw(
-			_("Grade Book {0} has not been computed").format(frappe.bold(grade_book.name))
-		)
+		frappe.throw(_("Grade Book {0} has not been computed").format(frappe.bold(grade_book.name)))
 
 	cohort = get_cohort_statistics(grade_book)
 	data = get_data(grade_book, cohort.subject_averages)
@@ -127,9 +125,7 @@ def get_cohort_statistics(grade_book):
 		INNER JOIN `tabGrade Book` gb ON gb.name = gbs.parent
 		WHERE {conditions}
 		GROUP BY gbs.subject
-		""".format(
-			conditions=" AND ".join(conditions)
-		),
+		""".format(conditions=" AND ".join(conditions)),
 		values,
 		as_dict=True,
 	)
@@ -139,9 +135,7 @@ def get_cohort_statistics(grade_book):
 		FROM `tabGrade Book` gb
 		WHERE {conditions}
 		ORDER BY gb.overall_percentage DESC, gb.name ASC
-		""".format(
-			conditions=" AND ".join(conditions)
-		),
+		""".format(conditions=" AND ".join(conditions)),
 		values,
 		as_dict=True,
 	)
@@ -149,8 +143,7 @@ def get_cohort_statistics(grade_book):
 	rank = None
 	if any(row.name == grade_book.name for row in overall_rows):
 		rank = 1 + sum(
-			flt(row.overall_percentage) > flt(grade_book.overall_percentage)
-			for row in overall_rows
+			flt(row.overall_percentage) > flt(grade_book.overall_percentage) for row in overall_rows
 		)
 	return frappe._dict(
 		subject_averages={row.subject: flt(row.average, 2) for row in subject_rows},

@@ -25,9 +25,7 @@ from education.education.utils import OverlapError
 class TestSubjectSchedule(FrappeTestCase):
 	def setUp(self):
 		create_academic_year()
-		create_academic_term(
-			term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30"
-		)
+		create_academic_term(term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30")
 		create_program("Class 1")
 		create_student()
 		self.faculty = create_faculty()
@@ -140,9 +138,7 @@ def make_subject_schedule_test_record(**args):
 
 	subject_schedule.schedule_date = args.schedule_date or today()
 	subject_schedule.from_time = args.from_time or to_timedelta("01:00:00")
-	subject_schedule.to_time = (
-		args.to_time or subject_schedule.from_time + datetime.timedelta(hours=1)
-	)
+	subject_schedule.to_time = args.to_time or subject_schedule.from_time + datetime.timedelta(hours=1)
 
 	if not args.do_not_save:
 		if args.simulate:
@@ -151,9 +147,7 @@ def make_subject_schedule_test_record(**args):
 					subject_schedule.save()
 					break
 				except OverlapError:
-					subject_schedule.from_time = subject_schedule.from_time + datetime.timedelta(
-						minutes=10
-					)
+					subject_schedule.from_time = subject_schedule.from_time + datetime.timedelta(minutes=10)
 					subject_schedule.to_time = subject_schedule.from_time + datetime.timedelta(hours=1)
 		else:
 			subject_schedule.save()

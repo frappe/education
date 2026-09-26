@@ -45,9 +45,7 @@ def execute(filters=None):
 				elif attendance.status == "Leave":
 					leave_students = attendance.count
 
-		unmarked_students = batch_strength - (
-			present_students + absent_students + leave_students
-		)
+		unmarked_students = batch_strength - (present_students + absent_students + leave_students)
 		row = {
 			"student_batch": batch.name,
 			"batch_strength": batch_strength,
@@ -112,9 +110,7 @@ def get_active_batches(date):
 
 
 def get_batch_strength(student_batch):
-	return frappe.db.count(
-		"Course Enrollment", {"student_batch": student_batch, "docstatus": 1}
-	)
+	return frappe.db.count("Course Enrollment", {"student_batch": student_batch, "docstatus": 1})
 
 
 def get_student_attendance(student_batch, date):

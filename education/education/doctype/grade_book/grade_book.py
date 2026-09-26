@@ -11,7 +11,6 @@ from frappe.utils import flt, getdate
 from education.education.api import get_grade_details
 from education.education.doctype.course.course import get_grade_template
 
-
 # NOTE: remember to map the correct status here
 ATTENDANCE_STATUS_MAP = {
 	"Present": "Present",
@@ -62,9 +61,7 @@ class GradeBook(Document):
 			company = frappe.db.get_value(doctype, value, "company")
 			if company and company != self.company:
 				frappe.throw(
-					_("Company must be the same as that of {0} {1}").format(
-						_(doctype), frappe.bold(value)
-					)
+					_("Company must be the same as that of {0} {1}").format(_(doctype), frappe.bold(value))
 				)
 
 	def validate_enrollment(self):
@@ -133,9 +130,7 @@ class GradeBook(Document):
 		)
 		if existing:
 			frappe.throw(
-				_(
-					"Grade Book {0} already exists for Student {1}, Course {2}, Academic Year {3}{4}"
-				).format(
+				_("Grade Book {0} already exists for Student {1}, Course {2}, Academic Year {3}{4}").format(
 					frappe.bold(existing[0][0]),
 					frappe.bold(self.student),
 					frappe.bold(self.course),
@@ -153,9 +148,7 @@ class GradeBook(Document):
 			frappe.throw(_("Grading Scale is mandatory"))
 
 		if frappe.db.get_value("Grading Scale", self.grading_scale, "docstatus") != 1:
-			frappe.throw(
-				_("Grading Scale {0} must be submitted").format(frappe.bold(self.grading_scale))
-			)
+			frappe.throw(_("Grading Scale {0} must be submitted").format(frappe.bold(self.grading_scale)))
 
 	def reset_if_identity_changed(self):
 		if self.is_new() or self.status != "Computed":
@@ -220,9 +213,7 @@ class GradeBook(Document):
 		self.set("attendance_components", [])
 
 		for subject in subjects:
-			template_name = get_grade_template(
-				self.course, subject, self.academic_year, self.academic_term
-			)
+			template_name = get_grade_template(self.course, subject, self.academic_year, self.academic_term)
 			template = frappe.get_doc("Grade Template", template_name)
 
 			if template.weightage_type == "Assignment Type Weightage":
@@ -291,12 +282,8 @@ class GradeBook(Document):
 
 	def compute_overall(self):
 		percentages = [flt(row.percentage) for row in self.subjects]
-		self.overall_percentage = (
-			flt(sum(percentages) / len(percentages), 6) if percentages else 0
-		)
-		self.overall_grade = get_grade_details(
-			self.grading_scale, self.overall_percentage
-		).grade_code
+		self.overall_percentage = flt(sum(percentages) / len(percentages), 6) if percentages else 0
+		self.overall_grade = get_grade_details(self.grading_scale, self.overall_percentage).grade_code
 
 	def _compute_assignment_percentage(self, subject, template):
 		weights = {
@@ -306,9 +293,7 @@ class GradeBook(Document):
 		}
 		if not weights:
 			frappe.throw(
-				_("Grade Template {0} has no Assignment Type weights").format(
-					frappe.bold(template.name)
-				)
+				_("Grade Template {0} has no Assignment Type weights").format(frappe.bold(template.name))
 			)
 
 		results = self._get_assessment_results(subject)
@@ -317,9 +302,7 @@ class GradeBook(Document):
 			if result.assignment_type in weights:
 				by_type[result.assignment_type].append(flt(result.percentage))
 
-		missing = [
-			assignment_type for assignment_type in weights if assignment_type not in by_type
-		]
+		missing = [assignment_type for assignment_type in weights if assignment_type not in by_type]
 		if missing:
 			frappe.throw(
 				_(
@@ -334,9 +317,7 @@ class GradeBook(Document):
 		weighted = 0
 		components = []
 		for assignment_type, weightage in weights.items():
-			raw_percentage = flt(
-				sum(by_type[assignment_type]) / len(by_type[assignment_type]), 6
-			)
+			raw_percentage = flt(sum(by_type[assignment_type]) / len(by_type[assignment_type]), 6)
 			weighted_percentage = flt(raw_percentage * weightage / 100.0, 6)
 			weighted += weighted_percentage
 			components.append(
@@ -381,9 +362,7 @@ class GradeBook(Document):
 			FROM `tabAssessment Result` ar
 			INNER JOIN `tabAssessment Plan` ap ON ap.name = ar.assessment_plan
 			WHERE {conditions}
-			""".format(
-				conditions=" AND ".join(conditions)
-			),
+			""".format(conditions=" AND ".join(conditions)),
 			values,
 			as_dict=True,
 		)
@@ -395,17 +374,13 @@ class GradeBook(Document):
 			if row.attendance_type
 		}
 		if not weights:
-			frappe.throw(
-				_("Grade Template {0} has no Attendance weights").format(frappe.bold(template.name))
-			)
+			frappe.throw(_("Grade Template {0} has no Attendance weights").format(frappe.bold(template.name)))
 
 		records = self._get_attendance_records(subject)
 		if not records:
 			from_date, to_date = self._get_period_dates()
 			frappe.throw(
-				_(
-					"Student {0} has no submitted Attendance between {1} and {2} for Subject {3}"
-				).format(
+				_("Student {0} has no submitted Attendance between {1} and {2} for Subject {3}").format(
 					frappe.bold(self.student),
 					frappe.bold(from_date),
 					frappe.bold(to_date),
@@ -517,9 +492,7 @@ def get_enrolled_students(doctype, txt, searchfield, start, page_len, filters):
 			if(locate(%(_txt)s, s.name), locate(%(_txt)s, s.name), 99999),
 			s.student_name
 		LIMIT {start}, {page_len}
-		""".format(
-			conditions=" AND ".join(conditions), start=start, page_len=page_len
-		),
+		""".format(conditions=" AND ".join(conditions), start=start, page_len=page_len),
 		values,
 	)
 
@@ -556,9 +529,7 @@ def get_enrolled_courses(doctype, txt, searchfield, start, page_len, filters):
 			if(locate(%(_txt)s, c.name), locate(%(_txt)s, c.name), 99999),
 			c.course_name
 		LIMIT {start}, {page_len}
-		""".format(
-			conditions=" AND ".join(conditions), start=start, page_len=page_len
-		),
+		""".format(conditions=" AND ".join(conditions), start=start, page_len=page_len),
 		values,
 	)
 
@@ -595,18 +566,14 @@ def create_grade_books(student_batch, academic_year, academic_term=None):
 	)
 	if not enrollments:
 		frappe.throw(
-			_("No submitted Course Enrollments found for Batch {0}").format(
-				frappe.bold(student_batch)
-			)
+			_("No submitted Course Enrollments found for Batch {0}").format(frappe.bold(student_batch))
 		)
 
 	created = []
 	skipped = []
 	for enrollment in enrollments:
 		course = enrollment.course or batch.course
-		existing = _grade_book_exists(
-			enrollment.student, course, academic_year, academic_term
-		)
+		existing = _grade_book_exists(enrollment.student, course, academic_year, academic_term)
 		if existing:
 			skipped.append(existing[0][0])
 			continue
@@ -631,9 +598,5 @@ def create_grade_books(student_batch, academic_year, academic_term=None):
 		grade_book.insert()
 		created.append(grade_book.name)
 
-	frappe.msgprint(
-		_("Created {0} Grade Book(s). {1} already existed.").format(
-			len(created), len(skipped)
-		)
-	)
+	frappe.msgprint(_("Created {0} Grade Book(s). {1} already existed.").format(len(created), len(skipped)))
 	return {"created": created, "skipped": skipped}

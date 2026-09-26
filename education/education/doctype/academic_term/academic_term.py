@@ -10,9 +10,7 @@ from frappe.utils import getdate
 
 class AcademicTerm(Document):
 	def autoname(self):
-		self.name = (
-			self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
-		)
+		self.name = self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
 
 	def validate(self):
 		self.set_title()
@@ -22,9 +20,7 @@ class AcademicTerm(Document):
 		self.validate_company()
 
 	def set_title(self):
-		self.title = (
-			self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
-		)
+		self.title = self.academic_year + " ({})".format(self.term_name) if self.term_name else ""
 
 	def validate_company(self):
 		if not self.academic_year or not self.company:
@@ -90,7 +86,5 @@ class AcademicTerm(Document):
 			and (getdate(self.term_end_date) > getdate(year.year_end_date))
 		):
 			frappe.throw(
-				_("The Term cannot end after the Academic Year {0}").format(
-					frappe.bold(self.academic_year)
-				)
+				_("The Term cannot end after the Academic Year {0}").format(frappe.bold(self.academic_year))
 			)

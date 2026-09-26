@@ -29,7 +29,6 @@ def execute(filters=None):
 
 
 def get_assessment_data(args=None):
-
 	# [total, saved, submitted, remaining]
 	chart_data = [0, 0, 0, 0]
 
@@ -55,25 +54,18 @@ def get_assessment_data(args=None):
 				ap.docstatus = 1 {condition}
 			ORDER BY
 				ap.modified desc
-		""".format(
-			condition=condition
-		),
+		""".format(condition=condition),
 		(args),
 		as_dict=1,
 	)
 
-	assessment_plan_list = (
-		[d.assessment_plan for d in assessment_plan] if assessment_plan else [""]
-	)
+	assessment_plan_list = [d.assessment_plan for d in assessment_plan] if assessment_plan else [""]
 	assessment_result = get_assessment_result(assessment_plan_list)
 
 	for d in assessment_plan:
-
 		assessment_plan_details = assessment_result.get(d.assessment_plan)
 		assessment_plan_details = (
-			frappe._dict()
-			if not assessment_plan_details
-			else frappe._dict(assessment_plan_details)
+			frappe._dict() if not assessment_plan_details else frappe._dict(assessment_plan_details)
 		)
 		if "saved" not in assessment_plan_details:
 			assessment_plan_details.update({"saved": 0})

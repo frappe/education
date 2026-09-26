@@ -25,9 +25,7 @@ def execute(filters=None):
 	columns = get_columns(total_days_in_month)
 	students = get_batch_students(filters.get("student_batch"), include_inactive=1)
 	students_list = get_students_list(students)
-	att_map = get_attendance_list(
-		from_date, to_date, filters.get("student_batch"), students_list
-	)
+	att_map = get_attendance_list(from_date, to_date, filters.get("student_batch"), students_list)
 	data = []
 
 	for stud in students:
@@ -139,15 +137,13 @@ def get_attendance_list(from_date, to_date, student_batch, students_list):
 	)
 
 	att_map = {}
-	students_with_leave_application = get_students_with_leave_application(
-		from_date, to_date, students_list
-	)
+	students_with_leave_application = get_students_with_leave_application(from_date, to_date, students_list)
 	for d in attendance_list:
 		att_map.setdefault(d.student, frappe._dict()).setdefault(d.date, "")
 
-		if students_with_leave_application.get(
+		if students_with_leave_application.get(d.date) and d.student in students_with_leave_application.get(
 			d.date
-		) and d.student in students_with_leave_application.get(d.date):
+		):
 			att_map[d.student][d.date] = "Present"
 		else:
 			att_map[d.student][d.date] = d.status

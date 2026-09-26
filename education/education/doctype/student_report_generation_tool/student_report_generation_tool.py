@@ -31,9 +31,7 @@ def preview_report_card(doc):
 	grade_books = get_grade_books(doc)
 
 	# get the attendance of the student for that peroid of time.
-	doc.attendance = get_attendance_count(
-		doc.students[0], doc.academic_year, doc.academic_term
-	)
+	doc.attendance = get_attendance_count(doc.students[0], doc.academic_year, doc.academic_term)
 
 	html = frappe.render_template(
 		"education/education/doctype/student_report_generation_tool/student_report_generation_tool.html",

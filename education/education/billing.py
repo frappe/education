@@ -1,11 +1,11 @@
 import frappe
-from frappe import _
-from frappe.utils import validate_phone_number, cint, nowdate
 import razorpay
 from erpnext.accounts.doctype.journal_entry.journal_entry import (
 	get_payment_entry_against_invoice,
 )
 from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_payment_entry
+from frappe import _
+from frappe.utils import cint, nowdate, validate_phone_number
 
 
 def get_details(docname):
@@ -21,9 +21,7 @@ def get_client():
 	razorpay_secret = settings.get_password("razorpay_secret", raise_exception=True)
 	if not razorpay_key and not razorpay_secret:
 		frappe.throw(
-			_(
-				"There is a problem with the payment gateway. Please contact the Administrator to proceed."
-			)
+			_("There is a problem with the payment gateway. Please contact the Administrator to proceed.")
 		)
 	return razorpay.Client(auth=(razorpay_key, razorpay_secret))
 
@@ -109,9 +107,7 @@ def handle_payment_success(response, against_invoice, billing_details):
 	client.utility.verify_payment_signature(response)
 	payment_details = get_details(against_invoice)
 
-	payment_record = create_razorpay_payment_record(
-		{**response, **billing_details, **payment_details}, "Captured"
-	)
+	create_razorpay_payment_record({**response, **billing_details, **payment_details}, "Captured")
 
 	try:
 		frappe.flags.ignore_account_permission = True
@@ -128,17 +124,14 @@ def handle_payment_success(response, against_invoice, billing_details):
 
 @frappe.whitelist()
 def handle_payment_failure(response, against_invoice, billing_details):
-
 	response = response["error"]
 	razorpay_date = {
 		"description": response.get("description"),
 		"razorpay_order_id": response["metadata"].get("order_id"),
 		"razorpay_payment_id": response["metadata"].get("payment_id"),
 	}
-	client = get_client()
+	get_client()
 
 	payment_details = get_details(against_invoice)
 
-	payment_record = create_razorpay_payment_record(
-		{**razorpay_date, **billing_details, **payment_details}, "Failed"
-	)
+	create_razorpay_payment_record({**razorpay_date, **billing_details, **payment_details}, "Failed")

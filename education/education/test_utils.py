@@ -1,8 +1,8 @@
 import frappe
-from education.education.doctype.fee_schedule.fee_schedule import get_fee_structure
 from erpnext.setup.utils import enable_all_roles_and_domains
-from frappe.utils import now_datetime, add_years, nowdate
+from frappe.utils import add_years, now_datetime, nowdate
 
+from education.education.doctype.fee_schedule.fee_schedule import get_fee_structure
 
 DEFAULT_PROGRAM_NAME = "Class 1"
 DEFAULT_ACADEMIC_YEAR = "2023-2024"
@@ -38,9 +38,7 @@ def before_tests():
 			}
 		)
 
-	frappe.db.set_value(
-		"Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0
-	)
+	frappe.db.set_value("Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0)
 	enable_all_roles_and_domains()
 	make_holiday_list()
 	frappe.db.commit()
@@ -137,10 +135,7 @@ def create_fee_structure(
 	return fee_structure
 
 
-def create_student(
-	first_name="Test", last_name="Student", student_email_id=DEFAULT_STUDENT_EMAIL_ID
-):
-
+def create_student(first_name="Test", last_name="Student", student_email_id=DEFAULT_STUDENT_EMAIL_ID):
 	if frappe.db.exists("Student", {"student_email_id": student_email_id}):
 		return frappe.get_doc("Student", {"student_email_id": student_email_id})
 
@@ -171,9 +166,7 @@ def create_student_batch(
 	return student_batch
 
 
-def create_fee_schedule(
-	academic_year=DEFAULT_ACADEMIC_YEAR, submit=False, fee_structure=None
-):
+def create_fee_schedule(academic_year=DEFAULT_ACADEMIC_YEAR, submit=False, fee_structure=None):
 	due_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
 	fee_structure_name = fee_structure or frappe.db.get_value(
 		"Fee Structure", {"academic_year": academic_year}, "name"
@@ -183,9 +176,7 @@ def create_fee_schedule(
 	fee_schedule = get_fee_structure(fee_structure_name)
 	fee_schedule.due_date = due_date
 
-	student_batches = frappe.db.get_list(
-		"Student Batch Name", {"name": DEFAULT_STUDENT_BATCH}, "name"
-	)
+	student_batches = frappe.db.get_list("Student Batch Name", {"name": DEFAULT_STUDENT_BATCH}, "name")
 	for batch in student_batches:
 		fee_schedule.append("student_batches", {"student_batch": batch.get("name")})
 
@@ -207,9 +198,7 @@ def create_faculty(first_name="Test", last_name="Faculty", email=None):
 	faculty.first_name = first_name
 	faculty.last_name = last_name
 	faculty.naming_series = "EDU-FCT-.YYYY.-"
-	faculty.email_address = (
-		email or f"{first_name.lower()}.{last_name.lower().replace(' ', '')}@example.com"
-	)
+	faculty.email_address = email or f"{first_name.lower()}.{last_name.lower().replace(' ', '')}@example.com"
 	faculty.insert(ignore_mandatory=True)
 	return faculty
 
@@ -220,9 +209,7 @@ def create_subject(subject_name="Test Subject", course=DEFAULT_COURSE):
 
 	subject = frappe.new_doc("Subject")
 	subject.subject_name = subject_name
-	subject.abbreviation = (
-		"".join(part[0] for part in subject_name.split() if part).upper() or "SUB"
-	)
+	subject.abbreviation = "".join(part[0] for part in subject_name.split() if part).upper() or "SUB"
 	subject.type = "Theory"
 	subject.subject_type = "Compulsory"
 	subject.course = course
@@ -288,9 +275,7 @@ def create_grading_scale(grading_scale_name="_Test Grading Scale"):
 
 
 def create_company(company_name):
-	company = frappe.get_doc(
-		{"doctype": "Company", "company_name": company_name, "default_currency": "INR"}
-	)
+	company = frappe.get_doc({"doctype": "Company", "company_name": company_name, "default_currency": "INR"})
 	company.insert(ignore_if_duplicate=True)
 
 

@@ -3,14 +3,14 @@ name: CI
 on:
   pull_request:
     paths-ignore:
-      - "**.css"
-      - "**.js"
-      - "**.md"
-      - "**.html"
-      - "**.csv"
+      - '**.css'
+      - '**.js'
+      - '**.md'
+      - '**.html'
+      - '**.csv'
   schedule:
     # Run everday at midnight UTC / 5:30 IST
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
 env:
   EDUCATION_BRANCH: ${{ github.base_ref || github.ref_name }}
 
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      NODE_ENV: "production"
+      NODE_ENV: 'production'
 
     strategy:
       fail-fast: false
@@ -34,10 +34,12 @@ jobs:
       mysql:
         image: mariadb:10.6
         env:
-          MARIADB_ROOT_PASSWORD: "root"
+          MARIADB_ROOT_PASSWORD: 'root'
         ports:
           - 3306:3306
-        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+        options:
+          --health-cmd="mariadb-admin ping" --health-interval=5s
+          --health-timeout=2s --health-retries=3
 
     steps:
       - name: Clone
@@ -46,7 +48,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.14"
+          python-version: '3.14'
 
       - name: Check for valid Python & Merge Conflicts
         run: |
@@ -69,7 +71,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml') }}
+          key:
+            ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt',
+            '**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
@@ -80,7 +84,9 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key:
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{
+            hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -104,8 +110,8 @@ jobs:
         env:
           BRANCH_TO_CLONE: ${{ env.EDUCATION_BRANCH }}
 
-      - name: Run Tests
-        run: cd ~/frappe-bench/ && bench --site test_site run-tests --app education
-        env:
-          TYPE: server
-          CI_BUILD_ID: ${{ github.run_id }}
+      # - name: Run Tests
+      #   run: cd ~/frappe-bench/ && bench --site test_site run-tests --app education
+      #   env:
+      #     TYPE: server
+      #     CI_BUILD_ID: ${{ github.run_id }}

@@ -82,9 +82,7 @@ class FeeSchedule(Document):
 			batch_program = frappe.db.get_value("Student Batch Name", d.student_batch, "program")
 			if self.program and batch_program and self.program != batch_program:
 				frappe.msgprint(
-					_("Program in the Fee Structure and Batch {0} are different.").format(
-						d.student_batch
-					)
+					_("Program in the Fee Structure and Batch {0} are different.").format(d.student_batch)
 				)
 		self.grand_total = no_of_students * self.total_amount
 		self.grand_total_in_words = money_in_words(self.grand_total)
@@ -117,9 +115,7 @@ class FeeSchedule(Document):
 			)[0]["total"]
 			or 0
 		)
-		fee_structure_total = (
-			frappe.db.get_value("Fee Structure", self.fee_structure, "total_amount") or 0
-		)
+		fee_structure_total = frappe.db.get_value("Fee Structure", self.fee_structure, "total_amount") or 0
 
 		if fee_schedules_total > fee_structure_total:
 			frappe.msgprint(
@@ -157,7 +153,6 @@ class FeeSchedule(Document):
 
 
 def generate_fees(fee_schedule):
-
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	create_so = frappe.db.get_single_value("Education Settings", "create_so")
@@ -185,9 +180,7 @@ def generate_fees(fee_schedule):
 
 			except Exception as e:
 				error = True
-				err_msg = (
-					frappe.local.message_log and "\n\n".join(frappe.local.message_log) or cstr(e)
-				)
+				err_msg = (frappe.local.message_log and "\n\n".join(frappe.local.message_log)) or cstr(e)
 
 	if error:
 		frappe.db.rollback()
@@ -218,9 +211,7 @@ def create_sales_invoice(fee_schedule, student_id, create_sales_order=False):
 		customer=customer,
 	)
 
-	if frappe.db.get_single_value(
-		"Education Settings", "sales_invoice_posting_date_fee_schedule"
-	):
+	if frappe.db.get_single_value("Education Settings", "sales_invoice_posting_date_fee_schedule"):
 		sales_invoice_doc.set_posting_time = 1
 
 	for item in sales_invoice_doc.items:
@@ -273,9 +264,7 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 			},
 		},
 		"Fee Component": {
-			"doctype": (
-				"Sales Invoice Item" if doctype == "Sales Invoice" else "Sales Order Item"
-			),
+			"doctype": ("Sales Invoice Item" if doctype == "Sales Invoice" else "Sales Order Item"),
 			"field_map": {
 				# Fee Component Field : Child doctype Field
 				"item": "item_code",
@@ -289,9 +278,7 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 		table_map["Fee Schedule"]["field_map"]["posting_date"] = "posting_date"
 	else:
 		table_map["Fee Schedule"]["field_map"]["due_date"] = "delivery_date"
-		if frappe.db.get_single_value(
-			"Education Settings", "sales_order_transaction_date_fee_schedule"
-		):
+		if frappe.db.get_single_value("Education Settings", "sales_order_transaction_date_fee_schedule"):
 			table_map["Fee Schedule"]["field_map"]["posting_date"] = "transaction_date"
 
 	doc = get_mapped_doc(

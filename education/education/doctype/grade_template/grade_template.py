@@ -72,9 +72,7 @@ class GradeTemplate(Document):
 
 		seen = set()
 		total = 0
-		field_label = (
-			_("Assignment Type") if key_field == "assignment_type" else _("Attendance Type")
-		)
+		field_label = _("Assignment Type") if key_field == "assignment_type" else _("Attendance Type")
 		for row in rows:
 			key = row.get(key_field)
 			if key in seen:
@@ -88,7 +86,5 @@ class GradeTemplate(Document):
 
 		if flt(total, 2) != 100:
 			frappe.throw(
-				_("Total Weightage of all {0} must be 100%, currently {1}%.").format(
-					label, flt(total, 2)
-				)
+				_("Total Weightage of all {0} must be 100%, currently {1}%.").format(label, flt(total, 2))
 			)

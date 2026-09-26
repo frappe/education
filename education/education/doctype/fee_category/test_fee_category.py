@@ -3,9 +3,10 @@
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
+
 from education.education.test_utils import (
-	create_fee_category,
 	create_company,
+	create_fee_category,
 	get_defaults,
 )
 
@@ -22,15 +23,11 @@ class TestFeeCategory(FrappeTestCase):
 		"""
 		Test to check if the item master is created when a Fee Category is created.
 		"""
-		companies = frappe.db.get_all("Company", fields=["name"])
-		item = frappe.db.get_value(
-			"Fee Category", filters={"name": "Tuition Fee"}, fieldname="item"
-		)
+		frappe.db.get_all("Company", fields=["name"])
+		item = frappe.db.get_value("Fee Category", filters={"name": "Tuition Fee"}, fieldname="item")
 		self.assertTrue(frappe.db.exists("Item", item))
 
-		item_group = frappe.db.get_value(
-			"Item", filters={"name": item}, fieldname="item_group"
-		)
+		item_group = frappe.db.get_value("Item", filters={"name": item}, fieldname="item_group")
 		self.assertEqual(item_group, "Fee Component")
 
 	def test_item_defaults_from_item_group(self):
@@ -58,9 +55,7 @@ class TestFeeCategory(FrappeTestCase):
 		fee_category_defaults = fee_category.get("item_defaults")[0]
 
 		self.assertEqual(fee_category_defaults.company, "_Test Company")
-		self.assertEqual(
-			fee_category_defaults.income_account, defaults.default_income_account
-		)
+		self.assertEqual(fee_category_defaults.income_account, defaults.default_income_account)
 		self.assertEqual(fee_category_defaults.selling_cost_center, defaults.cost_center)
 
 	def test_fee_component_defaults_same_as_item_defaults(self):

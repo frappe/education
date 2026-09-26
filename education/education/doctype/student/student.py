@@ -3,11 +3,11 @@
 
 
 import frappe
+from erpnext import get_default_currency
 from frappe import _
 from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
 from frappe.utils import getdate, today
-from erpnext import get_default_currency
 from frappe.utils.nestedset import get_root_of
 
 from education.education.utils import check_content_completion, check_quiz_completion
@@ -42,17 +42,13 @@ class Student(Document):
 
 	# Validate Functions
 	def set_title(self):
-		self.student_name = " ".join(
-			filter(None, [self.first_name, self.middle_name, self.last_name])
-		)
+		self.student_name = " ".join(filter(None, [self.first_name, self.middle_name, self.last_name]))
 
 	def validate_dates(self):
 		for sibling in self.siblings:
 			if sibling.date_of_birth and getdate(sibling.date_of_birth) > getdate():
 				frappe.throw(
-					_("Row {0}:Sibling Date of Birth cannot be greater than today.").format(
-						sibling.idx
-					)
+					_("Row {0}:Sibling Date of Birth cannot be greater than today.").format(sibling.idx)
 				)
 
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
@@ -179,9 +175,7 @@ class Student(Document):
 		if contents:
 			for content in contents:
 				if content.doctype in ("Article", "Video"):
-					status = check_content_completion(
-						content.name, content.doctype, course_enrollment_name
-					)
+					status = check_content_completion(content.name, content.doctype, course_enrollment_name)
 					progress.append(
 						{
 							"content": content.name,
@@ -190,7 +184,7 @@ class Student(Document):
 						}
 					)
 				elif content.doctype == "Quiz":
-					status, score, result, time_taken = check_quiz_completion(
+					status, score, result, _time_taken = check_quiz_completion(
 						content, course_enrollment_name
 					)
 					progress.append(
