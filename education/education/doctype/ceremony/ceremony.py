@@ -10,5 +10,5 @@ class Ceremony(Document):
 
 
 @frappe.whitelist()
-def get_allowed_programs(ceremony):
+def get_allowed_programs(ceremony: str):
 	return frappe.get_all("Ceremony Program", filters={"parent": ceremony}, pluck="program")

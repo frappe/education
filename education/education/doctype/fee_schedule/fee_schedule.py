@@ -147,6 +147,7 @@ class FeeSchedule(Document):
 				timeout=6000,
 				event="generate_fees",
 				fee_schedule=self.name,
+				enqueue_after_commit=True,
 			)
 		else:
 			generate_fees(self.name)
@@ -308,12 +309,12 @@ def get_students(student_batch, student_category=None):
 
 
 @frappe.whitelist()
-def get_total_students(student_batch, student_category=None):
+def get_total_students(student_batch: str, student_category: str | None = None):
 	return len(get_students(student_batch, student_category))
 
 
 @frappe.whitelist()
-def get_fee_structure(source_name, target_doc=None):
+def get_fee_structure(source_name: str, target_doc: str | None = None):
 	fee_request = get_mapped_doc(
 		"Fee Structure",
 		source_name,

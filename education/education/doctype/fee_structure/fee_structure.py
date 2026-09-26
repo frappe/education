@@ -42,7 +42,7 @@ class FeeStructure(Document):
 			)
 			if not fee_category_default_income_account:
 				frappe.msgprint(
-					_("Accounting Defaults are not set in row {0} for component {1} ").format(
+					_("Accounting Defaults are not set in row {0} for component {1}").format(
 						frappe.bold(fees_category.idx), frappe.bold(fee_category)
 					)
 				)
@@ -65,10 +65,10 @@ class FeeStructure(Document):
 
 @frappe.whitelist()
 def get_amount_distribution_based_on_fee_plan(
-	components,
-	total_amount=0,
-	fee_plan="Monthly",
-	academic_year=None,
+	components: str,
+	total_amount: float | str | int = 0,
+	fee_plan: str = "Monthly",
+	academic_year: str | None = None,
 ):
 	total_amount = flt(total_amount)
 	components = json.loads(components)
@@ -163,11 +163,11 @@ def get_future_dates(fee_plan, start_date=None):
 
 @frappe.whitelist()
 def make_fee_schedule(
-	source_name,
-	dialog_values,
-	per_component_amount,
-	total_amount,
-	target_doc=None,
+	source_name: str,
+	dialog_values: str,
+	per_component_amount: str,
+	total_amount: float | str,
+	target_doc: str | None = None,
 ):
 	dialog_values = json.loads(dialog_values)
 	per_component_amount = json.loads(per_component_amount)
@@ -227,7 +227,7 @@ def validate_due_date(due_date, idx):
 
 
 @frappe.whitelist()
-def make_term_wise_fee_schedule(source_name, target_doc=None):
+def make_term_wise_fee_schedule(source_name: str, target_doc: str | None = None):
 	return get_mapped_doc(
 		"Fee Structure",
 		source_name,

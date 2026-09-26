@@ -68,7 +68,7 @@ def compare_list_elementwise(*args):
 
 
 @frappe.whitelist()
-def get_topics_without_quiz(quiz):
+def get_topics_without_quiz(quiz: str):
 	data = []
 	for entry in frappe.db.get_all("Topic"):
 		topic = frappe.get_doc("Topic", entry.name)

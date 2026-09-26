@@ -38,12 +38,12 @@ def create_order(client, amount, currency):
 		frappe.throw(
 			_(
 				"Error during payment: {0} Please contact the Administrator. Amount {1} Currency {2} Formatted {3}"
-			).format(e, amount, currency, cint(amount))
+			).format(str(e), amount, currency, cint(amount))
 		)
 
 
 @frappe.whitelist()
-def get_payment_options(doctype, docname, phone, currency=None):
+def get_payment_options(doctype: str, docname: str, phone: str, currency: str | None = None):
 	if not frappe.db.exists(doctype, docname):
 		frappe.throw(_("Invalid document provided."))
 	validate_phone_number(phone_number=phone, throw=True)
@@ -92,7 +92,7 @@ def create_razorpay_payment_record(args, status):
 
 
 @frappe.whitelist()
-def handle_payment_success(response, against_invoice, billing_details):
+def handle_payment_success(response: dict, against_invoice: str, billing_details: dict):
 	if frappe.db.exists(
 		"Payment Record",
 		{
@@ -119,11 +119,11 @@ def handle_payment_success(response, against_invoice, billing_details):
 		pe.submit()
 
 	except Exception as e:
-		frappe.throw(_("Error during payment: {0}").format(e))
+		frappe.throw(_("Error during payment: {0}").format(str(e)))
 
 
 @frappe.whitelist()
-def handle_payment_failure(response, against_invoice, billing_details):
+def handle_payment_failure(response: dict, against_invoice: str, billing_details: dict):
 	response = response["error"]
 	razorpay_date = {
 		"description": response.get("description"),

@@ -38,10 +38,11 @@ def before_tests():
 			}
 		)
 
-	frappe.db.set_value("Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0)
+	frappe.db.set_single_value("Stock Settings", "auto_insert_price_list_rate_if_missing", 0)
 	enable_all_roles_and_domains()
 	make_holiday_list()
-	frappe.db.commit()
+	# Site bootstrap must persist before the test suite starts.
+	frappe.db.commit()  # nosemgrep
 
 
 def make_holiday_list(holiday_list_name="Test Holiday List"):
@@ -188,7 +189,7 @@ def create_fee_schedule(academic_year=DEFAULT_ACADEMIC_YEAR, submit=False, fee_s
 
 
 def create_faculty(first_name="Test", last_name="Faculty", email=None):
-	faculty_name = " ".join(filter(None, [first_name, last_name]))
+	faculty_name = " ".join(name for name in (first_name, last_name) if name)
 	existing = frappe.db.exists("Faculty", {"faculty_name": faculty_name})
 	if existing:
 		return frappe.get_doc("Faculty", existing)

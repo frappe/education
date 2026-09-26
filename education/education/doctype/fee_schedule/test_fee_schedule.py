@@ -80,7 +80,7 @@ class TestFeeSchedule(FrappeTestCase):
 
 	def test_sales_order_creation_flow(self):
 		# create_so from education settings set to 1
-		frappe.db.set_value("Education Settings", "Education Settings", "create_so", 1)
+		frappe.db.set_single_value("Education Settings", "create_so", 1)
 		fee_schedule = create_fee_schedule(submit=1)
 
 		self.assertEqual(fee_schedule.status, "Order Pending")

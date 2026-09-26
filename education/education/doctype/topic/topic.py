@@ -24,7 +24,7 @@ class Topic(Document):
 
 
 @frappe.whitelist()
-def get_courses_without_topic(topic):
+def get_courses_without_topic(topic: str):
 	data = []
 	for entry in frappe.db.get_all("Course"):
 		course = frappe.get_doc("Course", entry.name)
@@ -35,14 +35,13 @@ def get_courses_without_topic(topic):
 
 
 @frappe.whitelist()
-def add_topic_to_courses(topic, courses, mandatory=False):
+def add_topic_to_courses(topic: str, courses: str, mandatory: bool = False):
 	courses = json.loads(courses)
 	for entry in courses:
 		course = frappe.get_doc("Course", entry)
 		course.append("topics", {"topic": topic, "topic_name": topic})
 		course.flags.ignore_mandatory = True
 		course.save()
-	frappe.db.commit()
 	frappe.msgprint(
 		_("Topic {0} has been added to all the selected courses successfully.").format(frappe.bold(topic)),
 		title=_("Courses updated"),
@@ -51,7 +50,7 @@ def add_topic_to_courses(topic, courses, mandatory=False):
 
 
 @frappe.whitelist()
-def add_content_to_topics(content_type, content, topics):
+def add_content_to_topics(content_type: str, content: str, topics: str):
 	topics = json.loads(topics)
 	for entry in topics:
 		topic = frappe.get_doc("Topic", entry)
@@ -64,7 +63,6 @@ def add_content_to_topics(content_type, content, topics):
 		)
 		topic.flags.ignore_mandatory = True
 		topic.save()
-	frappe.db.commit()
 	frappe.msgprint(
 		_("{0} {1} has been added to all the selected topics successfully.").format(
 			content_type, frappe.bold(content)

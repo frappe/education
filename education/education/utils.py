@@ -33,15 +33,24 @@ def get_overlap_for(doc, doctype, fieldname, value=None):
 	:param fieldname: Checks Overlap for this field
 	"""
 
+	if not frappe.db.exists("DocType", doctype) or not frappe.get_meta(doctype).has_field(fieldname):
+		frappe.throw(_("Invalid overlap check for {0}.{1}").format(doctype, fieldname))
+
+	query = (
+		"select name, from_time, to_time from `tab"
+		+ doctype
+		+ "` where `"
+		+ fieldname
+		+ "`=%(val)s and schedule_date = %(schedule_date)s and "
+		"("
+		"(from_time > %(from_time)s and from_time < %(to_time)s) or "
+		"(to_time > %(from_time)s and to_time < %(to_time)s) or "
+		"(%(from_time)s > from_time and %(from_time)s < to_time) or "
+		"(%(from_time)s = from_time and %(to_time)s = to_time)) "
+		"and name!=%(name)s and docstatus!=2"
+	)
 	existing = frappe.db.sql(
-		"""select name, from_time, to_time from `tab{0}`
-		where `{1}`=%(val)s and schedule_date = %(schedule_date)s and
-		(
-			(from_time > %(from_time)s and from_time < %(to_time)s) or
-			(to_time > %(from_time)s and to_time < %(to_time)s) or
-			(%(from_time)s > from_time and %(from_time)s < to_time) or
-			(%(from_time)s = from_time and %(to_time)s = to_time))
-		and name!=%(name)s and docstatus!=2""".format(doctype, fieldname),
+		query,
 		{
 			"schedule_date": doc.schedule_date,
 			"val": value or doc.get(fieldname),
@@ -116,7 +125,7 @@ def get_enrollment(master, document, student):
 
 
 @frappe.whitelist()
-def enroll_in_program(program_name, student=None):
+def enroll_in_program(program_name: str, student: str | None = None):
 	"""Enroll student in program
 
 	Args:
@@ -175,7 +184,7 @@ def has_super_access():
 
 
 @frappe.whitelist()
-def add_activity(course, content_type, content, program):
+def add_activity(course: str, content_type: str, content: str, program: str):
 	if has_super_access():
 		return None
 
@@ -194,7 +203,9 @@ def add_activity(course, content_type, content, program):
 
 
 @frappe.whitelist()
-def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
+def evaluate_quiz(
+	quiz_response: str, quiz_name: str, course: str, program: str, time_taken: float | str | int
+):
 	import json
 
 	student = get_current_student()
@@ -216,7 +227,7 @@ def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
 
 
 @frappe.whitelist()
-def get_quiz(quiz_name, course):
+def get_quiz(quiz_name: str, course: str):
 	try:
 		quiz = frappe.get_doc("Quiz", quiz_name)
 		questions = quiz.get_questions()

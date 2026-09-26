@@ -138,13 +138,11 @@ def create_holiday_list():
 	today = getdate()
 	if not frappe.db.exists("Holiday List", holiday_list):
 		frappe.get_doc(
-			dict(
-				doctype="Holiday List",
-				holiday_list_name=holiday_list,
-				from_date=add_months(today, -6),
-				to_date=add_months(today, 6),
-				holidays=[dict(holiday_date=add_days(today, 1), description="Test")],
-			)
+			doctype="Holiday List",
+			holiday_list_name=holiday_list,
+			from_date=add_months(today, -6),
+			to_date=add_months(today, 6),
+			holidays=[dict(holiday_date=add_days(today, 1), description="Test")],
 		).insert()
 
 	company = get_default_company() or frappe.get_all("Company")[0].name

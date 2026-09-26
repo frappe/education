@@ -57,7 +57,7 @@ class StudentApplicant(Document):
 			frappe.throw(_("Fee Term is required."))
 
 	def set_title(self):
-		self.title = " ".join(filter(None, [self.first_name, self.middle_name, self.last_name]))
+		self.title = " ".join(name for name in (self.first_name, self.middle_name, self.last_name) if name)
 
 	def validate_dates(self):
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():

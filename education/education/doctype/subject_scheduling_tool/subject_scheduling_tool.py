@@ -9,7 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_days, cint, formatdate, get_time, getdate
 
-from education.education.doctype.faculty.faculty import faculty_teaches_subject
+from education.education.doctype.faculty.faculty import get_taught_faculty_subjects
 from education.education.utils import OverlapError
 
 IGNORE_FIELDTYPES = {
@@ -132,9 +132,23 @@ class SubjectSchedulingTool(Document):
 			)
 
 	def validate_slots(self):
+		subjects = list({slot.subject for slot in self.slots if slot.subject})
+		faculties = list({slot.faculty for slot in self.slots if slot.faculty})
+		subject_courses = {}
+		if subjects:
+			subject_courses = {
+				row.name: row.course
+				for row in frappe.get_all(
+					"Subject",
+					filters={"name": ["in", subjects]},
+					fields=["name", "course"],
+				)
+			}
+		taught = get_taught_faculty_subjects(faculties, subjects)
+
 		for slot in self.slots:
 			if slot.subject and self.course:
-				subject_course = frappe.db.get_value("Subject", slot.subject, "course")
+				subject_course = subject_courses.get(slot.subject)
 				if subject_course and subject_course != self.course:
 					frappe.throw(
 						_("Row {0}: Subject {1} does not belong to Course {2}").format(
@@ -142,7 +156,7 @@ class SubjectSchedulingTool(Document):
 						)
 					)
 
-			if slot.faculty and slot.subject and not faculty_teaches_subject(slot.faculty, slot.subject):
+			if slot.faculty and slot.subject and (slot.faculty, slot.subject) not in taught:
 				frappe.throw(
 					_("Row {0}: Faculty {1} does not teach Subject {2}").format(
 						slot.idx, frappe.bold(slot.faculty), frappe.bold(slot.subject)

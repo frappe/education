@@ -324,7 +324,7 @@ def course_has_electives(course):
 
 
 @frappe.whitelist()
-def get_subject_registration(course_enrollment):
+def get_subject_registration(course_enrollment: str):
 	"""Return the current Subject Registration for a Course Enrollment, if any."""
 	if not course_enrollment:
 		return None

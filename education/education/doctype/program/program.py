@@ -36,25 +36,33 @@ class Program(Document):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
+def get_program_courses(
+	doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict | None
+):
+	filters = filters or {}
 	if not filters.get("program"):
 		frappe.msgprint(_("Please select a Program first."))
 		return []
 
 	doctype = "Course"
-	return frappe.db.sql(
+	query = (
 		"""select name, course_name from `tabCourse`
-        where program = %(program)s and name like %(txt)s {match_cond}
+        where program = %(program)s and name like %(txt)s """
+		+ get_match_cond(doctype)
+		+ """
         order by
             if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
             course_name asc,
             name asc
-        limit {start}, {page_len}""".format(
-			match_cond=get_match_cond(doctype), start=start, page_len=page_len
-		),
+        limit %(start)s, %(page_len)s"""
+	)
+	return frappe.db.sql(
+		query,
 		{
 			"txt": "%{0}%".format(txt),
 			"_txt": txt.replace("%", ""),
 			"program": filters["program"],
+			"start": start,
+			"page_len": page_len,
 		},
 	)

@@ -39,6 +39,7 @@
       "options": "Subject Schedule"
     },
     {
+      "fetch_from": "subject_schedule.schedule_date",
       "fieldname": "date",
       "fieldtype": "Date",
       "label": "Date",
@@ -57,6 +58,7 @@
       "label": "Student Name"
     },
     {
+      "fetch_from": "subject_schedule.student_batch",
       "fieldname": "student_batch",
       "fieldtype": "Link",
       "in_global_search": 1,

@@ -28,17 +28,18 @@ def execute(filters=None):
 	return columns, data, None, chart
 
 
-def get_assessment_data(args=None):
+def get_assessment_data(filters=None):
 	# [total, saved, submitted, remaining]
 	chart_data = [0, 0, 0, 0]
+	filters = filters or frappe._dict()
 
 	condition = ""
-	if args["assessment_group"]:
+	if filters.get("assessment_group"):
 		condition += "and assessment_group = %(assessment_group)s"
-	if args["schedule_date"]:
+	if filters.get("schedule_date"):
 		condition += "and schedule_date <= %(schedule_date)s"
 
-	assessment_plan = frappe.db.sql(
+	query = (
 		"""
 			SELECT
 				ap.name as assessment_plan,
@@ -51,13 +52,15 @@ def get_assessment_data(args=None):
 			FROM
 				`tabAssessment Plan` ap
 			WHERE
-				ap.docstatus = 1 {condition}
+				ap.docstatus = 1
+		"""
+		+ condition
+		+ """
 			ORDER BY
 				ap.modified desc
-		""".format(condition=condition),
-		(args),
-		as_dict=1,
+		"""
 	)
+	assessment_plan = frappe.db.sql(query, filters, as_dict=1)
 
 	assessment_plan_list = [d.assessment_plan for d in assessment_plan] if assessment_plan else [""]
 	assessment_result = get_assessment_result(assessment_plan_list)

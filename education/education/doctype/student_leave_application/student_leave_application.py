@@ -149,7 +149,7 @@ def get_number_of_leave_days(from_date, to_date, holiday_list):
 
 
 @frappe.whitelist()
-def get_student_batches(student):
+def get_student_batches(student: str):
 	"""Return the batches the student is enrolled in."""
 	return frappe.db.get_all(
 		"Course Enrollment",

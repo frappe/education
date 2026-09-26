@@ -10,7 +10,7 @@ from erpnext.accounts.doctype.payment_request.payment_request import (
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 from frappe import _
-from frappe.utils import money_in_words
+from frappe.utils import cint, money_in_words
 from frappe.utils.csvutils import getlink
 
 
@@ -85,10 +85,6 @@ class Fees(AccountsController):
 		self.outstanding_amount = self.grand_total
 		self.grand_total_in_words = money_in_words(self.grand_total)
 
-	@frappe.whitelist()
-	def get_fees(student):
-		print("student", student)
-
 	def on_submit(self):
 		self.make_gl_entries()
 
@@ -158,8 +154,9 @@ def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order
 			outstanding_amount, grand_total, currency
 			from `tabFees`
 			where student= %s and docstatus=1
-			order by due_date asc limit {0} , {1}""".format(limit_start, limit_page_length),
-			student,
+			order by due_date asc limit %s, %s
+			""",
+			(student[0][0], cint(limit_start), cint(limit_page_length)),
 			as_dict=True,
 		)
 

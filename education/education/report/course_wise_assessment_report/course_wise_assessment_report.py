@@ -76,21 +76,21 @@ def get_formatted_result(args, get_course=False):
 	return {"assessment_result": assessment_result, "courses": courses}
 
 
-def prepare_filters(args):
-	filters = {"academic_year": args.academic_year, "docstatus": 1}
+def prepare_filters(filters):
+	prepared = {"academic_year": filters.academic_year, "docstatus": 1}
 
 	options = ["course", "academic_term", "student_batch"]
 	for option in options:
-		if args.get(option):
-			filters[option] = args.get(option)
+		if filters.get(option):
+			prepared[option] = filters.get(option)
 
-	assessment_groups = get_child_assessment_groups(args.assessment_group)
+	assessment_groups = get_child_assessment_groups(filters.assessment_group)
 
-	filters.update({"assessment_group": ["in", assessment_groups]})
+	prepared.update({"assessment_group": ["in", assessment_groups]})
 
-	if args.students:
-		filters.update({"student": ["in", args.students]})
-	return filters
+	if filters.students:
+		prepared.update({"student": ["in", filters.students]})
+	return prepared
 
 
 def get_column():

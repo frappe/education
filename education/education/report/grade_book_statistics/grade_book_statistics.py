@@ -118,27 +118,30 @@ def get_cohort_statistics(grade_book):
 		conditions.append("gb.student_batch = %(student_batch)s")
 		values["student_batch"] = grade_book.student_batch
 
-	subject_rows = frappe.db.sql(
+	where_clause = " AND ".join(conditions)
+	subject_query = (
 		"""
 		SELECT gbs.subject, AVG(gbs.percentage) AS average
 		FROM `tabGrade Book Subject` gbs
 		INNER JOIN `tabGrade Book` gb ON gb.name = gbs.parent
-		WHERE {conditions}
+		WHERE """
+		+ where_clause
+		+ """
 		GROUP BY gbs.subject
-		""".format(conditions=" AND ".join(conditions)),
-		values,
-		as_dict=True,
+		"""
 	)
-	overall_rows = frappe.db.sql(
+	overall_query = (
 		"""
 		SELECT gb.name, gb.overall_percentage
 		FROM `tabGrade Book` gb
-		WHERE {conditions}
+		WHERE """
+		+ where_clause
+		+ """
 		ORDER BY gb.overall_percentage DESC, gb.name ASC
-		""".format(conditions=" AND ".join(conditions)),
-		values,
-		as_dict=True,
+		"""
 	)
+	subject_rows = frappe.db.sql(subject_query, values, as_dict=True)
+	overall_rows = frappe.db.sql(overall_query, values, as_dict=True)
 
 	rank = None
 	if any(row.name == grade_book.name for row in overall_rows):

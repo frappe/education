@@ -580,7 +580,7 @@ class CourseEnrollment(Document):
 
 
 @frappe.whitelist()
-def get_next_roll_number(batch):
+def get_next_roll_number(batch: str):
 	"""Return the next roll number available in the batch."""
 	roll_numbers = frappe.get_all(
 		"Course Enrollment",
@@ -661,7 +661,7 @@ def get_enrolled_subject_names(student, course, student_batch=None):
 
 
 @frappe.whitelist()
-def get_allowed_courses(admission_register, student=None):
+def get_allowed_courses(admission_register: str, student: str | None = None):
 	"""Return register courses the student is not yet enrolled in."""
 	courses = get_register_courses(admission_register)
 

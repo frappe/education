@@ -356,16 +356,12 @@ class GradeBook(Document):
 			conditions.append("ap.student_batch = %(student_batch)s")
 			values["student_batch"] = self.student_batch
 
-		return frappe.db.sql(
-			"""
+		query = """
 			SELECT ar.percentage, ap.assignment_type
 			FROM `tabAssessment Result` ar
 			INNER JOIN `tabAssessment Plan` ap ON ap.name = ar.assessment_plan
-			WHERE {conditions}
-			""".format(conditions=" AND ".join(conditions)),
-			values,
-			as_dict=True,
-		)
+			WHERE """ + " AND ".join(conditions)
+		return frappe.db.sql(query, values, as_dict=True)
 
 	def _compute_attendance_percentage(self, subject, template):
 		weights = {
@@ -466,7 +462,9 @@ class GradeBook(Document):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_enrolled_students(doctype, txt, searchfield, start, page_len, filters):
+def get_enrolled_students(
+	doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict | None
+):
 	filters = filters or {}
 	conditions = ["ce.docstatus = 1", "ifnull(s.enabled, 1) = 1"]
 	values = {
@@ -481,25 +479,31 @@ def get_enrolled_students(doctype, txt, searchfield, start, page_len, filters):
 		conditions.append("ce.student_batch = %(student_batch)s")
 		values["student_batch"] = filters["student_batch"]
 
-	return frappe.db.sql(
+	values["start"] = start
+	values["page_len"] = page_len
+	query = (
 		"""
 		SELECT DISTINCT s.name, s.student_name
 		FROM `tabCourse Enrollment` ce
 		INNER JOIN `tabStudent` s ON s.name = ce.student
-		WHERE {conditions}
+		WHERE """
+		+ " AND ".join(conditions)
+		+ """
 			AND (s.name LIKE %(txt)s OR ifnull(s.student_name, '') LIKE %(txt)s)
 		ORDER BY
 			if(locate(%(_txt)s, s.name), locate(%(_txt)s, s.name), 99999),
 			s.student_name
-		LIMIT {start}, {page_len}
-		""".format(conditions=" AND ".join(conditions), start=start, page_len=page_len),
-		values,
+		LIMIT %(start)s, %(page_len)s
+		"""
 	)
+	return frappe.db.sql(query, values)
 
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_enrolled_courses(doctype, txt, searchfield, start, page_len, filters):
+def get_enrolled_courses(
+	doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict | None
+):
 	filters = filters or {}
 	if not filters.get("student"):
 		return []
@@ -518,20 +522,24 @@ def get_enrolled_courses(doctype, txt, searchfield, start, page_len, filters):
 		conditions.append("(ifnull(c.company, '') = '' OR c.company = %(company)s)")
 		values["company"] = filters["company"]
 
-	return frappe.db.sql(
+	values["start"] = start
+	values["page_len"] = page_len
+	query = (
 		"""
 		SELECT DISTINCT c.name, c.course_name
 		FROM `tabCourse Enrollment` ce
 		INNER JOIN `tabCourse` c ON c.name = ce.course
-		WHERE {conditions}
+		WHERE """
+		+ " AND ".join(conditions)
+		+ """
 			AND (c.name LIKE %(txt)s OR ifnull(c.course_name, '') LIKE %(txt)s)
 		ORDER BY
 			if(locate(%(_txt)s, c.name), locate(%(_txt)s, c.name), 99999),
 			c.course_name
-		LIMIT {start}, {page_len}
-		""".format(conditions=" AND ".join(conditions), start=start, page_len=page_len),
-		values,
+		LIMIT %(start)s, %(page_len)s
+		"""
 	)
+	return frappe.db.sql(query, values)
 
 
 def _grade_book_exists(student, course, academic_year, academic_term=None):
@@ -549,7 +557,7 @@ def _grade_book_exists(student, course, academic_year, academic_term=None):
 
 
 @frappe.whitelist()
-def create_grade_books(student_batch, academic_year, academic_term=None):
+def create_grade_books(student_batch: str, academic_year: str, academic_term: str | None = None):
 	frappe.has_permission("Grade Book", ptype="create", throw=True)
 
 	if not student_batch:

@@ -99,7 +99,7 @@ class Course(Document):
 
 
 @frappe.whitelist()
-def get_grade_template(course, subject, academic_year, academic_term=None):
+def get_grade_template(course: str, subject: str, academic_year: str, academic_term: str | None = None):
 	"""Return the Grade Template for a course subject in a given academic period."""
 	if not course:
 		frappe.throw(_("Course is required"))
