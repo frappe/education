@@ -152,6 +152,7 @@
  "read_only_onload": 0,
  "restrict_to_domain": "",
  "show_name_in_global_search": 0,
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "title_field": "room_name",
