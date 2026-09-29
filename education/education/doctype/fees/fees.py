@@ -13,6 +13,12 @@ from frappe import _
 from frappe.utils import cint, money_in_words
 from frappe.utils.csvutils import getlink
 
+from education.education.doctype.campus.campus import (
+	campus_cost_center,
+	set_campus_from_enrollment,
+	validate_campus,
+)
+
 
 class Fees(AccountsController):
 	def set_indicator(self):
@@ -26,6 +32,8 @@ class Fees(AccountsController):
 
 	def validate(self):
 		self.calculate_total()
+		set_campus_from_enrollment(self)
+		validate_campus(self)
 		self.set_missing_accounts_and_fields()
 		self.validate_enrollment()
 
@@ -34,6 +42,8 @@ class Fees(AccountsController):
 			self.company = frappe.defaults.get_defaults().company
 		if not self.currency:
 			self.currency = erpnext.get_company_currency(self.company)
+		if not self.cost_center and self.campus:
+			self.cost_center = campus_cost_center(self.campus)
 		if not (self.receivable_account and self.income_account and self.cost_center):
 			accounts_details = frappe.get_all(
 				"Company",

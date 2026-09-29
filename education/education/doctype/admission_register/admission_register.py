@@ -6,6 +6,8 @@ from frappe import _
 from frappe.utils import cint, getdate, today
 from frappe.website.website_generator import WebsiteGenerator
 
+from education.education.doctype.campus.campus import validate_campus
+
 STATUS_DRAFT = "Draft"
 STATUS_SUBMITTED = "Submitted"
 STATUS_PUBLISHED = "Published"
@@ -36,6 +38,7 @@ class AdmissionRegister(WebsiteGenerator):
 		self.set_route()
 		self.published = cint(self.docstatus == 1 and self.status in WEBSITE_VISIBLE_STATUSES)
 		self.validate_academic_term()
+		validate_campus(self)
 
 		if self.end_date < self.start_date:
 			frappe.throw(_("End Date cannot be before Start Date"))

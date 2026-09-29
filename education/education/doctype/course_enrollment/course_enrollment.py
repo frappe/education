@@ -12,6 +12,11 @@ from frappe.utils import cint, flt, get_link_to_form
 from education.education.doctype.admission_register.admission_register import (
 	ENROLLMENT_ALLOWED_STATUSES,
 )
+from education.education.doctype.campus.campus import (
+	apply_campus_to_invoice,
+	set_campus_from_register,
+	validate_campus,
+)
 from education.education.doctype.fee_plan.fee_plan import (
 	INSTALLMENT_TERM_TYPES,
 	get_billing_error,
@@ -43,6 +48,8 @@ class CourseEnrollment(Document):
 		self.validate_duplication()
 		self.validate_batch()
 		self.set_roll_number()
+		set_campus_from_register(self)
+		validate_campus(self)
 
 	def on_submit(self):
 		self.update_student_joining_date()
@@ -187,6 +194,7 @@ class CourseEnrollment(Document):
 					"rate": student_applicant.registration_fee_amount,
 				},
 			)
+			apply_campus_to_invoice(invoice, self.campus)
 			invoice.insert(ignore_permissions=True)
 			invoice.submit()
 		except Exception as e:

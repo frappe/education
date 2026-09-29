@@ -25,7 +25,9 @@ class StudentBatchName(Document):
 		if course_company and self.company and course_company != self.company:
 			frappe.throw(
 				_("Company {0} does not match the Company {1} of Course {2}").format(
-					frappe.bold(self.company), frappe.bold(course_company), frappe.bold(self.course)
+					frappe.bold(self.company),
+					frappe.bold(course_company),
+					frappe.bold(self.course),
 				)
 			)
 

@@ -104,7 +104,8 @@ class StudentApplicant(Document):
 		if student_with_email:
 			frappe.throw(
 				_("Email Address {0} is already in use by Student {1}.").format(
-					frappe.bold(self.email_address), frappe.bold(student_with_email[0].name)
+					frappe.bold(self.email_address),
+					frappe.bold(student_with_email[0].name),
 				)
 			)
 

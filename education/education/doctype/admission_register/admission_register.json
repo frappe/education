@@ -20,6 +20,7 @@
   "registration_fee",
   "column_break_mmuc",
   "company",
+  "campus",
   "registration_fee_item",
   "registration_fee_amount",
   "course_fee_amount",
@@ -142,6 +143,15 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "description": "Leave blank for an institution-wide intake. Set it when this intake, its seats, and its fees belong to one campus.",
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
   },
   {
    "default": "0",

@@ -18,6 +18,7 @@
   "academic_term",
   "column_break_uisg",
   "company",
+  "campus",
   "program",
   "student",
   "student_name",
@@ -183,6 +184,16 @@
    "reqd": 1
   },
   {
+   "description": "Copied from the Admission Register when that intake belongs to a campus.",
+   "fetch_from": "admission_register.campus",
+   "fetch_if_empty": 1,
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
+  },
+  {
    "fieldname": "subjects_tab",
    "fieldtype": "Tab Break",
    "label": "Subjects"
@@ -224,7 +235,7 @@
    "link_fieldname": "course_enrollment"
   }
  ],
- "modified": "2026-09-21 20:00:01.374457",
+ "modified": "2026-09-29 20:19:10.453496",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -232,6 +243,7 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -240,7 +252,9 @@
    "read": 1,
    "report": 1,
    "role": "Academics User",
+   "select": 1,
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
@@ -250,6 +264,7 @@
    "read": 1,
    "report": 1,
    "role": "Instructor",
+   "select": 1,
    "share": 1
   }
  ],
