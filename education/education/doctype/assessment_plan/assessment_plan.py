@@ -94,7 +94,7 @@ class AssessmentPlan(Document):
 			return
 
 		for doctype, value in (
-			("Student Batch", self.student_batch),
+			("Student Batch Name", self.student_batch),
 			("Course", self.course),
 			("Academic Year", self.academic_year),
 			("Academic Term", self.academic_term),

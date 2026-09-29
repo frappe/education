@@ -5,7 +5,7 @@
 import frappe
 from frappe.model.document import Document
 
-from education.education.doctype.student_batch.student_batch import (
+from education.education.doctype.student_batch_name.student_batch_name import (
 	get_batch_students,
 )
 

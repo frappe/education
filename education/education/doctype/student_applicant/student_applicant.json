@@ -375,12 +375,12 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch"
+   "options": "Student Batch Name"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-09-29 15:18:32.689748",
+ "modified": "2026-09-29 20:19:12.337753",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",

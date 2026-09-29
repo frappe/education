@@ -75,7 +75,7 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch"
+   "options": "Student Batch Name"
   },
   {
    "fieldname": "section_break_5",
@@ -89,7 +89,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-29 14:09:36.324646",
+ "modified": "2026-09-29 20:19:11.777717",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Log",

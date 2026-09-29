@@ -30,7 +30,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "read_only": 1,
    "reqd": 1
   },
@@ -48,7 +48,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 14:09:33.107462",
+ "modified": "2026-09-29 20:19:09.709937",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result Tool",

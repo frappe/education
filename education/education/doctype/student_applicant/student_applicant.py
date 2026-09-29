@@ -11,7 +11,7 @@ from frappe.utils import getdate, today
 from education.education.doctype.admission_register.admission_register import (
 	STATUS_ADMISSION_OPEN,
 )
-from education.education.doctype.student_batch.student_batch import (
+from education.education.doctype.student_batch_name.student_batch_name import (
 	validate_batch_capacity,
 )
 
@@ -244,7 +244,7 @@ class StudentApplicant(Document):
 			return
 
 		batch = frappe.db.get_value(
-			"Student Batch",
+			"Student Batch Name",
 			self.student_batch,
 			["course", "disabled"],
 			as_dict=True,

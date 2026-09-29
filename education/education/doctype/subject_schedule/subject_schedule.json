@@ -32,7 +32,7 @@
    "in_global_search": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "reqd": 1
   },
   {
@@ -148,7 +148,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-29 14:09:31.593701",
+ "modified": "2026-09-29 20:19:08.878657",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Schedule",

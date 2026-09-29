@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import cint, getdate
 
 
-class StudentBatch(Document):
+class StudentBatchName(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_company()
@@ -49,7 +49,7 @@ class StudentBatch(Document):
 
 def get_batch_strength(batch):
 	"""Return the number of students enrolled in the batch."""
-	return frappe.db.count("Course Enrollment", {"student_batch": batch, "docstatus": 1})
+	return frappe.db.count("Course Enrollment", {"student_batch_name": batch, "docstatus": 1})
 
 
 def get_batch_occupancy(batch, exclude_applicant=None, exclude_enrollment=None):
@@ -57,7 +57,7 @@ def get_batch_occupancy(batch, exclude_applicant=None, exclude_enrollment=None):
 	if not batch:
 		return 0
 
-	enrollment_filters = {"student_batch": batch, "docstatus": 1}
+	enrollment_filters = {"student_batch_name": batch, "docstatus": 1}
 	if exclude_enrollment:
 		enrollment_filters["name"] = ("!=", exclude_enrollment)
 
@@ -67,7 +67,7 @@ def get_batch_occupancy(batch, exclude_applicant=None, exclude_enrollment=None):
 		frappe.get_all(
 			"Course Enrollment",
 			filters={
-				"student_batch": batch,
+				"student_batch_name": batch,
 				"docstatus": 1,
 				"student_applicant": ("is", "set"),
 			},
@@ -77,7 +77,7 @@ def get_batch_occupancy(batch, exclude_applicant=None, exclude_enrollment=None):
 
 	approved_applicants = frappe.get_all(
 		"Student Applicant",
-		filters={"student_batch": batch, "application_status": "Approved"},
+		filters={"student_batch_name": batch, "application_status": "Approved"},
 		pluck="name",
 	)
 	reserved = sum(
@@ -92,7 +92,7 @@ def validate_batch_capacity(batch, exclude_applicant=None, exclude_enrollment=No
 	if not batch:
 		return
 
-	max_strength = frappe.db.get_value("Student Batch", batch, "max_strength")
+	max_strength = frappe.db.get_value("Student Batch Name", batch, "max_strength")
 	if not cint(max_strength):
 		return
 
@@ -131,7 +131,7 @@ def get_batch_students(batch, include_inactive=0):
 			enrollment.name.as_("course_enrollment"),
 			student.enabled.as_("active"),
 		)
-		.where(enrollment.student_batch == batch)
+		.where(enrollment.student_batch_name == batch)
 		.where(enrollment.docstatus == 1)
 		.orderby(enrollment.roll_number)
 		.orderby(enrollment.student_name)

@@ -22,7 +22,7 @@ from education.education.doctype.fee_plan.fee_plan import (
 	get_billing_error,
 	get_installments,
 )
-from education.education.doctype.student_batch.student_batch import (
+from education.education.doctype.student_batch_name.student_batch_name import (
 	validate_batch_capacity,
 )
 
@@ -366,7 +366,7 @@ class CourseEnrollment(Document):
 			return
 
 		batch = frappe.db.get_value(
-			"Student Batch",
+			"Student Batch Name",
 			self.student_batch,
 			["course", "disabled"],
 			as_dict=True,

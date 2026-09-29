@@ -63,7 +63,7 @@
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "read_only": 1
   },
   {
@@ -197,7 +197,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 14:38:36.199992",
+ "modified": "2026-09-29 20:19:09.093857",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Registration",

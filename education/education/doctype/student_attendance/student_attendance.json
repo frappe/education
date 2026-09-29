@@ -64,7 +64,7 @@
    "in_global_search": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch"
+   "options": "Student Batch Name"
   },
   {
    "allow_on_submit": 1,
@@ -117,7 +117,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 14:09:34.638163",
+ "modified": "2026-09-29 20:19:10.752683",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",

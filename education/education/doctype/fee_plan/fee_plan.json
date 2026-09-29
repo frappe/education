@@ -102,7 +102,7 @@
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "read_only": 1
   },
   {
@@ -225,7 +225,7 @@
    "link_fieldname": "fee_plan"
   }
  ],
- "modified": "2026-09-29 14:09:35.481736",
+ "modified": "2026-09-29 20:19:11.227903",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fee Plan",

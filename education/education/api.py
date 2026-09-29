@@ -11,7 +11,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
-from education.education.doctype.student_batch.student_batch import (
+from education.education.doctype.student_batch_name.student_batch_name import (
 	get_batch_students as get_students_of_batch,
 )
 

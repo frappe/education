@@ -38,7 +38,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "reqd": 1
   },
   {
@@ -199,7 +199,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 14:09:33.946010",
+ "modified": "2026-09-29 20:19:10.243367",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Plan",

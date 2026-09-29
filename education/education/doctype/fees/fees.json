@@ -183,7 +183,7 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch",
+   "options": "Student Batch Name",
    "print_hide": 1
   },
   {
@@ -381,7 +381,7 @@
  "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 14:09:36.573951",
+ "modified": "2026-09-29 20:19:11.960921",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
