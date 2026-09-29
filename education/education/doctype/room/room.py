@@ -26,6 +26,7 @@ def room_query(
 	filters: dict[str, Any],
 ):
 	"""Rooms on the selected campus, plus rooms shared across campuses."""
+	frappe.has_permission("Room", "read", throw=True)
 	filters = filters or {}
 	room = frappe.qb.DocType("Room")
 	query = (

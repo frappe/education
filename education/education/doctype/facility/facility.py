@@ -26,6 +26,7 @@ def facility_query(
 	filters: dict[str, Any],
 ):
 	"""Facilities on the selected campus, plus facilities shared across campuses."""
+	frappe.has_permission("Facility", "read", throw=True)
 	filters = filters or {}
 	facility = frappe.qb.DocType("Facility")
 	query = (

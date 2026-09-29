@@ -19,8 +19,8 @@
   "academic_term",
   "section_break_5",
   "schedule_date",
-  "room",
   "campus",
+  "room",
   "faculty",
   "faculty_name",
   "column_break_4",
@@ -135,7 +135,7 @@
    "options": "Room"
   },
   {
-   "description": "Filled from the room when that room belongs to a campus. A room with no campus can be used by any campus.",
+   "description": "Rooms offered below follow this campus. A room with no campus stays available. Choosing a room that belongs to a campus fills this field.",
    "fieldname": "campus",
    "fieldtype": "Link",
    "in_standard_filter": 1,

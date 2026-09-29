@@ -112,16 +112,25 @@ def apply_room_campus(doc):
 	if not doc.get("room"):
 		return
 
-	room_campus = frappe.db.get_value("Room", doc.room, "campus")
-	if not room_campus:
+	room = frappe.db.get_value("Room", doc.room, ["company", "campus"], as_dict=True)
+	if not room:
 		return
 
-	if doc.get("campus") and doc.campus != room_campus:
+	company = doc.get("company")
+	if company and room.company and room.company != company:
 		frappe.throw(
-			_("Room {0} belongs to Campus {1}.").format(frappe.bold(doc.room), frappe.bold(room_campus))
+			_("Room {0} does not belong to Company {1}.").format(frappe.bold(doc.room), frappe.bold(company))
 		)
 
-	doc.campus = room_campus
+	if not room.campus:
+		return
+
+	if doc.get("campus") and doc.campus != room.campus:
+		frappe.throw(
+			_("Room {0} belongs to Campus {1}.").format(frappe.bold(doc.room), frappe.bold(room.campus))
+		)
+
+	doc.campus = room.campus
 
 
 def apply_campus_to_invoice(invoice, campus):

@@ -18,6 +18,7 @@ frappe.ui.form.on('Assessment Plan', {
       }
     })
     set_academic_queries(frm)
+    set_room_query(frm)
     set_default_academic_year(frm)
   },
 
@@ -43,6 +44,7 @@ frappe.ui.form.on('Assessment Plan', {
     }
 
     set_academic_queries(frm)
+    set_room_query(frm)
     set_default_academic_year(frm)
   },
 
@@ -62,6 +64,18 @@ frappe.ui.form.on('Assessment Plan', {
       frm.set_value('subject', '')
     }
   },
+
+  campus(frm) {
+    if (!frm.doc.room || !frm.doc.campus) {
+      return
+    }
+    frappe.db.get_value('Room', frm.doc.room, 'campus').then((r) => {
+      const room_campus = r && r.message && r.message.campus
+      if (room_campus && room_campus !== frm.doc.campus) {
+        frm.set_value('room', '')
+      }
+    })
+  },
 })
 
 function set_default_academic_year(frm) {
@@ -72,6 +86,15 @@ function set_default_academic_year(frm) {
   if (year) {
     frm.set_value('academic_year', year)
   }
+}
+
+function set_room_query(frm) {
+  frm.set_query('room', () => ({
+    query: 'education.education.doctype.room.room.room_query',
+    filters: {
+      campus: frm.doc.campus,
+    },
+  }))
 }
 
 function set_academic_queries(frm) {
