@@ -6,6 +6,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, cstr, flt, get_link_to_form, getdate
 
+from education.education.doctype.campus.campus import (
+	apply_campus_to_invoice,
+	set_campus_from_enrollment,
+	validate_campus,
+)
+
 INSTALLMENT_TERM_TYPES = (
 	"Fixed Fees of Days",
 	"Fixed Fees of Dates",
@@ -16,6 +22,8 @@ INSTALLMENT_TERM_TYPES = (
 class FeePlan(Document):
 	def validate(self):
 		self.validate_course_enrollment()
+		set_campus_from_enrollment(self)
+		validate_campus(self)
 
 	def before_save(self):
 		self.update_totals()
@@ -120,6 +128,7 @@ class FeePlan(Document):
 				},
 			)
 
+		apply_campus_to_invoice(invoice, self.campus)
 		invoice.insert(ignore_permissions=True)
 		invoice.submit()
 		return invoice

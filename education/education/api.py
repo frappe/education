@@ -11,7 +11,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
 
-from education.education.doctype.student_batch_name.student_batch_name import (
+from education.education.doctype.student_batch.student_batch import (
 	get_batch_students as get_students_of_batch,
 )
 
@@ -61,7 +61,9 @@ def enroll_student(source_name: str):
 
 @frappe.whitelist()
 def check_attendance_records_exist(
-	subject_schedule: str | None = None, student_batch: str | None = None, date: str | None = None
+	subject_schedule: str | None = None,
+	student_batch: str | None = None,
+	date: str | None = None,
 ):
 	"""Check if Attendance Records are made against the specified Subject Schedule or Batch for given date.
 
@@ -552,7 +554,9 @@ def get_course_list_based_on_program(program_name: str):
 
 @frappe.whitelist()
 def get_subject_schedule_for_student(
-	program_name: str, student_batches: list | None = None, student_groups: list | None = None
+	program_name: str,
+	student_batches: list | None = None,
+	student_groups: list | None = None,
 ):
 	student_batches = student_batches or student_groups or []
 	student_batches = [batch.get("label") for batch in student_batches]

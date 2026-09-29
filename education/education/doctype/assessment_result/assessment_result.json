@@ -104,7 +104,7 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch Name",
+   "options": "Student Batch",
    "read_only": 1
   },
   {
@@ -167,7 +167,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-26 12:49:53.870262",
+ "modified": "2026-09-29 14:09:33.305624",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result",

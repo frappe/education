@@ -3,6 +3,9 @@
 
 frappe.ui.form.on('Admission Register', {
   refresh(frm) {
+    if (frm.is_new()) {
+      frm.set_value('route', '')
+    }
     if (frm.doc.company) {
       frm.set_query('course', function () {
         return {

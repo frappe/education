@@ -7,9 +7,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
+from education.education.doctype.campus.campus import apply_room_campus
+
 
 class AssessmentPlan(Document):
 	def validate(self):
+		apply_room_campus(self)
 		self.validate_overlap()
 		self.validate_max_score()
 		self.validate_subject()
@@ -91,7 +94,7 @@ class AssessmentPlan(Document):
 			return
 
 		for doctype, value in (
-			("Student Batch Name", self.student_batch),
+			("Student Batch", self.student_batch),
 			("Course", self.course),
 			("Academic Year", self.academic_year),
 			("Academic Term", self.academic_term),

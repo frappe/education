@@ -50,7 +50,6 @@ frappe.ui.form.on('Student Applicant', {
     })
 
     frm.trigger('fetch_register_courses')
-    frm.trigger('toggle_email_mandatory')
     frm.trigger('setup_actions')
   },
 
@@ -113,7 +112,7 @@ frappe.ui.form.on('Student Applicant', {
       )
     }
 
-    if (status === 'Applied' || status === 'Approved') {
+    if (status === 'Applied') {
       frm.add_custom_button(
         __('Reject'),
         function () {
@@ -299,17 +298,5 @@ frappe.ui.form.on('Student Applicant', {
       })
       frm.refresh_field('siblings')
     })
-  },
-
-  toggle_email_mandatory: function (frm) {
-    frappe.db
-      .get_single_value('Education Settings', 'user_creation_skip')
-      .then((user_creation_skip) => {
-        frm.set_df_property(
-          'email_address',
-          'reqd',
-          cint(user_creation_skip) ? 0 : 1
-        )
-      })
   },
 })

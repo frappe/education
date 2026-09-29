@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import cint, getdate
 
 
-class StudentBatchName(Document):
+class StudentBatch(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_company()
@@ -25,7 +25,9 @@ class StudentBatchName(Document):
 		if course_company and self.company and course_company != self.company:
 			frappe.throw(
 				_("Company {0} does not match the Company {1} of Course {2}").format(
-					frappe.bold(self.company), frappe.bold(course_company), frappe.bold(self.course)
+					frappe.bold(self.company),
+					frappe.bold(course_company),
+					frappe.bold(self.course),
 				)
 			)
 
@@ -90,7 +92,7 @@ def validate_batch_capacity(batch, exclude_applicant=None, exclude_enrollment=No
 	if not batch:
 		return
 
-	max_strength = frappe.db.get_value("Student Batch Name", batch, "max_strength")
+	max_strength = frappe.db.get_value("Student Batch", batch, "max_strength")
 	if not cint(max_strength):
 		return
 

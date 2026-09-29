@@ -29,7 +29,7 @@ add_to_apps_screen = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/education/css/education.css"
 # app_include_js = "/assets/education/js/education.js"
-app_include_js = "education.bundle.js"
+app_include_js = ["education.bundle.js", "/assets/education/js/campus.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/education/css/education.css"
@@ -74,7 +74,7 @@ default_roles = [
 	{"role": "Student", "doctype": "Student", "email_field": "student_email_id"},
 ]
 
-accounting_dimension_doctypes = ["Fee Schedule", "Fee Structure"]
+accounting_dimension_doctypes = ["Fees", "Fee Schedule", "Fee Structure", "Fee Term"]
 
 global_search_doctypes = {
 	"Education": [
@@ -108,8 +108,9 @@ global_search_doctypes = {
 		{"doctype": "Announcement", "index": 26},
 		{"doctype": "Student Category", "index": 27},
 		{"doctype": "Assessment Group", "index": 28},
-		{"doctype": "Academic Year", "index": 29},
-		{"doctype": "Academic Term", "index": 30},
+		{"doctype": "Campus", "index": 29},
+		{"doctype": "Academic Year", "index": 30},
+		{"doctype": "Academic Term", "index": 31},
 		{"doctype": "School House", "index": 31},
 		{"doctype": "Student Admission", "index": 32},
 		{"doctype": "Fee Category", "index": 33},
@@ -227,6 +228,8 @@ scheduler_events = {
 # -------
 
 before_tests = "education.education.test_utils.before_tests"
+
+after_migrate = ["education.education.doctype.campus.campus.ensure_campus_accounting_dimension"]
 
 # Overriding Methods
 # ------------------------------

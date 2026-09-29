@@ -70,7 +70,7 @@
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch Name"
+   "options": "Student Batch"
   },
   {
    "fieldname": "column_break_meta",
@@ -183,7 +183,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-16 22:13:16.945809",
+ "modified": "2026-09-29 14:09:32.347403",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Grade Book",

@@ -7,5 +7,5 @@ from frappe.tests.utils import FrappeTestCase
 # test_records = frappe.get_test_records('Student Batch Name')
 
 
-class TestStudentBatchName(FrappeTestCase):
+class TestStudentBatch(FrappeTestCase):
 	pass

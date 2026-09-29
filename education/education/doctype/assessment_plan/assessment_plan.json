@@ -20,6 +20,7 @@
   "section_break_5",
   "schedule_date",
   "room",
+  "campus",
   "faculty",
   "faculty_name",
   "column_break_4",
@@ -37,7 +38,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch Name",
+   "options": "Student Batch",
    "reqd": 1
   },
   {
@@ -134,6 +135,14 @@
    "options": "Room"
   },
   {
+   "description": "Filled from the room when that room belongs to a campus. A room with no campus can be used by any campus.",
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
+  },
+  {
    "fieldname": "faculty",
    "fieldtype": "Link",
    "label": "Faculty",
@@ -190,7 +199,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-26 12:50:19.291080",
+ "modified": "2026-09-29 14:09:33.946010",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Plan",

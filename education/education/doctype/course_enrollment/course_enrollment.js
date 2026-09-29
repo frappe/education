@@ -129,6 +129,17 @@ frappe.ui.form.on('Course Enrollment', {
   admission_register: function (frm) {
     frm.set_value('course', null)
     frm.trigger('fetch_allowed_courses')
+    if (!frm.doc.admission_register) {
+      return
+    }
+    frappe.db
+      .get_value('Admission Register', frm.doc.admission_register, 'campus')
+      .then((r) => {
+        const campus = r.message && r.message.campus
+        if (campus) {
+          frm.set_value('campus', campus)
+        }
+      })
   },
 
   student: function (frm) {

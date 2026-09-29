@@ -18,6 +18,7 @@
   "academic_term",
   "column_break_uisg",
   "company",
+  "campus",
   "program",
   "student",
   "student_name",
@@ -147,7 +148,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch Name"
+   "options": "Student Batch"
   },
   {
    "allow_on_submit": 1,
@@ -181,6 +182,16 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "description": "Copied from the Admission Register when that intake belongs to a campus.",
+   "fetch_from": "admission_register.campus",
+   "fetch_if_empty": 1,
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
   },
   {
    "fieldname": "subjects_tab",
@@ -224,7 +235,7 @@
    "link_fieldname": "course_enrollment"
   }
  ],
- "modified": "2026-09-21 20:00:01.374457",
+ "modified": "2026-09-29 14:41:56.295170",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -232,6 +243,7 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -240,7 +252,9 @@
    "read": 1,
    "report": 1,
    "role": "Academics User",
+   "select": 1,
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
@@ -250,6 +264,7 @@
    "read": 1,
    "report": 1,
    "role": "Instructor",
+   "select": 1,
    "share": 1
   }
  ],

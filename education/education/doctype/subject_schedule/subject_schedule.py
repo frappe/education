@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import formatdate, get_time, getdate
 
+from education.education.doctype.campus.campus import apply_room_campus
 from education.education.doctype.faculty.faculty import faculty_teaches_subject
 
 
@@ -21,6 +22,7 @@ class SubjectSchedule(Document):
 		self.set_title()
 		self.validate_time()
 		self.validate_date()
+		apply_room_campus(self)
 		self.validate_overlap()
 
 	def before_save(self):

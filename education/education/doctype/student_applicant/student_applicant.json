@@ -304,11 +304,11 @@
    "read_only_depends_on": "eval:doc.admission_based_on===\"Course\";"
   },
   {
-   "description": "Mandatory if a user will be created for the student upon admission",
    "fieldname": "email_address",
    "fieldtype": "Data",
    "label": "Email Address",
-   "options": "Email"
+   "options": "Email",
+   "reqd": 1
   },
   {
    "fetch_from": "admission_register.registration_fee_item",
@@ -375,12 +375,12 @@
    "fieldname": "student_batch",
    "fieldtype": "Link",
    "label": "Student Batch",
-   "options": "Student Batch Name"
+   "options": "Student Batch"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-09-21 20:01:50.636759",
+ "modified": "2026-09-29 15:18:32.689748",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",

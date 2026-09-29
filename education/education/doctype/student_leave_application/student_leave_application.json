@@ -98,7 +98,7 @@
    "label": "Student Batch",
    "link_filters": "[]",
    "mandatory_depends_on": "eval:doc.attendance_based_on === \"Student Batch\";",
-   "options": "Student Batch Name"
+   "options": "Student Batch"
   },
   {
    "allow_in_quick_entry": 1,
@@ -122,7 +122,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-08-13 22:33:20.218341",
+ "modified": "2026-09-29 14:09:32.789582",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Leave Application",

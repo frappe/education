@@ -19,6 +19,7 @@
   "section_break_6",
   "schedule_date",
   "room",
+  "campus",
   "column_break_9",
   "from_time",
   "to_time",
@@ -31,7 +32,7 @@
    "in_global_search": 1,
    "in_standard_filter": 1,
    "label": "Student Batch",
-   "options": "Student Batch Name",
+   "options": "Student Batch",
    "reqd": 1
   },
   {
@@ -106,6 +107,14 @@
    "reqd": 1
   },
   {
+   "description": "Filled from the room when that room belongs to a campus. A room with no campus can be used by any campus.",
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
+  },
+  {
    "fieldname": "column_break_9",
    "fieldtype": "Column Break"
   },
@@ -139,7 +148,7 @@
   }
  ],
  "links": [],
- "modified": "2026-09-23 18:55:56.153051",
+ "modified": "2026-09-29 14:09:31.593701",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Schedule",

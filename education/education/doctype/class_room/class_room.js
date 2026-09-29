@@ -15,7 +15,14 @@ frappe.ui.form.on('Class Room Facility', {
         $.each(doc.facilities, function (idx, val) {
           if (val.facility) facilities_list.push(val.facility)
         })
-        return { filters: [['Facility', 'name', 'not in', facilities_list]] }
+        return {
+          query: 'education.education.doctype.facility.facility.facility_query',
+          filters: {
+            company: doc.company,
+            campus: doc.campus,
+            exclude: facilities_list,
+          },
+        }
       }
   },
 })

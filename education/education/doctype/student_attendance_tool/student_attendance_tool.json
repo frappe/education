@@ -34,7 +34,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Student Batch",
-   "options": "Student Batch Name",
+   "options": "Student Batch",
    "reqd": 1
   },
   {
@@ -85,7 +85,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 22:32:33.652446",
+ "modified": "2026-09-29 14:09:34.941374",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance Tool",

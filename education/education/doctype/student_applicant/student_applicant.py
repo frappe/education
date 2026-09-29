@@ -11,7 +11,7 @@ from frappe.utils import getdate, today
 from education.education.doctype.admission_register.admission_register import (
 	STATUS_ADMISSION_OPEN,
 )
-from education.education.doctype.student_batch_name.student_batch_name import (
+from education.education.doctype.student_batch.student_batch import (
 	validate_batch_capacity,
 )
 
@@ -104,7 +104,8 @@ class StudentApplicant(Document):
 		if student_with_email:
 			frappe.throw(
 				_("Email Address {0} is already in use by Student {1}.").format(
-					frappe.bold(self.email_address), frappe.bold(student_with_email[0].name)
+					frappe.bold(self.email_address),
+					frappe.bold(student_with_email[0].name),
 				)
 			)
 
@@ -243,7 +244,7 @@ class StudentApplicant(Document):
 			return
 
 		batch = frappe.db.get_value(
-			"Student Batch Name",
+			"Student Batch",
 			self.student_batch,
 			["course", "disabled"],
 			as_dict=True,

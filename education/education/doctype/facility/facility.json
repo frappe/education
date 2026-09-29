@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "facility_name",
-  "company"
+  "company",
+  "campus"
  ],
  "fields": [
   {
@@ -23,6 +24,15 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "description": "Required on new facilities once this company has a campus. Leave blank for a facility shared across sites.",
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
   }
  ],
  "grid_page_length": 50,
