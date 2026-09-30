@@ -21,7 +21,7 @@ def update_fee_plan_invoice_status(payment_entry):
 
 		invoice_doc = frappe.get_doc("Sales Invoice", invoice_name)
 
-		fee_plan_name = invoice_doc.fee_plan
+		fee_plan_name = invoice_doc.get("fee_plan")
 		if not fee_plan_name:
 			continue
 
@@ -51,7 +51,7 @@ def on_unreconcile_payment(doc, method=None):
 	for allocation in doc.allocations:
 		if allocation.reference_doctype == "Sales Invoice":
 			invoice_doc = frappe.get_doc(allocation.reference_doctype, allocation.reference_name)
-			fee_plan_name = invoice_doc.fee_plan
+			fee_plan_name = invoice_doc.get("fee_plan")
 			if fee_plan_name:
 				child_row = frappe.db.get_value(
 					"Fee Plan Detail",
@@ -78,7 +78,7 @@ def on_payment_entry_update_after_submit(doc, method=None):
 	for ref in doc.references:
 		if ref.reference_doctype == "Sales Invoice":
 			invoice_doc = frappe.get_doc(ref.reference_doctype, ref.reference_name)
-			fee_plan_name = invoice_doc.fee_plan
+			fee_plan_name = invoice_doc.get("fee_plan")
 			if fee_plan_name:
 				child_row = frappe.db.get_value(
 					"Fee Plan Detail",
