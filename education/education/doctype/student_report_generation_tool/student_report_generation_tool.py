@@ -57,7 +57,7 @@ def preview_report_card(doc: str):
 
 
 def get_attendance_count(student, academic_year, academic_term=None):
-	"""FIXED for Frappe v15 - uses Query Builder instead of string SQL function"""
+	"""Count attendance by status using Query Builder."""
 	from frappe.query_builder.functions import Count
 
 	attendance = frappe._dict()
