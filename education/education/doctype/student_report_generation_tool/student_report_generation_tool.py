@@ -1,7 +1,6 @@
 # Copyright (c) 2018, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-
 import json
 
 import frappe
@@ -21,24 +20,23 @@ class StudentReportGenerationTool(Document):
 
 
 @frappe.whitelist()
-def preview_report_card(doc):
+def preview_report_card(doc: str):
 	doc = frappe._dict(json.loads(doc))
 	doc.students = [doc.student]
 	values = get_formatted_result(doc, get_course=True)
 	courses = values.get("courses")
 	assessment_groups = get_child_assessment_groups(doc.assessment_group)
 	letterhead = get_letter_head(doc, not doc.add_letterhead)
+	grade_books = get_grade_books(doc)
 
-	# get the attendance of the student for that peroid of time.
-	doc.attendance = get_attendance_count(
-		doc.students[0], doc.academic_year, doc.academic_term
-	)
+	doc.attendance = get_attendance_count(doc.students[0], doc.academic_year, doc.academic_term)
 
 	html = frappe.render_template(
 		"education/education/doctype/student_report_generation_tool/student_report_generation_tool.html",
 		{
 			"doc": doc,
 			"assessment_result": values.get("assessment_result"),
+			"grade_books": grade_books,
 			"courses": courses,
 			"assessment_groups": assessment_groups,
 			"letterhead": letterhead and letterhead.get("content", None),
@@ -55,29 +53,114 @@ def preview_report_card(doc):
 	frappe.response.type = "pdf"
 
 
-def get_attendance_count(student, academic_year, academic_term):
-    from frappe.query_builder.functions import Count
-    StudentAttendance = frappe.qb.DocType("Student Attendance")
+def get_attendance_count(student, academic_year, academic_term=None):
+	"""
+	PROPER FIX for Frappe v15+
+	- Uses Query Builder (no string SQL like count(student))
+	- Does NOT filter by academic_year column (doesn't exist in Student Attendance)
+	- Filters by date range from Academic Year/Term
+	"""
+	from frappe.query_builder.functions import Count
 
-    query = (
-        frappe.qb.from_(StudentAttendance)
-        .select(StudentAttendance.status, Count(StudentAttendance.name).as_("count"))
-        .where(
-            (StudentAttendance.student == student)
-            & (StudentAttendance.academic_year == academic_year)
-            & (StudentAttendance.academic_term == academic_term)
-            & (StudentAttendance.docstatus == 1)
-        )
-        .groupby(StudentAttendance.status)
-    )
+	attendance = frappe._dict()
+	attendance.total = 0
+	attendance.present = 0
+	attendance.absent = 0
+	attendance.leaves = 0
 
-    data = query.run(as_dict=True)
+	from_date = None
+	to_date = None
 
-    attendance = {}
-    total = 0
-    for row in data:
-        attendance[row.status] = row.count
-        total += row.count
+	# Step 1: Get date range from Academic Year or Academic Term
+	if academic_year:
+		year_dates = frappe.db.get_value(
+			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
+		)
+		if year_dates and year_dates[0] and year_dates[1]:
+			from_date, to_date = year_dates
 
-    attendance["Total"] = total
-    return attendance
+	if not from_date and academic_term:
+		term_dates = frappe.db.get_value(
+			"Academic Term", academic_term, ["term_start_date", "term_end_date"]
+		)
+		if term_dates and term_dates[0] and term_dates[1]:
+			from_date, to_date = term_dates
+
+	# Step 2: If we have dates, query Student Attendance by DATE only
+	if from_date and to_date:
+		StudentAttendance = frappe.qb.DocType("Student Attendance")
+
+		query = (
+			frappe.qb.from_(StudentAttendance)
+			.select(
+				StudentAttendance.status,
+				Count(StudentAttendance.name).as_("count")
+			)
+			.where(
+				(StudentAttendance.student == student)
+				& (StudentAttendance.docstatus == 1)
+				& (StudentAttendance.date[from_date:to_date])
+			)
+			.groupby(StudentAttendance.status)
+		)
+
+		data = query.run(as_dict=True)
+
+		for row in data:
+			status = row.status
+			count = row.count
+			if status == "Present":
+				attendance.present = count
+			elif status == "Absent":
+				attendance.absent = count
+			else:
+				attendance.leaves += count
+			attendance.total += count
+
+		return attendance
+	else:
+		# No date range found - return empty attendance (don't throw during report generation)
+		frappe.log_error(
+			f"Attendance dates not found for Year={academic_year} Term={academic_term}",
+			"get_attendance_count"
+		)
+		return attendance
+
+
+def get_grade_books(doc):
+	filters = {
+		"student": doc.students[0],
+		"academic_year": doc.academic_year,
+		"status": "Computed",
+	}
+	if doc.academic_term:
+		filters["academic_term"] = doc.academic_term
+	if doc.program:
+		filters["program"] = doc.program
+	if doc.student_batch:
+		filters["student_batch"] = doc.student_batch
+
+	books = frappe.get_all(
+		"Grade Book",
+		filters=filters,
+		fields=[
+			"name",
+			"course",
+			"overall_percentage",
+			"overall_grade",
+		],
+		order_by="course",
+	)
+	for book in books:
+		book.subjects = frappe.get_all(
+			"Grade Book Subject",
+			{"parent": book.name, "parenttype": "Grade Book"},
+			[
+				"subject",
+				"percentage",
+				"grade",
+				"is_overridden",
+			],
+			order_by="idx",
+		)
+	return books
