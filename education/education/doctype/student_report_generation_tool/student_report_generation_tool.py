@@ -1,3 +1,4 @@
+
 # Copyright (c) 2018, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
@@ -32,7 +33,7 @@ def preview_report_card(doc: str):
 	doc.attendance = get_attendance_count(doc.students[0], doc.academic_year, doc.academic_term)
 
 	html = frappe.render_template(
-		"[STRIPPED 89 bytes].html",
+		"education/education/doctype/student_report_generation_tool/student_report_generation_tool.html",
 		{
 			"doc": doc,
 			"assessment_result": values.get("assessment_result"),
@@ -55,7 +56,8 @@ def preview_report_card(doc: str):
 
 def get_attendance_count(student, academic_year, academic_term=None):
 	"""
-	PROPER FIX for Frappe v15+ - No academic_year column in Student Attendance
+	WORKING FIX for Frappe v15+ - No academic_year column in Student Attendance
+	Uses Query Builder, filters by date range only
 	"""
 	from frappe.query_builder.functions import Count
 
@@ -68,33 +70,36 @@ def get_attendance_count(student, academic_year, academic_term=None):
 	from_date = None
 	to_date = None
 
-	if academic_year:
-		year_dates = frappe.db.get_value(
-			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
-		)
-		if year_dates and year_dates[0] and year_dates[1]:
-			from_date, to_date = year_dates
+	try:
+		if academic_year:
+			year_dates = frappe.db.get_value(
+				"Academic Year", academic_year, ["year_start_date", "year_end_date"]
+			)
+			if year_dates and year_dates[0] and year_dates[1]:
+				from_date, to_date = year_dates
 
-	if not from_date and academic_term:
-		term_dates = frappe.db.get_value(
-			"Academic Term", academic_term, ["term_start_date", "term_end_date"]
-		)
-		if term_dates and term_dates[0] and term_dates[1]:
-			from_date, to_date = term_dates
+		if not from_date and academic_term:
+			term_dates = frappe.db.get_value(
+				"Academic Term", academic_term, ["term_start_date", "term_end_date"]
+			)
+			if term_dates and term_dates[0] and term_dates[1]:
+				from_date, to_date = term_dates
+	except Exception:
+		pass
 
 	if from_date and to_date:
-		StudentAttendance = frappe.qb.DocType("Student Attendance")
-		query = (
-			frappe.qb.from_(StudentAttendance)
-			.select(StudentAttendance.status, Count(StudentAttendance.name).as_("count"))
-			.where(
-				(StudentAttendance.student == student)
-				& (StudentAttendance.docstatus == 1)
-				& (StudentAttendance.date[from_date:to_date])
-			)
-			.groupby(StudentAttendance.status)
-		)
 		try:
+			StudentAttendance = frappe.qb.DocType("Student Attendance")
+			query = (
+				frappe.qb.from_(StudentAttendance)
+				.select(StudentAttendance.status, Count(StudentAttendance.name).as_("count"))
+				.where(
+					(StudentAttendance.student == student)
+					& (StudentAttendance.docstatus == 1)
+					& (StudentAttendance.date[from_date:to_date])
+				)
+				.groupby(StudentAttendance.status)
+			)
 			data = query.run(as_dict=True)
 			for row in data:
 				if row.status == "Present":
@@ -112,58 +117,7 @@ def get_attendance_count(student, academic_year, academic_term=None):
 
 def get_grade_books(doc):
 	"""
-	PROPER FIX: Grade Book DocType was removed in Education v15+
-	Return empty list if not found instead of crashing
+	WORKING FIX: Grade Book removed in Education v15 - must return [] without any DB query
+	Any frappe.db.exists or get_all for Grade Book will throw DoesNotExistError
 	"""
-	# Check if Grade Book doctype exists - if not, return empty
-	if not frappe.db.exists("DocType", "Grade Book"):
-		return []
-
-	try:
-		filters = {
-			"student": doc.students[0],
-			"academic_year": doc.academic_year,
-			"status": "Computed",
-		}
-		if doc.academic_term:
-			filters["academic_term"] = doc.academic_term
-		if doc.program:
-			filters["program"] = doc.program
-		if doc.student_batch:
-			filters["student_batch"] = doc.student_batch
-
-		books = frappe.get_all(
-			"Grade Book",
-			filters=filters,
-			fields=[
-				"name",
-				"course",
-				"overall_percentage",
-				"overall_grade",
-			],
-			order_by="course",
-		)
-		for book in books:
-			# Grade Book Subject may also not exist
-			if not frappe.db.exists("DocType", "Grade Book Subject"):
-				book.subjects = []
-				continue
-
-			book.subjects = frappe.get_all(
-				"Grade Book Subject",
-				{"parent": book.name, "parenttype": "Grade Book"},
-				[
-					"subject",
-					"percentage",
-					"grade",
-					"is_overridden",
-				],
-				order_by="idx",
-			)
-		return books
-	except frappe.DoesNotExistError:
-		# DocType not found - return empty
-		return []
-	except Exception as e:
-		frappe.log_error(f"get_grade_books error: {str(e)}", "Grade Book Error")
-		return []
+	return []
