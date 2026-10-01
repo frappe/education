@@ -55,33 +55,29 @@ def preview_report_card(doc):
 	frappe.response.type = "pdf"
 
 
-def get_attendance_count(student, academic_year, academic_term=None):
-	attendance = frappe._dict()
-	attendance.total = 0
+def get_attendance_count(student, academic_year, academic_term):
+    from frappe.query_builder.functions import Count
+    StudentAttendance = frappe.qb.DocType("Student Attendance")
 
-	if academic_year:
-		from_date, to_date = frappe.db.get_value(
-			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
-		)
-	elif academic_term:
-		from_date, to_date = frappe.db.get_value(
-			"Academic Term", academic_term, ["term_start_date", "term_end_date"]
-		)
+    query = (
+        frappe.qb.from_(StudentAttendance)
+        .select(StudentAttendance.status, Count(StudentAttendance.name).as_("count"))
+        .where(
+            (StudentAttendance.student == student)
+            & (StudentAttendance.academic_year == academic_year)
+            & (StudentAttendance.academic_term == academic_term)
+            & (StudentAttendance.docstatus == 1)
+        )
+        .groupby(StudentAttendance.status)
+    )
 
-	if from_date and to_date:
-		data = frappe.get_all(
-			"Student Attendance",
-			{"student": student, "docstatus": 1, "date": ["between", (from_date, to_date)]},
-			["status", "count(student) as count"],
-			group_by="status",
-		)
+    data = query.run(as_dict=True)
 
-		for row in data:
-			if row.status == "Present":
-				attendance.present = row.count
-			if row.status == "Absent":
-				attendance.absent = row.count
-			attendance.total += row.count
-		return attendance
-	else:
-		frappe.throw(_("Please enter the Academic Year and set the Start and End date."))
+    attendance = {}
+    total = 0
+    for row in data:
+        attendance[row.status] = row.count
+        total += row.count
+
+    attendance["Total"] = total
+    return attendance
