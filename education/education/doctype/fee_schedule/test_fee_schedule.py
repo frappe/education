@@ -3,7 +3,10 @@
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from education.education.doctype.fee_schedule.fee_schedule import generate_fees
+from education.education.doctype.fee_schedule.fee_schedule import (
+	create_sales_invoice,
+	generate_fees,
+)
 
 # get_defaults from test_utils
 from education.education.test_utils import get_defaults
@@ -145,3 +148,20 @@ class TestFeeSchedule(FrappeTestCase):
 			# Invoice Item should have the income account and cost center set in the fee category
 			self.assertEqual(item.income_account, income_account)
 			self.assertEqual(item.cost_center, company_defaults.get("cost_center"))
+
+	def test_fee_generation_validates_linked_customer(self):
+		"""When disable_customer_sync is enabled, fee generation must fail with a
+		clear error for students that have no manually linked Customer."""
+		frappe.db.set_single_value("Education Settings", "disable_customer_sync", 1)
+
+		student = create_student(student_email_id="test_customerless@example.com")
+		self.assertFalse(frappe.db.get_value("Student", student.name, "customer"))
+
+		fee_schedule = create_fee_schedule(submit=1)
+
+		with self.assertRaises(frappe.ValidationError) as cm:
+			create_sales_invoice(fee_schedule.name, student.name)
+
+		self.assertIn(
+			"does not have a linked Customer", str(cm.exception), msg=cm.exception
+		)
