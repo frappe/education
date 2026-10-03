@@ -144,6 +144,9 @@ def create_student(first_name="Test", last_name="Student", student_email_id=DEFA
 	student.first_name = first_name
 	student.last_name = last_name
 	student.student_email_id = student_email_id
+	# `email_address` is mandatory on Student; keep it in sync with the id-style field
+	# so the helper can save on current schemas.
+	student.email_address = student_email_id
 	student.save()
 	return student
 
