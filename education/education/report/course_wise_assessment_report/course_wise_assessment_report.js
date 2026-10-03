@@ -24,10 +24,10 @@ frappe.query_reports['Course wise Assessment Report'] = {
       reqd: 1,
     },
     {
-      fieldname: 'student_group',
-      label: __('Student Group'),
+      fieldname: 'student_batch',
+      label: __('Student Batch'),
       fieldtype: 'Link',
-      options: 'Student Group',
+      options: 'Student Batch Name',
     },
     {
       fieldname: 'assessment_group',

@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "creation": "2026-09-01 19:43:14.470098",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "subject",
+  "assignment_type",
+  "raw_percentage",
+  "weightage",
+  "weighted_percentage"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Subject",
+   "options": "Subject",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "assignment_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assignment Type",
+   "options": "Assignment Type",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "raw_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Raw Percentage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "weightage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Weightage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "weighted_percentage",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Weighted Percentage",
+   "read_only": 1
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-01 19:49:06.811836",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Grade Book Assignment Component",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

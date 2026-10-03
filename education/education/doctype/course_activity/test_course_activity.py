@@ -2,9 +2,8 @@
 # See license.txt
 
 
-from frappe.tests.utils import FrappeTestCase
-
 import frappe
+from frappe.tests.utils import FrappeTestCase
 
 
 class TestCourseActivity(FrappeTestCase):

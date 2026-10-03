@@ -3,7 +3,6 @@ import frappe
 
 
 def execute():
-
 	click.secho(
 		"LMS Module has been removed from the Education App. "
 		"There is a new app for it called the Frappe LMS App. "

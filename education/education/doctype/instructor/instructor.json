@@ -56,6 +56,7 @@
    "options": "Department"
   },
   {
+   "fetch_from": "employee.image",
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "hidden": 1,

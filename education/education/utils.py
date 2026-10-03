@@ -33,17 +33,24 @@ def get_overlap_for(doc, doctype, fieldname, value=None):
 	:param fieldname: Checks Overlap for this field
 	"""
 
+	if not frappe.db.exists("DocType", doctype) or not frappe.get_meta(doctype).has_field(fieldname):
+		frappe.throw(_("Invalid overlap check for {0}.{1}").format(doctype, fieldname))
+
+	query = (
+		"select name, from_time, to_time from `tab"
+		+ doctype
+		+ "` where `"
+		+ fieldname
+		+ "`=%(val)s and schedule_date = %(schedule_date)s and "
+		"("
+		"(from_time > %(from_time)s and from_time < %(to_time)s) or "
+		"(to_time > %(from_time)s and to_time < %(to_time)s) or "
+		"(%(from_time)s > from_time and %(from_time)s < to_time) or "
+		"(%(from_time)s = from_time and %(to_time)s = to_time)) "
+		"and name!=%(name)s and docstatus!=2"
+	)
 	existing = frappe.db.sql(
-		"""select name, from_time, to_time from `tab{0}`
-		where `{1}`=%(val)s and schedule_date = %(schedule_date)s and
-		(
-			(from_time > %(from_time)s and from_time < %(to_time)s) or
-			(to_time > %(from_time)s and to_time < %(to_time)s) or
-			(%(from_time)s > from_time and %(from_time)s < to_time) or
-			(%(from_time)s = from_time and %(to_time)s = to_time))
-		and name!=%(name)s and docstatus!=2""".format(
-			doctype, fieldname
-		),
+		query,
 		{
 			"schedule_date": doc.schedule_date,
 			"val": value or doc.get(fieldname),
@@ -63,7 +70,10 @@ def validate_duplicate_student(students):
 		if stud.student in unique_students:
 			frappe.throw(
 				_("Student {0} - {1} appears Multiple times in row {2} & {3}").format(
-					stud.student, stud.student_name, unique_students.index(stud.student) + 1, stud.idx
+					stud.student,
+					stud.student_name,
+					unique_students.index(stud.student) + 1,
+					stud.idx,
 				)
 			)
 		else:
@@ -100,24 +110,22 @@ def get_enrollment(master, document, student):
 	Returns:
 	        string: Enrollment Name if exists else returns empty string
 	"""
+	filters = {"student": student, "docstatus": 1}
 	if master == "program":
-		enrollments = frappe.get_all(
-			"Program Enrollment",
-			filters={"student": student, "program": document, "docstatus": 1},
-		)
-	if master == "course":
-		enrollments = frappe.get_all(
-			"Course Enrollment", filters={"student": student, "course": document}
-		)
-
-	if enrollments:
-		return enrollments[0].name
+		filters["program"] = document
+	elif master == "course":
+		filters["course"] = document
 	else:
 		return None
 
+	enrollments = frappe.get_all("Course Enrollment", filters=filters)
+	if enrollments:
+		return enrollments[0].name
+	return None
+
 
 @frappe.whitelist()
-def enroll_in_program(program_name, student=None):
+def enroll_in_program(program_name: str, student: str | None = None):
 	"""Enroll student in program
 
 	Args:
@@ -126,12 +134,12 @@ def enroll_in_program(program_name, student=None):
 	                provided, a student will be created from the current user
 
 	Returns:
-	        string: name of the program enrollment document
+	        string: name of the course enrollment document
 	"""
 	if has_super_access():
 		return
 
-	if not student == None:
+	if student:
 		student = frappe.get_doc("Student", student)
 	else:
 		# Check if self enrollment in allowed
@@ -143,19 +151,16 @@ def enroll_in_program(program_name, student=None):
 		if not student:
 			student = create_student_from_current_user()
 
-	# Check if student is already enrolled in program
+	# Check if student is already enrolled in a course of this program
 	enrollment = get_enrollment("program", program_name, student.name)
 	if enrollment:
 		return enrollment
 
-	# Check if self enrollment in allowed
-	program = frappe.get_doc("Program", program_name)
-	if not program.allow_self_enroll:
-		return frappe.throw(_("You are not allowed to enroll for this course"))
-
-	# Enroll in program
-	program_enrollment = student.enroll_in_program(program_name)
-	return program_enrollment.name
+	frappe.throw(
+		_("No Course Enrollment found for program {0}. Enroll the student through Admission.").format(
+			program_name
+		)
+	)
 
 
 def has_super_access():
@@ -179,7 +184,7 @@ def has_super_access():
 
 
 @frappe.whitelist()
-def add_activity(course, content_type, content, program):
+def add_activity(course: str, content_type: str, content: str, program: str):
 	if has_super_access():
 		return None
 
@@ -198,7 +203,9 @@ def add_activity(course, content_type, content, program):
 
 
 @frappe.whitelist()
-def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
+def evaluate_quiz(
+	quiz_response: str, quiz_name: str, course: str, program: str, time_taken: float | str | int
+):
 	import json
 
 	student = get_current_student()
@@ -213,16 +220,14 @@ def evaluate_quiz(quiz_response, quiz_name, course, program, time_taken):
 	if student:
 		enrollment = get_or_create_course_enrollment(course, program)
 		if quiz.allowed_attempt(enrollment, quiz_name):
-			enrollment.add_quiz_activity(
-				quiz_name, quiz_response, result, score, status, time_taken
-			)
+			enrollment.add_quiz_activity(quiz_name, quiz_response, result, score, status, time_taken)
 			return {"result": result, "score": score, "status": status}
 		else:
 			return None
 
 
 @frappe.whitelist()
-def get_quiz(quiz_name, course):
+def get_quiz(quiz_name: str, course: str):
 	try:
 		quiz = frappe.get_doc("Quiz", quiz_name)
 		questions = quiz.get_questions()
@@ -235,9 +240,7 @@ def get_quiz(quiz_name, course):
 			"name": question.name,
 			"question": question.question,
 			"type": question.question_type,
-			"options": [
-				{"name": option.name, "option": option.option} for option in question.options
-			],
+			"options": [{"name": option.name, "option": option.option} for option in question.options],
 		}
 		for question in questions
 	]
@@ -301,9 +304,7 @@ def get_course_progress(course, program):
 		if progress:
 			course_progress.append(progress)
 	if course_progress:
-		number_of_completed_topics = sum(
-			[activity["completed"] for activity in course_progress]
-		)
+		number_of_completed_topics = sum([activity["completed"] for activity in course_progress])
 		total_topics = len(course_progress)
 		if total_topics == 1:
 			return course_progress[0]
@@ -319,10 +320,16 @@ def get_course_progress(course, program):
 
 def get_program_progress(program):
 	program_progress = []
-	if not program.courses:
+	course_names = frappe.get_all(
+		"Course",
+		filters={"program": program.name},
+		pluck="name",
+		order_by="course_name asc",
+	)
+	if not course_names:
 		return None
-	for program_course in program.courses:
-		course = frappe.get_doc("Course", program_course.course)
+	for course_name in course_names:
+		course = frappe.get_doc("Course", course_name)
 		progress = get_course_progress(course, program.name)
 		if progress:
 			progress["name"] = course.name
@@ -338,10 +345,9 @@ def get_program_progress(program):
 def get_program_completion(program):
 	topics = frappe.db.sql(
 		"""select `tabCourse Topic`.topic, `tabCourse Topic`.parent
-	from `tabCourse Topic`,
-		 `tabProgram Course`
-	where `tabCourse Topic`.parent = `tabProgram Course`.course
-			and `tabProgram Course`.parent = %s""",
+	from `tabCourse Topic`
+	inner join `tabCourse` on `tabCourse`.name = `tabCourse Topic`.parent
+	where `tabCourse`.program = %s""",
 		program.name,
 	)
 
@@ -353,9 +359,7 @@ def get_program_completion(program):
 			progress.append(topic_progress)
 
 	if progress:
-		number_of_completed_topics = sum(
-			[activity["completed"] for activity in progress if activity]
-		)
+		number_of_completed_topics = sum([activity["completed"] for activity in progress if activity])
 		total_topics = len(progress)
 		try:
 			return int((float(number_of_completed_topics) / total_topics) * 100)
@@ -386,16 +390,8 @@ def get_or_create_course_enrollment(course, program):
 	student = get_current_student()
 	course_enrollment = get_enrollment("course", course, student.name)
 	if not course_enrollment:
-		program_enrollment = get_enrollment("program", program.name, student.name)
-		if not program_enrollment:
-			frappe.throw(_("You are not enrolled in program {0}").format(program))
-			return
-		return student.enroll_in_course(
-			course_name=course,
-			program_enrollment=get_enrollment("program", program.name, student.name),
-		)
-	else:
-		return frappe.get_doc("Course Enrollment", course_enrollment)
+		frappe.throw(_("You are not enrolled in course {0}").format(course))
+	return frappe.get_doc("Course Enrollment", course_enrollment)
 
 
 def check_content_completion(content_name, content_type, enrollment_name):

@@ -26,7 +26,9 @@ def get_data(data, filters):
 	args["assessment_group"] = filters.get("assessment_group")
 
 	args.students = frappe.get_all(
-		"Student Group Student", {"parent": filters.get("student_group")}, pluck="student"
+		"Course Enrollment",
+		{"student_batch": filters.get("student_batch"), "docstatus": 1},
+		pluck="student",
 	)
 
 	values = get_formatted_result(args, get_course=True)
@@ -41,13 +43,13 @@ def get_data(data, filters):
 			row.student_name = result.student_name
 			row.assessment_group = result.assessment_group
 			row["grade_" + frappe.scrub(result.course)] = result.grade
-			row["score_" + frappe.scrub(result.course)] = result.total_score
+			row["score_" + frappe.scrub(result.course)] = result.score
 
 			data.append(row)
 		else:
 			index = exists[0]
 			data[index]["grade_" + frappe.scrub(result.course)] = result.grade
-			data[index]["score_" + frappe.scrub(result.course)] = result.total_score
+			data[index]["score_" + frappe.scrub(result.course)] = result.score
 
 	return data, course_list
 

@@ -1,0 +1,37 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [],
+ "creation": "2026-09-14 17:08:41.024538",
+ "disable_prepared_report_automation": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "doctype_to_sync": [],
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": null,
+ "modified": "2026-09-14 20:43:59.776179",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Grade Book Statistics",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Grade Book",
+ "report_name": "Grade Book Statistics",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Academics User"
+  },
+  {
+   "role": "Education Manager"
+  },
+  {
+   "role": "Student"
+  }
+ ],
+ "snapshot_report": 0,
+ "timeout": 0
+}

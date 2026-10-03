@@ -205,7 +205,7 @@
 		<div class="col-xs-6 column-break">
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Student ID: ") }}</label>
+					<label>{{ _("Student ID:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.students[0] }}
@@ -214,7 +214,7 @@
 
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Student Name: ") }}</label>
+					<label>{{ _("Student Name:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.student_name }}
@@ -223,7 +223,7 @@
 
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Program: ") }}</label>
+					<label>{{ _("Program:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.program }}
@@ -233,7 +233,7 @@
 			{% if doc.student_batch %}
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Batch: ") }}</label>
+					<label>{{ _("Batch:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.student_batch }}
@@ -245,7 +245,7 @@
 		<div class="col-xs-6 column-break">
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Academic Year: ") }}</label>
+					<label>{{ _("Academic Year:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.academic_year }}
@@ -255,7 +255,7 @@
 			{% if doc.academic_term %}
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Academic Term: ") }}</label>
+					<label>{{ _("Academic Term:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.academic_term }}
@@ -265,7 +265,7 @@
 
 			<div class="row data-field">
 				<div class="col-xs-5">
-					<label>{{ _("Assessment Group: ") }}</label>
+					<label>{{ _("Assessment Group:") }}</label>
 				</div>
 				<div class="col-xs-7">
 					{{ doc.assessment_group }}
@@ -275,6 +275,49 @@
 	</div>
 
 
+	{% for book in grade_books %}
+
+	<div class="row section-break pbi_avoid">
+		<div class="col-xs-12 column-break">
+
+			<div>
+			<table class="table table-bordered table-condensed">
+				<caption>
+					<div class="row">
+						<div class="col-xs-1">
+							<label>{{ _("Course:") }}</label>
+						</div>
+						<div class="col-xs-11">
+							{{ frappe.db.get_value("Course", book.course, "course_name") or book.course }}
+							&nbsp; | {{ _("Grade") }}: {{ book.overall_grade or "-" }}
+							&nbsp; | {{ _("Percentage") }}: {{ book.overall_percentage or "-" }}
+						</div>
+					</div>
+				</caption>
+				<thead>
+					<tr>
+						<th>{{ _("Subject") }}</th>
+						<th>{{ _("Percentage") }}</th>
+						<th>{{ _("Grade") }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for subject in book.subjects %}
+					<tr>
+						<td>{{ subject.subject }}</td>
+						<td>{{ subject.percentage }}</td>
+						<td>{{ subject.grade }}{% if subject.is_overridden %} *{% endif %}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			</div>
+		</div>
+	</div>
+
+	{% endfor %}
+
+	{% if doc.show_marks %}
 	{% for course in courses %}
 
 	<div class="row section-break pbi_avoid">
@@ -285,7 +328,7 @@
 				<caption>
 					<div class="row">
 						<div class="col-xs-1">
-							<label>{{ _("Course: ") }}</label>
+							<label>{{ _("Scores:") }}</label>
 						</div>
 						<div class="col-xs-11">
 							{{ frappe.db.get_value("Course", course, "course_name") }}
@@ -295,28 +338,22 @@
 				<thead>
 					<tr>
 						<th> {{ _("Term") }} </th>
-						<th>{{ _("Assessment Criteria") }}</th>
-						{% if doc.show_marks %}
+						<th>{{ _("Subject") }}</th>
 						<th> {{ _("Score") }} </th>
-						{% endif %}
-						<th> {{ _("Grade") }} </th>
+						<th> {{ _("Percentage") }} </th>
 					</tr>
 				</thead>
 
 				<tbody>
 					{% for result in assessment_result %}
-					{% for criteria in result.details %}
 					{% if result.course == course %}
 					<tr>
 						<td> {{ result.assessment_group }} </td>
-						<td>{{ criteria.assessment_criteria }}</td>
-						{% if doc.show_marks %}
-						<td> {{ criteria.score }} </td>
-						{% endif %}
-						<td> {{ criteria.grade }} </td>
+						<td>{{ result.subject }}</td>
+						<td> {{ result.score }} / {{ result.maximum_score }} </td>
+						<td> {{ result.percentage }} </td>
 					</tr>
 					{% endif %}
-					{% endfor %}
 					{% endfor %}
 				</tbody>
 
@@ -326,6 +363,7 @@
 	</div>
 
 	{% endfor %}
+	{% endif %}
 
 	<br>
 
@@ -333,15 +371,15 @@
 		<div class="col-xs-6 column-break">
 			<h4>{{ _("Student Attendance")}}</h4>
 			<div>
-				{{ _("Present ") }} {{ doc.attendance.present if doc.attendance.present else 0 }} {{ _(" out of ") }} {{ doc.attendance.total }}  {{ _(" days") }}
+				{{ _("Present") }} {{ doc.attendance.present if doc.attendance.present else 0 }} {{ _("out of") }} {{ doc.attendance.total }} {{ _("days") }}
 			</div>
 		</div>
 
 		<div class="col-xs-6 column-break">
 			<h4>{{ _("Parents Teacher Meeting Attendance")}}</h4>
 			<div>
-				{{ _("Present ") }} {{ doc.parents_attendance if doc.parents_attendance != None else 0 }}
-				{{ _(" out of ") }} {{ doc.parents_meeting if doc.parents_meeting != None else 0 }} {{ _(" meetings") }}
+				{{ _("Present") }} {{ doc.parents_attendance if doc.parents_attendance != None else 0 }}
+				{{ _("out of") }} {{ doc.parents_meeting if doc.parents_meeting != None else 0 }} {{ _("meetings") }}
 			</div>
 		</div>
 	</div>

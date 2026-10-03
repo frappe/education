@@ -10,8 +10,14 @@ from erpnext.accounts.doctype.payment_request.payment_request import (
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 from frappe import _
-from frappe.utils import money_in_words
+from frappe.utils import cint, money_in_words
 from frappe.utils.csvutils import getlink
+
+from education.education.doctype.campus.campus import (
+	campus_cost_center,
+	set_campus_from_enrollment,
+	validate_campus,
+)
 
 
 class Fees(AccountsController):
@@ -26,6 +32,8 @@ class Fees(AccountsController):
 
 	def validate(self):
 		self.calculate_total()
+		set_campus_from_enrollment(self)
+		validate_campus(self)
 		self.set_missing_accounts_and_fields()
 		self.validate_enrollment()
 
@@ -34,6 +42,8 @@ class Fees(AccountsController):
 			self.company = frappe.defaults.get_defaults().company
 		if not self.currency:
 			self.currency = erpnext.get_company_currency(self.company)
+		if not self.cost_center and self.campus:
+			self.cost_center = campus_cost_center(self.campus)
 		if not (self.receivable_account and self.income_account and self.cost_center):
 			accounts_details = frappe.get_all(
 				"Company",
@@ -50,13 +60,11 @@ class Fees(AccountsController):
 			self.contact_email = self.get_student_emails()
 
 	def validate_enrollment(self):
-		enrollment_student = frappe.db.get_value(
-			"Program Enrollment", self.program_enrollment, "student"
-		)
+		enrollment_student = frappe.db.get_value("Course Enrollment", self.course_enrollment, "student")
 		if enrollment_student != self.student:
 			frappe.throw(
 				_("Invalid Enrollment {0} for student {1}").format(
-					frappe.bold(self.program_enrollment), frappe.bold(self.student)
+					frappe.bold(self.course_enrollment), frappe.bold(self.student)
 				)
 			)
 
@@ -87,10 +95,6 @@ class Fees(AccountsController):
 		self.outstanding_amount = self.grand_total
 		self.grand_total_in_words = money_in_words(self.grand_total)
 
-	@frappe.whitelist()
-	def get_fees(student):
-		print("student", student)
-
 	def on_submit(self):
 		self.make_gl_entries()
 
@@ -105,9 +109,7 @@ class Fees(AccountsController):
 				submit_doc=True,
 				use_dummy_message=True,
 			)
-			frappe.msgprint(
-				_("Payment request {0} created").format(getlink("Payment Request", pr.name))
-			)
+			frappe.msgprint(_("Payment request {0} created").format(getlink("Payment Request", pr.name)))
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
@@ -152,13 +154,9 @@ class Fees(AccountsController):
 		)
 
 
-def get_fee_list(
-	doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"
-):
+def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"):
 	user = frappe.session.user
-	student = frappe.db.sql(
-		"select name from `tabStudent` where student_email_id= %s", user
-	)
+	student = frappe.db.sql("select name from `tabStudent` where student_email_id= %s", user)
 	if student:
 		return frappe.db.sql(
 			"""
@@ -166,10 +164,9 @@ def get_fee_list(
 			outstanding_amount, grand_total, currency
 			from `tabFees`
 			where student= %s and docstatus=1
-			order by due_date asc limit {0} , {1}""".format(
-				limit_start, limit_page_length
-			),
-			student,
+			order by due_date asc limit %s, %s
+			""",
+			(student[0][0], cint(limit_start), cint(limit_page_length)),
 			as_dict=True,
 		)
 

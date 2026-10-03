@@ -21,24 +21,25 @@ class StudentReportGenerationTool(Document):
 
 
 @frappe.whitelist()
-def preview_report_card(doc):
+def preview_report_card(doc: str):
 	doc = frappe._dict(json.loads(doc))
 	doc.students = [doc.student]
 	values = get_formatted_result(doc, get_course=True)
 	courses = values.get("courses")
 	assessment_groups = get_child_assessment_groups(doc.assessment_group)
 	letterhead = get_letter_head(doc, not doc.add_letterhead)
+	grade_books = get_grade_books(doc)
 
 	# get the attendance of the student for that peroid of time.
-	doc.attendance = get_attendance_count(
-		doc.students[0], doc.academic_year, doc.academic_term
-	)
+	doc.attendance = get_attendance_count(doc.students[0], doc.academic_year, doc.academic_term)
 
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	html = frappe.render_template(
 		"education/education/doctype/student_report_generation_tool/student_report_generation_tool.html",
 		{
 			"doc": doc,
 			"assessment_result": values.get("assessment_result"),
+			"grade_books": grade_books,
 			"courses": courses,
 			"assessment_groups": assessment_groups,
 			"letterhead": letterhead and letterhead.get("content", None),
@@ -46,6 +47,7 @@ def preview_report_card(doc):
 		},
 	)
 
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	final_template = frappe.render_template(
 		"frappe/www/printview.html", {"body": html, "title": "Report Card"}
 	)
@@ -71,7 +73,11 @@ def get_attendance_count(student, academic_year, academic_term=None):
 	if from_date and to_date:
 		data = frappe.get_all(
 			"Student Attendance",
-			{"student": student, "docstatus": 1, "date": ["between", (from_date, to_date)]},
+			{
+				"student": student,
+				"docstatus": 1,
+				"date": ["between", (from_date, to_date)],
+			},
 			["status", "count(student) as count"],
 			group_by="status",
 		)
@@ -85,3 +91,42 @@ def get_attendance_count(student, academic_year, academic_term=None):
 		return attendance
 	else:
 		frappe.throw(_("Please enter the Academic Year and set the Start and End date."))
+
+
+def get_grade_books(doc):
+	filters = {
+		"student": doc.students[0],
+		"academic_year": doc.academic_year,
+		"status": "Computed",
+	}
+	if doc.academic_term:
+		filters["academic_term"] = doc.academic_term
+	if doc.program:
+		filters["program"] = doc.program
+	if doc.student_batch:
+		filters["student_batch"] = doc.student_batch
+
+	books = frappe.get_all(
+		"Grade Book",
+		filters=filters,
+		fields=[
+			"name",
+			"course",
+			"overall_percentage",
+			"overall_grade",
+		],
+		order_by="course",
+	)
+	for book in books:
+		book.subjects = frappe.get_all(
+			"Grade Book Subject",
+			{"parent": book.name, "parenttype": "Grade Book"},
+			[
+				"subject",
+				"percentage",
+				"grade",
+				"is_overridden",
+			],
+			order_by="idx",
+		)
+	return books

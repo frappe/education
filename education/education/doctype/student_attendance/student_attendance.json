@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
- "creation": "2015-11-05 15:20:23.045996",
+ "creation": "2026-08-12 20:54:24.178441",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -11,8 +11,8 @@
   "student",
   "student_name",
   "student_mobile_number",
-  "course_schedule",
-  "student_group",
+  "subject_schedule",
+  "student_batch",
   "column_break_3",
   "date",
   "status",
@@ -32,13 +32,14 @@
    "search_index": 1
   },
   {
-   "fieldname": "course_schedule",
+   "fieldname": "subject_schedule",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Course Schedule",
-   "options": "Course Schedule"
+   "label": "Subject Schedule",
+   "options": "Subject Schedule"
   },
   {
+   "fetch_from": "subject_schedule.schedule_date",
    "fieldname": "date",
    "fieldtype": "Date",
    "label": "Date",
@@ -57,12 +58,13 @@
    "label": "Student Name"
   },
   {
-   "fieldname": "student_group",
+   "fetch_from": "subject_schedule.student_batch",
+   "fieldname": "student_batch",
    "fieldtype": "Link",
    "in_global_search": 1,
    "in_standard_filter": 1,
-   "label": "Student Group",
-   "options": "Student Group"
+   "label": "Student Batch",
+   "options": "Student Batch Name"
   },
   {
    "allow_on_submit": 1,
@@ -105,7 +107,7 @@
    "options": "Phone"
   },
   {
-   "fetch_from": "student_group.program",
+   "fetch_from": "student_batch.program",
    "fieldname": "link_nvfk",
    "fieldtype": "Link",
    "label": "Program",
@@ -115,7 +117,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-05 17:10:47.758164",
+ "modified": "2026-09-29 20:19:10.752683",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Attendance",

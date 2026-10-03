@@ -2,8 +2,8 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.model.document import Document
 from frappe import _
+from frappe.model.document import Document
 
 
 class FeeCategory(Document):
@@ -18,9 +18,9 @@ class FeeCategory(Document):
 		self.save()
 
 	def on_update(self):
-		# update item
 		item_name = update_item(self)
-		self.item = item_name
+		if self.item != item_name:
+			self.db_set("item", item_name, update_modified=False)
 
 	def on_trash(self):
 		# delete item
@@ -44,7 +44,7 @@ class FeeCategory(Document):
 		)
 		if item_defaults:
 			update_item_defaults(self, item_defaults)
-			frappe.msgprint(_('Defaults fetched from "Fee Component" Item Group '), alert=True)
+			frappe.msgprint(_('Defaults fetched from "Fee Component" Item Group'), alert=True)
 
 	def validate_duplicate_item_defaults(self):
 		"""Validate duplicate item defaults"""

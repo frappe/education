@@ -28,51 +28,47 @@ def execute(filters=None):
 	return columns, data, None, chart
 
 
-def get_assessment_data(args=None):
-
+def get_assessment_data(filters=None):
 	# [total, saved, submitted, remaining]
 	chart_data = [0, 0, 0, 0]
+	filters = filters or frappe._dict()
 
 	condition = ""
-	if args["assessment_group"]:
+	if filters.get("assessment_group"):
 		condition += "and assessment_group = %(assessment_group)s"
-	if args["schedule_date"]:
+	if filters.get("schedule_date"):
 		condition += "and schedule_date <= %(schedule_date)s"
 
-	assessment_plan = frappe.db.sql(
+	query = (
 		"""
 			SELECT
 				ap.name as assessment_plan,
 				ap.assessment_name,
-				ap.student_group,
+				ap.student_batch,
 				ap.schedule_date,
-				(select count(*) from `tabStudent Group Student` sgs where sgs.parent=ap.student_group)
-					as student_group_strength
+				(select count(*) from `tabCourse Enrollment` ce
+					where ce.student_batch=ap.student_batch and ce.docstatus=1)
+					as batch_strength
 			FROM
 				`tabAssessment Plan` ap
 			WHERE
-				ap.docstatus = 1 {condition}
+				ap.docstatus = 1
+		"""
+		+ condition
+		+ """
 			ORDER BY
 				ap.modified desc
-		""".format(
-			condition=condition
-		),
-		(args),
-		as_dict=1,
+		"""
 	)
+	assessment_plan = frappe.db.sql(query, filters, as_dict=1)
 
-	assessment_plan_list = (
-		[d.assessment_plan for d in assessment_plan] if assessment_plan else [""]
-	)
+	assessment_plan_list = [d.assessment_plan for d in assessment_plan] if assessment_plan else [""]
 	assessment_result = get_assessment_result(assessment_plan_list)
 
 	for d in assessment_plan:
-
 		assessment_plan_details = assessment_result.get(d.assessment_plan)
 		assessment_plan_details = (
-			frappe._dict()
-			if not assessment_plan_details
-			else frappe._dict(assessment_plan_details)
+			frappe._dict() if not assessment_plan_details else frappe._dict(assessment_plan_details)
 		)
 		if "saved" not in assessment_plan_details:
 			assessment_plan_details.update({"saved": 0})
@@ -81,14 +77,14 @@ def get_assessment_data(args=None):
 
 		# remaining students whose marks not entered
 		remaining_students = (
-			cint(d.student_group_strength)
+			cint(d.batch_strength)
 			- cint(assessment_plan_details.saved)
 			- cint(assessment_plan_details.submitted)
 		)
 		assessment_plan_details.update({"remaining": remaining_students})
 		d.update(assessment_plan_details)
 
-		chart_data[0] += cint(d.student_group_strength)
+		chart_data[0] += cint(d.batch_strength)
 		chart_data[1] += assessment_plan_details.saved
 		chart_data[2] += assessment_plan_details.submitted
 		chart_data[3] += assessment_plan_details.remaining
@@ -163,14 +159,14 @@ def get_column():
 			"width": 100,
 		},
 		{
-			"fieldname": "student_group",
-			"label": _("Student Group"),
+			"fieldname": "student_batch",
+			"label": _("Student Batch"),
 			"fieldtype": "Link",
-			"options": "Student Group",
+			"options": "Student Batch Name",
 			"width": 200,
 		},
 		{
-			"fieldname": "student_group_strength",
+			"fieldname": "batch_strength",
 			"label": _("Total Student"),
 			"fieldtype": "Data",
 			"options": "",
