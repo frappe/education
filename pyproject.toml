@@ -54,3 +54,8 @@ docstring-code-format = true
 
 [tool.bench.frappe-dependencies]
 frappe = ">=17.0.0-dev,<18.0.0"
+
+[tool.bench.assets]
+build_dir = "./frontend"
+out_dir = "./education/public/frontend"
+index_html_path = "./education/www/student-portal.html"
