@@ -16,8 +16,24 @@ class Hostel(Document):
 
 	def validate(self):
 		validate_campus(self, required=True)
+		self.validate_company_change()
 		self.validate_default_building()
 		self.validate_room_buildings()
+
+	def validate_company_change(self):
+		"""Rent of an active stay is invoiced under its company, so the company cannot change under it."""
+		if self.is_new() or not self.has_value_changed("company"):
+			return
+
+		active = frappe.db.get_value(
+			"Hostel Allocation", {"hostel": self.name, "docstatus": 1, "status": "Active"}
+		)
+		if active:
+			frappe.throw(
+				_(
+					"Hostel {0} has active stays, such as {1}. Check them out before moving it to another company."
+				).format(frappe.bold(self.name), frappe.get_desk_link("Hostel Allocation", active))
+			)
 
 	def validate_default_building(self):
 		if not self.default_building:
@@ -72,6 +88,16 @@ class Hostel(Document):
 		location = {"company": self.company, "campus": self.campus}
 		for doctype in ("Hostel Room", "Hostel Bed"):
 			frappe.db.set_value(doctype, {"hostel": self.name}, location, update_modified=False)
+
+		# Active stays move with the hostel: invoices raised from now on use the new campus and
+		# its cost center. Invoices already raised keep the campus they were raised under.
+		frappe.db.set_value(
+			"Hostel Allocation",
+			{"hostel": self.name, "docstatus": 1, "status": "Active"},
+			"campus",
+			self.campus,
+			update_modified=False,
+		)
 
 
 def same_site(building, record):

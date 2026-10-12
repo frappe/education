@@ -14,11 +14,9 @@ frappe.ui.form.on('Hostel Allocation', {
     frm.set_query('hostel_room', () => ({
       filters: { hostel: frm.doc.hostel, disabled: 0 },
     }))
+    // Only beds nobody holds: a bed stays taken until its student is checked out.
     frm.set_query('hostel_bed', () => ({
-      filters: {
-        hostel_room: frm.doc.hostel_room,
-        status: ['in', ['Vacant', 'Reserved']],
-      },
+      filters: { hostel_room: frm.doc.hostel_room, status: 'Vacant' },
     }))
     frm.set_query('academic_term', () => ({
       filters: { academic_year: frm.doc.academic_year },
@@ -70,11 +68,16 @@ frappe.ui.form.on('Hostel Allocation', {
       if (!frm.doc.hostel || !frm.academic_year_company) {
         return
       }
-      frappe.db.get_value('Hostel', frm.doc.hostel, 'company').then((r) => {
-        if (r.message.company !== frm.academic_year_company) {
-          frm.set_value('hostel', '')
+      when_unchanged(
+        frm,
+        ['academic_year', 'hostel'],
+        frappe.db.get_value('Hostel', frm.doc.hostel, 'company'),
+        (r) => {
+          if (r.message.company !== frm.academic_year_company) {
+            frm.set_value('hostel', '')
+          }
         }
-      })
+      )
     })
     set_stay_dates(frm)
     set_rent(frm)
@@ -89,9 +92,12 @@ frappe.ui.form.on('Hostel Allocation', {
     frm.set_value('hostel_room', '')
     frm.set_value('hostel_bed', '')
     if (frm.doc.hostel) {
-      frappe.db
-        .get_value('Hostel', frm.doc.hostel, 'fee_category')
-        .then((r) => frm.set_value('fee_category', r.message.fee_category))
+      when_unchanged(
+        frm,
+        ['hostel'],
+        frappe.db.get_value('Hostel', frm.doc.hostel, 'fee_category'),
+        (r) => frm.set_value('fee_category', r.message.fee_category)
+      )
     }
     set_rent(frm)
   },
@@ -131,11 +137,14 @@ function set_academic_year_company(frm) {
     frm.academic_year_company = null
     return Promise.resolve()
   }
-  return frappe.db
-    .get_value('Academic Year', frm.doc.academic_year, 'company')
-    .then((r) => {
+  return when_unchanged(
+    frm,
+    ['academic_year'],
+    frappe.db.get_value('Academic Year', frm.doc.academic_year, 'company'),
+    (r) => {
       frm.academic_year_company = r.message.company
-    })
+    }
+  )
 }
 
 // The stay defaults to the academic period, starting today if the period is under way.
@@ -156,13 +165,18 @@ function set_stay_dates(frm) {
   if (!name) {
     return
   }
-  frappe.db.get_value(doctype, name, [start, end]).then((r) => {
-    const period = r.message || {}
-    const today = frappe.datetime.get_today()
-    const in_period = period[start] <= today && today <= period[end]
-    frm.set_value('from_date', in_period ? today : period[start])
-    frm.set_value('to_date', period[end])
-  })
+  when_unchanged(
+    frm,
+    ['academic_year', 'academic_term'],
+    frappe.db.get_value(doctype, name, [start, end]),
+    (r) => {
+      const period = r.message || {}
+      const today = frappe.datetime.get_today()
+      const in_period = period[start] <= today && today <= period[end]
+      frm.set_value('from_date', in_period ? today : period[start])
+      frm.set_value('to_date', period[end])
+    }
+  )
 }
 
 // Rent per term, or per year when the year has no terms; the room's rate wins over the hostel's.
@@ -170,8 +184,10 @@ function set_rent(frm) {
   if (!frm.doc.hostel || !frm.doc.academic_year) {
     return
   }
-  frappe
-    .call({
+  when_unchanged(
+    frm,
+    ['hostel', 'hostel_room', 'academic_year', 'academic_term'],
+    frappe.call({
       method:
         'education.education.doctype.hostel_allocation.hostel_allocation.get_default_rent',
       args: {
@@ -180,6 +196,19 @@ function set_rent(frm) {
         academic_year: frm.doc.academic_year,
         academic_term: frm.doc.academic_term,
       },
-    })
-    .then((r) => frm.set_value('rent', r.message || 0))
+    }),
+    (r) => frm.set_value('rent', r.message || 0)
+  )
+}
+
+// Apply a reply only if the fields it was requested for still hold the same values,
+// so a slow reply for an earlier choice cannot overwrite the current one.
+function when_unchanged(frm, fieldnames, request, apply) {
+  const asked = fieldnames.map((fieldname) => frm.doc[fieldname] || null)
+  return request.then((r) => {
+    const current = fieldnames.map((fieldname) => frm.doc[fieldname] || null)
+    if (asked.every((value, i) => value === current[i])) {
+      return apply(r)
+    }
+  })
 }

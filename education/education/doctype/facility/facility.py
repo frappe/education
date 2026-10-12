@@ -58,12 +58,10 @@ def facility_query(
 	filters: dict[str, Any],
 ):
 	"""Facilities on the selected campus, plus facilities shared across campuses."""
-	frappe.has_permission("Facility", "read", throw=True)
 	filters = filters or {}
 	facility = frappe.qb.DocType("Facility")
 	query = (
-		frappe.qb.from_(facility)
-		.select(facility.name)
+		frappe.qb.get_query("Facility", fields=["name"], ignore_permissions=False)
 		.where(facility.name.like(f"%{txt}%"))
 		.orderby(facility.name)
 		.limit(page_len)

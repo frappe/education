@@ -5,11 +5,14 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 
 from education.education.doctype.building.building import building_query
+from education.education.doctype.floor.floor import create_default_floors
 from education.education.doctype.hostel_allocation.test_hostel_allocation import (
 	get_test_campus,
 	get_test_company,
+	make_campus,
 	make_hostel,
 	make_hostel_room,
+	make_user,
 )
 
 
@@ -136,3 +139,42 @@ class TestBuilding(FrappeTestCase):
 			"Building", "", "name", 0, 20, {"company": residence.company, "campus": residence.campus or ""}
 		)
 		self.assertIn(residence.name, [row[0] for row in results])
+
+	def test_fewer_floors_must_hold_existing_rooms(self):
+		create_default_floors()
+		building = make_building(floors=3)
+		frappe.get_doc(
+			{
+				"doctype": "Room",
+				"room_name": "_Test Top Room",
+				"building": building.name,
+				"floor": "Second Floor",
+			}
+		).insert()
+
+		building.floors = 2
+		self.assertRaises(frappe.ValidationError, building.save)
+		building.reload()
+		building.floors = 4
+		building.save()
+
+	def test_default_building_keeps_its_hostel_type(self):
+		residence = make_building("_Test Residence", building_type="Hostel")
+		hostel = make_hostel()
+		hostel.default_building = residence.name
+		hostel.save()
+
+		residence.building_type = "Academic"
+		self.assertRaises(frappe.ValidationError, residence.save)
+
+	def test_building_search_respects_campus_restrictions(self):
+		near = make_building(building_type="Hostel")
+		far_campus = make_campus("_Test Building North", near.company)
+		far = make_building("_Test North Residence", campus=far_campus.name, building_type="Hostel")
+		make_user("building.north@example.com", ["Academics User"], campus=far_campus.name)
+
+		frappe.set_user("building.north@example.com")
+		self.addCleanup(frappe.set_user, "Administrator")
+		names = [row[0] for row in building_query("Building", "", "name", 0, 20, {})]
+		self.assertIn(far.name, names)
+		self.assertNotIn(near.name, names)

@@ -42,11 +42,8 @@ def get_overlap_for(doc, doctype, fieldname, value=None):
 		+ "` where `"
 		+ fieldname
 		+ "`=%(val)s and schedule_date = %(schedule_date)s and "
-		"("
-		"(from_time > %(from_time)s and from_time < %(to_time)s) or "
-		"(to_time > %(from_time)s and to_time < %(to_time)s) or "
-		"(%(from_time)s > from_time and %(from_time)s < to_time) or "
-		"(%(from_time)s = from_time and %(to_time)s = to_time)) "
+		# Two time ranges overlap when each starts before the other ends. Back-to-back slots don't.
+		"from_time < %(to_time)s and to_time > %(from_time)s "
 		"and name!=%(name)s and docstatus!=2"
 	)
 	existing = frappe.db.sql(

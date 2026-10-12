@@ -55,6 +55,28 @@ class TestRoomBooking(FrappeTestCase):
 		# Back-to-back bookings are fine.
 		make_booking(self.room.name, "10:00:00", "11:00:00")
 
+	def test_same_start_overlaps_every_kind_of_room_use(self):
+		# Each existing use runs 09:00 to 11:00; a booking starting at 09:00 must clash with it.
+		make_booking(self.room.name, "09:00:00", "11:00:00")
+		self.assertRaises(OverlapError, make_booking, self.room.name, "09:00:00", "10:00:00")
+		self.assertRaises(OverlapError, make_booking, self.room.name, "10:00:00", "11:00:00")
+
+		for doctype, start in (("Subject Schedule", "13:00:00"), ("Assessment Plan", "15:00:00")):
+			end = f"{int(start[:2]) + 2:02d}:00:00"
+			frappe.get_doc(
+				{
+					"doctype": doctype,
+					"name": f"_Test {doctype} Clash",
+					"room": self.room.name,
+					"schedule_date": nowdate(),
+					"from_time": start,
+					"to_time": end,
+				}
+			).db_insert()
+			self.assertRaises(
+				OverlapError, make_booking, self.room.name, start, f"{int(start[:2]) + 1:02d}:00:00"
+			)
+
 	def test_booking_must_fit_the_room(self):
 		self.assertRaises(frappe.ValidationError, make_booking, self.room.name, attendees=11)
 		self.assertRaises(frappe.ValidationError, make_booking, self.room.name, "11:00:00", "10:00:00")

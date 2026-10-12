@@ -20,4 +20,4 @@ education.patches.v15_0.create_custom_permissions
 education.patches.v15_0.sales_invoice_fee_plan_field
 education.patches.v17_0.move_class_rooms_to_rooms
 education.patches.v17_0.sales_invoice_hostel_allocation_field
-education.patches.v17_0.room_seating_capacity_to_int
+education.patches.v17_0.create_default_floors

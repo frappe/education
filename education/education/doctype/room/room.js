@@ -25,15 +25,17 @@ frappe.ui.form.on('Room', {
     if (!frm.doc.building) {
       return
     }
-    // The room takes its site from the building.
-    frappe.db
-      .get_value('Building', frm.doc.building, ['company', 'campus'])
-      .then((r) => {
-        const building = r.message || {}
-        return frm
-          .set_value('company', building.company)
-          .then(() => frm.set_value('campus', building.campus))
-      })
+    // The room takes its site from the building, unless another building was picked since.
+    const picked = frm.doc.building
+    frappe.db.get_value('Building', picked, ['company', 'campus']).then((r) => {
+      if (frm.doc.building !== picked) {
+        return
+      }
+      const building = r.message || {}
+      return frm
+        .set_value('company', building.company)
+        .then(() => frm.set_value('campus', building.campus))
+    })
   },
 })
 

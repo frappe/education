@@ -30,7 +30,19 @@ FLOOR_SPELLINGS = {
 
 
 class Floor(Document):
-	pass
+	def validate(self):
+		if self.is_new() or not self.has_value_changed("level"):
+			return
+
+		rooms = get_rooms_above_floor_count(floor=self.name, level=self.level)
+		if rooms:
+			frappe.throw(
+				_(
+					"At level {0}, {1} would be above the top floor of the building these rooms are in: {2}."
+				).format(
+					self.level, frappe.bold(self.floor_name), ", ".join(frappe.bold(room) for room in rooms)
+				)
+			)
 
 
 def create_default_floors():
@@ -46,6 +58,38 @@ def match_default_floor(text):
 		if key in FLOOR_SPELLINGS[floor["level"]]:
 			return floor["floor_name"]
 	return None
+
+
+def get_rooms_above_floor_count(floor_counts=None, floor=None, level=None):
+	"""Rooms and hostel rooms whose floor would not fit their building.
+
+	Pass `floor_counts` ({building: floors}) to try new floor counts, or `floor` and `level`
+	to try a new level for one floor. Buildings without a floor count are not checked.
+	"""
+	rooms = []
+	for doctype in ("Room", "Hostel Room"):
+		room = frappe.qb.DocType(doctype)
+		building = frappe.qb.DocType("Building")
+		floor_table = frappe.qb.DocType("Floor")
+		query = (
+			frappe.qb.from_(room)
+			.join(building)
+			.on(building.name == room.building)
+			.join(floor_table)
+			.on(floor_table.name == room.floor)
+			.select(room.name, building.name.as_("building"), building.floors, floor_table.level)
+		)
+		if floor_counts:
+			query = query.where(building.name.isin(list(floor_counts)))
+		if floor:
+			query = query.where(floor_table.name == floor)
+
+		for row in query.run(as_dict=True):
+			floors = cint(floor_counts[row.building]) if floor_counts else cint(row.floors)
+			room_level = cint(level) if floor else cint(row.level)
+			if floors and room_level >= floors:
+				rooms.append(row.name)
+	return rooms
 
 
 def validate_floor_in_building(doc):

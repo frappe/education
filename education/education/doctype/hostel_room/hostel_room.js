@@ -29,7 +29,11 @@ function set_default_building(frm) {
     frm.set_value('building', '')
     return
   }
-  frappe.db
-    .get_value('Hostel', frm.doc.hostel, 'default_building')
-    .then((r) => frm.set_value('building', r.message.default_building || ''))
+  const hostel = frm.doc.hostel
+  frappe.db.get_value('Hostel', hostel, 'default_building').then((r) => {
+    // Ignore a reply for a hostel that is no longer selected.
+    if (frm.doc.hostel === hostel) {
+      frm.set_value('building', r.message.default_building || '')
+    }
+  })
 }

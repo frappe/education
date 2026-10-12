@@ -17,6 +17,7 @@ class Building(Document):
 		validate_campus(self, required=True)
 		self.validate_unique_name()
 		self.validate_building_type()
+		self.validate_floor_count()
 		self.validate_hostel_rooms_campus()
 		validate_facilities(self, self.campus)
 
@@ -55,6 +56,30 @@ class Building(Document):
 				_(
 					"Building {0} still has {1} records. Move them to another building before changing its type."
 				).format(frappe.bold(self.building_name), _(other_kind))
+			)
+
+		if self.building_type != "Hostel":
+			hostel = frappe.db.get_value("Hostel", {"default_building": self.name})
+			if hostel:
+				frappe.throw(
+					_("Hostel {0} uses Building {1} as its default building. Change that first.").format(
+						frappe.bold(hostel), frappe.bold(self.building_name)
+					)
+				)
+
+	def validate_floor_count(self):
+		"""Fewer floors must still hold every room's floor."""
+		if self.is_new() or not self.has_value_changed("floors"):
+			return
+
+		from education.education.doctype.floor.floor import get_rooms_above_floor_count
+
+		rooms = get_rooms_above_floor_count({self.name: self.floors})
+		if rooms:
+			frappe.throw(
+				_("Building {0} would have no floor for these rooms: {1}. Move them first.").format(
+					frappe.bold(self.building_name), ", ".join(frappe.bold(room) for room in rooms)
+				)
 			)
 
 	def validate_hostel_rooms_campus(self):
@@ -121,12 +146,10 @@ def building_query(
 	Pass `hostel` to look its campus up here, so the form needs no site fields, or pass
 	`company` and `campus` directly for a hostel that is not saved yet.
 	"""
-	frappe.has_permission("Building", "read", throw=True)
 	filters = filters or {}
 	building = frappe.qb.DocType("Building")
 	query = (
-		frappe.qb.from_(building)
-		.select(building.name, building.building_name)
+		frappe.qb.get_query("Building", fields=["name", "building_name"], ignore_permissions=False)
 		.where(building.disabled == 0)
 		.where(building.building_type == "Hostel")
 		.where(building.name.like(f"%{txt}%") | building.building_name.like(f"%{txt}%"))

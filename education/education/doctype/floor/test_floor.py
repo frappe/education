@@ -47,3 +47,18 @@ class TestFloor(FrappeTestCase):
 		room.reload()
 		room.floor = "Basement"
 		room.save()
+
+	def test_level_change_must_fit_existing_rooms(self):
+		building = make_building(floors=3)
+		frappe.get_doc(
+			{
+				"doctype": "Room",
+				"room_name": "_Test Level Room",
+				"building": building.name,
+				"floor": "Second Floor",
+			}
+		).insert()
+
+		floor = frappe.get_doc("Floor", "Second Floor")
+		floor.level = 3
+		self.assertRaises(frappe.ValidationError, floor.save)

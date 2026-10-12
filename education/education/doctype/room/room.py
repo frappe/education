@@ -46,12 +46,10 @@ def room_query(
 	filters: dict[str, Any],
 ):
 	"""Enabled rooms on the selected campus, plus rooms shared across campuses."""
-	frappe.has_permission("Room", "read", throw=True)
 	filters = filters or {}
 	room = frappe.qb.DocType("Room")
 	query = (
-		frappe.qb.from_(room)
-		.select(room.name, room.room_name)
+		frappe.qb.get_query("Room", fields=["name", "room_name"], ignore_permissions=False)
 		.where(room.disabled == 0)
 		.where(room.name.like(f"%{txt}%") | room.room_name.like(f"%{txt}%"))
 		.orderby(room.room_name)

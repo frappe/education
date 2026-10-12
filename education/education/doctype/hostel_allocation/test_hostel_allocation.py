@@ -7,7 +7,10 @@ from frappe.tests.classes.context_managers import freeze_time
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, flt, getdate, nowdate
 
-from education.education.doctype.hostel_allocation.hostel_allocation import process_hostel_allocations
+from education.education.doctype.hostel_allocation.hostel_allocation import (
+	get_default_rent,
+	process_hostel_allocations,
+)
 from education.education.report.hostel_occupancy.hostel_occupancy import execute as hostel_occupancy
 from education.education.test_utils import create_fee_category
 
@@ -55,7 +58,34 @@ def make_academic_year(name, start, end, terms=()):
 		).insert()
 
 
-def make_hostel(name="_Test Hostel", gender="Male"):
+def make_campus(name, company=None):
+	company = company or get_test_company()
+	if frappe.db.exists("Campus", name):
+		return frappe.get_doc("Campus", name)
+	return frappe.get_doc(
+		{"doctype": "Campus", "campus_name": name, "campus_code": name[-3:].upper(), "company": company}
+	).insert()
+
+
+def make_user(email, roles, campus=None):
+	"""A user with only the given roles, optionally restricted to one campus."""
+	frappe.get_doc(
+		{
+			"doctype": "User",
+			"email": email,
+			"first_name": "Hostel Staff",
+			"send_welcome_email": 0,
+			"roles": [{"role": role} for role in roles],
+		}
+	).insert(ignore_permissions=True)
+	if campus:
+		frappe.get_doc(
+			{"doctype": "User Permission", "user": email, "allow": "Campus", "for_value": campus}
+		).insert(ignore_permissions=True)
+	return email
+
+
+def make_hostel(name="_Test Hostel", gender="Male", campus=None):
 	company = get_test_company()
 	return frappe.get_doc(
 		{
@@ -63,7 +93,7 @@ def make_hostel(name="_Test Hostel", gender="Male"):
 			"hostel_name": name,
 			"gender": gender,
 			"company": company,
-			"campus": get_test_campus(company),
+			"campus": campus or get_test_campus(company),
 			"fee_category": create_fee_category("_Test Hostel Rent").name,
 			"rent": TERM_RENT,
 			"annual_rent": ANNUAL_RENT,
@@ -159,9 +189,14 @@ class TestHostelAllocation(FrappeTestCase):
 		self.assertRaises(frappe.ValidationError, make_allocation, other, self.room)
 		self.assertRaises(frappe.ValidationError, make_allocation, self.student, self.room, bed_number=2)
 
-		# The bed is free again once Term 1 ends. The stay under way still shows on the bed.
+		# Not even for a later term while the student is still checked in.
+		self.assertRaises(
+			frappe.ValidationError, make_allocation, other, self.room, academic_term=self.term_2
+		)
+
+		allocation.reload().check_out(nowdate())
 		make_allocation(other, self.room, academic_term=self.term_2)
-		self.assertEqual(frappe.db.get_value("Hostel Bed", allocation.hostel_bed, "status"), "Occupied")
+		self.assertEqual(frappe.db.get_value("Hostel Bed", allocation.hostel_bed, "status"), "Reserved")
 
 	def test_stay_defaults_to_the_academic_period(self):
 		allocation = make_allocation(self.student, self.room, submit=False)
@@ -328,6 +363,73 @@ class TestHostelAllocation(FrappeTestCase):
 		bed.save()
 		self.assertEqual(bed.status, "Under Maintenance")
 		self.assertRaises(frappe.ValidationError, make_allocation, self.student, self.room)
+
+	def test_stay_must_stay_inside_the_chosen_term(self):
+		# Running on into Term 3 would hold the bed without billing Term 3.
+		self.assertRaises(
+			frappe.ValidationError,
+			make_allocation,
+			self.student,
+			self.room,
+			academic_term=self.term_2,
+			from_date=days(30),
+			to_date=days(200),
+		)
+		self.assertRaises(
+			frappe.ValidationError,
+			make_allocation,
+			self.student,
+			self.room,
+			academic_term=self.term_2,
+			from_date=days(20),
+			to_date=days(100),
+		)
+		# Checking out the morning after the term's last day is fine.
+		make_allocation(self.student, self.room, academic_term=self.term_2, to_date=days(151))
+
+	def test_staff_can_cancel_a_billed_stay(self):
+		allocation = make_allocation(self.student, self.room)
+		self.assertTrue(self.get_invoices(allocation))
+
+		make_user("hostel.staff@example.com", ["Academics User"])
+		frappe.set_user("hostel.staff@example.com")
+		self.addCleanup(frappe.set_user, "Administrator")
+		frappe.get_doc("Hostel Allocation", allocation.name).cancel()
+
+		frappe.set_user("Administrator")
+		self.assertFalse(self.get_invoices(allocation))
+
+	def test_rent_lookup_rejects_a_room_from_another_hostel(self):
+		other = make_hostel_room(make_hostel("_Test Other Hostel").name, room_number="900")
+		self.assertRaises(frappe.ValidationError, get_default_rent, self.hostel.name, other.name, YEAR)
+
+	def test_company_move_waits_for_active_stays(self):
+		make_allocation(self.student, self.room)
+		other_company = frappe.db.get_value("Company", {"name": ("!=", self.hostel.company)})
+		if not other_company:
+			self.skipTest("Needs a second company")
+
+		self.hostel.company = other_company
+		self.hostel.campus = None
+		self.assertRaises(frappe.ValidationError, self.hostel.save)
+
+	def test_campus_move_carries_active_stays(self):
+		allocation = make_allocation(self.student, self.room)
+		new_campus = make_campus("_Test Hostel North", self.hostel.company)
+
+		self.hostel.campus = new_campus.name
+		self.hostel.save()
+		self.assertEqual(frappe.db.get_value("Hostel Allocation", allocation.name, "campus"), new_campus.name)
+
+	def test_occupancy_report_respects_campus_restrictions(self):
+		make_allocation(self.student, self.room)
+		other_campus = make_campus("_Test Hostel South", self.hostel.company)
+		make_user("hostel.south@example.com", ["Academics User"], campus=other_campus.name)
+
+		frappe.set_user("hostel.south@example.com")
+		self.addCleanup(frappe.set_user, "Administrator")
+		_columns, data, *_ = hostel_occupancy({})
+		self.assertFalse([row for row in data if row.hostel == self.hostel.name])
 
 	def test_hostel_occupancy_report(self):
 		make_allocation(self.student, self.room)

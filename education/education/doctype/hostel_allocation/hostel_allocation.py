@@ -5,7 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder.functions import Coalesce, Sum
-from frappe.utils import cstr, flt, formatdate, getdate, nowdate, strip_html
+from frappe.utils import add_days, cstr, flt, formatdate, getdate, nowdate, strip_html
 
 from education.education.doctype.campus.campus import apply_campus_to_invoice
 from education.education.doctype.hostel_bed.hostel_bed import get_bed_status
@@ -109,13 +109,19 @@ class HostelAllocation(Document):
 		if getdate(self.to_date) <= getdate(self.from_date):
 			frappe.throw(_("Planned Check-out Date must be after the Check-in Date."))
 
+		# Billing covers only the chosen period, so the stay may not reach outside it. Check-out
+		# is exclusive, so a student can leave the morning after the period's last day.
 		period_start, period_end = self.get_academic_period()
-		if getdate(self.from_date) > getdate(period_end) or getdate(self.to_date) <= getdate(period_start):
+		latest_check_out = add_days(period_end, 1)
+		if not (
+			getdate(period_start) <= getdate(self.from_date) <= getdate(period_end)
+			and getdate(self.to_date) <= getdate(latest_check_out)
+		):
 			frappe.throw(
-				_("The stay must fall within {0}, from {1} to {2}.").format(
+				_("The stay must fall within {0}: check in from {1}, and check out by {2}.").format(
 					frappe.bold(self.academic_term or self.academic_year),
 					formatdate(period_start),
-					formatdate(period_end),
+					formatdate(latest_check_out),
 				)
 			)
 
@@ -168,37 +174,57 @@ class HostelAllocation(Document):
 			)
 
 	def validate_previous_stay_checked_out(self):
-		"""A stay that has started needs the bed, and the student, free of earlier unfinished stays."""
-		if self.docstatus != 1 or getdate(self.from_date) > getdate(nowdate()):
+		"""A bed takes no new stay, for any dates, until its current student is checked out.
+
+		A student who has started a stay must also be checked out before starting another.
+		"""
+		if self.docstatus != 1:
 			return
 
-		for fieldname, message in (
-			("hostel_bed", _("Bed {0} is still held by {1} in {2}. Check them out first.")),
-			("student", _("Student {0} is still checked in under {2}. Check them out first.")),
-		):
-			earlier = frappe.db.get_value(
-				"Hostel Allocation",
-				{
-					fieldname: self.get(fieldname),
-					"docstatus": 1,
-					"status": "Active",
-					"from_date": ("<", self.from_date),
-					"name": ("!=", self.name),
-				},
-				["name", "student"],
-				as_dict=True,
-			)
-			if earlier:
-				frappe.throw(
-					message.format(
-						frappe.bold(self.get(fieldname)),
-						frappe.bold(earlier.student),
-						frappe.get_desk_link("Hostel Allocation", earlier.name),
-					)
+		holder = frappe.db.get_value(
+			"Hostel Allocation",
+			{"hostel_bed": self.hostel_bed, "docstatus": 1, "status": "Active", "name": ("!=", self.name)},
+			["name", "student"],
+			as_dict=True,
+			for_update=True,
+		)
+		if holder:
+			frappe.throw(
+				_("Bed {0} is held by {1} in {2} until they are checked out.").format(
+					frappe.bold(self.hostel_bed),
+					frappe.bold(holder.student),
+					frappe.get_desk_link("Hostel Allocation", holder.name),
 				)
+			)
+
+		if getdate(self.from_date) > getdate(nowdate()):
+			return
+
+		earlier = frappe.db.get_value(
+			"Hostel Allocation",
+			{
+				"student": self.student,
+				"docstatus": 1,
+				"status": "Active",
+				"from_date": ("<", self.from_date),
+				"name": ("!=", self.name),
+			},
+			"name",
+			for_update=True,
+		)
+		if earlier:
+			frappe.throw(
+				_("Student {0} is still checked in under {1}. Check them out first.").format(
+					frappe.bold(self.student), frappe.get_desk_link("Hostel Allocation", earlier)
+				)
+			)
 
 	def validate_overlap(self):
-		existing = get_overlapping_allocation(self, "hostel_bed")
+		submitting = self.docstatus == 1
+		if submitting:
+			self.lock_bed_and_student()
+
+		existing = get_overlapping_allocation(self, "hostel_bed", for_update=submitting)
 		if existing:
 			frappe.throw(
 				_("Bed {0} is already allocated to {1} in {2} for these dates.").format(
@@ -208,13 +234,23 @@ class HostelAllocation(Document):
 				)
 			)
 
-		existing = get_overlapping_allocation(self, "student")
+		existing = get_overlapping_allocation(self, "student", for_update=submitting)
 		if existing:
 			frappe.throw(
 				_("Student {0} already has a hostel bed in {1} for these dates.").format(
 					frappe.bold(self.student), frappe.get_desk_link("Hostel Allocation", existing.name)
 				)
 			)
+
+	def lock_bed_and_student(self):
+		"""Serialise submissions for the same bed or student until this one commits.
+
+		Locks are taken in the same order everywhere, bed then student, so two submissions
+		cannot deadlock. The checks after it use locking reads, which see rows committed by a
+		submission that held the lock, where a plain read would still see the older snapshot.
+		"""
+		frappe.db.get_value("Hostel Bed", self.hostel_bed, "name", for_update=True)
+		frappe.db.get_value("Student", self.student, "name", for_update=True)
 
 	def validate_billing(self):
 		if flt(self.rent) <= 0:
@@ -285,6 +321,34 @@ class HostelAllocation(Document):
 			invoice = self.make_invoice(period, due_date)
 			self.add_invoice_row(period, invoice)
 
+	def lock_for_billing(self):
+		"""Lock this allocation and reload what billing depends on, as last committed.
+
+		The daily job and check-out both bill. Locking makes the second wait for the first,
+		and the locking reads then see the invoices the first one added.
+		"""
+		self.status, self.vacated_on = frappe.db.get_value(
+			"Hostel Allocation", self.name, ["status", "vacated_on"], for_update=True
+		)
+		row = frappe.qb.DocType("Hostel Allocation Invoice")
+		rows = (
+			frappe.qb.from_(row)
+			.select(
+				row.name,
+				row.idx,
+				row.academic_term,
+				row.period_start,
+				row.period_end,
+				row.amount,
+				row.invoice,
+			)
+			.where(row.parent == self.name)
+			.where(row.parenttype == self.doctype)
+			.orderby(row.idx)
+			.for_update()
+		).run(as_dict=True)
+		self.set("invoices", rows)
+
 	def make_invoice(self, period, posting_date):
 		invoice = frappe.new_doc("Sales Invoice")
 		invoice.customer = frappe.db.get_value("Student", self.student, "customer")
@@ -327,6 +391,7 @@ class HostelAllocation(Document):
 	def check_out(self, vacated_on: str | None = None, remarks: str | None = None):
 		"""End the stay and free the bed. Periods that have started stay billed in full."""
 		self.check_permission("write")
+		self.lock_for_billing()
 		if self.docstatus != 1 or self.status != "Active":
 			frappe.throw(_("Only an active allocation can be checked out."))
 
@@ -351,6 +416,8 @@ class HostelAllocation(Document):
 				continue
 			invoice = frappe.get_doc("Sales Invoice", row.invoice)
 			if invoice.docstatus == 1:
+				# Cancelling the allocation was authorised; its invoices follow, as they were raised.
+				invoice.flags.ignore_permissions = True
 				invoice.cancel()
 
 	def get_billing_summary(self):
@@ -380,13 +447,22 @@ def get_default_rent(
 ):
 	"""The room's rent, else the hostel's: per term, or per year for a year without terms."""
 	frappe.has_permission("Hostel", "read", hostel, throw=True)
+	if hostel_room:
+		frappe.has_permission("Hostel Room", "read", hostel_room, throw=True)
+		if frappe.db.get_value("Hostel Room", hostel_room, "hostel") != hostel:
+			frappe.throw(
+				_("Hostel Room {0} is not in Hostel {1}.").format(
+					frappe.bold(hostel_room), frappe.bold(hostel)
+				)
+			)
+
 	per_year = not academic_term and not frappe.db.exists("Academic Term", {"academic_year": academic_year})
 	fieldname = "annual_rent" if per_year else "rent"
 	room_rent = hostel_room and frappe.db.get_value("Hostel Room", hostel_room, fieldname)
 	return flt(room_rent) or flt(frappe.db.get_value("Hostel", hostel, fieldname))
 
 
-def get_overlapping_allocation(doc, fieldname):
+def get_overlapping_allocation(doc, fieldname, for_update=False):
 	"""Return a submitted allocation of the same bed or student whose stay overlaps doc's."""
 	allocation = frappe.qb.DocType("Hostel Allocation")
 	query = (
@@ -401,6 +477,8 @@ def get_overlapping_allocation(doc, fieldname):
 	end = doc.get_end_date()
 	if end:
 		query = query.where(allocation.from_date < end)
+	if for_update:
+		query = query.for_update()
 
 	result = query.run(as_dict=True)
 	return result[0] if result else None
@@ -471,6 +549,10 @@ def process_hostel_allocations():
 		"Hostel Allocation", filters={"docstatus": 1, "status": "Active"}, pluck="name"
 	):
 		allocation = frappe.get_doc("Hostel Allocation", name)
+		allocation.lock_for_billing()
+		if allocation.status != "Active":
+			continue
+
 		frappe.db.savepoint("hostel_billing")
 		try:
 			allocation.bill_due_periods()
