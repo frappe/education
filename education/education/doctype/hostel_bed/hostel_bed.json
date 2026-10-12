@@ -1,0 +1,196 @@
+{
+ "actions": [],
+ "autoname": "format:{hostel_room}-B{bed_number}",
+ "creation": "2026-10-12 12:56:33.005452",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hostel_room",
+  "bed_number",
+  "hostel",
+  "column_break_main",
+  "status",
+  "under_maintenance",
+  "disabled",
+  "occupancy_section",
+  "current_allocation",
+  "column_break_occupancy",
+  "current_student",
+  "student_name",
+  "location_section",
+  "company",
+  "column_break_location",
+  "campus"
+ ],
+ "fields": [
+  {
+   "fieldname": "hostel_room",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hostel Room",
+   "options": "Hostel Room",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "bed_number",
+   "fieldtype": "Int",
+   "label": "Bed Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hostel",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Hostel",
+   "options": "Hostel",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Vacant",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Vacant\nReserved\nOccupied\nUnder Maintenance\nDisabled",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "description": "A bed under maintenance cannot be allocated.",
+   "fieldname": "under_maintenance",
+   "fieldtype": "Check",
+   "label": "Under Maintenance"
+  },
+  {
+   "default": "0",
+   "description": "Set when the room's bed count drops below this bed.",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "occupancy_section",
+   "fieldtype": "Section Break",
+   "label": "Allocation"
+  },
+  {
+   "description": "The stay under way, or the next one booked.",
+   "fieldname": "current_allocation",
+   "fieldtype": "Link",
+   "label": "Allocation",
+   "options": "Hostel Allocation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_occupancy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student",
+   "options": "Student",
+   "read_only": 1
+  },
+  {
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "label": "Student Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "location_section",
+   "fieldtype": "Section Break",
+   "label": "Location"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_location",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "links": [
+  {
+   "link_doctype": "Hostel Allocation",
+   "link_fieldname": "hostel_bed"
+  }
+ ],
+ "modified": "2026-10-12 21:21:40.353481",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Hostel Bed",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "status,current_student",
+ "sort_field": "name",
+ "sort_order": "ASC",
+ "states": [
+  {
+   "color": "Green",
+   "title": "Vacant"
+  },
+  {
+   "color": "Yellow",
+   "title": "Reserved"
+  },
+  {
+   "color": "Blue",
+   "title": "Occupied"
+  },
+  {
+   "color": "Orange",
+   "title": "Under Maintenance"
+  },
+  {
+   "color": "Gray",
+   "title": "Disabled"
+  }
+ ]
+}

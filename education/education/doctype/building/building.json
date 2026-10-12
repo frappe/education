@@ -1,0 +1,171 @@
+{
+  "actions": [],
+  "allow_import": 1,
+  "autoname": "BLDG-.#####",
+  "creation": "2026-10-12 19:56:33.005452",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "building_name",
+    "building_code",
+    "building_type",
+    "floors",
+    "column_break_main",
+    "company",
+    "campus",
+    "disabled",
+    "address_section",
+    "address",
+    "location",
+    "facilities_section",
+    "facilities",
+    "connections_tab"
+  ],
+  "fields": [
+    {
+      "fieldname": "building_name",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Building Name",
+      "reqd": 1
+    },
+    {
+      "description": "Short code shown with room numbers, such as SCI for SCI-101.",
+      "fieldname": "building_code",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Building Code"
+    },
+    {
+      "default": "Academic",
+      "description": "Academic buildings hold rooms for classes, exams and bookings. Hostel buildings hold hostel rooms only.",
+      "fieldname": "building_type",
+      "fieldtype": "Select",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Building Type",
+      "options": "Academic\nHostel",
+      "reqd": 1
+    },
+    {
+      "fieldname": "floors",
+      "fieldtype": "Int",
+      "label": "Floors",
+      "non_negative": 1,
+      "description": "Floors from the ground floor up, not counting basements. A three-storey block has 3, so its rooms can be on the Ground, First or Second Floor."
+    },
+    {
+      "fieldname": "column_break_main",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "remember_last_selected_value": 1,
+      "reqd": 1
+    },
+    {
+      "description": "Rooms in this building take its campus. Required once this company has a campus.",
+      "fieldname": "campus",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Campus",
+      "options": "Campus"
+    },
+    {
+      "default": "0",
+      "description": "Rooms cannot be added to a disabled building.",
+      "fieldname": "disabled",
+      "fieldtype": "Check",
+      "label": "Disabled"
+    },
+    {
+      "collapsible": 1,
+      "fieldname": "address_section",
+      "fieldtype": "Section Break",
+      "label": "Address"
+    },
+    {
+      "fieldname": "address",
+      "fieldtype": "Small Text",
+      "label": "Address"
+    },
+    {
+      "fieldname": "location",
+      "fieldtype": "Geolocation",
+      "label": "Map Location"
+    },
+    {
+      "description": "Shared by every room in the building, such as wheelchair access or air conditioning.",
+      "fieldname": "facilities_section",
+      "fieldtype": "Section Break",
+      "label": "Facilities"
+    },
+    {
+      "fieldname": "facilities",
+      "fieldtype": "Table",
+      "label": "Facilities",
+      "options": "Room Facility"
+    },
+    {
+      "fieldname": "connections_tab",
+      "fieldtype": "Tab Break",
+      "label": "Connections",
+      "show_dashboard": 1
+    }
+  ],
+  "links": [
+    {
+      "group": "Rooms",
+      "link_doctype": "Room",
+      "link_fieldname": "building"
+    },
+    {
+      "group": "Rooms",
+      "link_doctype": "Hostel Room",
+      "link_fieldname": "building"
+    }
+  ],
+  "modified": "2026-10-12 21:56:33.005452",
+  "modified_by": "Administrator",
+  "module": "Education",
+  "name": "Building",
+  "naming_rule": "Expression (old style)",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Academics User",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Education Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "row_format": "Dynamic",
+  "search_fields": "building_code,campus",
+  "show_title_field_in_link": 1,
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "building_name"
+}

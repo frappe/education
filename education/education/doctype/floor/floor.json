@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:floor_name",
+ "creation": "2026-10-12 20:56:33.005452",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "floor_name",
+  "abbreviation",
+  "column_break_main",
+  "level"
+ ],
+ "fields": [
+  {
+   "fieldname": "floor_name",
+   "fieldtype": "Data",
+   "label": "Floor Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Short form shown with room numbers, such as G or 1.",
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Abbreviation"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Height above the ground floor: 0 for ground, 1 for the first floor, -1 for a basement. Floors sort by level, and a room's floor must fit within its building's floor count.",
+   "fieldname": "level",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Level",
+   "reqd": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 21:20:23.545305",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Floor",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "abbreviation",
+ "sort_field": "level",
+ "sort_order": "ASC",
+ "states": []
+}

@@ -1,0 +1,190 @@
+{
+  "actions": [],
+  "allow_import": 1,
+  "autoname": "format:{hostel}-{room_number}",
+  "creation": "2026-10-12 12:56:33.005452",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "section_break_nqbe",
+    "column_break_hkao",
+    "hostel",
+    "room_number",
+    "building",
+    "floor",
+    "column_break_fggr",
+    "capacity",
+    "rent",
+    "annual_rent",
+    "disabled",
+    "location_section",
+    "company",
+    "column_break_location",
+    "campus",
+    "facilities_section",
+    "facilities"
+  ],
+  "fields": [
+    {
+      "fieldname": "hostel",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Hostel",
+      "options": "Hostel",
+      "reqd": 1,
+      "set_only_once": 1
+    },
+    {
+      "fieldname": "room_number",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Room Number",
+      "reqd": 1,
+      "set_only_once": 1
+    },
+    {
+      "description": "Optional. A Hostel building on the hostel's campus.",
+      "fieldname": "building",
+      "fieldtype": "Link",
+      "in_standard_filter": 1,
+      "label": "Building",
+      "options": "Building"
+    },
+    {
+      "fieldname": "floor",
+      "fieldtype": "Link",
+      "in_standard_filter": 1,
+      "label": "Floor",
+      "options": "Floor"
+    },
+    {
+      "default": "1",
+      "description": "One bed is created for each place. Lowering it removes the highest-numbered beds, which must be free.",
+      "fieldname": "capacity",
+      "fieldtype": "Int",
+      "in_list_view": 1,
+      "label": "Beds",
+      "non_negative": 1,
+      "reqd": 1
+    },
+    {
+      "description": "Leave blank to use the hostel's rent per term.",
+      "fieldname": "rent",
+      "fieldtype": "Currency",
+      "label": "Rent per Term",
+      "non_negative": 1,
+      "options": "Company:company:default_currency"
+    },
+    {
+      "description": "Leave blank to use the hostel's rent per academic year.",
+      "fieldname": "annual_rent",
+      "fieldtype": "Currency",
+      "label": "Rent per Academic Year",
+      "non_negative": 1,
+      "options": "Company:company:default_currency"
+    },
+    {
+      "default": "0",
+      "fieldname": "disabled",
+      "fieldtype": "Check",
+      "label": "Disabled"
+    },
+    {
+      "fieldname": "location_section",
+      "fieldtype": "Section Break",
+      "label": "Location"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "read_only": 1,
+      "fetch_from": "hostel.company"
+    },
+    {
+      "fieldname": "column_break_location",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "campus",
+      "fieldtype": "Link",
+      "in_standard_filter": 1,
+      "label": "Campus",
+      "options": "Campus",
+      "read_only": 1,
+      "fetch_from": "hostel.campus"
+    },
+    {
+      "fieldname": "facilities_section",
+      "fieldtype": "Section Break",
+      "label": "Facilities"
+    },
+    {
+      "fieldname": "facilities",
+      "fieldtype": "Table",
+      "label": "Facilities",
+      "options": "Room Facility"
+    },
+    {
+      "fieldname": "column_break_hkao",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "section_break_nqbe",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "column_break_fggr",
+      "fieldtype": "Column Break"
+    }
+  ],
+  "links": [
+    {
+      "link_doctype": "Hostel Bed",
+      "link_fieldname": "hostel_room"
+    },
+    {
+      "link_doctype": "Hostel Allocation",
+      "link_fieldname": "hostel_room"
+    }
+  ],
+  "modified": "2026-10-12 21:56:33.005452",
+  "modified_by": "Administrator",
+  "module": "Education",
+  "name": "Hostel Room",
+  "naming_rule": "Expression (old style)",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Academics User",
+      "share": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Education Manager",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "row_format": "Dynamic",
+  "search_fields": "hostel,floor",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": []
+}

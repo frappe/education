@@ -112,9 +112,12 @@ def apply_room_campus(doc):
 	if not doc.get("room"):
 		return
 
-	room = frappe.db.get_value("Room", doc.room, ["company", "campus"], as_dict=True)
+	room = frappe.db.get_value("Room", doc.room, ["company", "campus", "disabled"], as_dict=True)
 	if not room:
 		return
+
+	if room.disabled and doc.has_value_changed("room"):
+		frappe.throw(_("Room {0} is disabled.").format(frappe.bold(doc.room)))
 
 	company = doc.get("company")
 	if company and room.company and room.company != company:

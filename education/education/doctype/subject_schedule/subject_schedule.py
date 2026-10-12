@@ -118,6 +118,7 @@ class SubjectSchedule(Document):
 			validate_overlap_for(self, "Assessment Plan", "student_batch")
 
 		validate_overlap_for(self, "Assessment Plan", "room")
+		validate_overlap_for(self, "Room Booking", "room")
 		if self.faculty:
 			validate_overlap_for(self, "Assessment Plan", "faculty", self.faculty)
 
