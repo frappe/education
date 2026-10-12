@@ -23,6 +23,7 @@ def get_data(filters):
 		filters=conditions,
 		fields=["hostel", "hostel_room", "campus", "status"],
 		order_by="hostel_room",
+		limit_page_length=0,
 	)
 	floors = dict(
 		frappe.get_all(

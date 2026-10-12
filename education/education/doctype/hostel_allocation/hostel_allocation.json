@@ -43,7 +43,8 @@
    "in_standard_filter": 1,
    "label": "Student",
    "options": "Student",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fetch_from": "student.student_name",
@@ -111,7 +112,8 @@
    "in_list_view": 1,
    "label": "Hostel Bed",
    "options": "Hostel Bed",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "column_break_bed",
@@ -240,7 +242,7 @@
    "link_fieldname": "hostel_allocation"
   }
  ],
- "modified": "2026-10-12 21:19:42.566459",
+ "modified": "2026-10-13 03:11:00.380628",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Hostel Allocation",

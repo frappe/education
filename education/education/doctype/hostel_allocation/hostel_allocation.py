@@ -29,6 +29,17 @@ class HostelAllocation(Document):
 	def onload(self):
 		self.set_onload("billing_summary", self.get_billing_summary())
 
+	# To avoid deadlocks, everything that changes a stay locks rows in one order:
+	# the bed, then the student, then the stay itself. Frappe locks the stay as soon
+	# as it starts saving, so submit and cancel lock the bed and student first.
+	def _submit(self):
+		self.lock_bed_and_student()
+		return super()._submit()
+
+	def _cancel(self):
+		self.lock_bed_and_student()
+		return super()._cancel()
+
 	def validate(self):
 		self.validate_academic_period()
 		self.set_missing_values()
@@ -49,7 +60,11 @@ class HostelAllocation(Document):
 		update_bed_occupancy(self.hostel_bed)
 
 	def on_cancel(self):
-		self.ignore_linked_doctypes = ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry")
+		self.ignore_linked_doctypes = (
+			"GL Entry",
+			"Stock Ledger Entry",
+			"Payment Ledger Entry",
+		)
 		self.cancel_invoices()
 		self.db_set("status", "Cancelled")
 		update_bed_occupancy(self.hostel_bed)
@@ -80,7 +95,9 @@ class HostelAllocation(Document):
 		"""Start and end dates (inclusive) of the selected term, or of the year."""
 		if self.academic_term:
 			return frappe.db.get_value(
-				"Academic Term", self.academic_term, ["term_start_date", "term_end_date"]
+				"Academic Term",
+				self.academic_term,
+				["term_start_date", "term_end_date"],
 			)
 		return frappe.db.get_value("Academic Year", self.academic_year, ["year_start_date", "year_end_date"])
 
@@ -183,7 +200,12 @@ class HostelAllocation(Document):
 
 		holder = frappe.db.get_value(
 			"Hostel Allocation",
-			{"hostel_bed": self.hostel_bed, "docstatus": 1, "status": "Active", "name": ("!=", self.name)},
+			{
+				"hostel_bed": self.hostel_bed,
+				"docstatus": 1,
+				"status": "Active",
+				"name": ("!=", self.name),
+			},
 			["name", "student"],
 			as_dict=True,
 			for_update=True,
@@ -215,7 +237,8 @@ class HostelAllocation(Document):
 		if earlier:
 			frappe.throw(
 				_("Student {0} is still checked in under {1}. Check them out first.").format(
-					frappe.bold(self.student), frappe.get_desk_link("Hostel Allocation", earlier)
+					frappe.bold(self.student),
+					frappe.get_desk_link("Hostel Allocation", earlier),
 				)
 			)
 
@@ -238,16 +261,18 @@ class HostelAllocation(Document):
 		if existing:
 			frappe.throw(
 				_("Student {0} already has a hostel bed in {1} for these dates.").format(
-					frappe.bold(self.student), frappe.get_desk_link("Hostel Allocation", existing.name)
+					frappe.bold(self.student),
+					frappe.get_desk_link("Hostel Allocation", existing.name),
 				)
 			)
 
 	def lock_bed_and_student(self):
-		"""Serialise submissions for the same bed or student until this one commits.
+		"""Serialise changes to stays of the same bed or student until this one commits.
 
-		Locks are taken in the same order everywhere, bed then student, so two submissions
-		cannot deadlock. The checks after it use locking reads, which see rows committed by a
-		submission that held the lock, where a plain read would still see the older snapshot.
+		Taken before any allocation row is locked, on every path, so two of them cannot
+		deadlock. The checks after it use locking reads, which see rows committed by whoever
+		held the lock, where a plain read would still see the older snapshot. Locking again in
+		the same transaction is a no-op.
 		"""
 		frappe.db.get_value("Hostel Bed", self.hostel_bed, "name", for_update=True)
 		frappe.db.get_value("Student", self.student, "name", for_update=True)
@@ -285,7 +310,9 @@ class HostelAllocation(Document):
 		)
 		periods = [
 			frappe._dict(
-				academic_term=term.name, start=getdate(term.term_start_date), end=getdate(term.term_end_date)
+				academic_term=term.name,
+				start=getdate(term.term_start_date),
+				end=getdate(term.term_end_date),
 			)
 			for term in frappe.get_all(
 				"Academic Term",
@@ -296,7 +323,9 @@ class HostelAllocation(Document):
 		]
 		if not periods:
 			start, end = frappe.db.get_value(
-				"Academic Year", self.academic_year, ["year_start_date", "year_end_date"]
+				"Academic Year",
+				self.academic_year,
+				["year_start_date", "year_end_date"],
 			)
 			periods = [frappe._dict(academic_term=None, start=getdate(start), end=getdate(end))]
 
@@ -391,6 +420,7 @@ class HostelAllocation(Document):
 	def check_out(self, vacated_on: str | None = None, remarks: str | None = None):
 		"""End the stay and free the bed. Periods that have started stay billed in full."""
 		self.check_permission("write")
+		self.lock_bed_and_student()
 		self.lock_for_billing()
 		if self.docstatus != 1 or self.status != "Active":
 			frappe.throw(_("Only an active allocation can be checked out."))
@@ -525,7 +555,13 @@ def refresh_bed_occupancy(beds=None):
 	for bed in frappe.get_all(
 		"Hostel Bed",
 		filters=filters,
-		fields=["name", "status", "current_allocation", "disabled", "under_maintenance"],
+		fields=[
+			"name",
+			"status",
+			"current_allocation",
+			"disabled",
+			"under_maintenance",
+		],
 	):
 		allocation = holding.get(bed.name)
 		values = {
@@ -549,6 +585,7 @@ def process_hostel_allocations():
 		"Hostel Allocation", filters={"docstatus": 1, "status": "Active"}, pluck="name"
 	):
 		allocation = frappe.get_doc("Hostel Allocation", name)
+		allocation.lock_bed_and_student()
 		allocation.lock_for_billing()
 		if allocation.status != "Active":
 			continue
