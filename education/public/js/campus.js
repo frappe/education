@@ -3,7 +3,7 @@
 
 frappe.provide('education')
 
-const campus_required_when_present = ['Class Room', 'Room', 'Facility']
+const campus_required_when_present = ['Room', 'Facility', 'Hostel', 'Building']
 
 education.setup_campus_field = function (frm) {
   if (!frm.fields_dict.campus) {
@@ -55,11 +55,26 @@ education.setup_schedule_campus = function (frm) {
   })
 }
 
+// Facilities on the record's campus, plus shared ones, skipping rows already added.
+education.setup_facility_query = function (frm) {
+  frm.set_query('facility', 'facilities', (doc) => ({
+    query: 'education.education.doctype.facility.facility.facility_query',
+    filters: {
+      company: doc.company,
+      campus: doc.campus,
+      exclude: (doc.facilities || [])
+        .map((row) => row.facility)
+        .filter(Boolean),
+    },
+  }))
+}
+
 function bind_campus_forms() {
   for (const doctype of [
-    'Class Room',
     'Room',
     'Facility',
+    'Hostel',
+    'Building',
     'Admission Register',
     'Course Enrollment',
     'Fees',
@@ -81,7 +96,11 @@ function bind_campus_forms() {
     })
   }
 
-  for (const doctype of ['Subject Schedule', 'Assessment Plan']) {
+  for (const doctype of [
+    'Subject Schedule',
+    'Assessment Plan',
+    'Room Booking',
+  ]) {
     frappe.ui.form.on(doctype, {
       onload(frm) {
         education.setup_schedule_campus(frm)

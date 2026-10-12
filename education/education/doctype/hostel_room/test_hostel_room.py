@@ -11,9 +11,9 @@ EXTRA_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
-class IntegrationTestClassRoom(IntegrationTestCase):
+class IntegrationTestHostelRoom(IntegrationTestCase):
 	"""
-	Integration tests for ClassRoom.
+	Integration tests for HostelRoom.
 	Use this class for testing interactions between multiple components.
 	"""
 

@@ -142,11 +142,10 @@
   }
  ],
  "grid_page_length": 50,
- "index_web_pages_for_search": 1,
  "links": [
   {
    "group": "Facilities",
-   "link_doctype": "Class Room",
+   "link_doctype": "Building",
    "link_fieldname": "campus"
   },
   {
@@ -157,6 +156,21 @@
   {
    "group": "Facilities",
    "link_doctype": "Facility",
+   "link_fieldname": "campus"
+  },
+  {
+   "group": "Facilities",
+   "link_doctype": "Room Booking",
+   "link_fieldname": "campus"
+  },
+  {
+   "group": "Hostel",
+   "link_doctype": "Hostel",
+   "link_fieldname": "campus"
+  },
+  {
+   "group": "Hostel",
+   "link_doctype": "Hostel Allocation",
    "link_fieldname": "campus"
   },
   {
@@ -180,7 +194,7 @@
    "link_fieldname": "campus"
   }
  ],
- "modified": "2026-09-29 17:26:50.149175",
+ "modified": "2026-10-12 21:21:28.902131",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Campus",

@@ -221,6 +221,7 @@ doc_events = {
 scheduler_events = {
 	"daily": [
 		"education.education.doctype.admission_register.admission_register.process_admission_register_schedules",
+		"education.education.doctype.hostel_allocation.hostel_allocation.process_hostel_allocations",
 	],
 }
 

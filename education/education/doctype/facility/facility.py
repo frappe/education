@@ -4,6 +4,7 @@
 from typing import Any
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder.functions import IfNull
 
@@ -13,6 +14,37 @@ from education.education.doctype.campus.campus import validate_campus
 class Facility(Document):
 	def validate(self):
 		validate_campus(self, required=True)
+
+
+def validate_facilities(doc, campus):
+	"""Each facility appears once, and a facility tied to a campus stays on that campus."""
+	seen = set()
+	for row in doc.get("facilities") or []:
+		if row.facility in seen:
+			frappe.throw(
+				_("Row {0}: Facility {1} is added more than once.").format(row.idx, frappe.bold(row.facility))
+			)
+		seen.add(row.facility)
+
+	if not campus or not seen:
+		return
+
+	facility_campus = dict(
+		frappe.get_all(
+			"Facility",
+			filters={"name": ("in", list(seen))},
+			fields=["name", "campus"],
+			as_list=True,
+		)
+	)
+	for row in doc.facilities:
+		row_campus = facility_campus.get(row.facility)
+		if row_campus and row_campus != campus:
+			frappe.throw(
+				_("Facility {0} belongs to Campus {1}.").format(
+					frappe.bold(row.facility), frappe.bold(row_campus)
+				)
+			)
 
 
 @frappe.whitelist()
@@ -26,12 +58,10 @@ def facility_query(
 	filters: dict[str, Any],
 ):
 	"""Facilities on the selected campus, plus facilities shared across campuses."""
-	frappe.has_permission("Facility", "read", throw=True)
 	filters = filters or {}
 	facility = frappe.qb.DocType("Facility")
 	query = (
-		frappe.qb.from_(facility)
-		.select(facility.name)
+		frappe.qb.get_query("Facility", fields=["name"], ignore_permissions=False)
 		.where(facility.name.like(f"%{txt}%"))
 		.orderby(facility.name)
 		.limit(page_len)

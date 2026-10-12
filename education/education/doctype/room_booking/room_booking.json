@@ -1,0 +1,185 @@
+{
+  "actions": [],
+  "allow_import": 1,
+  "autoname": "RB-.YYYY.-.#####",
+  "creation": "2026-10-12 12:56:33.005452",
+  "doctype": "DocType",
+  "engine": "InnoDB",
+  "field_order": [
+    "room",
+    "room_name",
+    "purpose",
+    "column_break_room",
+    "schedule_date",
+    "from_time",
+    "to_time",
+    "details_section",
+    "company",
+    "campus",
+    "column_break_details",
+    "attendees",
+    "booked_by",
+    "description",
+    "amended_from"
+  ],
+  "fields": [
+    {
+      "fieldname": "room",
+      "fieldtype": "Link",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Room",
+      "options": "Room",
+      "reqd": 1
+    },
+    {
+      "fetch_from": "room.room_name",
+      "fieldname": "room_name",
+      "fieldtype": "Data",
+      "label": "Room Name",
+      "read_only": 1
+    },
+    {
+      "fieldname": "purpose",
+      "fieldtype": "Data",
+      "in_list_view": 1,
+      "label": "Purpose",
+      "reqd": 1
+    },
+    {
+      "fieldname": "column_break_room",
+      "fieldtype": "Column Break"
+    },
+    {
+      "default": "Today",
+      "fieldname": "schedule_date",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "label": "Date",
+      "reqd": 1
+    },
+    {
+      "fieldname": "from_time",
+      "fieldtype": "Time",
+      "in_list_view": 1,
+      "label": "From Time",
+      "reqd": 1
+    },
+    {
+      "fieldname": "to_time",
+      "fieldtype": "Time",
+      "in_list_view": 1,
+      "label": "To Time",
+      "reqd": 1
+    },
+    {
+      "fieldname": "details_section",
+      "fieldtype": "Section Break",
+      "label": "Details"
+    },
+    {
+      "fetch_from": "room.company",
+      "fetch_if_empty": 1,
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company"
+    },
+    {
+      "fieldname": "campus",
+      "fieldtype": "Link",
+      "in_standard_filter": 1,
+      "label": "Campus",
+      "options": "Campus"
+    },
+    {
+      "fieldname": "column_break_details",
+      "fieldtype": "Column Break"
+    },
+    {
+      "description": "Expected headcount. It must fit within the room's seating capacity.",
+      "fieldname": "attendees",
+      "fieldtype": "Int",
+      "label": "Attendees",
+      "non_negative": 1
+    },
+    {
+      "default": "__user",
+      "fieldname": "booked_by",
+      "fieldtype": "Link",
+      "label": "Booked By",
+      "options": "User"
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Small Text",
+      "label": "Description"
+    },
+    {
+      "fieldname": "amended_from",
+      "fieldtype": "Link",
+      "label": "Amended From",
+      "no_copy": 1,
+      "options": "Room Booking",
+      "print_hide": 1,
+      "read_only": 1,
+      "search_index": 1
+    }
+  ],
+  "is_submittable": 1,
+  "links": [],
+  "modified": "2026-10-12 12:56:33.005452",
+  "modified_by": "Administrator",
+  "module": "Education",
+  "name": "Room Booking",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "amend": 1,
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Academics User",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "amend": 1,
+      "cancel": 1,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Education Manager",
+      "share": 1,
+      "submit": 1,
+      "write": 1
+    },
+    {
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "Instructor",
+      "share": 1,
+      "write": 1
+    }
+  ],
+  "row_format": "Dynamic",
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [],
+  "title_field": "purpose",
+  "track_changes": 1
+}

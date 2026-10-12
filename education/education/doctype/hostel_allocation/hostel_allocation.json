@@ -1,0 +1,312 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "HA-.YYYY.-.#####",
+ "creation": "2026-10-12 12:56:33.005452",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student",
+  "student_name",
+  "academic_year",
+  "academic_term",
+  "column_break_student",
+  "status",
+  "bed_section",
+  "hostel",
+  "hostel_room",
+  "hostel_bed",
+  "column_break_bed",
+  "company",
+  "campus",
+  "stay_section",
+  "from_date",
+  "vacated_on",
+  "check_out_remarks",
+  "column_break_stay",
+  "to_date",
+  "billing_section",
+  "fee_category",
+  "column_break_billing",
+  "rent",
+  "billing_error",
+  "amended_from",
+  "invoices_tab",
+  "invoices",
+  "connections_tab"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Student",
+   "options": "Student",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "student.student_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "description": "Leave blank to stay for the whole academic year and be billed for each of its terms.",
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "column_break_student",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nActive\nChecked Out\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bed_section",
+   "fieldtype": "Section Break",
+   "label": "Bed"
+  },
+  {
+   "fieldname": "hostel",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Hostel",
+   "options": "Hostel",
+   "reqd": 1
+  },
+  {
+   "fieldname": "hostel_room",
+   "fieldtype": "Link",
+   "label": "Hostel Room",
+   "options": "Hostel Room",
+   "reqd": 1
+  },
+  {
+   "fieldname": "hostel_bed",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Hostel Bed",
+   "options": "Hostel Bed",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_bed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stay_section",
+   "fieldtype": "Section Break",
+   "label": "Stay"
+  },
+  {
+   "description": "Defaults to the start of the academic period, or today if it has started.",
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "Check-in Date"
+  },
+  {
+   "description": "Defaults to the end of the academic period. Billing stops here; the bed stays held until the student is checked out.",
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "Planned Check-out Date"
+  },
+  {
+   "fieldname": "column_break_stay",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "vacated_on",
+   "fieldtype": "Date",
+   "label": "Checked Out On",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "vacated_on",
+   "fieldname": "check_out_remarks",
+   "fieldtype": "Small Text",
+   "label": "Check-out Remarks",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "fee_category",
+   "fieldtype": "Link",
+   "label": "Fee Category",
+   "options": "Fee Category"
+  },
+  {
+   "fieldname": "column_break_billing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Billed in full for each academic term the stay covers, when the term starts. A year without terms is billed once.",
+   "fieldname": "rent",
+   "fieldtype": "Currency",
+   "label": "Rent per Period",
+   "non_negative": 1,
+   "options": "Company:company:default_currency"
+  },
+  {
+   "allow_on_submit": 1,
+   "depends_on": "billing_error",
+   "fieldname": "billing_error",
+   "fieldtype": "Small Text",
+   "label": "Billing Error",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "invoices",
+   "fieldtype": "Table",
+   "label": "Invoices",
+   "no_copy": 1,
+   "options": "Hostel Allocation Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Hostel Allocation",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "invoices_tab",
+   "fieldtype": "Tab Break",
+   "label": "Invoices"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [
+  {
+   "link_doctype": "Sales Invoice",
+   "link_fieldname": "hostel_allocation"
+  }
+ ],
+ "modified": "2026-10-13 03:11:00.380628",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Hostel Allocation",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Blue",
+   "title": "Checked Out"
+  },
+  {
+   "color": "Red",
+   "title": "Cancelled"
+  }
+ ],
+ "title_field": "student_name",
+ "track_changes": 1
+}

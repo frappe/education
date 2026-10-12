@@ -126,6 +126,7 @@ class AssessmentPlan(Document):
 			validate_overlap_for(self, "Assessment Plan", "student_batch")
 
 		validate_overlap_for(self, "Assessment Plan", "room")
+		validate_overlap_for(self, "Room Booking", "room")
 
 	def validate_max_score(self):
 		if flt(self.maximum_assessment_score) <= 0:
