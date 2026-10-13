@@ -94,7 +94,12 @@ class TestFeeCategory(FrappeTestCase):
 		"""
 		fee_component = frappe.get_doc("Fee Category", "Tuition Fee")
 		# get any income account
-		income_account = frappe.get_all("Account", fields=["name"], limit=1)[0]["name"]
+		income_account = frappe.get_all(
+			"Account",
+			fields=["name"],
+			filters={"is_group": 0, "company": "_Test Company"},
+			limit=1,
+		)[0]["name"]
 		defaults = get_defaults()
 		default_array = [
 			{

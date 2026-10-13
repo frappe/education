@@ -13,6 +13,7 @@
   "validate_course",
   "academic_term_reqd",
   "user_creation_skip",
+  "disable_customer_sync",
   "accounting_section",
   "create_so",
   "column_break_aimg",
@@ -90,6 +91,13 @@
    "fieldname": "user_creation_skip",
    "fieldtype": "Check",
    "label": "Skip User creation for new Student"
+  },
+  {
+   "default": "0",
+   "description": "Prevent the system from automatically overwriting linked Customer names with the Student name or force-creating customer records.",
+   "fieldname": "disable_customer_sync",
+   "fieldtype": "Check",
+   "label": "Disable Automatic Customer Syncing"
   },
   {
    "default": "0",

@@ -264,7 +264,14 @@ def get_customer_from_student(student_id):
 	student = frappe.get_doc("Student", student_id)
 	if not student.customer:
 		student.set_missing_customer_details()
-	return frappe.db.get_value("Student", student.name, "customer")
+	customer = frappe.db.get_value("Student", student.name, "customer")
+	if not customer:
+		frappe.throw(
+			_(
+				"Student {0} does not have a linked Customer. Please link a Customer against the Student before generating fees."
+			).format(frappe.bold(student.student_name))
+		)
+	return customer
 
 
 def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):

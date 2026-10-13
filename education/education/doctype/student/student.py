@@ -114,6 +114,9 @@ class Student(Document):
 
 	# On Update Functions
 	def update_linked_customer(self):
+		if frappe.db.get_single_value("Education Settings", "disable_customer_sync"):
+			return
+
 		customer = frappe.get_doc("Customer", self.customer)
 		if self.customer_group:
 			customer.customer_group = self.customer_group
@@ -124,6 +127,9 @@ class Student(Document):
 		frappe.msgprint(_("Customer {0} updated").format(customer.name), alert=True)
 
 	def create_customer(self):
+		if frappe.db.get_single_value("Education Settings", "disable_customer_sync"):
+			return
+
 		customer = frappe.get_doc(
 			{
 				"doctype": "Customer",
