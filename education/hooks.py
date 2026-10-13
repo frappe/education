@@ -18,7 +18,7 @@ add_to_apps_screen = [
 		"name": "education",
 		"logo": "/assets/education/edu-logo.svg",
 		"title": "Education",
-		"route": "/app/education",
+		"route": "/desk/education",
 		"has_permission": "education.api.permissions.has_app_permission",
 	}
 ]
