@@ -4,4 +4,4 @@ from education.install import get_custom_fields
 
 
 def execute():
-	create_custom_fields(get_custom_fields())
+    create_custom_fields(get_custom_fields())

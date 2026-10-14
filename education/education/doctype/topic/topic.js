@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Topic', {
   refresh: function (frm) {
-    if (!cur_frm.doc.__islocal) {
+    if (!frm.doc.__islocal) {
       frm.add_custom_button(
         __('Add to Courses'),
         function () {

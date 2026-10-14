@@ -60,7 +60,7 @@ frappe.ui.form.on('Fee Schedule', {
         frm.reload_doc()
       }
       if (data.progress) {
-        let progress_bar = $(cur_frm.dashboard.progress_area.body).find(
+        let progress_bar = $(frm.dashboard.progress_area.body).find(
           '.progress-bar'
         )
         if (progress_bar) {
