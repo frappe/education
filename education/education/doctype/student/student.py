@@ -44,7 +44,7 @@ class Student(Document):
     # Validate Functions
     def set_title(self):
         self.student_name = " ".join(
-            filter(None, [self.first_name, self.middle_name, self.last_name])
+            name for name in (self.first_name, self.middle_name, self.last_name) if name
         )
 
     def validate_dates(self):
