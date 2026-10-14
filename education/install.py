@@ -2,6 +2,7 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.desk.page.setup_wizard.setup_wizard import make_records
 from frappe.permissions import add_permission, update_permission_property
+from frappe.utils.nestedset import get_root_of
 
 
 def after_install():
@@ -14,20 +15,58 @@ def after_install():
     create_permissions(get_permissions())
 
 
+# def setup_fixtures():
+#     records = [
+#         # Party Type Records
+#         {
+#             "doctype": "Party Type",
+#             "party_type": "Student",
+#             "account_type": "Receivable",
+#         },
+#         # Item Group Records
+#         {"doctype": "Item Group", "item_group_name": "Fee Component"},
+#         # Customer Group Records
+#         {"doctype": "Customer Group", "customer_group_name": "Student"},
+#     ]
+#     make_records(records)
+
+
 def setup_fixtures():
-    records = [
-        # Party Type Records
+    make_records(
+        [
+            {
+                "doctype": "Party Type",
+                "party_type": "Student",
+                "account_type": "Receivable",
+            },
+        ]
+    )
+    create_group_under_root("Item Group", "Fee Component", "All Item Groups")
+    create_group_under_root("Customer Group", "Student", "All Customer Groups")
+
+
+def create_group_under_root(doctype, group_name, default_root):
+    if frappe.db.exists(doctype, group_name):
+        return
+
+    fieldname = frappe.scrub(doctype)
+    root = get_root_of(doctype)
+    if not root:
+        root = (
+            frappe.get_doc(
+                {"doctype": doctype, f"{fieldname}_name": default_root, "is_group": 1}
+            )
+            .insert(ignore_permissions=True, ignore_mandatory=True)
+            .name
+        )
+
+    frappe.get_doc(
         {
-            "doctype": "Party Type",
-            "party_type": "Student",
-            "account_type": "Receivable",
-        },
-        # Item Group Records
-        {"doctype": "Item Group", "item_group_name": "Fee Component"},
-        # Customer Group Records
-        {"doctype": "Customer Group", "customer_group_name": "Student"},
-    ]
-    make_records(records)
+            "doctype": doctype,
+            f"{fieldname}_name": group_name,
+            f"parent_{fieldname}": root,
+        }
+    ).insert(ignore_permissions=True)
 
 
 def create_parent_assessment_group():

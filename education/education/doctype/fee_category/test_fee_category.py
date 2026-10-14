@@ -38,6 +38,10 @@ class TestFeeCategory(FrappeTestCase):
         When creating a Fee Category, if there are no item defaults, then get defaults from Item Group
         """
         defaults = get_defaults()
+        warehouse = frappe.db.get_value(
+            "Warehouse",
+            {"company": "_Test Company", "is_group": 0, "warehouse_name": "Stores"},
+        )
 
         item_group = frappe.get_doc("Item Group", "Fee Component")
         item_group.append(
@@ -46,6 +50,9 @@ class TestFeeCategory(FrappeTestCase):
                 "company": "_Test Company",
                 "income_account": defaults.default_income_account,
                 "selling_cost_center": defaults.cost_center,
+                # ERPNext's test setup sets a site-wide default warehouse from
+                # another company, which would otherwise be filled in on save
+                "default_warehouse": warehouse,
             },
         )
         item_group.save()

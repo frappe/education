@@ -79,9 +79,11 @@ class ProgramEnrollmentTool(Document):
                         as_dict=1,
                     )
 
-                    for student in students:
-                        if student.student in [d.student for d in inactive_students]:
-                            students.remove(student)
+                    inactive_students = {d.student for d in inactive_students}
+
+                    students = [
+                        d for d in students if d.student not in inactive_students
+                    ]
 
         if students:
             return students
