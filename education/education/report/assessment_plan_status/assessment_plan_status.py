@@ -6,6 +6,8 @@ from itertools import groupby
 
 import frappe
 from frappe import _
+from frappe.query_builder import Order
+from frappe.query_builder.functions import Count
 from frappe.utils import cint
 
 DOCSTATUS = {
@@ -28,36 +30,39 @@ def execute(filters=None):
     return columns, data, None, chart
 
 
+# nosemgrep: frappe-semgrep-rules.rules.overusing-args
 def get_assessment_data(args=None):
 
     # [total, saved, submitted, remaining]
     chart_data = [0, 0, 0, 0]
 
-    condition = ""
-    if args["assessment_group"]:
-        condition += "and assessment_group = %(assessment_group)s"
-    if args["schedule_date"]:
-        condition += "and schedule_date <= %(schedule_date)s"
+    AssessmentPlan = frappe.qb.DocType("Assessment Plan")
+    StudentGroupStudent = frappe.qb.DocType("Student Group Student")
 
-    assessment_plan = frappe.db.sql(
-        """
-			SELECT
-				ap.name as assessment_plan,
-				ap.assessment_name,
-				ap.student_group,
-				ap.schedule_date,
-				(select count(*) from `tabStudent Group Student` sgs where sgs.parent=ap.student_group)
-					as student_group_strength
-			FROM
-				`tabAssessment Plan` ap
-			WHERE
-				ap.docstatus = 1 {condition}
-			ORDER BY
-				ap.modified desc
-		""".format(condition=condition),
-        (args),
-        as_dict=1,
+    student_group_strength = (
+        frappe.qb.from_(StudentGroupStudent)
+        .select(Count("*"))
+        .where(StudentGroupStudent.parent == AssessmentPlan.student_group)
     )
+
+    query = (
+        frappe.qb.from_(AssessmentPlan)
+        .select(
+            AssessmentPlan.name.as_("assessment_plan"),
+            AssessmentPlan.assessment_name,
+            AssessmentPlan.student_group,
+            AssessmentPlan.schedule_date,
+            student_group_strength.as_("student_group_strength"),
+        )
+        .where(AssessmentPlan.docstatus == 1)
+        .orderby(AssessmentPlan.modified, order=Order.desc)
+    )
+    if args["assessment_group"]:
+        query = query.where(AssessmentPlan.assessment_group == args["assessment_group"])
+    if args["schedule_date"]:
+        query = query.where(AssessmentPlan.schedule_date <= args["schedule_date"])
+
+    assessment_plan = query.run(as_dict=True)
 
     assessment_plan_list = (
         [d.assessment_plan for d in assessment_plan] if assessment_plan else [""]

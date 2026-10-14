@@ -4,9 +4,9 @@
 
 import frappe
 from frappe import _, msgprint
-from frappe.desk.reportview import get_match_cond
 from frappe.model.document import Document
-from frappe.query_builder.functions import Min
+from frappe.query_builder import Case, Order
+from frappe.query_builder.functions import Locate, Min
 from frappe.utils import comma_and, get_link_to_form, getdate
 from education.education.doctype.fee_schedule.fee_schedule import (
     create_sales_invoice,
@@ -130,33 +130,42 @@ class ProgramEnrollment(Document):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_program_courses(doctype, txt, searchfield, start, page_len, filters):
+def get_program_courses(
+    doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict
+):
     if not filters.get("program"):
         frappe.msgprint(_("Please select a Program first."))
         return []
 
-    doctype = "Program Course"
-    return frappe.db.sql(
-        """select course, course_name from `tabProgram Course`
-        where  parent = %(program)s and course like %(txt)s {match_cond}
-        order by
-            if(locate(%(_txt)s, course), locate(%(_txt)s, course), 99999),
-            idx desc,
-            `tabProgram Course`.course asc
-        limit {start}, {page_len}""".format(
-            match_cond=get_match_cond(doctype), start=start, page_len=page_len
-        ),
-        {
-            "txt": "%{0}%".format(txt),
-            "_txt": txt.replace("%", ""),
-            "program": filters["program"],
-        },
+    ProgramCourse = frappe.qb.DocType("Program Course")
+    match_position = Locate(txt.replace("%", ""), ProgramCourse.course)
+
+    # permissions of a child table are evaluated on its parent Program
+    return (
+        frappe.qb.get_query(
+            "Program Course",
+            fields=["course", "course_name"],
+            ignore_permissions=False,
+            parent_doctype="Program",
+        )
+        .where(
+            (ProgramCourse.parent == filters["program"])
+            & ProgramCourse.course.like(f"%{txt}%")
+        )
+        .orderby(Case().when(match_position > 0, match_position).else_(99999))
+        .orderby(ProgramCourse.idx, order=Order.desc)
+        .orderby(ProgramCourse.course)
+        .limit(page_len)
+        .offset(start)
+        .run()
     )
 
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_students(doctype, txt, searchfield, start, page_len, filters):
+def get_students(
+    doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict
+):
     if not filters.get("academic_term"):
         filters["academic_term"] = frappe.defaults.get_defaults().academic_term
 

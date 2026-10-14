@@ -14,7 +14,7 @@ from education.education.utils import OverlapError
 
 class CourseSchedulingTool(Document):
     @frappe.whitelist()
-    def schedule_course(self, days):
+    def schedule_course(self, days: list):
         """Creates course schedules as per specified parameters"""
 
         course_schedules = []
@@ -75,7 +75,7 @@ class CourseSchedulingTool(Document):
         ]
         for d in fields:
             if not self.get(d):
-                frappe.throw(_("{0} is mandatory").format(self.meta.get_label(d)))
+                frappe.throw(_("{0} is mandatory").format(_(self.meta.get_label(d))))
 
     def validate_date(self):
         """Validates if Course Start Date is greater than Course End Date"""

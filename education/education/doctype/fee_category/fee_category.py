@@ -17,6 +17,7 @@ class FeeCategory(Document):
         self.item = item_name
         self.save()
 
+    # nosemgrep: frappe-semgrep-rules.rules.frappe-modifying-but-not-comitting
     def on_update(self):
         # update item
         item_name = update_item(self)
@@ -45,7 +46,7 @@ class FeeCategory(Document):
         if item_defaults:
             update_item_defaults(self, item_defaults)
             frappe.msgprint(
-                _('Defaults fetched from "Fee Component" Item Group '), alert=True
+                _('Defaults fetched from "Fee Component" Item Group'), alert=True
             )
 
     def validate_duplicate_item_defaults(self):

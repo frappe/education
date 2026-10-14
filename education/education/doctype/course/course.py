@@ -33,7 +33,7 @@ class Course(Document):
 
 
 @frappe.whitelist()
-def add_course_to_programs(course, programs, mandatory=False):
+def add_course_to_programs(course: str, programs: str, mandatory: bool = False):
     programs = json.loads(programs)
     for entry in programs:
         program = frappe.get_doc("Program", entry)
@@ -52,7 +52,7 @@ def add_course_to_programs(course, programs, mandatory=False):
 
 
 @frappe.whitelist()
-def get_programs_without_course(course):
+def get_programs_without_course(course: str):
     data = []
     for entry in frappe.db.get_all("Program"):
         program = frappe.get_doc("Program", entry.name)

@@ -7,6 +7,8 @@ def execute():
     )
     for student in students:
         student_name = " ".join(
-            filter(None, [student.first_name, student.middle_name, student.last_name])
+            name
+            for name in (student.first_name, student.middle_name, student.last_name)
+            if name is not None
         )
         frappe.db.set_value("Student", student.name, "student_name", student_name)

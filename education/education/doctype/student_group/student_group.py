@@ -5,6 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.query_builder import Order
 from frappe.utils import cint
 
 from education.education.utils import validate_duplicate_student
@@ -102,13 +103,13 @@ class StudentGroup(Document):
 
 @frappe.whitelist()
 def get_students(
-    academic_year,
-    group_based_on,
-    academic_term=None,
-    program=None,
-    batch=None,
-    student_category=None,
-    course=None,
+    academic_year: str,
+    group_based_on: str,
+    academic_term: str | None = None,
+    program: str | None = None,
+    batch: str | None = None,
+    student_category: str | None = None,
+    course: str | None = None,
 ):
     enrolled_students = get_program_enrollment(
         academic_year, academic_term, program, batch, student_category, course
@@ -137,49 +138,41 @@ def get_program_enrollment(
     course=None,
 ):
 
-    condition1 = " "
-    condition2 = " "
-    if academic_term:
-        condition1 += " and pe.academic_term = %(academic_term)s"
-    if program:
-        condition1 += " and pe.program = %(program)s"
-    if batch:
-        condition1 += " and pe.student_batch_name = %(batch)s"
-    if student_category:
-        condition1 += " and pe.student_category = %(student_category)s"
-    if course:
-        condition1 += " and pe.name = pec.parent and pec.course = %(course)s"
-        condition2 = ", `tabProgram Enrollment Course` pec"
+    ProgramEnrollment = frappe.qb.DocType("Program Enrollment")
 
-    return frappe.db.sql(
-        """
-		select
-			pe.student, pe.student_name
-		from
-			`tabProgram Enrollment` pe {condition2}
-		where
-			pe.academic_year = %(academic_year)s
-			and pe.docstatus = 1 {condition1}
-		order by
-			pe.student_name asc
-		""".format(condition1=condition1, condition2=condition2),
-        (
-            {
-                "academic_year": academic_year,
-                "academic_term": academic_term,
-                "program": program,
-                "batch": batch,
-                "student_category": student_category,
-                "course": course,
-            }
-        ),
-        as_dict=1,
+    query = (
+        frappe.qb.from_(ProgramEnrollment)
+        .select(ProgramEnrollment.student, ProgramEnrollment.student_name)
+        .where(
+            (ProgramEnrollment.academic_year == academic_year)
+            & (ProgramEnrollment.docstatus == 1)
+        )
+        .orderby(ProgramEnrollment.student_name)
     )
+    if academic_term:
+        query = query.where(ProgramEnrollment.academic_term == academic_term)
+    if program:
+        query = query.where(ProgramEnrollment.program == program)
+    if batch:
+        query = query.where(ProgramEnrollment.student_batch_name == batch)
+    if student_category:
+        query = query.where(ProgramEnrollment.student_category == student_category)
+    if course:
+        ProgramEnrollmentCourse = frappe.qb.DocType("Program Enrollment Course")
+        query = (
+            query.inner_join(ProgramEnrollmentCourse)
+            .on(ProgramEnrollment.name == ProgramEnrollmentCourse.parent)
+            .where(ProgramEnrollmentCourse.course == course)
+        )
+
+    return query.run(as_dict=True)
 
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def fetch_students(doctype, txt, searchfield, start, page_len, filters):
+def fetch_students(
+    doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict
+):
     if filters.get("group_based_on") != "Activity":
         enrolled_students = get_program_enrollment(
             filters.get("academic_year"),
@@ -201,18 +194,23 @@ def fetch_students(doctype, txt, searchfield, start, page_len, filters):
             if enrolled_students
             else [""]
         ) or [""]
-        return frappe.db.sql(
-            """select name, student_name from tabStudent
-			where name in ({0}) and (`{1}` LIKE %s or student_name LIKE %s)
-			order by idx desc, name
-			limit %s, %s""".format(", ".join(["%s"] * len(students)), searchfield),
-            tuple(students + ["%%%s%%" % txt, "%%%s%%" % txt, start, page_len]),
-        )
     else:
-        return frappe.db.sql(
-            """select name, student_name from tabStudent
-			where `{0}` LIKE %s or student_name LIKE %s
-			order by idx desc, name
-			limit %s, %s""".format(searchfield),
-            tuple(["%%%s%%" % txt, "%%%s%%" % txt, start, page_len]),
+        students = None
+
+    Student = frappe.qb.DocType("Student")
+    query = (
+        frappe.qb.from_(Student)
+        .select(Student.name, Student.student_name)
+        .where(
+            Student[searchfield].like(f"%{txt}%")
+            | Student.student_name.like(f"%{txt}%")
         )
+        .orderby(Student.idx, order=Order.desc)
+        .orderby(Student.name)
+        .limit(page_len)
+        .offset(start)
+    )
+    if students is not None:
+        query = query.where(Student.name.isin(students))
+
+    return query.run()

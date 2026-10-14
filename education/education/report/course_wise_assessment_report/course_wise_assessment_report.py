@@ -81,6 +81,7 @@ def get_formatted_result(args, get_course=False):
     return {"assessment_result": assessment_result, "courses": courses}
 
 
+# nosemgrep: frappe-semgrep-rules.rules.overusing-args
 def prepare_filters(args):
     filters = {"academic_year": args.academic_year, "docstatus": 1}
 

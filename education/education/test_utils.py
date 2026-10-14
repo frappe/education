@@ -38,12 +38,11 @@ def before_tests():
             }
         )
 
-    frappe.db.set_value(
-        "Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0
+    frappe.db.set_single_value(
+        "Stock Settings", "auto_insert_price_list_rate_if_missing", 0
     )
     enable_all_roles_and_domains()
     make_holiday_list()
-    frappe.db.commit()
 
 
 def make_holiday_list(holiday_list_name="Test Holiday List"):

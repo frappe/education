@@ -40,7 +40,7 @@ class Guardian(Document):
 
 
 @frappe.whitelist()
-def invite_guardian(guardian):
+def invite_guardian(guardian: str):
     frappe.has_permission("Guardian", "write", throw=True)
     guardian_doc = frappe.get_doc("Guardian", guardian)
     if not guardian_doc.email_address:

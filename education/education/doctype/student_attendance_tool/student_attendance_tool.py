@@ -12,7 +12,10 @@ class StudentAttendanceTool(Document):
 
 @frappe.whitelist()
 def get_student_attendance_records(
-    based_on, date=None, student_group=None, course_schedule=None
+    based_on: str,
+    date: str | None = None,
+    student_group: str | None = None,
+    course_schedule: str | None = None,
 ):
     student_list = []
     student_attendance_list = []

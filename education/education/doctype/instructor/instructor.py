@@ -10,8 +10,8 @@ from frappe.model.naming import set_name_by_naming_series
 
 class Instructor(Document):
     def autoname(self):
-        naming_method = frappe.db.get_value(
-            "Education Settings", None, "instructor_created_by"
+        naming_method = frappe.db.get_single_value(
+            "Education Settings", "instructor_created_by"
         )
         if not naming_method:
             frappe.throw(

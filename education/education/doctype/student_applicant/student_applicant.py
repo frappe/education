@@ -41,7 +41,9 @@ class StudentApplicant(Document):
 
     def set_title(self):
         self.title = " ".join(
-            filter(None, [self.first_name, self.middle_name, self.last_name])
+            name
+            for name in (self.first_name, self.middle_name, self.last_name)
+            if name is not None
         )
 
     def validate_dates(self):

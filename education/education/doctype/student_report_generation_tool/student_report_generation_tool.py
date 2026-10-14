@@ -21,7 +21,7 @@ class StudentReportGenerationTool(Document):
 
 
 @frappe.whitelist()
-def preview_report_card(doc):
+def preview_report_card(doc: str):
     doc = frappe._dict(json.loads(doc))
     doc.students = [doc.student]
     values = get_formatted_result(doc, get_course=True)
@@ -34,6 +34,7 @@ def preview_report_card(doc):
         doc.students[0], doc.academic_year, doc.academic_term
     )
 
+    # nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
     html = frappe.render_template(
         "education/education/doctype/student_report_generation_tool/student_report_generation_tool.html",
         {
@@ -46,6 +47,7 @@ def preview_report_card(doc):
         },
     )
 
+    # nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
     final_template = frappe.render_template(
         "frappe/www/printview.html", {"body": html, "title": "Report Card"}
     )

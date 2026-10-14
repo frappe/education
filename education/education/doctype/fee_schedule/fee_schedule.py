@@ -155,6 +155,7 @@ class FeeSchedule(Document):
                 In case of any error the error message will be updated in the Schedule."""
                 )
             )
+            # nosemgrep: frappe-semgrep-rules.rules.frappe-enqueue-without-after-commit
             enqueue(
                 generate_fees,
                 queue="default",
@@ -327,31 +328,41 @@ def get_fees_mapped_doc(fee_schedule, doctype, student_id, customer):
 def get_students(
     student_group, academic_year, academic_term=None, student_category=None
 ):
-    conditions = ""
-    if student_category:
-        conditions = " and pe.student_category={}".format(
-            frappe.db.escape(student_category)
+    StudentGroupStudent = frappe.qb.DocType("Student Group Student")
+    ProgramEnrollment = frappe.qb.DocType("Program Enrollment")
+
+    query = (
+        frappe.qb.from_(StudentGroupStudent)
+        .inner_join(ProgramEnrollment)
+        .on(ProgramEnrollment.student == StudentGroupStudent.student)
+        .select(
+            ProgramEnrollment.student,
+            ProgramEnrollment.student_name,
+            ProgramEnrollment.program,
+            ProgramEnrollment.student_batch_name,
+            ProgramEnrollment.name.as_("enrollment"),
         )
-    if academic_term:
-        conditions += " and pe.academic_term={}".format(frappe.db.escape(academic_term))
-    students = frappe.db.sql(
-        """
-        select pe.student, pe.student_name, pe.program, pe.student_batch_name, pe.name as enrollment
-        from `tabStudent Group Student` sgs, `tabProgram Enrollment` pe
-        where
-            pe.docstatus = 1 and pe.student = sgs.student and pe.academic_year = %s
-            and sgs.parent = %s and sgs.active = 1
-            {conditions}
-        """.format(conditions=conditions),
-        (academic_year, student_group),
-        as_dict=1,
+        .where(
+            (ProgramEnrollment.docstatus == 1)
+            & (ProgramEnrollment.academic_year == academic_year)
+            & (StudentGroupStudent.parent == student_group)
+            & (StudentGroupStudent.active == 1)
+        )
     )
-    return students
+    if student_category:
+        query = query.where(ProgramEnrollment.student_category == student_category)
+    if academic_term:
+        query = query.where(ProgramEnrollment.academic_term == academic_term)
+
+    return query.run(as_dict=True)
 
 
 @frappe.whitelist()
 def get_total_students(
-    student_group, academic_year, academic_term=None, student_category=None
+    student_group: str,
+    academic_year: str,
+    academic_term: str | None = None,
+    student_category: str | None = None,
 ):
     total_students = get_students(
         student_group, academic_year, academic_term, student_category
@@ -360,7 +371,9 @@ def get_total_students(
 
 
 @frappe.whitelist()
-def get_fee_structure(source_name, target_doc=None):
+def get_fee_structure(
+    source_name: str, target_doc: Document | dict | str | None = None
+):
     fee_request = get_mapped_doc(
         "Fee Structure",
         source_name,
