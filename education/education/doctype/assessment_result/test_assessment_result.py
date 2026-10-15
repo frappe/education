@@ -11,15 +11,15 @@ from education.education.test_utils import create_grading_scale
 
 
 class TestAssessmentResult(FrappeTestCase):
-	def setUp(self):
-		create_grading_scale()
+    def setUp(self):
+        create_grading_scale()
 
-	def tearDown(self):
-		frappe.db.rollback()
+    def tearDown(self):
+        frappe.db.rollback()
 
-	def test_grade(self):
-		grade = get_grade("_Test Grading Scale", 80)
-		self.assertEqual("A", grade)
+    def test_grade(self):
+        grade = get_grade("_Test Grading Scale", 80)
+        self.assertEqual("A", grade)
 
-		grade = get_grade("_Test Grading Scale", 70)
-		self.assertEqual("B", grade)
+        grade = get_grade("_Test Grading Scale", 70)
+        self.assertEqual("B", grade)

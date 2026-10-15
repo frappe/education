@@ -2,12 +2,12 @@ from frappe import _
 
 
 def get_data():
-	return [
-		{
-			"module_name": "Education",
-			"color": "grey",
-			"icon": "octicon octicon-file-directory",
-			"type": "module",
-			"label": _("Education"),
-		}
-	]
+    return [
+        {
+            "module_name": "Education",
+            "color": "grey",
+            "icon": "octicon octicon-file-directory",
+            "type": "module",
+            "label": _("Education"),
+        }
+    ]

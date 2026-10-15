@@ -8,4 +8,4 @@ Configuration for docs
 
 
 def get_context(context):
-	context.brand_html = "Education"
+    context.brand_html = "Education"

@@ -8,10 +8,10 @@ from frappe.utils.make_random import get_random
 from frappe.tests.utils import FrappeTestCase
 
 from education.education.doctype.program.test_program import (
-	make_program_and_linked_courses,
+    make_program_and_linked_courses,
 )
 
 
 class TestFees(FrappeTestCase):
-	# deprecated
-	pass
+    # deprecated
+    pass
