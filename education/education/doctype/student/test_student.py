@@ -26,5 +26,25 @@ class TestStudent(FrappeTestCase):
 		self.assertTrue(bool(student.customer))
 		self.assertEqual(student.customer_group, "Student")
 
+	def test_skip_customer_creation_for_student(self):
+		frappe.db.set_single_value("Education Settings", "customer_creation_skip", 1)
+		try:
+			student = create_student(student_email_id="skip-customer@example.com")
+			student.reload()
+			self.assertFalse(bool(student.customer))
+		finally:
+			frappe.db.set_single_value("Education Settings", "customer_creation_skip", 0)
+
+	def test_customer_created_when_settings_row_absent(self):
+		# Migrated sites have no `tabSingles` row for the new field until it is saved.
+		frappe.db.delete(
+			"Singles", {"doctype": "Education Settings", "field": "customer_creation_skip"}
+		)
+		frappe.db.value_cache["Education Settings"].pop("customer_creation_skip", None)
+
+		student = create_student(student_email_id="no-settings-row@example.com")
+		student.reload()
+		self.assertTrue(bool(student.customer))
+
 	def tearDown(self):
 		frappe.db.rollback()
