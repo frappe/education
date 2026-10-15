@@ -6,4 +6,4 @@ from frappe.model.document import Document
 
 
 class TimeSlots(Document):
-	pass
+    pass

@@ -7,16 +7,18 @@ from frappe import _
 from frappe.model.document import Document
 
 STD_CRITERIA = [
-	"total",
-	"total score",
-	"total grade",
-	"maximum score",
-	"score",
-	"grade",
+    "total",
+    "total score",
+    "total grade",
+    "maximum score",
+    "score",
+    "grade",
 ]
 
 
 class AssessmentCriteria(Document):
-	def validate(self):
-		if self.assessment_criteria.lower() in STD_CRITERIA:
-			frappe.throw(_("Can't create standard criteria. Please rename the criteria"))
+    def validate(self):
+        if self.assessment_criteria.lower() in STD_CRITERIA:
+            frappe.throw(
+                _("Can't create standard criteria. Please rename the criteria")
+            )
