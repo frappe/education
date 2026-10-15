@@ -1711,6 +1711,9 @@ def _record_failed_run(config, error):
             }
         ).insert(ignore_permissions=True)
 
+        # nosemgrep: frappe-semgrep-rules.rules.frappe-manual-commit
+        frappe.db.commit()
+
     except Exception:
         frappe.log_error(
             title="Timetable: could not record the failed run",
