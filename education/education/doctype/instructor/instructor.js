@@ -1,7 +1,8 @@
-frm.add_fetch('employee', 'department', 'department')
-frm.add_fetch('employee', 'image', 'image')
-
 frappe.ui.form.on('Instructor', {
+  setup: function (frm) {
+    frm.add_fetch('employee', 'department', 'department')
+    frm.add_fetch('employee', 'image', 'image')
+  },
   employee: function (frm) {
     if (!frm.doc.employee) return
     frappe.db.get_value(
