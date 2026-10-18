@@ -38,16 +38,14 @@ class Guardian(Document):
 
 
 @frappe.whitelist()
-def invite_guardian(guardian):
+def invite_guardian(guardian: str):
 	guardian_doc = frappe.get_doc("Guardian", guardian)
 	if not guardian_doc.email_address:
 		frappe.throw(_("Please set Email Address"))
 	else:
 		guardian_as_user = frappe.get_value("User", dict(email=guardian_doc.email_address))
 		if guardian_as_user:
-			frappe.msgprint(
-				_("User {0} already exists").format(getlink("User", guardian_as_user))
-			)
+			frappe.msgprint(_("User {0} already exists").format(getlink("User", guardian_as_user)))
 			return guardian_as_user
 		else:
 			user = frappe.get_doc(

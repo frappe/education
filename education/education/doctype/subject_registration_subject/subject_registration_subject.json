@@ -1,0 +1,100 @@
+{
+ "actions": [],
+ "creation": "2026-09-21 14:45:12.456789",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "subject",
+  "subject_type",
+  "type",
+  "abbreviation",
+  "column_break_meta",
+  "credit_hours",
+  "credit",
+  "attempted_units",
+  "source"
+ ],
+ "fields": [
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Subject",
+   "options": "Subject",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "subject.subject_type",
+   "fieldname": "subject_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Subject Type",
+   "options": "Compulsory\nElective",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "subject.type",
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Theory\nPractical\nBoth\nOther",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "subject.abbreviation",
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Abbreviation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "subject.credit_hours",
+   "fieldname": "credit_hours",
+   "fieldtype": "Float",
+   "label": "Credit Hours",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "subject.credit",
+   "fieldname": "credit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "subject.attempted_units",
+   "fieldname": "attempted_units",
+   "fieldtype": "Select",
+   "label": "Attempted Units",
+   "options": "0.25\n0.50\n0.75\n1",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Compulsory\nElective",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-21 19:59:41.591131",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Subject Registration Subject",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

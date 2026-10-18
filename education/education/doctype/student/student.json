@@ -3,7 +3,7 @@
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
- "creation": "2015-09-07 13:00:55.938280",
+ "creation": "2026-08-12 20:54:24.627189",
  "doctype": "DocType",
  "document_type": "Document",
  "engine": "InnoDB",
@@ -14,14 +14,15 @@
   "first_name",
   "middle_name",
   "last_name",
+  "student_applicant",
   "column_break_4",
   "naming_series",
   "joining_date",
   "user",
-  "student_applicant",
+  "student_email_id",
   "image",
   "section_break_7",
-  "student_email_id",
+  "email_address",
   "date_of_birth",
   "blood_group",
   "column_break_3",
@@ -42,6 +43,10 @@
   "guardians",
   "section_break_20",
   "siblings",
+  "skills_tab",
+  "technical_skills",
+  "section_break_isip",
+  "self_assessed_skills",
   "customer_details_tab",
   "customer_details_section",
   "customer",
@@ -51,6 +56,7 @@
   "exit",
   "date_of_leaving",
   "leaving_certificate_number",
+  "alumni",
   "column_break_31",
   "reason_for_leaving",
   "student_name",
@@ -112,7 +118,6 @@
    "fieldtype": "Data",
    "in_global_search": 1,
    "label": "Student Email Address",
-   "reqd": 1,
    "unique": 1
   },
   {
@@ -311,15 +316,45 @@
   {
    "fieldname": "column_break_rgpi",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "skills_tab",
+   "fieldtype": "Tab Break",
+   "label": "Skills"
+  },
+  {
+   "fieldname": "technical_skills",
+   "fieldtype": "Table",
+   "label": "Technical Skills",
+   "options": "Technical Skill"
+  },
+  {
+   "fieldname": "section_break_isip",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "self_assessed_skills",
+   "fieldtype": "Table",
+   "label": "Self Assessed Skills",
+   "options": "Self Assessed Skill"
+  },
+  {
+   "fieldname": "email_address",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Email Address",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "alumni",
+   "fieldtype": "Check",
+   "label": "Alumni?"
   }
  ],
  "image_field": "image",
  "links": [
-  {
-   "group": "Admission",
-   "link_doctype": "Program Enrollment",
-   "link_fieldname": "student"
-  },
   {
    "group": "Admission",
    "link_doctype": "Course Enrollment",
@@ -331,13 +366,13 @@
    "link_fieldname": "student"
   },
   {
-   "group": "Student Activity",
-   "link_doctype": "Student Group",
+   "group": "Assessment",
+   "link_doctype": "Assessment Result",
    "link_fieldname": "student"
   },
   {
    "group": "Assessment",
-   "link_doctype": "Assessment Result",
+   "link_doctype": "Grade Book",
    "link_fieldname": "student"
   },
   {
@@ -351,7 +386,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2024-06-07 16:52:48.135292",
+ "modified": "2026-08-26 12:38:13.448605",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -385,6 +420,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "show_name_in_global_search": 1,
  "show_title_field_in_link": 1,
  "sort_field": "modified",

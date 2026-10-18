@@ -10,3 +10,6 @@ node_modules
 education/public/frontend
 education/www/education.html
 education/www/student-portal.html
+./node_modules
+.vscode
+docs/

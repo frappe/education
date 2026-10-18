@@ -3,13 +3,13 @@
 
 
 import frappe
+from frappe.tests.utils import FrappeTestCase
 
 from education.education.doctype.course.test_course import (
 	make_course,
 	make_course_and_linked_topic,
 )
 from education.education.doctype.topic.test_topic import make_topic_and_linked_content
-from frappe.tests.utils import FrappeTestCase
 
 test_data = {
 	"program_name": "_Test Program",
@@ -40,9 +40,7 @@ test_data = {
 
 class TestProgram(FrappeTestCase):
 	def setUp(self):
-		make_program_and_linked_courses(
-			"_Test Program 1", ["_Test Course 1", "_Test Course 2"]
-		)
+		make_program_and_linked_courses("_Test Program 1", ["_Test Course 1", "_Test Course 2"])
 
 	def test_get_course_list(self):
 		program = frappe.get_doc("Program", "_Test Program 1")

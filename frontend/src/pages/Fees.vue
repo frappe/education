@@ -163,7 +163,7 @@ const openModal = (row) => {
 const success = () => {
   feesResource.reload()
   createToast({
-    title: 'Payment Successful',
+    title: 'Payment successful',
     icon: 'check',
     iconClasses: 'text-green-600',
   })

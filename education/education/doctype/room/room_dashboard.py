@@ -8,7 +8,7 @@ def get_data():
 	return {
 		"fieldname": "room",
 		"transactions": [
-			{"label": _("Course"), "items": ["Course Schedule"]},
+			{"label": _("Schedule"), "items": ["Subject Schedule", "Room Booking"]},
 			{"label": _("Assessment"), "items": ["Assessment Plan"]},
 		],
 	}

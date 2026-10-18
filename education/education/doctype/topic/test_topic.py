@@ -8,9 +8,7 @@ from frappe.tests.utils import FrappeTestCase
 
 class TestTopic(FrappeTestCase):
 	def setUp(self):
-		make_topic_and_linked_content(
-			"_Test Topic 1", [{"type": "Article", "name": "_Test Article 1"}]
-		)
+		make_topic_and_linked_content("_Test Topic 1", [{"type": "Article", "name": "_Test Article 1"}])
 
 	def test_get_contents(self):
 		topic = frappe.get_doc("Topic", "_Test Topic 1")
@@ -40,13 +38,9 @@ def make_topic_and_linked_content(topic_name, content_dict_list):
 	except frappe.DoesNotExistError:
 		make_topic(topic_name)
 		topic = frappe.get_doc("Topic", topic_name)
-	content_list = [
-		make_content(content["type"], content["name"]) for content in content_dict_list
-	]
+	content_list = [make_content(content["type"], content["name"]) for content in content_dict_list]
 	for content in content_list:
-		topic.append(
-			"topic_content", {"content": content.title, "content_type": content.doctype}
-		)
+		topic.append("topic_content", {"content": content.title, "content_type": content.doctype})
 	topic.save()
 	return topic
 

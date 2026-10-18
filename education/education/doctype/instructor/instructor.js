@@ -1,6 +1,3 @@
-cur_frm.add_fetch('employee', 'department', 'department')
-cur_frm.add_fetch('employee', 'image', 'image')
-
 frappe.ui.form.on('Instructor', {
   employee: function (frm) {
     if (!frm.doc.employee) return
@@ -27,26 +24,6 @@ frappe.ui.form.on('Instructor', {
     )
   },
   refresh: function (frm) {
-    if (!frm.doc.__islocal) {
-      frm.add_custom_button(
-        __('As Examiner'),
-        function () {
-          frappe.new_doc('Assessment Plan', {
-            examiner: frm.doc.name,
-          })
-        },
-        __('Assessment Plan')
-      )
-      frm.add_custom_button(
-        __('As Supervisor'),
-        function () {
-          frappe.new_doc('Assessment Plan', {
-            supervisor: frm.doc.name,
-          })
-        },
-        __('Assessment Plan')
-      )
-    }
     frm.set_query('employee', function (doc) {
       return {
         filters: {
@@ -66,13 +43,16 @@ frappe.ui.form.on('Instructor', {
 
     frm.set_query('course', 'instructor_log', function (_doc, cdt, cdn) {
       let d = locals[cdt][cdn]
-      return {
-        query:
-          'education.education.doctype.program_enrollment.program_enrollment.get_program_courses',
-        filters: {
-          program: d.program,
-        },
+      if (d.program) {
+        return {
+          query:
+            'education.education.doctype.program.program.get_program_courses',
+          filters: {
+            program: d.program,
+          },
+        }
       }
+      return {}
     })
   },
 })

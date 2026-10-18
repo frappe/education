@@ -12,7 +12,7 @@ class Article(Document):
 
 
 @frappe.whitelist()
-def get_topics_without_article(article):
+def get_topics_without_article(article: str):
 	data = []
 	for entry in frappe.db.get_all("Topic"):
 		topic = frappe.get_doc("Topic", entry.name)

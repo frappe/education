@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-12 12:35:21.440059",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "program",
+  "abbreviation",
+  "program_level",
+  "department",
+  "minimum_unit_load",
+  "maximum_unit_load"
+ ],
+ "fields": [
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Program",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "program.program_abbreviation",
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Abbreviation"
+  },
+  {
+   "fetch_from": "program.program_level",
+   "fieldname": "program_level",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Program Level",
+   "options": "Program Level"
+  },
+  {
+   "fetch_from": "program.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fetch_from": "program.minimum_unit_load",
+   "fieldname": "minimum_unit_load",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Minimum Unit Load"
+  },
+  {
+   "fetch_from": "program.maximum_unit_load",
+   "fieldname": "maximum_unit_load",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Maximum Unit Load"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-12 16:01:12.530778",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Ceremony Program",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

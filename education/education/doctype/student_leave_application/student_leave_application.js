@@ -5,23 +5,23 @@ frappe.ui.form.on('Student Leave Application', {
   student: function (frm) {
     frappe.call({
       method:
-        'education.education.doctype.student_leave_application.student_leave_application.get_student_groups',
+        'education.education.doctype.student_leave_application.student_leave_application.get_student_batches',
       args: {
         student: frm.doc.student,
       },
       callback: function (r) {
         if (r.message) {
-          frm.set_query('student_group', () => {
+          frm.set_query('student_batch', () => {
             return {
               filters: {
                 name: ['in', r.message],
               },
             }
           })
-          frm.set_query('course_schedule', () => {
+          frm.set_query('subject_schedule', () => {
             return {
               filters: {
-                student_group: ['in', r.message],
+                student_batch: ['in', r.message],
               },
             }
           })

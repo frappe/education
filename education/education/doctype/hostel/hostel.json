@@ -1,0 +1,185 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:hostel_name",
+ "creation": "2026-10-12 12:56:33.005452",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hostel_name",
+  "gender",
+  "warden",
+  "column_break_main",
+  "company",
+  "campus",
+  "disabled",
+  "buildings_section",
+  "default_building",
+  "column_break_buildings",
+  "buildings_html",
+  "billing_section",
+  "fee_category",
+  "column_break_billing",
+  "rent",
+  "annual_rent"
+ ],
+ "fields": [
+  {
+   "fieldname": "hostel_name",
+   "fieldtype": "Data",
+   "label": "Hostel Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Only students of this gender can be allocated. Leave blank for a mixed hostel.",
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Gender",
+   "options": "Gender"
+  },
+  {
+   "fieldname": "warden",
+   "fieldtype": "Link",
+   "label": "Warden",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "remember_last_selected_value": 1,
+   "reqd": 1
+  },
+  {
+   "description": "Required once this company has a campus.",
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "buildings_section",
+   "fieldtype": "Section Break",
+   "label": "Buildings"
+  },
+  {
+   "description": "New rooms in this hostel start in this building. A room can be in another hostel building.",
+   "fieldname": "default_building",
+   "fieldtype": "Link",
+   "label": "Default Building",
+   "options": "Building"
+  },
+  {
+   "fieldname": "column_break_buildings",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buildings_html",
+   "fieldtype": "HTML",
+   "label": "Buildings in Use"
+  },
+  {
+   "description": "Rent is billed per academic term. A room can set its own rent.",
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "description": "Its Item is billed on hostel invoices.",
+   "fieldname": "fee_category",
+   "fieldtype": "Link",
+   "label": "Fee Category",
+   "options": "Fee Category"
+  },
+  {
+   "fieldname": "column_break_billing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Charged per bed for each academic term of a stay.",
+   "fieldname": "rent",
+   "fieldtype": "Currency",
+   "label": "Rent per Term",
+   "non_negative": 1,
+   "options": "Company:company:default_currency"
+  },
+  {
+   "description": "Charged per bed for an academic year that has no terms.",
+   "fieldname": "annual_rent",
+   "fieldtype": "Currency",
+   "label": "Rent per Academic Year",
+   "non_negative": 1,
+   "options": "Company:company:default_currency"
+  }
+ ],
+ "links": [
+  {
+   "group": "Rooms",
+   "link_doctype": "Hostel Room",
+   "link_fieldname": "hostel"
+  },
+  {
+   "group": "Rooms",
+   "link_doctype": "Hostel Bed",
+   "link_fieldname": "hostel"
+  },
+  {
+   "group": "Allocations",
+   "link_doctype": "Hostel Allocation",
+   "link_fieldname": "hostel"
+  }
+ ],
+ "modified": "2026-10-12 21:23:00.021185",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Hostel",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Education Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

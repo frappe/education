@@ -3,7 +3,6 @@ from frappe.permissions import add_permission, update_permission_property
 
 
 def execute():
-
 	add_permission("Sales Invoice", "Student", 0)
 
 	doctype = "Sales Invoice"

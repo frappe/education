@@ -14,12 +14,13 @@
   "send_payment_request",
   "column_break_4",
   "company",
+  "campus",
   "posting_date",
   "posting_time",
   "due_date",
   "set_posting_time",
   "student_details",
-  "program_enrollment",
+  "course_enrollment",
   "program",
   "column_break_16",
   "academic_year",
@@ -117,6 +118,16 @@
    "reqd": 1
   },
   {
+   "description": "Copied from the Course Enrollment. Leave blank when the enrollment has no campus.",
+   "fetch_from": "course_enrollment.campus",
+   "fetch_if_empty": 1,
+   "fieldname": "campus",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Campus",
+   "options": "Campus"
+  },
+  {
    "bold": 1,
    "default": "Today",
    "fieldname": "posting_date",
@@ -151,14 +162,14 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "program_enrollment",
+   "fieldname": "course_enrollment",
    "fieldtype": "Link",
-   "label": "Program Enrollment",
-   "options": "Program Enrollment",
+   "label": "Course Enrollment",
+   "options": "Course Enrollment",
    "reqd": 1
   },
   {
-   "fetch_from": "program_enrollment.program",
+   "fetch_from": "course_enrollment.program",
    "fieldname": "program",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -370,7 +381,7 @@
  "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-24 13:09:22.125166",
+ "modified": "2026-09-29 20:19:11.960921",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",
@@ -418,6 +429,7 @@
   }
  ],
  "read_only": 1,
+ "row_format": "Dynamic",
  "search_fields": "student, student_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

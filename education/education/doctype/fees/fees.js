@@ -24,11 +24,10 @@ frappe.ui.form.on('Fees', {
         },
       }
     })
-    frm.set_query('program_enrollment', function () {
+    frm.set_query('course_enrollment', function () {
       return {
         filters: {
           student: frm.doc.student,
-          academic_year: frm.doc.academic_year,
           docstatus: 1,
         },
       }
@@ -115,7 +114,7 @@ frappe.ui.form.on('Fees', {
 
   student: function (frm) {
     if (frm.doc.student) {
-      frm.set_value('program_enrollment', '')
+      frm.set_value('course_enrollment', '')
       frm.set_value('program', '')
       frm.set_value('fee_structure', '')
     }

@@ -24,7 +24,7 @@ frappe.ui.form.on('Student', {
       .get_single_value('Education Settings', 'user_creation_skip')
       .then((r) => {
         if (cint(r) !== 1) {
-          frm.set_df_property('student_email_id', 'reqd', 1)
+          frm.set_df_property('email_address', 'reqd', 1)
         }
       })
   },
@@ -40,6 +40,32 @@ frappe.ui.form.on('Student Guardian', {
           if (val.guardian) guardian_list.push(val.guardian)
         })
         return { filters: [['Guardian', 'name', 'not in', guardian_list]] }
+      }
+  },
+})
+
+frappe.ui.form.on('Technical Skill', {
+  technical_skills_add: function (frm) {
+    frm.fields_dict['technical_skills'].grid.get_field('skill').get_query =
+      function (doc) {
+        var skills_list = []
+        $.each(doc.technical_skills, function (idx, val) {
+          if (val.skill) skills_list.push(val.skill)
+        })
+        return { filters: [['Skill', 'name', 'not in', skills_list]] }
+      }
+  },
+})
+
+frappe.ui.form.on('Self Assessed Skill', {
+  self_assessed_skills_add: function (frm) {
+    frm.fields_dict['technical_skills'].grid.get_field('skill').get_query =
+      function (doc) {
+        var skills_list = []
+        $.each(doc.self_assessed_skills, function (idx, val) {
+          if (val.skill) skills_list.push(val.skill)
+        })
+        return { filters: [['Skill', 'name', 'not in', skills_list]] }
       }
   },
 })

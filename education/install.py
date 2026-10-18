@@ -3,20 +3,28 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.desk.page.setup_wizard.setup_wizard import make_records
 from frappe.permissions import add_permission, update_permission_property
 
+from education.education.doctype.floor.floor import create_default_floors
+
 
 def after_install():
 	setup_fixtures()
 	create_student_role()
+	create_faculty_role()
 	create_parent_assessment_group()
 	create_invoice_permissions()
 	create_custom_fields(get_custom_fields())
 	create_permissions(get_permissions())
+	create_default_floors()
 
 
 def setup_fixtures():
 	records = [
 		# Party Type Records
-		{"doctype": "Party Type", "party_type": "Student", "account_type": "Receivable"},
+		{
+			"doctype": "Party Type",
+			"party_type": "Student",
+			"account_type": "Receivable",
+		},
 		# Item Group Records
 		{"doctype": "Item Group", "item_group_name": "Fee Component"},
 		# Customer Group Records
@@ -39,6 +47,11 @@ def create_parent_assessment_group():
 def create_student_role():
 	if not frappe.db.exists("Role", "Student"):
 		frappe.get_doc({"doctype": "Role", "role_name": "Student", "desk_access": 0}).save()
+
+
+def create_faculty_role():
+	if not frappe.db.exists("Role", "Faculty"):
+		frappe.get_doc({"doctype": "Role", "role_name": "Faculty", "desk_access": 0}).save()
 
 
 def create_invoice_permissions():
@@ -117,6 +130,21 @@ def get_custom_fields():
 				"label": "Fee Schedule",
 				"options": "Fee Schedule",
 				"insert_after": "column_break_ejcc",
+			},
+			{
+				"fieldname": "fee_plan",
+				"fieldtype": "Link",
+				"label": "Fee Plan",
+				"options": "Fee Plan",
+				"insert_after": "fee_schedule",
+			},
+			{
+				"fieldname": "hostel_allocation",
+				"fieldtype": "Link",
+				"label": "Hostel Allocation",
+				"options": "Hostel Allocation",
+				"insert_after": "fee_plan",
+				"read_only": 1,
 			},
 		],
 		"Sales Order": [

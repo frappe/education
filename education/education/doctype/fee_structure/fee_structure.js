@@ -48,10 +48,10 @@ frappe.ui.form.on('Fee Structure', {
   },
 
   make_fee_schedule: function (frm) {
-    let { distribution, student_groups } = frm.dialog.get_values()
-    student_groups.forEach((student_group) => {
-      if (!student_group.student_group) {
-        frappe.throw(__('Student Group is mandatory'))
+    let { distribution, student_batches } = frm.dialog.get_values()
+    student_batches.forEach((student_batch) => {
+      if (!student_batch.student_batch) {
+        frappe.throw(__('Student Batch is mandatory'))
         return
       }
     })
@@ -180,26 +180,24 @@ frappe.ui.form.on('Fee Structure', {
         // not selectable and do not show edit icon
       },
       {
-        label: 'Select Student Groups',
-        fieldname: 'student_groups',
+        label: 'Select Student Batches',
+        fieldname: 'student_batches',
         fieldtype: 'Table',
         in_place_edit: false,
         reqd: 1,
         data: [],
         fields: [
           {
-            fieldname: 'student_group',
+            fieldname: 'student_batch',
             fieldtype: 'Link',
             in_list_view: 1,
-            label: 'Student Group',
-            options: 'Student Group',
+            label: 'Student Batch',
+            options: 'Student Batch Name',
             get_query: () => {
               return {
                 filters: {
                   program: frm.doc.program,
-                  academic_year: frm.doc.academic_year,
-                  academic_term: frm.doc.academic_term,
-                  student_category: frm.doc.student_category,
+                  disabled: 0,
                 },
               }
             },

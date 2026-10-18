@@ -8,16 +8,36 @@
  "engine": "InnoDB",
  "field_order": [
   "course_name",
-  "department",
+  "program",
+  "course_abbreviation",
+  "evaluation_type",
+  "fee_term",
+  "course_credit",
+  "subject_selection",
   "hero_image",
+  "column_break_jlqj",
+  "area_of_study",
+  "area_of_specialization",
+  "minimum_unit_load",
+  "registration_fee_item",
+  "registration_fee_amount",
+  "registration_fee",
   "column_break_tflc",
-  "description",
-  "section_break_6",
-  "topics",
+  "company",
+  "department",
+  "maximum_unit_load",
+  "course_change_fee_item",
+  "course_change_fee_amount",
+  "course_change_fee",
+  "section_break_byod",
+  "short_description",
+  "full_description",
+  "subjects_tab",
+  "subjects",
   "assessment_tab",
   "assessment",
   "default_grading_scale",
-  "assessment_criteria",
+  "grade_templates",
   "connections_tab"
  ],
  "fields": [
@@ -38,16 +58,6 @@
    "options": "Department"
   },
   {
-   "fieldname": "section_break_6",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "topics",
-   "fieldtype": "Table",
-   "label": "Topics",
-   "options": "Course Topic"
-  },
-  {
    "fieldname": "hero_image",
    "fieldtype": "Attach Image",
    "hidden": 1,
@@ -61,18 +71,8 @@
    "fieldname": "default_grading_scale",
    "fieldtype": "Link",
    "label": "Default Grading Scale",
-   "options": "Grading Scale"
-  },
-  {
-   "fieldname": "assessment_criteria",
-   "fieldtype": "Table",
-   "label": "Assessment Criteria",
-   "options": "Course Assessment Criteria"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
+   "options": "Grading Scale",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_tflc",
@@ -88,11 +88,173 @@
    "fieldtype": "Tab Break",
    "label": "Connections",
    "show_dashboard": 1
+  },
+  {
+   "fieldname": "course_abbreviation",
+   "fieldtype": "Data",
+   "label": "Course Abbreviation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evaluation_type",
+   "fieldtype": "Select",
+   "label": "Evaluation Type",
+   "options": "Normal\nGPA\nCWA\nCCE",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "program.area_of_study",
+   "fetch_if_empty": 1,
+   "fieldname": "area_of_study",
+   "fieldtype": "Link",
+   "label": "Area of Study",
+   "options": "Area of Study"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
+  },
+  {
+   "fieldname": "section_break_byod",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "short_description",
+   "fieldtype": "Small Text",
+   "label": "Short Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "full_description",
+   "fieldtype": "Text Editor",
+   "label": "Full Description"
+  },
+  {
+   "fieldname": "column_break_jlqj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "area_of_specialization",
+   "fieldtype": "Link",
+   "label": "Area of Specialization",
+   "options": "Area of Specialization"
+  },
+  {
+   "fieldname": "minimum_unit_load",
+   "fieldtype": "Float",
+   "label": "Minimum Unit Load"
+  },
+  {
+   "fieldname": "course_credit",
+   "fieldtype": "Float",
+   "label": "Course Credit"
+  },
+  {
+   "fieldname": "maximum_unit_load",
+   "fieldtype": "Float",
+   "label": "Maximum Unit Load"
+  },
+  {
+   "fieldname": "subjects_tab",
+   "fieldtype": "Tab Break",
+   "label": "Subjects"
+  },
+  {
+   "fieldname": "subjects",
+   "fieldtype": "Table",
+   "label": "Subjects",
+   "options": "Course Subject"
+  },
+  {
+   "depends_on": "course_change_fee",
+   "fieldname": "course_change_fee_item",
+   "fieldtype": "Link",
+   "label": "Course Change Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "mandatory_depends_on": "course_change_fee",
+   "options": "Item"
+  },
+  {
+   "depends_on": "registration_fee",
+   "fieldname": "registration_fee_item",
+   "fieldtype": "Link",
+   "label": "Registration Fee Item",
+   "link_filters": "[[\"Item\",\"is_stock_item\",\"=\",0]]",
+   "mandatory_depends_on": "registration_fee",
+   "options": "Item"
+  },
+  {
+   "default": "0",
+   "description": "Check if course change fee is required",
+   "fieldname": "course_change_fee",
+   "fieldtype": "Check",
+   "label": "Course Change Fee?"
+  },
+  {
+   "default": "0",
+   "description": "Check if registration fee is required",
+   "fieldname": "registration_fee",
+   "fieldtype": "Check",
+   "label": "Registration Fee?"
+  },
+  {
+   "default": "Regular",
+   "fieldname": "subject_selection",
+   "fieldtype": "Select",
+   "label": "Subject Selection",
+   "options": "Regular\nCredit Based\nSubject Based"
+  },
+  {
+   "fieldname": "fee_term",
+   "fieldtype": "Link",
+   "label": "Fee Term",
+   "options": "Fee Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "registration_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Registration Fee Amount",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "depends_on": "course_change_fee",
+   "fieldname": "course_change_fee_amount",
+   "fieldtype": "Currency",
+   "label": "Course Change Fee Amount",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "fieldname": "grade_templates",
+   "fieldtype": "Table MultiSelect",
+   "label": "Grade Templates",
+   "options": "Course Grade Template",
+   "reqd": 1
   }
  ],
  "image_field": "hero_image",
- "links": [],
- "modified": "2023-12-19 10:03:17.393260",
+ "links": [
+  {
+   "group": "Assessment",
+   "link_doctype": "Grade Book",
+   "link_fieldname": "course"
+  },
+  {
+   "group": "Assessment",
+   "link_doctype": "Assessment Plan",
+   "link_fieldname": "course"
+  }
+ ],
+ "modified": "2026-09-16 22:12:32.008215",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",
@@ -148,6 +310,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "search_fields": "course_name",
  "show_name_in_global_search": 1,
  "sort_field": "modified",

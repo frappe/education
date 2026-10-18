@@ -44,12 +44,10 @@ frappe.ui.form.on('Fee Schedule', {
       }
     })
 
-    frm.set_query('student_group', 'student_groups', function () {
+    frm.set_query('student_batch', 'student_batches', function () {
       return {
         filters: {
           program: frm.doc.program,
-          academic_term: frm.doc.academic_term,
-          academic_year: frm.doc.academic_year,
           disabled: 0,
         },
       }
@@ -60,7 +58,7 @@ frappe.ui.form.on('Fee Schedule', {
         frm.reload_doc()
       }
       if (data.progress) {
-        let progress_bar = $(cur_frm.dashboard.progress_area.body).find(
+        let progress_bar = $(frm.dashboard.progress_area.body).find(
           '.progress-bar'
         )
         if (progress_bar) {
@@ -103,27 +101,27 @@ frappe.ui.form.on('Fee Schedule', {
     if (frm.doc.docstatus === 1 || frm.doc.status === 'Failed') {
       let button_label = 'Create Sales Invoice'
 
-      frappe.db.get_value('Education Settings', {}, 'create_so', (r) => {
-        // convert r.create_so to number
-        if (+r.create_so) {
-          button_label = 'Create Sales Order'
-          // set indicator in the frm
-        }
-        if (
-          frm.doc.status === 'Order Pending' ||
-          frm.doc.status === 'Invoice Pending'
-        ) {
-          frm.add_custom_button(__(button_label), function () {
-            frappe.call({
-              method: 'create_fees',
-              doc: frm.doc,
-              callback: function () {
-                frm.refresh()
-              },
+      frappe.db
+        .get_single_value('Education Settings', 'create_so')
+        .then((create_so) => {
+          if (+create_so) {
+            button_label = 'Create Sales Order'
+          }
+          if (
+            frm.doc.status === 'Order Pending' ||
+            frm.doc.status === 'Invoice Pending'
+          ) {
+            frm.add_custom_button(__(button_label), function () {
+              frappe.call({
+                method: 'create_fees',
+                doc: frm.doc,
+                callback: function () {
+                  frm.refresh()
+                },
+              })
             })
-          })
-        }
-      })
+          }
+        })
     }
   },
 
@@ -145,17 +143,15 @@ frappe.ui.form.on('Fee Schedule', {
   },
 })
 
-frappe.ui.form.on('Fee Schedule Student Group', {
-  student_group: function (frm, cdt, cdn) {
+frappe.ui.form.on('Fee Schedule Student Batch', {
+  student_batch: function (frm, cdt, cdn) {
     var row = locals[cdt][cdn]
-    if (row.student_group && frm.doc.academic_year) {
+    if (row.student_batch) {
       frappe.call({
         method:
           'education.education.doctype.fee_schedule.fee_schedule.get_total_students',
         args: {
-          student_group: row.student_group,
-          academic_year: frm.doc.academic_year,
-          academic_term: frm.doc.academic_term,
+          student_batch: row.student_batch,
           student_category: frm.doc.student_category,
         },
         callback: function (r) {

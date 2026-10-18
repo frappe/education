@@ -3,36 +3,32 @@
 
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
 from erpnext import get_default_company
+from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, add_months, getdate
 
 from education.education.test_utils import (
-	create_academic_year,
+	before_tests,
 	create_academic_term,
+	create_academic_year,
+	create_course,
 	create_program,
 	create_student,
-	create_program_enrollment,
-	create_student_group,
-	before_tests,
+	create_student_batch,
 )
 
 
 class TestStudentLeaveApplication(FrappeTestCase):
 	def setUp(self):
-		frappe.db.set_value(
-			"Company", "Wind Power LLC", "default_holiday_list", "Test Holiday List"
-		)
+		frappe.db.set_value("Company", "Wind Power LLC", "default_holiday_list", "Test Holiday List")
 		frappe.db.sql("""delete from `tabStudent Leave Application`""")
 		create_holiday_list()
 		create_academic_year()
-		create_academic_term(
-			term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30"
-		)
+		create_academic_term(term_name="Term 1", term_start_date="2023-04-01", term_end_date="2023-09-30")
 		create_program()
-		student = create_student()
-		create_program_enrollment(student_name=student.name, submit=1)
-		create_student_group()
+		create_student()
+		create_course()
+		create_student_batch()
 
 	def tearDown(self):
 		frappe.db.rollback()
@@ -58,31 +54,30 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		attendance = create_student_attendance()
 		create_leave_application()
 		self.assertEqual(
-			frappe.db.get_value("Student Attendance", attendance.name, "status"), "Leave"
+			frappe.db.get_value("Student Attendance", attendance.name, "status"),
+			"Leave",
 		)
 
 	def test_attendance_record_cancellation(self):
 		leave_application = create_leave_application()
 		leave_application.cancel()
 		attendance_status = frappe.db.get_value(
-			"Student Attendance", {"leave_application": leave_application.name}, "docstatus"
+			"Student Attendance",
+			{"leave_application": leave_application.name},
+			"docstatus",
 		)
 		self.assertTrue(attendance_status, 2)
 
 	def test_holiday(self):
 		today = getdate()
-		leave_application = create_leave_application(
-			from_date=today, to_date=add_days(today, 1), submit=0
-		)
+		leave_application = create_leave_application(from_date=today, to_date=add_days(today, 1), submit=0)
 
 		# holiday list validation
 		company = get_default_company() or frappe.get_all("Company")[0].name
 		frappe.db.set_value("Company", company, "default_holiday_list", "")
 		self.assertRaises(frappe.ValidationError, leave_application.save)
 
-		frappe.db.set_value(
-			"Company", company, "default_holiday_list", "Test Holiday List for Student"
-		)
+		frappe.db.set_value("Company", company, "default_holiday_list", "Test Holiday List for Student")
 		leave_application.save()
 
 		leave_application.reload()
@@ -93,7 +88,10 @@ class TestStudentLeaveApplication(FrappeTestCase):
 		self.assertIsNone(
 			frappe.db.exists(
 				"Student Attendance",
-				{"leave_application": leave_application.name, "date": add_days(today, 1)},
+				{
+					"leave_application": leave_application.name,
+					"date": add_days(today, 1),
+				},
 			)
 		)
 
@@ -103,8 +101,8 @@ def create_leave_application(from_date=None, to_date=None, mark_as_present=0, su
 
 	leave_application = frappe.new_doc("Student Leave Application")
 	leave_application.student = student.name
-	leave_application.attendance_based_on = "Student Group"
-	leave_application.student_group = "Test Student Group"
+	leave_application.attendance_based_on = "Student Batch"
+	leave_application.student_batch = "Test Batch"
 	leave_application.from_date = from_date if from_date else getdate()
 	leave_application.to_date = from_date if from_date else getdate()
 	leave_application.mark_as_present = mark_as_present
@@ -124,7 +122,7 @@ def create_student_attendance(date=None, status=None):
 			"student": student.name,
 			"status": status if status else "Present",
 			"date": date if date else getdate(),
-			"student_group": "Test Student Group",
+			"student_batch": "Test Batch",
 		}
 	).insert()
 	return attendance
@@ -140,13 +138,11 @@ def create_holiday_list():
 	today = getdate()
 	if not frappe.db.exists("Holiday List", holiday_list):
 		frappe.get_doc(
-			dict(
-				doctype="Holiday List",
-				holiday_list_name=holiday_list,
-				from_date=add_months(today, -6),
-				to_date=add_months(today, 6),
-				holidays=[dict(holiday_date=add_days(today, 1), description="Test")],
-			)
+			doctype="Holiday List",
+			holiday_list_name=holiday_list,
+			from_date=add_months(today, -6),
+			to_date=add_months(today, 6),
+			holidays=[dict(holiday_date=add_days(today, 1), description="Test")],
 		).insert()
 
 	company = get_default_company() or frappe.get_all("Company")[0].name
