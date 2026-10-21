@@ -1,0 +1,210 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-03-18 11:00:31.123573",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "details_section",
+  "company",
+  "academic_year",
+  "column_break_plar",
+  "academic_term",
+  "section_break_cikz",
+  "lesson_starts",
+  "default_time_slot",
+  "column_break_msil",
+  "lesson_ends",
+  "section_break_jmyh",
+  "default_maximum_lessons_per_day",
+  "column_break_vvis",
+  "default_maximum_lessons_per_week",
+  "subject_rules_tab",
+  "subject_rules",
+  "slot_and_breaks_tab",
+  "time_slots",
+  "section_break_hfxy",
+  "breaks",
+  "teachers_tab",
+  "teachers_preference",
+  "teaching_rooms_tab",
+  "teaching_rooms"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_plar",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject_rules_tab",
+   "fieldtype": "Tab Break",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "subject_rules",
+   "fieldtype": "Table",
+   "label": "Subject Rules",
+   "options": "Subject Rules",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_cikz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "lesson_starts",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Lesson Starts",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_msil",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lesson_ends",
+   "fieldtype": "Time",
+   "in_list_view": 1,
+   "label": "Lesson Ends",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_time_slot",
+   "fieldtype": "Int",
+   "label": "Default Time Slot"
+  },
+  {
+   "fieldname": "slot_and_breaks_tab",
+   "fieldtype": "Tab Break",
+   "label": "Slot & Breaks"
+  },
+  {
+   "fieldname": "time_slots",
+   "fieldtype": "Table",
+   "label": "Time Slots",
+   "options": "Time Slots",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_hfxy",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "breaks",
+   "fieldtype": "Table",
+   "label": "Breaks",
+   "options": "Breaks"
+  },
+  {
+   "fieldname": "teachers_tab",
+   "fieldtype": "Tab Break",
+   "label": "Teachers"
+  },
+  {
+   "fieldname": "teachers_preference",
+   "fieldtype": "Table",
+   "label": "Teachers Preference",
+   "options": "Teacher Preference"
+  },
+  {
+   "fieldname": "teaching_rooms_tab",
+   "fieldtype": "Tab Break",
+   "label": "Teaching Rooms"
+  },
+  {
+   "fieldname": "teaching_rooms",
+   "fieldtype": "Table",
+   "label": "Teaching Rooms",
+   "options": "Teaching Rooms",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_jmyh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "default_maximum_lessons_per_day",
+   "fieldtype": "Int",
+   "label": "Default Maximum Lessons Per Day"
+  },
+  {
+   "fieldname": "column_break_vvis",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_maximum_lessons_per_week",
+   "fieldtype": "Int",
+   "label": "Default Maximum Lessons Per Week"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "Company",
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-02 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Timetable Generator",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Academics User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:TGR-{YY}-{####}",
+ "creation": "2025-04-04 16:34:12.187386",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "academic_term",
+  "column_break_gbvw",
+  "posting_date",
+  "total_subjects",
+  "section_break_yvhm",
+  "scheduled_count",
+  "unscheduled_count",
+  "column_break_ijjv",
+  "saved_count",
+  "failed_count",
+  "section_break_ksqh",
+  "unscheduled_subjects",
+  "timetable_snapshot"
+ ],
+ "fields": [
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "read_only": 1,
+   "options": "\nComplete\nPartial\nFailed"
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "read_only": 1,
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "column_break_gbvw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_subjects",
+   "fieldtype": "Int",
+   "label": "Total Subjects",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_yvhm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "scheduled_count",
+   "fieldtype": "Int",
+   "label": "Scheduled Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unscheduled_count",
+   "fieldtype": "Int",
+   "label": "Unscheduled Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ijjv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "saved_count",
+   "fieldtype": "Int",
+   "label": "Saved Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failed_count",
+   "fieldtype": "Int",
+   "label": "Failed Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ksqh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "unscheduled_subjects",
+   "fieldtype": "Small Text",
+   "label": "Unscheduled Subjects",
+   "read_only": 1
+  },
+  {
+   "description": "Base week produced by this generation run, stored as JSON so the timetable can be viewed exactly as it was generated.",
+   "fieldname": "timetable_snapshot",
+   "fieldtype": "Long Text",
+   "hidden": 1,
+   "label": "Timetable Snapshot",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-09-02 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Education",
+ "name": "Timetable Generation Result",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

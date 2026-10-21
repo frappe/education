@@ -9,11 +9,14 @@
  "field_order": [
   "course_name",
   "department",
+  "program",
   "hero_image",
   "column_break_tflc",
   "description",
   "section_break_6",
   "topics",
+  "stream_assignments_section",
+  "stream_assignments",
   "assessment_tab",
   "assessment",
   "default_grading_scale",
@@ -36,6 +39,12 @@
    "in_standard_filter": 1,
    "label": "Department",
    "options": "Department"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
   },
   {
    "fieldname": "section_break_6",
@@ -79,6 +88,17 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "stream_assignments_section",
+   "fieldtype": "Section Break",
+   "label": "Stream Assignments"
+  },
+  {
+   "fieldname": "stream_assignments",
+   "fieldtype": "Table",
+   "label": "Stream Assignments",
+   "options": "Subject Stream Assignment"
+  },
+  {
    "fieldname": "assessment_tab",
    "fieldtype": "Tab Break",
    "label": "Assessment"
@@ -92,7 +112,7 @@
  ],
  "image_field": "hero_image",
  "links": [],
- "modified": "2023-12-19 10:03:17.393260",
+ "modified": "2026-09-02 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",
