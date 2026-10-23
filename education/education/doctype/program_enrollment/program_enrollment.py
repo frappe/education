@@ -15,28 +15,28 @@ from education.education.doctype.fee_schedule.fee_schedule import (
 
 
 class ProgramEnrollment(Document):
-	def validate(self):
-		self.set_student_name()
-		self.validate_duplication()
+    def validate(self):
+        self.set_student_name()
+        self.validate_duplication()
 
-		if not self.courses:
-			self.extend("courses", self.get_courses())
+        if not self.courses:
+            self.extend("courses", [c for c in self.get_courses() if c.required])
 
-	def set_student_name(self):
-		if not self.student_name:
-			self.student_name = frappe.db.get_value("Student", self.student, "student_name")
+    def set_student_name(self):
+        if not self.student_name:
+            self.student_name = frappe.db.get_value("Student", self.student, "student_name")
 
-	def on_submit(self):
-		self.update_student_joining_date()
-		self.make_fee_records()
-		self.create_course_enrollments()
+    def on_submit(self):
+        self.update_student_joining_date()
+        self.make_fee_records()
+        self.create_course_enrollments()
 
-	def on_cancel(self):
-		self.delete_course_enrollments()
-		pass
+    def on_cancel(self):
+        self.delete_course_enrollments()
+        pass
 
-	def validate_duplication(self):
-		enrollment = frappe.db.exists(
+    def validate_duplication(self):
+        enrollment = frappe.db.exists(
 			"Program Enrollment",
 			{
 				"student": self.student,
@@ -47,77 +47,77 @@ class ProgramEnrollment(Document):
 				"name": ("!=", self.name),
 			},
 		)
-		if enrollment:
-			frappe.throw(_("Student is already enrolled."))
+        if enrollment:
+            frappe.throw(_("Student is already enrolled."))
 
-	def update_student_joining_date(self):
-		table = frappe.qb.DocType("Program Enrollment")
-		date = (
+    def update_student_joining_date(self):
+        table = frappe.qb.DocType("Program Enrollment")
+        date = (
 			frappe.qb.from_(table)
 			.select(Min(table.enrollment_date).as_("enrollment_date"))
 			.where(table.student == self.student)
 		).run(as_dict=True)
 
-		if date:
-			frappe.db.set_value("Student", self.student, "joining_date", date[0].enrollment_date)
+        if date:
+            frappe.db.set_value("Student", self.student, "joining_date", date[0].enrollment_date)
 
-	def make_fee_records(self):
-		from education.education.api import get_fee_components
+    def make_fee_records(self):
+        from education.education.api import get_fee_components
 
-		create_so = frappe.db.get_single_value("Education Settings", "create_so")
+        create_so = frappe.db.get_single_value("Education Settings", "create_so")
 
-		fees_list = []
-		doctype = ""
-		for d in self.fees:
-			if create_so:
-				sales_order = create_sales_order(d.fee_schedule, self.student)
-				doctype = "Sales Order"
-				fees_list.append(sales_order)
-			else:
-				sales_invoice = create_sales_invoice(d.fee_schedule, self.student)
-				doctype = "Sales Invoice"
-				fees_list.append(sales_invoice)
+        fees_list = []
+        doctype = ""
+        for d in self.fees:
+            if create_so:
+                sales_order = create_sales_order(d.fee_schedule, self.student)
+                doctype = "Sales Order"
+                fees_list.append(sales_order)
+            else:
+                sales_invoice = create_sales_invoice(d.fee_schedule, self.student)
+                doctype = "Sales Invoice"
+                fees_list.append(sales_invoice)
 
-		if fees_list:
-			fees_list = [
+        if fees_list:
+            fees_list = [
 				"""<a href="/app/Form/%s/%s" target="_blank">%s</a>""" % (doctype, fee, fee)
 				for fee in fees_list
 			]
-			msgprint(_("Fee Records Created - {0}").format(comma_and(fees_list)))
+            msgprint(_("Fee Records Created - {0}").format(comma_and(fees_list)))
 
-	@frappe.whitelist()
-	def get_courses(self):
-		return frappe.db.sql(
-			"""select course,course_name from `tabProgram Course` where parent = %s and required = 1""",
-			(self.program),
-			as_dict=1,
-		)
+    @frappe.whitelist()
+    def get_courses(self):
+        return frappe.db.sql(
+            """select course, course_name, required from `tabProgram Course` where parent = %s""",
+            (self.program),
+            as_dict=1,
+        )
 
-	def create_course_enrollments(self):
-		for course in self.courses:
-			filters = {
+    def create_course_enrollments(self):
+        for course in self.courses:
+            filters = {
 				"student": self.student,
 				"course": course.course,
 				"program_enrollment": self.name,
 			}
-			if not frappe.db.exists("Course Enrollment", filters):
-				filters.update(
+            if not frappe.db.exists("Course Enrollment", filters):
+                filters.update(
 					{"doctype": "Course Enrollment", "enrollment_date": self.enrollment_date}
 				)
-				frappe.get_doc(filters).save()
+                frappe.get_doc(filters).save()
 
-	def get_all_course_enrollments(self):
-		course_enrollment_names = frappe.get_list(
+    def get_all_course_enrollments(self):
+        course_enrollment_names = frappe.get_list(
 			"Course Enrollment", filters={"program_enrollment": self.name}
 		)
-		return [
+        return [
 			frappe.get_doc("Course Enrollment", course_enrollment.name)
 			for course_enrollment in course_enrollment_names
 		]
 
-	def delete_course_enrollments(self):
-		for course_enrollment in self.get_all_course_enrollments():
-			frappe.delete_doc("Course Enrollment", course_enrollment.name)
+    def delete_course_enrollments(self):
+        for course_enrollment in self.get_all_course_enrollments():
+            frappe.delete_doc("Course Enrollment", course_enrollment.name)
 
 
 @frappe.whitelist()

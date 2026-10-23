@@ -77,7 +77,10 @@ frappe.ui.form.on('Program Enrollment', {
       callback: function (r) {
         if (r.message) {
           frm.program_courses = r.message
-          frm.set_value('courses', r.message)
+          frm.set_value(
+            'courses',
+            r.message.filter((c) => c.required),
+          )
           frm.refresh_field('courses')
         }
       },
