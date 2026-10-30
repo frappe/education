@@ -10,13 +10,6 @@ frappe.ui.form.on('Student Report Generation Tool', {
         },
       }
     })
-    frm.set_query('assessment_group', function () {
-      return {
-        filters: {
-          is_group: 1,
-        },
-      }
-    })
   },
 
   refresh: function (frm) {
