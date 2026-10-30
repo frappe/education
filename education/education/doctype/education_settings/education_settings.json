@@ -19,7 +19,7 @@
   "auto_submit_sales_order",
   "sales_order_transaction_date_fee_schedule",
   "section_break_7",
-  "instructor_created_by",
+  "faculty_created_by",
   "portal_settings_tab",
   "attendance_based_on_subject_schedule",
   "razorpay_key",
@@ -63,10 +63,10 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "Full Name",
-   "fieldname": "instructor_created_by",
+   "default": "Naming Series",
+   "fieldname": "faculty_created_by",
    "fieldtype": "Select",
-   "label": "Instructor Records to be created by",
+   "label": "Faculty Records to be created by",
    "options": "Full Name\nNaming Series\nEmployee Number"
   },
   {
@@ -163,7 +163,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 22:29:02.104770",
+ "modified": "2026-10-30 13:28:40.275426",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education Settings",

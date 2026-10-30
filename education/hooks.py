@@ -89,7 +89,7 @@ global_search_doctypes = {
 		{"doctype": "Fee Structure", "index": 9},
 		{"doctype": "Student Batch Name", "index": 10},
 		{"doctype": "Student", "index": 11},
-		{"doctype": "Instructor", "index": 12},
+		{"doctype": "Faculty", "index": 12},
 		{"doctype": "Course Activity", "index": 13},
 		{"doctype": "Quiz Activity", "index": 14},
 		{"doctype": "Course Enrollment", "index": 15},

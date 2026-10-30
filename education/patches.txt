@@ -1,6 +1,7 @@
 [pre_model_sync]
 education.patches.v14_0.create_student_party_type
 education.patches.v17_0.room_seating_capacity_to_int
+education.patches.v17_0.merge_instructor_role_into_faculty
 
 [post_model_sync]
 education.patches.v14_0.create_parent_assessment_group #01-01-2022
@@ -21,3 +22,5 @@ education.patches.v15_0.sales_invoice_fee_plan_field
 education.patches.v17_0.move_class_rooms_to_rooms
 education.patches.v17_0.sales_invoice_hostel_allocation_field
 education.patches.v17_0.create_default_floors
+education.patches.v17_0.set_faculty_title_from_salutation
+education.patches.v17_0.move_instructors_to_faculty

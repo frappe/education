@@ -520,8 +520,8 @@
    "icon": "",
    "indent": 0,
    "keep_closed": 0,
-   "label": "Instructor",
-   "link_to": "Instructor",
+   "label": "Faculty",
+   "link_to": "Faculty",
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
@@ -660,7 +660,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-08-26 12:36:41.176378",
+ "modified": "2026-10-30 13:29:23.914802",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education",

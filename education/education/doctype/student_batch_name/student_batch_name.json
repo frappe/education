@@ -152,7 +152,7 @@
    "link_fieldname": "student_batch"
   }
  ],
- "modified": "2026-09-21 13:48:25.707295",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Batch Name",
@@ -177,7 +177,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "share": 1
   }
  ],

@@ -235,7 +235,7 @@
    "link_fieldname": "course_enrollment"
   }
  ],
- "modified": "2026-09-29 20:19:10.453496",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Enrollment",
@@ -263,7 +263,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "select": 1,
    "share": 1
   }

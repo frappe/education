@@ -60,10 +60,16 @@ class SubjectSchedule(Document):
 			)
 
 	def validate_faculty(self):
-		if not (self.faculty and self.subject):
+		if not self.faculty:
 			return
 
-		if not faculty_teaches_subject(self.faculty, self.subject):
+		# Past schedules of faculty who have since become inactive must stay editable.
+		if self.has_value_changed("faculty") and (
+			frappe.db.get_value("Faculty", self.faculty, "status") == "Inactive"
+		):
+			frappe.throw(_("Faculty {0} is inactive.").format(frappe.bold(self.faculty)))
+
+		if self.subject and not faculty_teaches_subject(self.faculty, self.subject):
 			frappe.throw(
 				_("Faculty {0} does not teach Subject {1}").format(
 					frappe.bold(self.faculty), frappe.bold(self.subject)

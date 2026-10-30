@@ -51,7 +51,7 @@ def create_student_role():
 
 def create_faculty_role():
 	if not frappe.db.exists("Role", "Faculty"):
-		frappe.get_doc({"doctype": "Role", "role_name": "Faculty", "desk_access": 0}).save()
+		frappe.get_doc({"doctype": "Role", "role_name": "Faculty", "desk_access": 1}).save()
 
 
 def create_invoice_permissions():
