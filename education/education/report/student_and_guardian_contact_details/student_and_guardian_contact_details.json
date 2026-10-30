@@ -7,7 +7,7 @@
  "doctype": "Report",
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2026-09-26 12:13:40.962741",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student and Guardian Contact Details",
@@ -18,7 +18,7 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Instructor"
+   "role": "Faculty"
   },
   {
    "role": "Academics User"

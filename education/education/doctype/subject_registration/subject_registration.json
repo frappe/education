@@ -197,7 +197,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 20:19:09.093857",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Subject Registration",
@@ -240,7 +240,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "share": 1
   }
  ],

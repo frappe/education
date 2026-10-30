@@ -386,7 +386,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2026-08-26 12:38:13.448605",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",
@@ -395,7 +395,7 @@
  "permissions": [
   {
    "read": 1,
-   "role": "Instructor"
+   "role": "Faculty"
   },
   {
    "create": 1,

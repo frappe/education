@@ -194,7 +194,7 @@
    "link_fieldname": "campus"
   }
  ],
- "modified": "2026-10-12 21:21:28.902131",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Campus",
@@ -263,7 +263,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "share": 1
   }
  ],

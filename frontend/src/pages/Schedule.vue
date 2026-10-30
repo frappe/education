@@ -29,7 +29,7 @@ const scheduleResource = createResource({
     response.forEach((classSchedule) => {
       schedule.push({
         title: classSchedule.title,
-        with: classSchedule.instructor,
+        with: classSchedule.faculty_name,
         name: classSchedule.name,
         room: classSchedule.room,
         date: classSchedule.schedule_date,

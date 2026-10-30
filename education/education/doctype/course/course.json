@@ -254,7 +254,7 @@
    "link_fieldname": "course"
   }
  ],
- "modified": "2026-09-16 22:12:32.008215",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course",
@@ -281,7 +281,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "share": 1,
    "write": 1
   },

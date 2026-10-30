@@ -129,7 +129,7 @@
   ],
   "is_submittable": 1,
   "links": [],
-  "modified": "2026-10-12 12:56:33.005452",
+  "modified": "2026-10-30 13:28:17.522604730",
   "modified_by": "Administrator",
   "module": "Education",
   "name": "Room Booking",
@@ -171,7 +171,7 @@
       "print": 1,
       "read": 1,
       "report": 1,
-      "role": "Instructor",
+      "role": "Faculty",
       "share": 1,
       "write": 1
     }

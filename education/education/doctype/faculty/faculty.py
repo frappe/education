@@ -4,13 +4,29 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.model.naming import append_number_if_name_exists, set_name_by_naming_series
 from frappe.utils import getdate
 
 
 class Faculty(Document):
+	def autoname(self):
+		naming_method = (
+			frappe.db.get_single_value("Education Settings", "faculty_created_by") or "Naming Series"
+		)
+		if naming_method == "Employee Number":
+			if not self.employee:
+				frappe.throw(_("Please select Employee"))
+			self.name = self.employee
+		elif naming_method == "Full Name":
+			self.set_title()
+			self.name = append_number_if_name_exists("Faculty", self.faculty_name)
+		else:
+			set_name_by_naming_series(self)
+
 	def validate(self):
 		self.set_title()
 		self.validate_dates()
+		self.validate_duplicate_employee()
 		self.validate_user()
 
 	def set_title(self):
@@ -22,8 +38,21 @@ class Faculty(Document):
 		if self.date_of_birth and getdate(self.date_of_birth) >= getdate():
 			frappe.throw(_("Date of Birth cannot be greater than today."))
 
+	def validate_duplicate_employee(self):
+		if not self.employee:
+			return
+		existing = frappe.db.exists("Faculty", {"employee": self.employee, "name": ("!=", self.name)})
+		if existing:
+			frappe.throw(
+				_("Employee {0} is already linked to Faculty {1}.").format(
+					frappe.bold(self.employee), frappe.bold(existing)
+				)
+			)
+
 	def validate_user(self):
-		"""Create a website user for faculty creation if not already exists"""
+		"""Create a user for the faculty if one does not already exist"""
+		if not self.email_address:
+			return
 		if not frappe.db.get_single_value(
 			"Education Settings", "user_creation_skip"
 		) and not frappe.db.exists("User", self.email_address):
@@ -35,7 +64,7 @@ class Faculty(Document):
 					"email": self.email_address,
 					"gender": self.gender,
 					"send_welcome_email": 1,
-					"user_type": "Website User",
+					"user_type": "System User",
 				}
 			)
 			faculty_user.add_roles("Faculty")
@@ -97,6 +126,7 @@ def faculty_query(doctype: str, txt: str, searchfield: str, start: int, page_len
 		SELECT name, faculty_name
 		FROM `tabFaculty`
 		WHERE name IN %(names)s
+			AND status = 'Active'
 			AND (name LIKE %(txt)s OR ifnull(faculty_name, '') LIKE %(txt)s)
 		ORDER BY
 			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),

@@ -28,21 +28,11 @@ class EducationSettings(Document):
 	def validate(self):
 		from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
-		if self.get("instructor_created_by") == "Naming Series":
-			make_property_setter(
-				"Instructor",
-				"naming_series",
-				"hidden",
-				0,
-				"Check",
-				validate_fields_for_doctype=False,
-			)
-		else:
-			make_property_setter(
-				"Instructor",
-				"naming_series",
-				"hidden",
-				1,
-				"Check",
-				validate_fields_for_doctype=False,
-			)
+		make_property_setter(
+			"Faculty",
+			"naming_series",
+			"hidden",
+			0 if (self.faculty_created_by or "Naming Series") == "Naming Series" else 1,
+			"Check",
+			validate_fields_for_doctype=False,
+		)

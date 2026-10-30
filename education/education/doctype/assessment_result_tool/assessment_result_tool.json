@@ -48,7 +48,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-09-29 20:19:09.709937",
+ "modified": "2026-10-30 13:28:05.016103",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Assessment Result Tool",
@@ -63,7 +63,7 @@
   {
    "create": 1,
    "read": 1,
-   "role": "Instructor",
+   "role": "Faculty",
    "write": 1
   }
  ],

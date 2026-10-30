@@ -172,7 +172,7 @@ def has_super_access():
 		roles
 		& {
 			"Administrator",
-			"Instructor",
+			"Faculty",
 			"Education Manager",
 			"System Manager",
 			"Academic User",
