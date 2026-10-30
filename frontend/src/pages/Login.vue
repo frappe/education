@@ -2,12 +2,14 @@
   <div class="m-3 flex flex-row items-center justify-center">
     <Card title="Login to your FrappeUI App!" class="w-full max-w-md mt-4">
       <form class="flex flex-col space-y-2 w-full" @submit.prevent="submit">
+       <fieldset :disabled="session.login.loading" class="flex flex-col space-y-2">
         <Input
           required
           name="email"
-          type="text"
+          type="email"
           placeholder="johndoe@email.com"
           label="User ID"
+          autofocus
         />
         <Input
           required
@@ -15,7 +17,9 @@
           type="password"
           placeholder="••••••"
           label="Password"
+          autocomplete="current-password"
         />
+       </fieldset>
         <Button :loading="session.login.loading" variant="solid">Login</Button>
       </form>
     </Card>
