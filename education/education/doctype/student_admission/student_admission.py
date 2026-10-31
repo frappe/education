@@ -4,56 +4,58 @@
 
 import frappe
 from frappe import _
-from frappe.utils import nowdate
+from frappe.utils import cint, nowdate
 from frappe.website.website_generator import WebsiteGenerator
 
 
 class StudentAdmission(WebsiteGenerator):
-	def autoname(self):
-		if not self.title:
-			self.title = self.get_title()
-		self.name = self.title
+    def autoname(self):
+        if not self.title:
+            self.title = self.get_title()
+        self.name = self.title
 
-	def validate(self):
-		if not self.route:  # pylint: disable=E0203
-			self.route = "admissions/" + "-".join(self.title.split(" "))
+    def validate(self):
+        if not self.route:  # pylint: disable=E0203
+            self.route = "admissions/" + "-".join(self.title.split(" "))
 
-		if self.enable_admission_application and not self.program_details:
-			frappe.throw(_("Please add programs to enable admission application."))
+        if self.enable_admission_application and not self.program_details:
+            frappe.throw(_("Please add programs to enable admission application."))
 
-	def get_context(self, context):
-		context.no_cache = 1
-		context.show_sidebar = True
-		context.title = self.title
-		context.parents = [
-			{"name": "admissions", "title": _("All Student Admissions"), "route": "admissions"}
-		]
+    def get_context(self, context):
+        context.no_cache = 1
+        context.show_sidebar = True
+        context.title = self.title
+        context.parents = [
+            {
+                "name": "admissions",
+                "title": _("All Student Admissions"),
+                "route": "admissions",
+            }
+        ]
 
-	def get_title(self):
-		return _("Admissions for {0}").format(self.academic_year)
+    def get_title(self):
+        return _("Admissions for {0}").format(self.academic_year)
 
 
 def get_list_context(context=None):
-	context.update(
-		{
-			"show_sidebar": True,
-			"title": _("Student Admissions"),
-			"get_list": get_admission_list,
-			"row_template": "education/doctype/student_admission/templates/student_admission_row.html",
-		}
-	)
+    context.update(
+        {
+            "show_sidebar": True,
+            "title": _("Student Admissions"),
+            "get_list": get_admission_list,
+            "row_template": "education/doctype/student_admission/templates/student_admission_row.html",
+        }
+    )
 
 
 def get_admission_list(
-	doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"
+    doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"
 ):
-	return frappe.db.sql(
-		"""select name, title, academic_year, modified, admission_start_date, route,
+    return frappe.db.sql(
+        """select name, title, academic_year, modified, admission_start_date, route,
 		admission_end_date from `tabStudent Admission` where published=1 and admission_end_date >= %s
-		order by admission_end_date asc limit {0}, {1}
-		""".format(
-			limit_start, limit_page_length
-		),
-		[nowdate()],
-		as_dict=1,
-	)
+		order by admission_end_date asc limit %s, %s
+		""",
+        [nowdate(), cint(limit_start), cint(limit_page_length)],
+        as_dict=1,
+    )

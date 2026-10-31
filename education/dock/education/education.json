@@ -1,0 +1,24 @@
+{
+ "app": "education",
+ "creation": "2026-10-13 13:03:34.689077",
+ "docstatus": 0,
+ "doctype": "Dock",
+ "idx": 0,
+ "items": [
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "school",
+   "link_to": "Education",
+   "link_type": "Sidebar",
+   "title": "Education"
+  }
+ ],
+ "modified": "2026-10-13 13:03:34.689077",
+ "modified_by": "Administrator",
+ "mount_on": "",
+ "name": "education",
+ "owner": "Administrator",
+ "standard": 1,
+ "user": ""
+}
