@@ -8,11 +8,13 @@ from frappe.model.document import Document
 
 
 class CourseActivity(Document):
-	def validate(self):
-		self.check_if_enrolled()
+    def validate(self):
+        self.check_if_enrolled()
 
-	def check_if_enrolled(self):
-		if frappe.db.exists("Course Enrollment", self.enrollment):
-			return True
-		else:
-			frappe.throw(_("Course Enrollment {0} does not exists").format(self.enrollment))
+    def check_if_enrolled(self):
+        if frappe.db.exists("Course Enrollment", self.enrollment):
+            return True
+        else:
+            frappe.throw(
+                _("Course Enrollment {0} does not exists").format(self.enrollment)
+            )

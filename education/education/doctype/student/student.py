@@ -7,6 +7,8 @@ from frappe import _
 from frappe.desk.form.linked_with import get_linked_doctypes
 from frappe.model.document import Document
 from frappe.utils import getdate, today, validate_email_address
+from frappe.permissions import get_valid_perms
+from frappe.utils import getdate, today
 from erpnext import get_default_currency
 from frappe.utils.nestedset import get_root_of
 
@@ -248,15 +250,80 @@ class Student(Document):
 
 
 def get_timeline_data(doctype, name):
-	"""Return timeline for attendance"""
-	return dict(
-		frappe.db.sql(
-			"""select unix_timestamp(`date`), count(*)
+    """Return timeline for attendance"""
+    return dict(
+        frappe.db.sql(
+            """select unix_timestamp(`date`), count(*)
 		from `tabStudent Attendance` where
 			student=%s
 			and `date` > date_sub(curdate(), interval 1 year)
 			and docstatus = 1 and status = 'Present'
 			group by date""",
-			name,
-		)
-	)
+            name,
+        )
+    )
+
+
+PORTAL_ROLES = ("Student", "Guardian")
+
+
+def _is_portal_only_user(user):
+    """Returns True if the user can read Student only through a portal role.
+
+    Users with any other role granting read on Student (Instructor,
+    Academics User, custom roles, etc.) keep unrestricted access.
+    """
+    if user == "Administrator":
+        return False
+
+    return not any(
+        perm.read and perm.role not in PORTAL_ROLES
+        for perm in get_valid_perms("Student", user)
+    )
+
+
+def has_permission(doc, ptype=None, user=None, debug=False):
+    """Restrict Student and Guardian users to their own / their wards' records."""
+    from education.education.api import get_guardians_for_user
+
+    user = user or frappe.session.user
+    if not _is_portal_only_user(user):
+        return True
+
+    if doc.user == user:
+        return True
+
+    guardians = get_guardians_for_user(user)
+    if guardians:
+        return bool(
+            frappe.db.exists(
+                "Student Guardian",
+                {
+                    "parent": doc.name,
+                    "parenttype": "Student",
+                    "guardian": ["in", guardians],
+                },
+            )
+        )
+
+    return False
+
+
+def get_permission_query_conditions(user=None, doctype=None):
+    from education.education.api import get_guardians_for_user
+
+    user = user or frappe.session.user
+    if not _is_portal_only_user(user):
+        return ""
+
+    conditions = [f"`tabStudent`.`user` = {frappe.db.escape(user)}"]
+
+    guardians = get_guardians_for_user(user)
+    if guardians:
+        guardian_list = ", ".join(frappe.db.escape(g) for g in guardians)
+        conditions.append(f"""exists (select 1 from `tabStudent Guardian` sg
+			where sg.parent = `tabStudent`.name
+			and sg.parenttype = 'Student'
+			and sg.guardian in ({guardian_list}))""")
+
+    return "({})".format(" or ".join(conditions))

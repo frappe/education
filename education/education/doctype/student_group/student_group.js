@@ -139,7 +139,7 @@ frappe.ui.form.on('Student Group', {
           callback: function (r) {
             if (r.message) {
               $.each(r.message, function (i, d) {
-                if (!in_list(student_list, d.student)) {
+                if (!student_list.includes(d.student)) {
                   var s = frm.add_child('students')
                   s.student = d.student
                   s.student_name = d.student_name

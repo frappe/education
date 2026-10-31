@@ -8,4 +8,4 @@ from frappe.tests.utils import FrappeTestCase
 
 
 class TestStudentAdmission(FrappeTestCase):
-	pass
+    pass

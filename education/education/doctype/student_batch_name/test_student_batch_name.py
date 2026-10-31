@@ -8,4 +8,4 @@ from frappe.tests.utils import FrappeTestCase
 
 
 class TestStudentBatchName(FrappeTestCase):
-	pass
+    pass
