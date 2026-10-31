@@ -6,6 +6,28 @@ from frappe.utils.nestedset import get_root_of
 
 
 def after_install():
+	setup_fixtures()
+	create_student_role()
+	create_guardian_role()
+	create_parent_assessment_group()
+	create_fee_component_item_group()
+	create_invoice_permissions()
+	create_custom_fields(get_custom_fields())
+	create_permissions(get_permissions())
+
+
+def setup_fixtures():
+	records = [
+		# Party Type Records
+		{
+			"doctype": "Party Type",
+			"party_type": "Student",
+			"account_type": "Receivable",
+		},
+		# Customer Group Records
+		{"doctype": "Customer Group", "customer_group_name": "Student"},
+	]
+	make_records(records)
     setup_fixtures()
     create_student_role()
     create_guardian_role()
@@ -78,6 +100,27 @@ def create_parent_assessment_group():
                 "is_group": 1,
             }
         ).insert(ignore_mandatory=True)
+
+
+def create_fee_component_item_group():
+	if not frappe.db.exists("Item Group", "All Item Groups"):
+		frappe.get_doc(
+			{
+				"doctype": "Item Group",
+				"item_group_name": "All Item Groups",
+				"is_group": 1,
+				"parent_item_group": "",
+			}
+		).insert(ignore_permissions=True, ignore_mandatory=True)
+	if not frappe.db.exists("Item Group", "Fee Component"):
+		frappe.get_doc(
+			{
+				"doctype": "Item Group",
+				"item_group_name": "Fee Component",
+				"is_group": 0,
+				"parent_item_group": "All Item Groups",
+			}
+		).insert(ignore_permissions=True, ignore_mandatory=True)
 
 
 def create_student_role():

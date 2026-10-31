@@ -3,7 +3,10 @@
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from education.education.doctype.fee_schedule.fee_schedule import generate_fees
+from education.education.doctype.fee_schedule.fee_schedule import (
+	create_sales_invoice,
+	generate_fees,
+)
 
 # get_defaults from test_utils
 from education.education.test_utils import get_defaults

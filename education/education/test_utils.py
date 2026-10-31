@@ -14,6 +14,50 @@ DEFAULT_STUDENT_EMAIL_ID = "test@example.com"
 
 
 def before_tests():
+	frappe.clear_cache()
+	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
+
+	year = now_datetime().year
+	if not frappe.get_list("Company"):
+		setup_complete(
+			{
+				"currency": "INR",
+				"full_name": "Test User",
+				"company_name": "_Test Company",
+				"timezone": "Asia/Kolkata",
+				"company_abbr": "_TC",
+				"industry": "Manufacturing",
+				"country": "India",
+				"fy_start_date": f"{year}-01-01",
+				"fy_end_date": f"{year}-12-31",
+				"language": "english",
+				"company_tagline": "Testing",
+				"email": "test@erpnext.com",
+				"password": "test",
+				"chart_of_accounts": "Standard",
+			}
+		)
+
+	item_groups = [
+		{"item_group_name": "All Item Groups", "is_group": 1, "parent_item_group": ""},
+		{
+			"item_group_name": "Fee Component",
+			"is_group": 0,
+			"parent_item_group": "All Item Groups",
+		},
+	]
+	for item_group in item_groups:
+		if not frappe.db.exists("Item Group", item_group["item_group_name"]):
+			frappe.get_doc({"doctype": "Item Group", **item_group}).insert(
+				ignore_permissions=True
+			)
+
+	frappe.db.set_value(
+		"Stock Settings", None, "auto_insert_price_list_rate_if_missing", 0
+	)
+	enable_all_roles_and_domains()
+	make_holiday_list()
+	frappe.db.commit()
     frappe.clear_cache()
     from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 
