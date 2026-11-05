@@ -42,13 +42,13 @@ def get_data(data, filters):
 			row.student = result.student
 			row.student_name = result.student_name
 			row.assessment_group = result.assessment_group
-			row["grade_" + frappe.scrub(result.course)] = result.grade
+			row["percentage_" + frappe.scrub(result.course)] = result.percentage
 			row["score_" + frappe.scrub(result.course)] = result.score
 
 			data.append(row)
 		else:
 			index = exists[0]
-			data[index]["grade_" + frappe.scrub(result.course)] = result.grade
+			data[index]["percentage_" + frappe.scrub(result.course)] = result.percentage
 			data[index]["score_" + frappe.scrub(result.course)] = result.score
 
 	return data, course_list
@@ -80,9 +80,9 @@ def get_column(course_list):
 	for course in course_list:
 		columns.append(
 			{
-				"fieldname": "grade_" + frappe.scrub(course),
-				"label": course,
-				"fieldtype": "Data",
+				"fieldname": "percentage_" + frappe.scrub(course),
+				"label": _("Percentage ({0})").format(course),
+				"fieldtype": "Percent",
 				"width": 100,
 			}
 		)

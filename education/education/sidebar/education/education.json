@@ -1,10 +1,11 @@
 {
+ "doctype": "Sidebar",
+ "name": "Education",
+ "title": "Education",
+ "module": "Education",
  "app": "education",
- "creation": "2026-03-24 11:56:33.005452",
- "docstatus": 0,
- "doctype": "Workspace Sidebar",
  "header_icon": "education",
- "idx": 0,
+ "standard": 1,
  "items": [
   {
    "child": 0,
@@ -52,6 +53,13 @@
    "type": "Link"
   },
   {
+   "type": "Link",
+   "label": "Admission Register",
+   "link_type": "DocType",
+   "link_to": "Admission Register",
+   "child": 1
+  },
+  {
    "child": 0,
    "collapsible": 1,
    "icon": "users-round",
@@ -91,17 +99,6 @@
    "keep_closed": 0,
    "label": "Student Category",
    "link_to": "Student Category",
-   "link_type": "DocType",
-   "show_arrow": 0,
-   "type": "Link"
-  },
-  {
-   "child": 1,
-   "collapsible": 1,
-   "indent": 0,
-   "keep_closed": 0,
-   "label": "Student Batch Name",
-   "link_to": "Student Batch Name",
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
@@ -237,6 +234,13 @@
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
+  },
+  {
+   "type": "Link",
+   "label": "Subject",
+   "link_type": "DocType",
+   "link_to": "Subject",
+   "child": 1
   },
   {
    "child": 0,
@@ -403,6 +407,20 @@
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
+  },
+  {
+   "type": "Link",
+   "label": "Fee Term",
+   "link_type": "DocType",
+   "link_to": "Fee Term",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Fee Plan",
+   "link_type": "DocType",
+   "link_to": "Fee Plan",
+   "child": 1
   },
   {
    "child": 0,
@@ -659,12 +677,5 @@
    "show_arrow": 0,
    "type": "Link"
   }
- ],
- "modified": "2026-10-30 13:29:23.914802",
- "modified_by": "Administrator",
- "module": "Education",
- "name": "Education",
- "owner": "Administrator",
- "standard": 1,
- "title": "Education"
+ ]
 }

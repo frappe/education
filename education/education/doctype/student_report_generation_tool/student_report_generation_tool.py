@@ -7,6 +7,7 @@ import json
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.query_builder.functions import Count
 from frappe.utils.pdf import get_pdf
 from frappe.www.printview import get_letter_head
 
@@ -61,13 +62,14 @@ def get_attendance_count(student, academic_year, academic_term=None):
 	attendance = frappe._dict()
 	attendance.total = 0
 
-	if academic_year:
-		from_date, to_date = frappe.db.get_value(
-			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
-		)
-	elif academic_term:
+	from_date = to_date = None
+	if academic_term:
 		from_date, to_date = frappe.db.get_value(
 			"Academic Term", academic_term, ["term_start_date", "term_end_date"]
+		)
+	elif academic_year:
+		from_date, to_date = frappe.db.get_value(
+			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
 		)
 
 	if from_date and to_date:
@@ -78,16 +80,16 @@ def get_attendance_count(student, academic_year, academic_term=None):
 				"docstatus": 1,
 				"date": ["between", (from_date, to_date)],
 			},
-			["status", "count(student) as count"],
+			["status", Count("student").as_("attendance_count")],
 			group_by="status",
 		)
 
 		for row in data:
 			if row.status == "Present":
-				attendance.present = row.count
+				attendance.present = row.attendance_count
 			if row.status == "Absent":
-				attendance.absent = row.count
-			attendance.total += row.count
+				attendance.absent = row.attendance_count
+			attendance.total += row.attendance_count
 		return attendance
 	else:
 		frappe.throw(_("Please enter the Academic Year and set the Start and End date."))
