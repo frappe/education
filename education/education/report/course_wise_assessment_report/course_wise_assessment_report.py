@@ -2,8 +2,6 @@
 # For license information, please see license.txt
 
 
-from collections import OrderedDict, defaultdict
-
 import frappe
 from frappe import _
 from frappe.desk.treeview import get_children
@@ -37,7 +35,6 @@ def get_data(filters):
 					"score": result.get("score"),
 					"maximum_score": result.get("maximum_score"),
 					"percentage": result.get("percentage"),
-					"grade": result.get("grade"),
 				}
 			)
 		)
@@ -62,7 +59,6 @@ def get_formatted_result(args, get_course=False):
 			"score",
 			"maximum_score",
 			"percentage",
-			"grade",
 		],
 		order_by="",
 	)
@@ -135,7 +131,6 @@ def get_column():
 			"fieldtype": "Percent",
 			"width": 110,
 		},
-		{"fieldname": "grade", "label": _("Grade"), "fieldtype": "Data", "width": 80},
 	]
 
 
