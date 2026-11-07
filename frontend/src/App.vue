@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex h-screen w-screen">
+    <div class="flex h-screen w-screen edu-portal">
       <div class="h-full border-r border-gray-200 bg-white">
         <Sidebar />
       </div>

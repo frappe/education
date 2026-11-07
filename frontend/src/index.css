@@ -32,3 +32,37 @@ button.bg-gray-900:active {
 button.bg-gray-900:focus-visible {
   --tw-ring-color: rgba(65, 84, 241, 0.4);
 }
+
+/* DS-01 E-05 (portal inputs → reference spec: white field, bordered, primary
+ * focus). frappe-ui TextInput defaults to subtle gray; these portal-scoped
+ * overrides (0,2,1) outrank the utilities without touching the library.
+ * No checkbox/switch usage exists in the portal (verified 2026-11-07). */
+.edu-portal input[type="text"],
+.edu-portal input[type="email"],
+.edu-portal input[type="password"],
+.edu-portal input[type="number"],
+.edu-portal input[type="date"],
+.edu-portal select,
+.edu-portal textarea {
+  background-color: #ffffff;
+  border-color: var(--color-border);
+}
+.edu-portal input[type="text"]:focus,
+.edu-portal input[type="email"]:focus,
+.edu-portal input[type="password"]:focus,
+.edu-portal input[type="number"]:focus,
+.edu-portal input[type="date"]:focus,
+.edu-portal select:focus,
+.edu-portal textarea:focus {
+  background-color: #ffffff;
+  border-color: var(--color-primary);
+}
+.edu-portal input[type="text"]:focus-visible,
+.edu-portal input[type="email"]:focus-visible,
+.edu-portal input[type="password"]:focus-visible,
+.edu-portal input[type="number"]:focus-visible,
+.edu-portal input[type="date"]:focus-visible,
+.edu-portal select:focus-visible,
+.edu-portal textarea:focus-visible {
+  --tw-ring-color: rgba(65, 84, 241, 0.4);
+}
