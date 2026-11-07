@@ -50,3 +50,58 @@ body[data-route="education"] .widget-footer a:active {
 body[data-route="education"] .widget-footer a:focus-visible {
 	outline: var(--edu-primary-focus-ring);
 }
+
+/* ---- ED-02 pilot (visual-only): list + form polish scoped to six
+ * high-traffic Education doctypes. Route prefixes verified via
+ * container.js (body[data-route] = "List/X" / "Form/X/name").
+ * Class selectors verified: list.scss (.list-row, .list-row-head),
+ * form.scss (.form-section.card-section, .section-head),
+ * es-button contract (button.css data-variant="solid").
+ * No layout, markup, JS, or permission changes. ---- */
+
+body[data-route^="List/Student"] .list-row:not(.list-row-head):hover,
+body[data-route^="List/Fees"] .list-row:not(.list-row-head):hover,
+body[data-route^="List/Fee Structure"] .list-row:not(.list-row-head):hover,
+body[data-route^="List/Course"] .list-row:not(.list-row-head):hover,
+body[data-route^="List/Program"] .list-row:not(.list-row-head):hover,
+body[data-route^="List/Assessment Result"] .list-row:not(.list-row-head):hover {
+	background-color: var(--surface-gray-1);
+}
+
+body[data-route^="List/Student"] .list-row-head,
+body[data-route^="List/Fees"] .list-row-head,
+body[data-route^="List/Fee Structure"] .list-row-head,
+body[data-route^="List/Course"] .list-row-head,
+body[data-route^="List/Program"] .list-row-head,
+body[data-route^="List/Assessment Result"] .list-row-head {
+	background-color: var(--surface-gray-1);
+}
+
+body[data-route^="Form/Student"] .form-section.card-section .section-head,
+body[data-route^="Form/Fees"] .form-section.card-section .section-head,
+body[data-route^="Form/Fee Structure"] .form-section.card-section .section-head,
+body[data-route^="Form/Course"] .form-section.card-section .section-head,
+body[data-route^="Form/Program"] .form-section.card-section .section-head,
+body[data-route^="Form/Assessment Result"] .form-section.card-section .section-head {
+	color: var(--ink-gray-8);
+	font-weight: var(--font-weight-semibold);
+}
+
+body[data-route^="List/Student"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Student"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="List/Fees"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Fees"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="List/Fee Structure"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Fee Structure"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="List/Course"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Course"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="List/Program"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Program"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="List/Assessment Result"] .page-actions .es-button[data-variant="solid"],
+body[data-route^="Form/Assessment Result"] .page-actions .es-button[data-variant="solid"] {
+	--bt-solid-bg: var(--edu-primary);
+	--bt-solid-bg-hover: var(--edu-primary-hover);
+	--bt-solid-bg-active: var(--edu-primary-active);
+	--bt-solid-fg: #ffffff;
+	--bt-focus: var(--edu-primary-focus-ring);
+}
