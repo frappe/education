@@ -1,0 +1,52 @@
+/* DS-01 ED-01 (APPROVED v0.1 DP-01…DP-03). App-scoped Desk polish for the
+ * Education workspace only. Loads via hooks.py app_include_css on every Desk
+ * page, so every rule is scoped under body[data-route="education"].
+ *
+ * Selectors verified in Frappe sources (no guessing):
+ * - body[data-route] ......... frappe/public/js/frappe/views/container.js:30
+ * - .widget-group(.widget-group-head .widget-group-title) ... public/scss/desk/desktop.scss
+ * - .widget(.widget-head .widget-title .widget-body .widget-footer) ... widgets/base_widget.js
+ * - .links-widget-box ......... widgets/links_widget.js
+ * No JS, JSON, Python, or dashboard content is affected. */
+
+:root {
+	--edu-primary: #4154f1;
+	--edu-primary-hover: #3543d6;
+	--edu-primary-active: #2f3dbe;
+	--edu-primary-focus-ring: 0 0 0 2px rgba(65, 84, 241, 0.35);
+}
+
+/* Link cards: white, bordered, radius 12, base elevation. */
+body[data-route="education"] .widget.links-widget-box {
+	background-color: var(--surface-cards);
+	border: 1px solid var(--outline-gray-1);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--elevation-base);
+}
+
+/* Section titles: 16px semibold primary-ink. */
+body[data-route="education"] .widget-group-head .widget-group-title {
+	color: var(--ink-gray-8);
+	font-size: var(--text-xl);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Card titles. */
+body[data-route="education"] .widget-head .widget-title {
+	color: var(--ink-gray-8);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* "View all" footer links follow primary. */
+body[data-route="education"] .widget-footer a {
+	color: var(--edu-primary);
+}
+body[data-route="education"] .widget-footer a:hover {
+	color: var(--edu-primary-hover);
+}
+body[data-route="education"] .widget-footer a:active {
+	color: var(--edu-primary-active);
+}
+body[data-route="education"] .widget-footer a:focus-visible {
+	outline: var(--edu-primary-focus-ring);
+}
