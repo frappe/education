@@ -91,6 +91,12 @@ def get_columns(filters):
 			"fieldtype": "Int",
 			"width": 90,
 		},
+		{
+			"label": _("Unmarked"),
+			"fieldname": "unmarked_students",
+			"fieldtype": "Int",
+			"width": 90,
+		},
 	]
 	return columns
 

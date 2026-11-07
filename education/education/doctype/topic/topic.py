@@ -35,8 +35,9 @@ def get_courses_without_topic(topic: str):
 
 
 @frappe.whitelist()
-def add_topic_to_courses(topic: str, courses: str, mandatory: bool = False):
-	courses = json.loads(courses)
+def add_topic_to_courses(topic: str, courses: str | list, mandatory: bool = False):
+	if isinstance(courses, str):
+		courses = json.loads(courses)
 	for entry in courses:
 		course = frappe.get_doc("Course", entry)
 		course.append("topics", {"topic": topic, "topic_name": topic})
@@ -50,8 +51,9 @@ def add_topic_to_courses(topic: str, courses: str, mandatory: bool = False):
 
 
 @frappe.whitelist()
-def add_content_to_topics(content_type: str, content: str, topics: str):
-	topics = json.loads(topics)
+def add_content_to_topics(content_type: str, content: str, topics: str | list):
+	if isinstance(topics, str):
+		topics = json.loads(topics)
 	for entry in topics:
 		topic = frappe.get_doc("Topic", entry)
 		topic.append(

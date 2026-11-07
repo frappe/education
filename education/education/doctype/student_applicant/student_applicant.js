@@ -145,47 +145,6 @@ frappe.ui.form.on('Student Applicant', {
         .addClass('btn-primary')
     }
 
-    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
-    //   frm
-    //     .add_custom_button(__('Enroll in Program'), function () {
-    //       frm.call('enroll_in_program').then((r) => {
-    //         if (r.message) {
-    //           frappe.msgprint(
-    //             __(
-    //               'Program Enrollment {0} created and student enrolled in course.',
-    //               [
-    //                 `<a href="/app/program-enrollment/${r.message}">${r.message}</a>`,
-    //               ],
-    //             ),
-    //           )
-    //         }
-    //         frm.reload_doc()
-    //       })
-    //     })
-    //     .addClass('btn-primary')
-    // }
-
-    // NOTE: SEPARATE ENROLLMENT FOR COURSE AND PROGRAM
-
-    // if (status === 'Approved' && frm.doc.admission_based_on === 'Program') {
-    //   frm
-    //     .add_custom_button(__('Enroll'), function () {
-    //       frm.call('enroll_in_program_and_course').then((r) => {
-    //         if (r.message) {
-    //           frappe.msgprint(
-    //             __(
-    //               'Program Enrollment {0} created and student enrolled in course.',
-    //               [
-    //                 `<a href="/app/-enrollment/${r.message}">${r.message}</a>`,
-    //               ],
-    //             ),
-    //           )
-    //         }
-    //         frm.reload_doc()
-    //       })
-    //     })
-    //     .addClass('btn-primary')
-    // }
   },
 
   admission_register: function (frm) {

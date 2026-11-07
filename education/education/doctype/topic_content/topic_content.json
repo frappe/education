@@ -14,7 +14,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Content Type",
-   "options": "\nArticle\nVideo\nQuiz",
+   "options": "\nArticle\nQuiz",
    "reqd": 1
   },
   {

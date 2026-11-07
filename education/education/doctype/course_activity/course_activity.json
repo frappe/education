@@ -49,7 +49,7 @@
    "fieldname": "content_type",
    "fieldtype": "Select",
    "label": "Content Type",
-   "options": "\nArticle\nVideo",
+   "options": "\nArticle",
    "reqd": 1,
    "set_only_once": 1
   },

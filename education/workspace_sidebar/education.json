@@ -658,6 +658,39 @@
    "link_type": "Report",
    "show_arrow": 0,
    "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Assessment Statistics",
+   "link_to": "Assessment Statistics",
+   "link_type": "Report",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Grade Book Statistics",
+   "link_to": "Grade Book Statistics",
+   "link_type": "Report",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Hostel Occupancy",
+   "link_to": "Hostel Occupancy",
+   "link_type": "Report",
+   "show_arrow": 0,
+   "type": "Link"
   }
  ],
  "modified": "2026-10-30 13:29:23.914802",

@@ -37,7 +37,7 @@ frappe.ui.form.on('Admission Register', {
   },
   course: function (frm) {
     if (frm.doc.course) {
-      frm.call('get_course_details', { course: frm.doc }).then((r) => {
+      frm.call('get_course_details').then((r) => {
         if (r.message) {
           frm.set_value(
             'registration_fee_amount',

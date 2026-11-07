@@ -83,19 +83,18 @@ def on_payment_entry_update_after_submit(doc, method=None):
 				child_row = frappe.db.get_value(
 					"Fee Plan Detail",
 					{"parent": fee_plan_name, "invoice": invoice_doc.name},
-					["name", "paid_amount", "amount"],
+					["name"],
 					as_dict=True,
 				)
-				if child_row and (child_row.paid_amount != child_row.amount):
-					paid_amount = child_row.paid_amount + ref.allocated_amount
+				if child_row:
 					frappe.db.set_value(
 						"Fee Plan Detail",
 						child_row.name,
 						{
 							"invoice_status": (
-								"Paid" if paid_amount == invoice_doc.grand_total else invoice_doc.status
+								"Paid" if invoice_doc.outstanding_amount == 0 else invoice_doc.status
 							),
-							"paid_amount": paid_amount,
+							"paid_amount": invoice_doc.grand_total - invoice_doc.outstanding_amount,
 						},
 					)
 					frappe.get_doc("Fee Plan", fee_plan_name).run_method("update_outstanding_amount")
