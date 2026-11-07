@@ -75,3 +75,32 @@ body[data-route="education"] .widget-footer a:focus-visible {
 	--bt-solid-fg: #ffffff;
 	--bt-focus: var(--edu-primary-focus-ring);
 }
+
+/* ---- ED-04 reports (visual-only): header tint + semibold, body row hover,
+ * primary page-action buttons, scoped to the 12 Education reports via explicit
+ * body[data-route^="Report/X"] list. Selectors verified: report.scss
+ * (.report-view .result), frappe_datatable.scss (.dt-header .dt-row-header,
+ * .dt-cell--header .dt-cell__content, .dt-row).
+ * No layout, data, or print-format changes. ---- */
+
+:is(body[data-route^="Report/Course wise Assessment Report"], body[data-route^="Report/Final Assessment Grades"], body[data-route^="Report/Assessment Plan Status"], body[data-route^="Report/Assessment Statistics"], body[data-route^="Report/Grade Book Statistics"], body[data-route^="Report/Hostel Occupancy"], body[data-route^="Report/Student and Guardian Contact Details"], body[data-route^="Report/Student Fee Collection"], body[data-route^="Report/Program wise Fee Collection"], body[data-route^="Report/Absent Student Report"], body[data-route^="Report/Student Monthly Attendance Sheet"], body[data-route^="Report/Student Batch-Wise Attendance"]) .datatable .dt-header .dt-row-header,
+:is(body[data-route^="Report/Course wise Assessment Report"], body[data-route^="Report/Final Assessment Grades"], body[data-route^="Report/Assessment Plan Status"], body[data-route^="Report/Assessment Statistics"], body[data-route^="Report/Grade Book Statistics"], body[data-route^="Report/Hostel Occupancy"], body[data-route^="Report/Student and Guardian Contact Details"], body[data-route^="Report/Student Fee Collection"], body[data-route^="Report/Program wise Fee Collection"], body[data-route^="Report/Absent Student Report"], body[data-route^="Report/Student Monthly Attendance Sheet"], body[data-route^="Report/Student Batch-Wise Attendance"]) .datatable .dt-header .dt-cell--header .dt-cell__content {
+	background-color: var(--surface-gray-1);
+}
+
+:is(body[data-route^="Report/Course wise Assessment Report"], body[data-route^="Report/Final Assessment Grades"], body[data-route^="Report/Assessment Plan Status"], body[data-route^="Report/Assessment Statistics"], body[data-route^="Report/Grade Book Statistics"], body[data-route^="Report/Hostel Occupancy"], body[data-route^="Report/Student and Guardian Contact Details"], body[data-route^="Report/Student Fee Collection"], body[data-route^="Report/Program wise Fee Collection"], body[data-route^="Report/Absent Student Report"], body[data-route^="Report/Student Monthly Attendance Sheet"], body[data-route^="Report/Student Batch-Wise Attendance"]) .datatable .dt-header .dt-cell--header .dt-cell__content {
+	color: var(--ink-gray-8);
+	font-weight: var(--font-weight-semibold);
+}
+
+:is(body[data-route^="Report/Course wise Assessment Report"], body[data-route^="Report/Final Assessment Grades"], body[data-route^="Report/Assessment Plan Status"], body[data-route^="Report/Assessment Statistics"], body[data-route^="Report/Grade Book Statistics"], body[data-route^="Report/Hostel Occupancy"], body[data-route^="Report/Student and Guardian Contact Details"], body[data-route^="Report/Student Fee Collection"], body[data-route^="Report/Program wise Fee Collection"], body[data-route^="Report/Absent Student Report"], body[data-route^="Report/Student Monthly Attendance Sheet"], body[data-route^="Report/Student Batch-Wise Attendance"]) .datatable .dt-row:not(.dt-row-header):not(.dt-row-filter):not(.dt-row-totalRow):hover .dt-cell__content {
+	background-color: var(--surface-gray-1);
+}
+
+:is(body[data-route^="Report/Course wise Assessment Report"], body[data-route^="Report/Final Assessment Grades"], body[data-route^="Report/Assessment Plan Status"], body[data-route^="Report/Assessment Statistics"], body[data-route^="Report/Grade Book Statistics"], body[data-route^="Report/Hostel Occupancy"], body[data-route^="Report/Student and Guardian Contact Details"], body[data-route^="Report/Student Fee Collection"], body[data-route^="Report/Program wise Fee Collection"], body[data-route^="Report/Absent Student Report"], body[data-route^="Report/Student Monthly Attendance Sheet"], body[data-route^="Report/Student Batch-Wise Attendance"]) .page-actions .es-button[data-variant="solid"] {
+	--bt-solid-bg: var(--edu-primary);
+	--bt-solid-bg-hover: var(--edu-primary-hover);
+	--bt-solid-bg-active: var(--edu-primary-active);
+	--bt-solid-fg: #ffffff;
+	--bt-focus: var(--edu-primary-focus-ring);
+}
