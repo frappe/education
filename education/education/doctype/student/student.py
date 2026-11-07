@@ -17,11 +17,16 @@ class Student(Document):
 	def validate(self):
 		self.set_title()
 		self.validate_dates()
+		self.set_student_email_id()
 		self.validate_user()
 
 		if self.student_applicant:
 			self.check_unique()
 			self.update_applicant_status()
+
+	def set_student_email_id(self):
+		if not self.student_email_id and self.email_address:
+			self.student_email_id = self.email_address
 
 	def on_update(self):
 		# for each student check whether a customer exists or not if it does not exist then create a customer with customer group student

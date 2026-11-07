@@ -10,6 +10,12 @@ const fee_types_to_check = [
 frappe.ui.form.on('Fee Plan', {
   onload(frm) {
     frm.get_field('fee_plan_details').grid.cannot_add_rows = true
+    if (frm.is_new() && !frm.doc.course_enrollment) {
+      frm.set_intro(
+        __('Fee Plans are created from a Course Enrollment. Open the enrollment and use its Fee Plan action.'),
+        'blue'
+      )
+    }
   },
 
   refresh(frm) {

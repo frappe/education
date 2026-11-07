@@ -79,8 +79,8 @@ def check_attendance_records_exist(
 
 @frappe.whitelist()
 def mark_attendance(
-	students_present: str,
-	students_absent: str,
+	students_present: str | list,
+	students_absent: str | list,
 	subject_schedule: str | None = None,
 	student_batch: str | None = None,
 	date: str | None = None,
@@ -96,8 +96,8 @@ def mark_attendance(
 	if student_batch:
 		validate_attendance_date(student_batch, date)
 
-	present = json.loads(students_present)
-	absent = json.loads(students_absent)
+	present = json.loads(students_present) if isinstance(students_present, str) else students_present
+	absent = json.loads(students_absent) if isinstance(students_absent, str) else students_absent
 
 	for d in present:
 		make_attendance_records(
@@ -376,8 +376,8 @@ def get_grade_details(grading_scale: str, percentage: float | str):
 
 
 @frappe.whitelist()
-def mark_assessment_result(assessment_plan: str, scores: str):
-	student_score = json.loads(scores)
+def mark_assessment_result(assessment_plan: str, scores: str | dict):
+	student_score = json.loads(scores) if isinstance(scores, str) else scores
 	assessment_result = get_assessment_result_doc(student_score["student"], assessment_plan)
 	if not assessment_result:
 		return None
@@ -576,7 +576,7 @@ def get_subject_schedule_for_student(
 			"title",
 			"name",
 		],
-		filters={"program": program_name, "student_batch": ["in", student_batches]},
+		filters={"student_batch": ["in", student_batches]},
 		order_by="schedule_date asc",
 	)
 	return schedule
@@ -594,11 +594,17 @@ def apply_leave(leave_data: dict, program_name: str):
 
 
 def apply_leave_based_on_subject_schedule(leave_data, program_name):
+	student = leave_data.get("student")
+	student_name = leave_data.get("student_name") or frappe.db.get_value(
+		"Student", student, "student_name"
+	)
+	student_batches = get_student_batches(student, program_name)
+	batch_labels = [batch.get("label") for batch in student_batches]
 	subject_schedule_in_leave_period = frappe.db.get_list(
 		"Subject Schedule",
 		fields=["name", "schedule_date"],
 		filters={
-			"program": program_name,
+			"student_batch": ["in", batch_labels],
 			"schedule_date": [
 				"between",
 				[leave_data.get("from_date"), leave_data.get("to_date")],
@@ -611,11 +617,15 @@ def apply_leave_based_on_subject_schedule(leave_data, program_name):
 	for subject_schedule in subject_schedule_in_leave_period:
 		if not frappe.db.exists(
 			"Student Attendance",
-			{"subject_schedule": subject_schedule.get("name"), "docstatus": 1},
+			{
+				"student": student,
+				"subject_schedule": subject_schedule.get("name"),
+				"docstatus": 1,
+			},
 		):
 			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
+				student,
+				student_name,
 				"Leave",
 				subject_schedule.get("name"),
 				None,
@@ -624,16 +634,44 @@ def apply_leave_based_on_subject_schedule(leave_data, program_name):
 
 
 def apply_leave_based_on_student_batch(leave_data, program_name):
-	student_batches = get_student_batches(leave_data.get("student"), program_name)
+	from erpnext.setup.doctype.holiday_list.holiday_list import is_holiday
+
+	from education.education.doctype.student_attendance.student_attendance import (
+		get_holiday_list,
+	)
+
+	student = leave_data.get("student")
+	student_name = leave_data.get("student_name") or frappe.db.get_value(
+		"Student", student, "student_name"
+	)
+	holiday_list = get_holiday_list()
+	student_batches = get_student_batches(student, program_name)
 	leave_dates = get_dates_from_timegrain(leave_data.get("from_date"), leave_data.get("to_date"))
 	for student_batch in student_batches:
+		batch_label = student_batch.get("label")
 		for leave_date in leave_dates:
+			if is_holiday(holiday_list, leave_date):
+				continue
+
+			existing = frappe.db.exists(
+				"Student Attendance",
+				{
+					"student": student,
+					"student_batch": batch_label,
+					"date": leave_date,
+					"docstatus": ("!=", 2),
+				},
+			)
+			if existing:
+				frappe.db.set_value("Student Attendance", existing, "status", "Leave")
+				continue
+
 			make_attendance_records(
-				leave_data.get("student"),
-				leave_data.get("student_name"),
+				student,
+				student_name,
 				"Leave",
 				None,
-				student_batch.get("label"),
+				batch_label,
 				leave_date,
 			)
 
@@ -728,9 +766,15 @@ def get_school_abbr_logo():
 
 
 @frappe.whitelist()
-def get_student_attendance(student: str, student_batch: str):
+def get_student_attendance(
+	student: str, student_group: str | None = None, student_batch: str | None = None
+):
 	return frappe.db.get_list(
 		"Student Attendance",
-		filters={"student": student, "student_batch": student_batch, "docstatus": 1},
+		filters={
+			"student": student,
+			"student_batch": student_batch or student_group,
+			"docstatus": 1,
+		},
 		fields=["date", "status", "name"],
 	)

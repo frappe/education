@@ -18,16 +18,6 @@ frappe.ui.form.on('Fee Schedule', {
       }
     })
 
-    frm.set_query('income_account', function (doc) {
-      return {
-        filters: {
-          account_type: 'Income Account',
-          is_group: 0,
-          company: doc.company,
-        },
-      }
-    })
-
     frm.set_query('fee_structure', () => {
       return {
         filters: {

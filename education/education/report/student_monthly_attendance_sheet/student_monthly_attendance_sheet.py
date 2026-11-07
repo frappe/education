@@ -75,7 +75,7 @@ def get_columns(days_in_month):
 			"label": _("Student"),
 			"fieldname": "student",
 			"fieldtype": "Link",
-			"options": "Student ",
+			"options": "Student",
 			"width": 90,
 		},
 		{

@@ -21,15 +21,6 @@ from education.education.doctype.campus.campus import (
 
 
 class Fees(AccountsController):
-	def set_indicator(self):
-		"""Set indicator for portal"""
-		if self.outstanding_amount > 0:
-			self.indicator_color = "orange"
-			self.indicator_title = _("Unpaid")
-		else:
-			self.indicator_color = "green"
-			self.indicator_title = _("Paid")
-
 	def validate(self):
 		self.calculate_total()
 		set_campus_from_enrollment(self)
