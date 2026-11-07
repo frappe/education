@@ -1,6 +1,7 @@
 <template>
-  <div v-if="tableData.rows.length > 0" class="px-5 py-4">
-    <ListView
+  <div v-if="tableData.rows.length > 0" class="p-4">
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <ListView
       :columns="tableData.columns"
       :rows="tableData.rows"
       :options="{
@@ -35,7 +36,7 @@
           <Button
             v-if="column.key === 'cta' && row.status === 'Paid'"
             @click="openInvoicePDF(row)"
-            class="hover:bg-gray-900 hover:text-white"
+            class="hover:bg-primary-600 hover:text-white"
             icon-left="download"
             label="Download Invoice"
           />
@@ -43,13 +44,14 @@
           <Button
             v-if="column.key === 'cta' && row.status !== 'Paid'"
             @click="openModal(row)"
-            class="hover:bg-gray-900 hover:text-white flex flex-column items-center justify-center"
+            class="hover:bg-primary-600 hover:text-white flex flex-column items-center justify-center"
             icon-left="credit-card"
             label="Pay Now"
           />
         </ListRowItem>
       </ListRow>
     </ListView>
+    </div>
     <FeesPaymentDialog
       v-if="currentRow"
       :row="currentRow"

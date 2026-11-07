@@ -1,9 +1,11 @@
 <template>
-  <div class="w-full h-full">
-    <Calendar
-      v-if="!scheduleResource.loading && scheduleResource.data"
-      :events="events"
-    />
+  <div class="w-full h-full p-4">
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm h-full">
+      <Calendar
+        v-if="!scheduleResource.loading && scheduleResource.data"
+        :events="events"
+      />
+    </div>
   </div>
 </template>
 

@@ -15,12 +15,14 @@
         </template>
       </Dropdown>
     </div>
-    <div class="h-full">
-      <Calendar
-        v-if="!attendanceResource.loading && attendanceResource.data"
-        :events="attendanceResource.data"
-      />
-      <Calendar v-else :events="[]" />
+    <div class="h-full px-4 pb-1">
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <Calendar
+          v-if="!attendanceResource.loading && attendanceResource.data"
+          :events="attendanceResource.data"
+        />
+        <Calendar v-else :events="[]" />
+      </div>
     </div>
     <Dialog
       v-model="isAttendancePage"

@@ -1,6 +1,6 @@
 <template lang="">
   <div v-if="grades.data?.length > 0">
-    <div class="px-5 py-4">
+    <div class="p-4">
       <Dropdown class="mb-4" :options="allPrograms">
         <template #default="{ open }">
           <Button :label="selectedProgram">
@@ -13,8 +13,9 @@
           </Button>
         </template>
       </Dropdown>
-      <ListView
-        class="h-[250px]"
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <ListView
+          class="h-[250px]"
         :columns="tableData.columns"
         :rows="tableData.rows"
         :options="{
@@ -24,6 +25,7 @@
         }"
         row-key="id"
       />
+      </div>
     </div>
   </div>
   <div v-else>

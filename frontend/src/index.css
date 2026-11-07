@@ -1,2 +1,34 @@
 @import './assets/Inter/inter.css';
 @import 'frappe-ui/src/style.css';
+
+/* DS-01 APPROVED v0.1 (DP-01…DP-03). Canonical tokens for the portal.
+ * frappe-ui preset values are untouched; these vars are the portal's
+ * mapping of the design system for future phases. */
+:root {
+  --color-primary: #4154f1;
+  --color-primary-hover: #3543d6;
+  --color-primary-active: #2f3dbe;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+}
+
+/* DS-01 E-03 APPROVED: map frappe-ui solid-gray primary actions to canonical
+ * primary. Library untouched; portal-scoped only. Specificity (button.class)
+ * beats the utility without disturbing disabled states (disabled swaps the
+ * bg-gray-900 class away via frappe-ui disabledClassesMap). */
+button.bg-gray-900 {
+  background-color: var(--color-primary);
+}
+button.bg-gray-900:hover {
+  background-color: var(--color-primary-hover);
+}
+button.bg-gray-900:active {
+  background-color: var(--color-primary-active);
+}
+button.bg-gray-900:focus-visible {
+  --tw-ring-color: rgba(65, 84, 241, 0.4);
+}

@@ -1,9 +1,9 @@
 <template lang="">
   <header
-    class="flex justify-between gap-3 items-center px-5 py-2.5 h-12 border-b"
+    class="flex justify-between gap-3 items-center px-5 py-2.5 h-12 border-b border-gray-200 bg-white"
   >
     <div class="flex gap-2 items-center cursor-pointer">
-      <h3 class="font-medium text-lg text-gray-900">
+      <h3 class="font-semibold text-2xl text-gray-900">
         {{ currentRoute }}
       </h3>
     </div>
