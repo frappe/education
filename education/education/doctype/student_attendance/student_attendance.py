@@ -36,7 +36,11 @@ class StudentAttendance(Document):
 			)
 
 	def validate_date(self):
-		if not self.leave_application and getdate(self.date) > getdate():
+		if (
+			not self.leave_application
+			and self.status != "Leave"
+			and getdate(self.date) > getdate()
+		):
 			frappe.throw(_("Attendance cannot be marked for future dates."))
 
 		if self.student_batch:

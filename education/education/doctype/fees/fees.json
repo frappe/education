@@ -320,7 +320,6 @@
    "reqd": 1
   },
   {
-   "fetch_from": "fee_structure.income_account",
    "fieldname": "income_account",
    "fieldtype": "Link",
    "label": "Income Account",
@@ -381,7 +380,7 @@
  "in_create": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-09-29 20:19:11.960921",
+ "modified": "2026-11-02 16:10:00.000000",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Fees",

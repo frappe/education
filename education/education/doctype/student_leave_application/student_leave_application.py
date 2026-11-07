@@ -120,7 +120,7 @@ class StudentLeaveApplication(Document):
 			)
 
 			for name in attendance:
-				frappe.db.set_value("Student Attendance", name, "docstatus", 2)
+				frappe.db.set_value("Student Attendance", name.name, "docstatus", 2)
 
 
 def daterange(start_date, end_date):

@@ -19,7 +19,7 @@ const studentGroup = ref(getStudentGroups().value)
 const events = ref([])
 
 const scheduleResource = createResource({
-  url: 'education.education.api.get_course_schedule_for_student',
+  url: 'education.education.api.get_subject_schedule_for_student',
   params: {
     program_name: programName.value,
     student_groups: studentGroup.value,

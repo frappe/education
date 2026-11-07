@@ -3,9 +3,9 @@ import razorpay
 from erpnext.accounts.doctype.journal_entry.journal_entry import (
 	get_payment_entry_against_invoice,
 )
-from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_payment_entry
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 from frappe import _
-from frappe.utils import cint, nowdate, validate_phone_number
+from frappe.utils import cint, flt, nowdate, validate_phone_number
 
 
 def get_details(docname):
@@ -18,8 +18,8 @@ def get_details(docname):
 def get_client():
 	settings = frappe.get_single("Education Settings")
 	razorpay_key = settings.razorpay_key
-	razorpay_secret = settings.get_password("razorpay_secret", raise_exception=True)
-	if not razorpay_key and not razorpay_secret:
+	razorpay_secret = settings.get_password("razorpay_secret", raise_exception=False)
+	if not razorpay_key or not razorpay_secret:
 		frappe.throw(
 			_("There is a problem with the payment gateway. Please contact the Administrator to proceed.")
 		)
@@ -30,7 +30,7 @@ def create_order(client, amount, currency):
 	try:
 		return client.order.create(
 			{
-				"amount": cint(amount) * 100,
+				"amount": int(round(flt(amount) * 100)),
 				"currency": currency,
 			}
 		)
@@ -43,7 +43,9 @@ def create_order(client, amount, currency):
 
 
 @frappe.whitelist()
-def get_payment_options(doctype: str, docname: str, phone: str, currency: str | None = None):
+def get_payment_options(
+	doctype: str, docname: str, phone: str, currency: str | None = None, country: str | None = None
+):
 	if not frappe.db.exists(doctype, docname):
 		frappe.throw(_("Invalid document provided."))
 	validate_phone_number(phone_number=phone, throw=True)
@@ -55,7 +57,7 @@ def get_payment_options(doctype: str, docname: str, phone: str, currency: str | 
 		"name": frappe.db.get_single_value("Website Settings", "app_name"),
 		"description": _("Payment for {0} course").format(details["outstanding_amount"]),
 		"order_id": order["id"],
-		"amount": cint(order["amount"]) * 100,
+		"amount": cint(order["amount"]),
 		"currency": order["currency"],
 		"prefill": {
 			"name": frappe.db.get_value("User", frappe.session.user, "full_name"),

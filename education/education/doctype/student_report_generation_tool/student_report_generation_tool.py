@@ -61,13 +61,13 @@ def get_attendance_count(student, academic_year, academic_term=None):
 	attendance = frappe._dict()
 	attendance.total = 0
 
-	if academic_year:
-		from_date, to_date = frappe.db.get_value(
-			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
-		)
-	elif academic_term:
+	if academic_term:
 		from_date, to_date = frappe.db.get_value(
 			"Academic Term", academic_term, ["term_start_date", "term_end_date"]
+		)
+	elif academic_year:
+		from_date, to_date = frappe.db.get_value(
+			"Academic Year", academic_year, ["year_start_date", "year_end_date"]
 		)
 
 	if from_date and to_date:
@@ -78,7 +78,7 @@ def get_attendance_count(student, academic_year, academic_term=None):
 				"docstatus": 1,
 				"date": ["between", (from_date, to_date)],
 			},
-			["status", "count(student) as count"],
+			["status", {"COUNT": "*", "as": "count"}],
 			group_by="status",
 		)
 

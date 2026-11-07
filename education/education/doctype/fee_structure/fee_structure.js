@@ -61,7 +61,7 @@ frappe.ui.form.on('Fee Structure', {
         accumulated_value + current_value.amount,
       0
     )
-    if (!(frm.doc.total_amount === total_amount_from_dialog)) {
+    if (Math.abs(flt(frm.doc.total_amount) - flt(total_amount_from_dialog)) > 0.01) {
       frappe.throw(
         __(
           'Total amount in the table should be equal to the total amount from fee structure'

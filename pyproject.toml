@@ -5,6 +5,7 @@ authors = [
 ]
 description = "Education module for Frappe"
 requires-python = ">=3.10"
+dependencies = ["razorpay>=1.4.0"]
 readme = "README.md"
 dynamic = ["version"]
 

@@ -157,14 +157,19 @@ def generate_fees(fee_schedule):
 	doc = frappe.get_doc("Fee Schedule", fee_schedule)
 	error = False
 	create_so = frappe.db.get_single_value("Education Settings", "create_so")
-	total_records = sum([cint(d.total_students) for d in doc.student_batches])
+
+	students_by_batch = []
+	total_records = 0
+	for d in doc.student_batches:
+		students = get_students(d.student_batch, doc.student_category)
+		students_by_batch.append((d, students))
+		total_records += len(students)
 	created_records = 0
 
 	if not total_records:
 		frappe.throw(_("Please enroll Students in the selected Batches"))
 
-	for d in doc.student_batches:
-		students = get_students(d.student_batch, doc.student_category)
+	for d, students in students_by_batch:
 		for student in students:
 			try:
 				student_id = student.student
