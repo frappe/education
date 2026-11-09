@@ -6,6 +6,7 @@ frappe.ui.form.on('Program', {
     frm.trigger('set_filters')
   },
   company: function (frm) {
+    frm.set_value('department', '')
     frm.trigger('set_filters')
   },
 

@@ -49,7 +49,7 @@
    "fieldname": "content_type",
    "fieldtype": "Select",
    "label": "Content Type",
-   "options": "\nArticle\nVideo",
+   "options": "\nArticle",
    "reqd": 1,
    "set_only_once": 1
   },
@@ -71,7 +71,7 @@
   }
  ],
  "links": [],
- "modified": "2026-10-30 13:28:05.016103",
+ "modified": "2026-11-07 02:47:31.070691",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Course Activity",

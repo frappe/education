@@ -8,7 +8,7 @@
     <!-- Increment and Decrement Button, View change button default is months or can be set via props! -->
 
     <div class="flex justify-between mb-2">
-      <span class="text-xl font-medium">
+      <span class="text-2xl font-semibold text-gray-900">
         {{ getMonth() + ', ' + currentYear }}</span
       >
       <div class="flex gap-x-1">

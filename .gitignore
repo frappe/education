@@ -13,3 +13,4 @@ education/www/student-portal.html
 ./node_modules
 .vscode
 docs/
+graphify-out/

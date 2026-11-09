@@ -29,6 +29,7 @@ add_to_apps_screen = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/education/css/education.css"
 # app_include_js = "/assets/education/js/education.js"
+app_include_css = "/assets/education/css/education-desk.css"
 app_include_js = ["education.bundle.js", "/assets/education/js/campus.js"]
 
 # include js, css files in header of web template
@@ -79,7 +80,6 @@ accounting_dimension_doctypes = ["Fees", "Fee Schedule", "Fee Structure", "Fee T
 global_search_doctypes = {
 	"Education": [
 		{"doctype": "Article", "index": 1},
-		{"doctype": "Video", "index": 2},
 		{"doctype": "Topic", "index": 3},
 		{"doctype": "Course", "index": 4},
 		{"doctype": "Program", "index": 5},
@@ -105,7 +105,6 @@ global_search_doctypes = {
 		{"doctype": "Room", "index": 23},
 		{"doctype": "Subject Schedule", "index": 24},
 		{"doctype": "Student Attendance", "index": 25},
-		{"doctype": "Announcement", "index": 26},
 		{"doctype": "Student Category", "index": 27},
 		{"doctype": "Assessment Group", "index": 28},
 		{"doctype": "Campus", "index": 29},
@@ -114,8 +113,6 @@ global_search_doctypes = {
 		{"doctype": "School House", "index": 31},
 		{"doctype": "Student Admission", "index": 32},
 		{"doctype": "Fee Category", "index": 33},
-		{"doctype": "Assessment Code", "index": 34},
-		{"doctype": "Discussion", "index": 35},
 		{"doctype": "Grade Template", "index": 36},
 		{"doctype": "Grade Book", "index": 37},
 	]

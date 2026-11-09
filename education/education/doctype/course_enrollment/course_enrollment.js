@@ -7,7 +7,7 @@ frappe.ui.form.on('Course Enrollment', {
       return {
         filters: {
           docstatus: 1,
-          status: ['in', ['Admission Open', 'Closed']],
+          status: ['in', ['Submitted', 'Admission Open', 'Closed']],
         },
       }
     })
@@ -119,7 +119,7 @@ frappe.ui.form.on('Course Enrollment', {
           filters: {
             company: frm.doc.company,
             docstatus: 1,
-            status: ['in', ['Admission Open', 'Closed']],
+            status: ['in', ['Submitted', 'Admission Open', 'Closed']],
           },
         }
       })

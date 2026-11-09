@@ -59,7 +59,7 @@ frappe.ui.form.on('Technical Skill', {
 
 frappe.ui.form.on('Self Assessed Skill', {
   self_assessed_skills_add: function (frm) {
-    frm.fields_dict['technical_skills'].grid.get_field('skill').get_query =
+    frm.fields_dict['self_assessed_skills'].grid.get_field('skill').get_query =
       function (doc) {
         var skills_list = []
         $.each(doc.self_assessed_skills, function (idx, val) {

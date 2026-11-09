@@ -156,6 +156,28 @@
   {
    "dependencies": "",
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Assessment Statistics",
+   "link_count": 0,
+   "link_to": "Assessment Statistics",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Grade Book Statistics",
+   "link_count": 0,
+   "link_to": "Grade Book Statistics",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Student Report Generation Tool",
    "link_count": 0,
@@ -171,6 +193,17 @@
    "link_count": 0,
    "onboard": 0,
    "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Hostel Occupancy",
+   "link_count": 0,
+   "link_to": "Hostel Occupancy",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   },
   {
    "dependencies": "Course Enrollment",
@@ -579,9 +612,9 @@
    "dependencies": "",
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Video",
+   "label": "Topic",
    "link_count": 0,
-   "link_to": "Video",
+   "link_to": "Topic",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -748,7 +781,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-10-30 13:29:23.914802",
+ "modified": "2026-11-07 02:47:31.070691",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Education",

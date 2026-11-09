@@ -1,6 +1,21 @@
 <template>
-  <div v-if="tableData.rows.length > 0" class="px-5 py-4">
-    <ListView
+  <div v-if="tableData.rows.length > 0" class="p-4">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+        <p class="text-sm text-gray-500">Total Billed</p>
+        <p class="text-xl font-semibold text-gray-900 tabular-nums">{{ formatINR(totals.billed) }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+        <p class="text-sm text-gray-500">Total Paid</p>
+        <p class="text-xl font-semibold text-green-700 tabular-nums">{{ formatINR(totals.paid) }}</p>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+        <p class="text-sm text-gray-500">Total Due</p>
+        <p class="text-xl font-semibold text-amber-700 tabular-nums">{{ formatINR(totals.due) }}</p>
+      </div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <ListView
       :columns="tableData.columns"
       :rows="tableData.rows"
       :options="{
@@ -35,7 +50,7 @@
           <Button
             v-if="column.key === 'cta' && row.status === 'Paid'"
             @click="openInvoicePDF(row)"
-            class="hover:bg-gray-900 hover:text-white"
+            class="hover:bg-primary-600 hover:text-white"
             icon-left="download"
             label="Download Invoice"
           />
@@ -43,13 +58,14 @@
           <Button
             v-if="column.key === 'cta' && row.status !== 'Paid'"
             @click="openModal(row)"
-            class="hover:bg-gray-900 hover:text-white flex flex-column items-center justify-center"
+            class="hover:bg-primary-600 hover:text-white flex flex-column items-center justify-center"
             icon-left="credit-card"
             label="Pay Now"
           />
         </ListRowItem>
       </ListRow>
     </ListView>
+    </div>
     <FeesPaymentDialog
       v-if="currentRow"
       :row="currentRow"
@@ -65,7 +81,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import {
   ListView,
   ListHeader,
@@ -178,4 +194,23 @@ const badgeColor = (status) => {
   }
   return badgeColorMap[status]
 }
+
+// Summary cards aggregate the already-loaded invoice rows (no new API calls).
+const totals = computed(() => {
+  let billed = 0
+  let paid = 0
+  for (const row of tableData.rows) {
+    const amount = Number(row.amount) || 0
+    billed += amount
+    if (row.status === 'Paid') paid += amount
+  }
+  return { billed, paid, due: billed - paid }
+})
+
+const formatINR = (value) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(value || 0)
 </script>

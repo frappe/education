@@ -19,6 +19,7 @@ STUDENT_FIELDS = (
 	"first_name",
 	"middle_name",
 	"last_name",
+	"student_category",
 	"email_address",
 	"image",
 	"date_of_birth",

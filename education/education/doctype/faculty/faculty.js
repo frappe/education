@@ -11,6 +11,13 @@ frappe.ui.form.on('Faculty', {
           frm.set_df_property('email_address', 'reqd', 1)
         }
       })
+    frappe.db
+      .get_single_value('Education Settings', 'faculty_created_by')
+      .then((r) => {
+        if (r === 'Employee Number') {
+          frm.set_df_property('employee', 'reqd', 1)
+        }
+      })
   },
 })
 

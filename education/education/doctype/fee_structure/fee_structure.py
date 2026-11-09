@@ -23,7 +23,7 @@ class FeeStructure(Document):
 		"""Calculates total amount."""
 		self.total_amount = 0
 		for d in self.components:
-			d.total = flt(d.amount) - (d.amount * (flt(d.discount) / 100))
+			d.total = flt(flt(d.amount) - (flt(d.amount) * flt(d.discount) / 100), 2)
 			self.total_amount += d.total
 
 	def validate_discount(self):
@@ -65,13 +65,14 @@ class FeeStructure(Document):
 
 @frappe.whitelist()
 def get_amount_distribution_based_on_fee_plan(
-	components: str,
+	components: str | list,
 	total_amount: float | str | int = 0,
 	fee_plan: str = "Monthly",
 	academic_year: str | None = None,
 ):
 	total_amount = flt(total_amount)
-	components = json.loads(components)
+	if isinstance(components, str):
+		components = json.loads(components)
 
 	month_dict = {
 		"Monthly": {"month_list": get_future_dates("Monthly"), "amount": 1 / 12},
@@ -109,27 +110,25 @@ def get_amount_distribution_based_on_fee_plan(
 
 	per_component_amount = {}
 	for component in components:
-		per_component_amount[component.get("fees_category")] = component.get(
-			"total"
-		) * month_list_and_amount.get("amount")
+		per_component_amount[component.get("fees_category")] = flt(
+			flt(component.get("total")) * flt(month_list_and_amount.get("amount")), 2
+		)
 
-	amount = sum(per_component_amount.values())
+	month_list = month_list_and_amount.get("month_list") or []
+	installment_amounts = []
+	if month_list:
+		base_amount = flt(total_amount / len(month_list), 2)
+		installment_amounts = [base_amount] * (len(month_list) - 1)
+		installment_amounts.append(flt(total_amount - sum(installment_amounts), 2))
 
 	final_month_list = []
-
-	if fee_plan == "Term-Wise":
-		for term in month_list_and_amount.get("month_list"):
-			final_month_list.append(
-				{
-					"term": term.get("term"),
-					"due_date": term.get("due_date"),
-					"amount": amount,
-				}
-			)
-
-	else:
-		for date in month_list_and_amount.get("month_list"):
-			final_month_list.append({"due_date": date, "amount": amount})
+	for idx, entry in enumerate(month_list):
+		row = {"amount": installment_amounts[idx]}
+		if fee_plan == "Term-Wise":
+			row.update({"term": entry.get("term"), "due_date": entry.get("due_date")})
+		else:
+			row["due_date"] = entry
+		final_month_list.append(row)
 
 	return {
 		"distribution": final_month_list,
@@ -164,13 +163,15 @@ def get_future_dates(fee_plan, start_date=None):
 @frappe.whitelist()
 def make_fee_schedule(
 	source_name: str,
-	dialog_values: str,
-	per_component_amount: str,
+	dialog_values: str | dict,
+	per_component_amount: str | list,
 	total_amount: float | str,
 	target_doc: str | None = None,
 ):
-	dialog_values = json.loads(dialog_values)
-	per_component_amount = json.loads(per_component_amount)
+	if isinstance(dialog_values, str):
+		dialog_values = json.loads(dialog_values)
+	if isinstance(per_component_amount, str):
+		per_component_amount = json.loads(per_component_amount)
 
 	student_batches = dialog_values.get("student_batches")
 	fee_plan_wise_distribution = [
@@ -193,21 +194,28 @@ def make_fee_schedule(
 		doc.due_date = distribution.get("due_date")
 		if distribution.get("term"):
 			doc.academic_term = distribution.get("term")
+		distribution_amount = flt(distribution.get("amount"))
 		amount_per_month = 0
+		remaining_amount = distribution_amount
 
-		for component in doc.components:
-			component_ratio = component.get("total") / flt(total_amount)
-			component_ratio = round((component_ratio * 100) / 100, 2)
-			component.total = flt(component_ratio * distribution.get("amount"))
+		for idx, component in enumerate(doc.components):
+			if idx == len(doc.components) - 1:
+				component.total = remaining_amount
+			else:
+				component_ratio = flt(component.get("total")) / flt(total_amount)
+				component.total = flt(component_ratio * distribution_amount, 2)
+				remaining_amount -= component.total
 
-			if component.discount == 100:
+			if flt(component.discount) == 100:
 				component.amount = component.total
 			else:
-				component.amount = flt((component.total) / flt(100 - component.discount)) * 100
+				component.amount = flt(
+					component.total * 100 / flt(100 - flt(component.discount)), 2
+				)
 
 			amount_per_month += component.total
 		# Each distribution will be a separate fee schedule
-		doc.total_amount = distribution.get("amount")
+		doc.total_amount = distribution_amount
 
 		for batch in student_batches:
 			fee_schedule_student_batch = doc.append("student_batches", {})

@@ -175,7 +175,7 @@ def has_super_access():
 			"Faculty",
 			"Education Manager",
 			"System Manager",
-			"Academic User",
+			"Academics User",
 		}
 	)
 

@@ -36,5 +36,17 @@ frappe.query_reports['Course wise Assessment Report'] = {
       options: 'Assessment Group',
       reqd: 1,
     },
+    {
+      fieldname: 'company',
+      label: __('Company'),
+      fieldtype: 'Link',
+      options: 'Company',
+    },
+    {
+      fieldname: 'letter_head',
+      label: __('Letter Head'),
+      fieldtype: 'Link',
+      options: 'Letter Head',
+    },
   ],
 }

@@ -62,16 +62,21 @@ def get_formatted_result(args, get_course=False):
 			"score",
 			"maximum_score",
 			"percentage",
-			"grade",
 		],
 		order_by="",
 	)
+
+	from education.education.api import get_grade_details
 
 	for result in assessment_result:
 		if get_course and result.course not in courses:
 			courses.append(result.course)
 
 		result.subject = frappe.db.get_value("Assessment Plan", result.assessment_plan, "subject")
+		grading_scale = frappe.db.get_value("Course", result.course, "default_grading_scale")
+		result.grade = (
+			get_grade_details(grading_scale, result.percentage).grade_code if grading_scale else ""
+		)
 
 	return {"assessment_result": assessment_result, "courses": courses}
 

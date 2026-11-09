@@ -153,13 +153,35 @@ def apply_campus_to_invoice(invoice, campus):
 
 
 def ensure_campus_accounting_dimension():
-	"""Register Campus so fee and invoice lines carry it onto GL Entry."""
+	"""Register Campus so fee and invoice lines carry it onto GL Entry.
+
+	ERPNext creates the dimension fields in a background job. Without a running
+	worker those fields never appear, and every GL posting fails because the
+	budget controller queries each dimension column. Create them synchronously
+	and repair sites where the dimension exists but its fields do not.
+	"""
 	if not frappe.db.exists("DocType", "Campus"):
 		return
-	if frappe.db.exists("Accounting Dimension", {"document_type": "Campus"}):
-		return
 
-	dimension = frappe.new_doc("Accounting Dimension")
-	dimension.document_type = "Campus"
-	dimension.label = "Campus"
-	dimension.insert(ignore_permissions=True)
+	dimension_name = frappe.db.get_value(
+		"Accounting Dimension", {"document_type": "Campus"}
+	)
+	if dimension_name:
+		dimension = frappe.get_doc("Accounting Dimension", dimension_name)
+	else:
+		dimension = frappe.new_doc("Accounting Dimension")
+		dimension.document_type = "Campus"
+		dimension.label = "Campus"
+		dimension.insert(ignore_permissions=True)
+
+	from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+		make_dimension_in_accounting_doctypes,
+	)
+
+	doclist = frappe.get_hooks("accounting_dimension_doctypes") or []
+	missing = any(
+		not frappe.get_meta(doctype, cached=False).has_field(dimension.fieldname)
+		for doctype in doclist
+	)
+	if missing:
+		make_dimension_in_accounting_doctypes(doc=dimension)
