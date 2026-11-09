@@ -304,9 +304,9 @@ def get_students(student_batch, student_category=None):
 
 	if student_category:
 		in_category = frappe.get_all(
-			"Student Applicant",
+			"Student",
 			filters={"student_category": student_category},
-			pluck="student",
+			pluck="name",
 		)
 		students = [student for student in students if student.student in in_category]
 

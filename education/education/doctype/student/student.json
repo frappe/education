@@ -15,6 +15,7 @@
   "middle_name",
   "last_name",
   "student_applicant",
+  "student_category",
   "column_break_4",
   "naming_series",
   "joining_date",
@@ -351,6 +352,15 @@
    "fieldname": "alumni",
    "fieldtype": "Check",
    "label": "Alumni?"
+  },
+  {
+   "fieldname": "student_category",
+   "fieldtype": "Link",
+   "label": "Student Category",
+   "options": "Student Category",
+   "fetch_from": "student_applicant.student_category",
+   "fetch_if_empty": 1,
+   "in_standard_filter": 1
   }
  ],
  "image_field": "image",
@@ -386,7 +396,7 @@
    "link_fieldname": "student"
   }
  ],
- "modified": "2026-10-30 13:28:05.016103",
+ "modified": "2026-11-09 15:17:36.011413",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student",

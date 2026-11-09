@@ -11,6 +11,7 @@
   "first_name",
   "middle_name",
   "last_name",
+  "student_category",
   "course",
   "course_fee_amount",
   "student",
@@ -376,11 +377,18 @@
    "fieldtype": "Link",
    "label": "Student Batch",
    "options": "Student Batch Name"
+  },
+  {
+   "fieldname": "student_category",
+   "fieldtype": "Link",
+   "label": "Student Category",
+   "options": "Student Category",
+   "in_standard_filter": 1
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2026-09-29 20:19:12.337753",
+ "modified": "2026-11-09 15:17:36.011413",
  "modified_by": "Administrator",
  "module": "Education",
  "name": "Student Applicant",
