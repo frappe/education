@@ -3,7 +3,11 @@
 
 /* DS-01 APPROVED v0.1 (DP-01…DP-03). Canonical tokens for the portal.
  * frappe-ui preset values are untouched; these vars are the portal's
- * mapping of the design system for future phases. */
+ * mapping of the design system for future phases.
+ *
+ * Values below MUST equal ui-theme ds01-tokens.css (source of truth). They are
+ * duplicated on purpose: this SPA ships its own bundle and never loads the
+ * Desk theme CSS, so it must render correctly without the ui_theme app. */
 :root {
   --color-primary: #4154f1;
   --color-primary-hover: #3543d6;

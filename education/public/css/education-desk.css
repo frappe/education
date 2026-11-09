@@ -10,10 +10,10 @@
  * No JS, JSON, Python, or dashboard content is affected. */
 
 :root {
-	--edu-primary: #4154f1;
-	--edu-primary-hover: #3543d6;
-	--edu-primary-active: #2f3dbe;
-	--edu-primary-focus-ring: 0 0 0 2px rgba(65, 84, 241, 0.35);
+	--edu-primary: var(--color-primary, #4154f1);
+	--edu-primary-hover: var(--color-primary-hover, #3543d6);
+	--edu-primary-active: var(--color-primary-active, #2f3dbe);
+	--edu-primary-focus-ring: var(--color-primary-focus-ring, 0 0 0 2px rgba(65, 84, 241, 0.35));
 }
 
 /* Link cards: white, bordered, radius 12, base elevation. */
