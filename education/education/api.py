@@ -10,10 +10,20 @@ from frappe.email.doctype.email_group.email_group import add_subscribers
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, getdate, today
 from frappe.utils.dateutils import get_dates_from_timegrain
+from education.education.utils import get_current_student, has_super_access
 
 from education.education.doctype.student_batch_name.student_batch_name import (
 	get_batch_students as get_students_of_batch,
 )
+
+
+def _validate_student_portal_access(student: str):
+	"""Ensure a non privileged user can only access their own Student record."""
+	if has_super_access():
+		return
+	current_student = get_current_student()
+	if not current_student or current_student.name != student:
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 
 def get_course(program):
@@ -175,6 +185,7 @@ def get_student_guardians(student: str):
 
 	:param student: Student.
 	"""
+	_validate_student_portal_access(student)
 	guardians = frappe.get_all("Student Guardian", fields=["guardian"], filters={"parent": student})
 	return guardians
 
@@ -509,6 +520,7 @@ def get_student_info():
 
 @frappe.whitelist()
 def get_student_programs(student: str):
+	_validate_student_portal_access(student)
 	seen = set()
 	programs = []
 	for row in frappe.get_all(
@@ -640,6 +652,7 @@ def apply_leave_based_on_student_batch(leave_data, program_name):
 
 @frappe.whitelist()
 def get_student_invoices(student: str):
+	_validate_student_portal_access(student)
 	student_sales_invoices = []
 
 	sales_invoice_list = frappe.db.get_list(
@@ -729,6 +742,7 @@ def get_school_abbr_logo():
 
 @frappe.whitelist()
 def get_student_attendance(student: str, student_batch: str):
+	_validate_student_portal_access(student)
 	return frappe.db.get_list(
 		"Student Attendance",
 		filters={"student": student, "student_batch": student_batch, "docstatus": 1},
