@@ -2,6 +2,7 @@
 
 import frappe
 from frappe import _
+from frappe.utils import get_email_address
 
 
 class OverlapError(frappe.ValidationError):
@@ -86,11 +87,10 @@ def get_current_student():
 	Returns:
 	        object: Student Document
 	"""
-	email = frappe.session.user
-	if email in ("Administrator", "Guest"):
+	if frappe.session.user in ("Administrator", "Guest"):
 		return None
 	try:
-		student_id = frappe.get_all("Student", {"student_email_id": email}, ["name"])[0].name
+		student_id = frappe.get_all("Student", {"student_email_id": get_email_address()}, ["name"])[0].name
 		return frappe.get_doc("Student", student_id)
 	except (IndexError, frappe.DoesNotExistError):
 		return None
@@ -188,7 +188,7 @@ def add_activity(course: str, content_type: str, content: str, program: str):
 	student = get_current_student()
 	if not student:
 		return frappe.throw(
-			_("Student with email {0} does not exist").format(frappe.session.user),
+			_("Student with email {0} does not exist").format(get_email_address()),
 			frappe.DoesNotExistError,
 		)
 
