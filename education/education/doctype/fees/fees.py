@@ -10,7 +10,7 @@ from erpnext.accounts.doctype.payment_request.payment_request import (
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 from frappe import _
-from frappe.utils import cint, money_in_words
+from frappe.utils import cint, get_email_address, money_in_words
 from frappe.utils.csvutils import getlink
 
 from education.education.doctype.campus.campus import (
@@ -155,8 +155,8 @@ class Fees(AccountsController):
 
 
 def get_fee_list(doctype, txt, filters, limit_start, limit_page_length=20, order_by="modified"):
-	user = frappe.session.user
-	student = frappe.db.sql("select name from `tabStudent` where student_email_id= %s", user)
+	email = get_email_address()
+	student = frappe.db.sql("select name from `tabStudent` where student_email_id= %s", email)
 	if student:
 		return frappe.db.sql(
 			"""

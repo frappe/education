@@ -5,7 +5,7 @@ from erpnext.accounts.doctype.journal_entry.journal_entry import (
 )
 from erpnext.accounts.doctype.payment_entry.test_payment_entry import get_payment_entry
 from frappe import _
-from frappe.utils import cint, nowdate, validate_phone_number
+from frappe.utils import cint, get_email_address, nowdate, validate_phone_number
 
 
 def get_details(docname):
@@ -59,7 +59,7 @@ def get_payment_options(doctype: str, docname: str, phone: str, currency: str | 
 		"currency": order["currency"],
 		"prefill": {
 			"name": frappe.db.get_value("User", frappe.session.user, "full_name"),
-			"email": frappe.session.user,
+			"email": get_email_address(),
 			"contact": phone,
 		},
 	}
