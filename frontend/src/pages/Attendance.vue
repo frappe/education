@@ -83,6 +83,12 @@ function setStudentGroup() {
       (group.onClick = () => {
         if (group.label === selectedGroup.value) return
         selectedGroup.value = group.label
+        attendanceResource.update({
+	        params: {
+	          student_group: selectedGroup.value,
+	          student: studentInfo.name,
+	        },
+	      })
         attendanceResource.reload()
       })
   )
