@@ -17,5 +17,6 @@
  "owner": "Administrator",
  "restrict_removal": 0,
  "roles": [],
- "standard": 1
+ "standard": 1,
+ "sidebar": "Education"
 }

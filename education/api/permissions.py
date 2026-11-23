@@ -6,9 +6,12 @@ def has_app_permission():
 	if frappe.session.user == "Administrator":
 		return True
 
-	roles = frappe.get_roles()
-	education_roles = ["Education Manager"]
-	if any(role in roles for role in education_roles):
-		return True
+	# Frappe v16 resolves the module's sidebar for each user. Let users who can
+	# read an Education entry reach the app; the sidebar still checks each link.
+	if frappe.session.user == "Guest":
+		return False
 
-	return False
+	return any(
+		frappe.has_permission(doctype, "read")
+		for doctype in ("Student", "Faculty", "Course Enrollment", "Assessment Result")
+	)
