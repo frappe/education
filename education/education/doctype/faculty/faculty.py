@@ -55,7 +55,7 @@ class Faculty(Document):
 			return
 		if not frappe.db.get_single_value(
 			"Education Settings", "user_creation_skip"
-		) and not frappe.db.exists("User", self.email_address):
+		) and not frappe.db.exists("User", {"email": self.email_address}):
 			faculty_user = frappe.get_doc(
 				{
 					"doctype": "User",
