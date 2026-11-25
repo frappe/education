@@ -22,6 +22,15 @@ class TestAssessmentResult(FrappeTestCase):
 		grade = get_grade("_Test Grading Scale", 70)
 		self.assertEqual("B", grade)
 
+	def test_grade_between_intervals(self):
+		# _Test Grading Scale has B at 70-79 and A at 80-100
+		self.assertEqual("B", get_grade("_Test Grading Scale", 79.5))
+		self.assertEqual("D", get_grade("_Test Grading Scale", 59.99))
+
+		details = get_grade_details("_Test Grading Scale", 49.5)
+		self.assertEqual("F", details.grade_code)
+		self.assertEqual(0, details.earn_credits)
+
 	def test_grade_details_include_gpa(self):
 		scale_name = "_Test GPA Grading Scale"
 		create_grading_scale(scale_name)

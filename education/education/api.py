@@ -357,15 +357,15 @@ def get_grade_details(grading_scale: str, percentage: float | str):
 			"include_gpa",
 			"earn_credits",
 			"minimum_percentage",
-			"maximum_percentage",
 		],
 		filters={"parent": grading_scale},
 		order_by="minimum_percentage desc",
 	)
 
+	# match on the minimum only, so a percentage between two intervals (79.5 with 70-79 and 80-100) gets a grade
 	percentage = flt(percentage)
 	for interval in intervals:
-		if flt(interval.minimum_percentage) <= percentage <= flt(interval.maximum_percentage):
+		if percentage >= flt(interval.minimum_percentage):
 			details.grade_code = interval.grade_code
 			details.gpa = flt(interval.gpa)
 			details.include_gpa = 1 if interval.include_gpa else 0
