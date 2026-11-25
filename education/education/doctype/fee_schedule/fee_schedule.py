@@ -313,6 +313,7 @@ def get_total_students(student_batch: str, student_category: str | None = None):
 	return len(get_students(student_batch, student_category))
 
 
+#Fix for creating fees shedule with fee structure without amount variation
 @frappe.whitelist()
 def get_fee_structure(source_name: str, target_doc: str | None = None):
 	fee_request = get_mapped_doc(
